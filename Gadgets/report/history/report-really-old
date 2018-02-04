@@ -1,0 +1,134 @@
+#!/bin/bash -x
+
+### report: a lightweight script to generate a simple income report.
+
+clear ### display on a clear screen
+lineno=0 ### count line number
+insub=0 ### used to display income. 'insub' is used in a 'bc' calculation so it needs to be defined
+outsub=0 ### used to display total outlay. 'outsub' is also used in a 'bc' calculation
+declare -A outlays ### used to display individual category-totals of outlays
+ui=off ### user interface flag
+procfile=off ### process file flag
+usd=off
+
+### check for parameters
+if [ -z "$*" ]; then
+	### if no  parameter is provided, process stdin and 
+	### record the input to a file. that file will then be processed for the report.
+	ui=on 
+	procfile=off 
+else
+	for p in $@; do
+		case $p in
+			-d)	usd=on ### US dollar flag
+				ui=on
+				;;
+			### check if the parameter is a file
+			### if it is, that file will be processed
+			*)	if [ -f $p ]; then
+					filein=$p
+					procfile=on
+					ui=off
+					year=$(basename $filein | cut -d "-" -f 1) ### for the title of the report
+				else
+					echo "report: $p is not a file"
+					exit 1
+				fi
+				;;
+		esac
+	done
+fi
+
+### if the user interface flag ('ui') is on, display the user interface
+if [ $ui = on ]; then
+	if [ $procfile = on ]; then
+		### I think that the only time that both the 'ui' and 'procfile' flags would be on at the
+		### same time is if the user types the file before the option on the command line
+		echo "report: usage: report [-d] [file]"
+		exit 1
+	fi
+	input=a
+	echo "**************** Report ****************"
+	read -p "Enter year > " year ### for the title of the report
+	while [ "$input" != t ]; do
+		clear
+		### a menu
+		echo -e "**************** Report ****************\nEnter 'q' to quit\nEnter 't' for total\nEnter 'p' to	print ledger\nEnter 'v' to view the last five entries\n"
+		read -p "Enter item and amount > " input
+		case "$input" in
+			q)	exit 0
+				;;
+			t)	continue 1 ### this is to skip the rest of this iteration of the while loop.
+				### 'input' will equal 't' so the loop will break but because of 'continue 1', 
+				### 't' will not be recorded to the file, so to for 'p' and 'v'
+				;;
+			p)	cat -n ~/$year-ledger | less
+				continue 1
+				;;
+			v)	cat -n ~/$year-ledger | tail -n 5 
+				read -p "Press [Enter] key to continue.." ### without this, the display would 
+									### disappear before it could be read
+				continue 1
+				;;
+		esac
+		echo $input >> ~/$year-ledger
+	done
+	filein=~/$year-ledger
+fi
+
+### generates the report
+clear
+echo "Working.."
+while read -r -u 3 entry
+do IFS=" " read -r line <<< $entry
+	((++lineno))
+	item=$(echo "$line" | grep -oi '[[:alpha:]]*')
+	amount=$(echo "$line" | grep -o '\-\?[0-9]*\.\?[0-9]*')
+	if [ ! $item ]; then
+		echo "report: line number $lineno: missing item"
+	elif [ ! $amount ]; then
+		echo "report: line number $lineno: missing amount"
+	fi
+	if [ $(echo $amount | grep \-) ]; then ### if 'amount' is negative, add it to 'outsub'
+		outsub=$(echo $outsub + $amount | bc)
+		### this keeps a tally of each type of outlay
+		if [ -z ${outlays[$item]} ]; then 
+			outlays[$item]=0
+		fi
+		outlays[$item]=$(echo ${outlays[$item]} + $amount | bc)
+		continue 1
+	else ### if 'amount' is not negative, add it to 'insub'
+		insub=$(echo $insub + $amount | bc)
+		continue 1
+	fi
+done 3< $filein
+
+### if "usd" flag is on, prompt the user to enter a number. that number will be divided into the subtotals
+if [ $usd = on ]; then
+	clear
+	read -p "Enter exchange rate for $year > " rate
+	insub=$(echo "$insub * $rate" | bc)
+	outsub=$(echo "$outsub * $rate" | bc)
+	for d in "${!outlays[@]}"; do
+		outlays[$d]=$(echo ""${outlays[$d]}" * $rate" | bc)
+	done
+fi
+
+net=$(echo $insub + $outsub | bc) ### final net total
+
+clear
+
+### send the report to a file. the 'sed' invocations are to format the output so they won't show `-' signs
+echo "*** Report for $year ***
+.......................
+Income: $insub
+Outlay: $outsub" | sed 's/-//' > ~/$year-report
+### display each outlay-category's total
+for i in "${!outlays[@]}"; do
+	echo -n " $i: " >> ~/$year-report; echo "${outlays[$i]}" | sed 's/-//' >> ~/$year-report
+done
+echo ".......................
+Net Total: $net
+" >> ~/$year-report
+
+cat ~/$year-report ### display the report on stdout

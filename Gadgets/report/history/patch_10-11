@@ -1,0 +1,12 @@
+127c127,131
+< 		if [ ! "$amount" ] ; then
+---
+> 		if (( $(wc -l <<< $amount) > 1 )) ; then
+> 			{ echo "Invalid entry: '$in1 $in2'"
+> 			echo "Ambiguous amount" ; } >&2
+> 			continue
+> 		elif [ ! "$amount" ] ; then
+129c133
+< 			echo "amount and item required" ; } >&2
+---
+> 			echo "Amount and item required" ; } >&2

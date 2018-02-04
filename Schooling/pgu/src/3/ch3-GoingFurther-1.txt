@@ -1,0 +1,2 @@
+The error is a segmentation fault.  I think that is because the program keeps
+incrementing its instruction pointer until it moves past its alloted memory.

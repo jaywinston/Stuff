@@ -1,0 +1,172 @@
+21,31c21
+< 	echo " user is prompted for a year."
+< }
+< 
+< 
+< # re_test: test a regular expression
+< function re_test {
+< 	local opts pattern string
+< 	[ $3 ] && opts=$1 && shift
+< 	pattern=$1
+< 	string=$2
+< 	grep $opts "$pattern" <<< "$string" > /dev/null
+---
+> 	echo " the user is prompted for a year."
+37c27
+< usd=off  # US dollar flag
+---
+> usd=     # US dollar flag
+38a29,32
+> # regexes
+> year_chars='^[0-9]{1,4}$'
+> amount_chars='^-?[[:digit:].]+$'
+> two_dots='[.].*[.]'
+51c45
+< && if [ -f $1 ]; then
+---
+> && if [ -f $1 ] ; then
+53c47
+< 	ui=off
+---
+> 	unset ui
+55c49
+< elif [[ $1 =~ ^[0-9]{,4}$ ]]; then
+---
+> elif [[ $1 =~ $year_chars ]] ; then
+59,60c53
+< if [ ! $year ]; then
+< 	echo "**************** Report ****************"
+---
+> until [[ $year =~ $year_chars ]] ; do
+62c55
+< fi
+---
+> done
+65c58
+< if [ $ui = on ]; then
+---
+> if [ $ui ] ; then
+67c60,63
+< 	clear
+---
+> 	# pause: wait for the user to respond
+> 	function pause {
+> 		read -p "Press [Enter] key to continue" 
+> 	}
+71c67,70
+< 	while [ "$in1" != r ] || [ $in2 ]; do
+---
+> 	clear
+> 
+> 	# 'r' could be an item so 'in2' must be null to exit the loop
+> 	while [[ "$in1" != r || $in2 ]] ; do
+81a81
+> 		# null 'in2' means a menu entry
+85,90c85
+< 		r)	$(dirname $0)/report $infile
+< 				# This is a terrible hack. It goes right
+< 				# on input file but not in interactive. ?
+< 				# see bug report below
+< 			# continue  ;;  # don't record 'r' to the ledger
+< 			exit 0 ;;
+---
+> 		r)	continue  ;;  # don't record 'r' to the ledger
+95,96c90
+< 			# read is only to delay clearing the screen
+< 			read -p "Press [Enter] key to continue.."
+---
+> 			pause
+100c94
+< 			read -p "Press [Enter] key to continue.." 
+---
+> 			pause
+105c99
+< 		if [[ "$in1" =~ ^-?[[:digit:].]+$ ]]; then
+---
+> 		if [[ "$in1" =~ $amount_chars ]] ; then
+108c102
+< 		elif [[ "$in2" =~ ^-?[[:digit:].]+$ ]]; then
+---
+> 		elif [[ "$in2" =~ $amount_chars ]] ; then
+113c107
+< 			read -p "Press [Enter] key to continue.." 
+---
+> 			pause
+117,119c111,113
+< 		if [[ $amount =~ '[.].*[.]' \
+< 		|| ! $amount =~ $-?[0-9.]+$ ]]; then
+< 			echo "$PROG: bad input: '$amount'"
+---
+> 		if [[ $amount =~ $two_dots ]] ; then
+> 			echo "$PROG: bad input: '$amount'" >&2
+> 			pause
+131c125
+< 	if [ -z "$1" ]; then
+---
+> 	if [ -z "$1" ] ; then
+134c128
+< 		echo "   > $line"
+---
+> 		echo "    $line"
+136,137c130,131
+< 		echo " format:"
+< 		echo " item amount"
+---
+> 		echo " format: item amount"
+> 		echo " exiting"
+142,149d135
+< ##
+< ## Bug Report
+< ##
+< ## When in interactive mode, re_test fails this regex. i.e.
+< ## '^-' does not match a string starting with a dash e.g. '-1'.
+< ## The same test does work when the script is passed a file on input.
+< ##
+< 
+154,156c140,145
+< clear
+< echo "Generating report.."
+< while read -r line; do
+---
+> if [ $ui ] ; then
+> 	clear
+> 	echo "Generating report.."
+> fi
+> 
+> while read -r line ; do
+159c148
+< 	[[ $amount =~ [.].*[.] || ! $amount =~ $-?[0-9.]$ ]] && amount=
+---
+> 	[[ $amount =~ $two_dots || ! $amount =~ $amount_chars ]] && unset amount
+161c150
+< 	if [[ $amount =~ ^- ]]; then
+---
+> 	if [[ $amount =~ ^- ]] ; then
+164c153
+< 		item=$(cut -s -d' ' -f1 <<< $line | tr [:space:] _)
+---
+> 		item=$(cut -s -d' ' -f1 <<< $line | tr '[ \t]' _)
+180c169
+< 	re_test -Ex '[0-9]{2}' $cent || cent+=0
+---
+> 	[[ $cent =~ [0-9]{2} ]] || cent+=0
+186c175
+< if [ $usd = on ]; then
+---
+> if [ $usd ] ; then
+191c180
+< 	for i in "${!outlays[@]}"; do
+---
+> 	for i in "${!outlays[@]}" ; do
+198c187
+< clear
+---
+> [ $ui ] && clear
+202c191
+< 	printf "*** Report for $year ***\n.......................\n"
+---
+> 	printf "*** Report for %4d ***\n.......................\n" $year
+204c193
+< 	for item in "${!outlays[@]}"; do
+---
+> 	for item in "${!outlays[@]}" ; do

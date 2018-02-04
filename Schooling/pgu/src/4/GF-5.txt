@@ -1,0 +1,12 @@
+A calling convention without using the stack could be to place arguments in the
+registers starting from %eax and moving sequentially upwards in the alphabet.
+The return value would be put in %eax.
+Limitations would be that the number of arguments is limited to number of
+available registers.
+
+Another calling convention could be to create a global array that would hold
+all of the arguments.  The return value would be put in the first index of the
+array.  Limitations would be that the code might be a bit hard to read.  And
+any recursion, even indirectly, would overwrite the array so the function would
+need to store the values of the array, probably on the stack.  So that might be
+considered using the stack.

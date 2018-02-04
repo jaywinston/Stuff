@@ -1,0 +1,2 @@
+The purpose of LD_LIBRARY_PATH is to add paths to where the linker looks for
+library files.

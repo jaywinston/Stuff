@@ -1,0 +1,1 @@
+ld -shared -o (bar)?|libbar.so foo.o

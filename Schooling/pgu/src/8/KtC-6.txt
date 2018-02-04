@@ -1,0 +1,1 @@
+structs are for grouping data types together under a name.

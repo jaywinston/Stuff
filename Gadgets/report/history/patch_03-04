@@ -1,0 +1,224 @@
+5c5
+< # usage
+---
+> # usage: to stderr
+7c7,8
+< 	echo "$PROG: Usage: $PROG -dh [FILE|YEAR]"
+---
+> {
+> 	echo "$PROG: Usage: $PROG -c [RATE] -h [FILE|YEAR]"
+9c10
+< 	echo "  options"
+---
+> 	echo "  options:"
+11c12
+< 	echo "  -d	convert to US dollars"
+---
+> 	echo "  -c	convert amounts"
+12a14
+> } >&2
+16c18
+< # help
+---
+> # help: to stderr
+17a20,21
+> {
+> 	echo
+21a26,28
+> 	echo
+> 	echo " Conversion is Local * RATE"
+> } >&2
+26,27c33,34
+< ui=on    # user interface flag
+< usd=     # US dollar flag
+---
+> ui=on  # user interface flag
+> rate=  # conversion flag
+31,32c38
+< amount_chars='^-?[[:digit:].]+$'
+< two_dots='[.].*[.]'
+---
+> amount_chars='[-]?[[:digit:]]+([.][[:digit:]]*)?'
+34c40
+< getopts dh opt
+---
+> getopts :c:h opt
+36,37c42,43
+< \?)	unset opt ;;
+< d)	usd=on ;;
+---
+> c)	rate=$OPTARG ;;
+> :)	rate="ask user" ;;
+39d44
+< *)	usage && exit 1 ;;
+42c47,53
+< [ $opt ] && shift
+---
+> if [[ $opt = \? && $OPTARG ]] ; then
+> 	echo "Illegal option: $OPTARG" >&2
+> 	usage
+> 	exit 1
+> fi
+> [[ $opt =~ [:c] ]] && unset opt
+> [ $opt ] || shift `expr $OPTIND - 1`
+50a62,65
+> else
+> 	echo "$PROG: file not found: '$1'" >&2
+> 	usage
+> 	exit 2
+60,63c75,76
+< 	# pause: wait for the user to respond
+< 	function pause {
+< 		read -p "Press [Enter] key to continue" 
+< 	}
+---
+> 	# pause: wait for user response
+> 	function pause { read -p "Press [Enter] key to continue" ; }
+69,70c82
+< 	# 'r' could be an item so 'in2' must be null to exit the loop
+< 	while [[ "$in1" != r || $in2 ]] ; do
+---
+> 	while [ 1 ] ; do
+71a84
+> 		# menu: to stderr
+73,79c86,95
+< 		echo "**************** Report ****************"
+< 		echo "Enter 'q' to quit"
+< 		echo "Enter 'r' to generate the report"
+< 		echo "Enter 'd' to display the ledger"
+< 		echo "Enter 'v' to view the last five entries"
+< 		echo
+< 		read -p "Enter item and amount > " in1 in2
+---
+> 		{
+> 			echo "**************** Report ****************"
+> 			echo "Enter 'q' to quit"
+> 			echo "Enter 'r' to generate the report"
+> 			echo "Enter 'd' to display the ledger"
+> 			echo "Enter 'v' to view the last five entries"
+> 			echo
+> 		} >&2
+> 		read -p "Enter amount and item > " in1 in2
+> 		# end menu
+81,82c97,98
+< 		# null 'in2' means a menu entry
+< 		[ ! $in2 ] \
+---
+> 		# Null 'in2' means a menu entry.
+> 		[ -z "$in2" ] \
+85c101
+< 		r)	continue  ;;  # don't record 'r' to the ledger
+---
+> 		r)	break  ;;
+87c103
+< 			continue  # or 'd'
+---
+> 			continue
+89c105
+< 		v)	cat -n $infile | tail -n5 
+---
+> 		v)	cat -n $infile | tail -n5 >&2
+91c107
+< 			continue  # or 'v'
+---
+> 			continue
+93c109
+< 		*)	echo "* Item and amount required" >&2
+---
+> 		*)	echo "Inavlid option: '$in1'" >&2
+99,112c115,118
+< 		if [[ "$in1" =~ $amount_chars ]] ; then
+< 			amount=$in1
+< 			item=$in2
+< 		elif [[ "$in2" =~ $amount_chars ]] ; then
+< 			amount=$in2
+< 			item=$in1
+< 		else
+< 			echo "* Item and amount required"
+< 			pause
+< 			continue
+< 		fi
+< 
+< 		if [[ $amount =~ $two_dots ]] ; then
+< 			echo "$PROG: bad input: '$amount'" >&2
+---
+> 		amount=$(grep -Eo "\s${amount_chars}\s" <<< " $in1 $in2 " | sed 's/\s//g')
+> 		if [ ! $amount ] ; then
+> 			{ echo "Invalid amount: '$in1 $in2'"
+> 			echo "* amount and item required" ; } >&2
+115a122
+> 		item=$(sed "s/$amount/ /" <<< "$in1 $in2")
+117c124,125
+< 		echo "$item $amount" >> $infile
+---
+> 		# record input
+> 		echo "$amount $item" >> $infile
+122a131
+> 
+126c135,136
+< 		echo "$PROG: bad entry: line $nl"
+---
+> 	{
+> 		echo "$PROG: invalid amount: line $nl"
+130,132c140,145
+< 		echo " format: item amount"
+< 		echo " exiting"
+< 		exit 2
+---
+> 		echo " format:  'amount item'"
+> 		echo "   An amount and an item are required on each line."
+> 		echo "   Amount is [-]DIGIT(S)[.][DIGIT(S)]"
+> 		echo "exiting"
+> 	} >&2
+> 		exit 3
+140,143c153
+< if [ $ui ] ; then
+< 	clear
+< 	echo "Generating report.."
+< fi
+---
+> [ $ui ] && clear && echo "Generating report.." >&2
+147,148c157,158
+< 	amount=$(cut -s -d' ' -f2 <<< $line)
+< 	[[ $amount =~ $two_dots || ! $amount =~ $amount_chars ]] && unset amount
+---
+> 	amount=$(cut -s -d' ' -f1 <<< "$line")
+> 	[[ "$amount" =~ $amount_chars ]] || unset amount
+153c163,164
+< 		item=$(cut -s -d' ' -f1 <<< $line | tr '[ \t]' _)
+---
+> 		item=$(cut -s -d' ' -f2- <<< "$line" \
+> 			| tr '\t' ' ' | tr -s ' ' | tr ' ' _)
+161a173,174
+> alias printf='printf -- '
+> 
+164c177
+< round () {
+---
+> function round {
+169c182
+< 	[[ $cent =~ [0-9]{2} ]] || cent+=0
+---
+> 	[[ ${cent:=00} =~ [0-9]{2} ]] || cent+=0
+175,177c188,193
+< if [ $usd ] ; then
+< 	clear
+< 	read -p "Enter exchange rate for $year > " rate
+---
+> if [ -n "$rate" ] ; then
+> 	if [ "$rate" = "ask user" ] ; then
+> 		[ $ui ] && clear
+> 		echo "Conversion is Local * Rate" >&2
+> 		read -p "Enter exchange rate for $year > " rate
+> 	fi
+189c205
+< # save the report in a file
+---
+> # display the report and save it in a file
+201,204c217
+< } > ~/${year}-report
+< 
+< # display the report
+< cat ~/${year}-report
+---
+> } | tee ~/${year}-report

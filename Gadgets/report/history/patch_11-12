@@ -1,0 +1,35 @@
+54c54
+< c)	rate=$OPTARG ;;
+---
+> c)	[[ $OPTARG =~ ^\.?[[:digit:]]+ ]] && rate=$OPTARG || rate="ask user" ;;
+64c64
+< shift  `expr $OPTIND - 1`
+---
+> shift $((OPTIND - 1))
+66,68c66,70
+< [ $1 ] \
+< && if [ -f $1 ] ; then
+< 	infile=$1
+---
+> testfile=${1:-$OPTARG}
+> 
+> [ $testfile ] \
+> && if [ -f $testfile ] ; then
+> 	infile=$testfile
+74c76
+< 	echo "$PROG: file not found: '$1'" >&2
+---
+> 	echo "$PROG: file not found: '$testfile'" >&2
+167c169
+< declare -A outlays  # used to display total for each category of outlay
+---
+> declare -A incomes outlays  # used to display total for each category of outlay
+182a185,188
+> 		item=$(cut -s -d' ' -f2- <<< "$line" \
+> 			| tr '\t' ' ' | tr -s ' ' | tr ' ' _)
+> 		validate "$item"
+> 		incomes[$item]=$(bc <<< "${incomes[$item]:-0} + $amount")
+196c202
+< 	printf "$amount"
+---
+> 	printf -- "$amount"

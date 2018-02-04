@@ -1,0 +1,3 @@
+The size of the buffer affects how many reads are made from the disk and how
+long each read takes.  A larger buffer will cause fewer but longer reads.  A
+smaller buffer will cause more but shorter reads.

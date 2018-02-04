@@ -1,0 +1,4 @@
+The life cycle of a file descriptor is:
+    - returned in '%eax' on success from the 'open' system call
+    - used in read or write system calls
+    - passed to the 'close' system call

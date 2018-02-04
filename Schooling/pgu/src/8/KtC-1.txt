@@ -1,0 +1,4 @@
+The advantages of shared libraries are that the library is easier to change and
+thus debug.  The disadvantages are that shared libraries can cause dependency
+issues such as not knowing if a program relies on the library or a program
+could rely on a bug in the library.

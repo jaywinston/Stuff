@@ -1,0 +1,30 @@
+Find an application on the computer you use regularly.  Try to locate a
+specific feature, and practice breaking that feature out into functions.
+Define the function interfaces between that feature and the rest of the
+program.
+
+ls -l:
+    list directory entries in long format
+
+    functions:
+        get_dir_ents, get_de_attributes, print
+
+    get_dir_ents:
+        parameter:
+            directory name
+        return value:
+            record of entries
+
+    get_de_attributes:
+        parameter:
+            dirent name
+        return value:
+            record of directory attributes
+
+    print:
+        parameters:
+            starting address
+            format spec
+        return value:
+            none
+

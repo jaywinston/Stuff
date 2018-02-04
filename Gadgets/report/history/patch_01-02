@@ -1,0 +1,70 @@
+15a16,24
+> # help
+> function help {
+> 	echo " If FILE is provided, then it assumed"
+> 	echo " to be a ledger and processed.  If no"
+> 	echo " year is found in the file name, then"
+> 	echo " user is prompted for a year."
+> }
+> 
+> 
+17a27
+> 	local opts pattern string
+21c31
+< 	grep $opts "$pattern" <<< "$string" > /dev/null &>1
+---
+> 	grep $opts "$pattern" <<< "$string" > /dev/null
+30c40
+< getopts hs opt
+---
+> getopts dh opt
+34c44
+< s)	usage && exit 0 ;;
+---
+> h)	usage && help && exit 0 ;;
+45c55
+< elif re_test -Ex '[0-9]{4}' $1 ; then
+---
+> elif [[ $1 =~ ^[0-9]{,4}$ ]]; then
+48a59,63
+> if [ ! $year ]; then
+> 	echo "**************** Report ****************"
+> 	read -p "Enter year > " year
+> fi
+> 
+51d65
+< 	clear
+53,56c67
+< 	if [ ! $year ]; then
+< 		echo "**************** Report ****************"
+< 		read -p "Enter year > " year
+< 	fi
+---
+> 	clear
+87a99,102
+> 		*)	echo "* Item and amount required" >&2
+> 			read -p "Press [Enter] key to continue.." 
+> 			continue
+> 			;;
+90c105
+< 		if re_test -Ex '^-?[[:digit:].]+' "$in1" ; then
+---
+> 		if [[ "$in1" =~ ^-?[[:digit:].]+$ ]]; then
+93c108
+< 		elif re_test -Ex '^-?[[:digit:].]+' "$in2" ; then
+---
+> 		elif [[ "$in2" =~ ^-?[[:digit:].]+$ ]]; then
+102c117,118
+< 		if re_test '[.].*[.]' $amount ; then
+---
+> 		if [[ $amount =~ '[.].*[.]' \
+> 		|| ! $amount =~ $-?[0-9.]+$ ]]; then
+143,144c159
+< 	re_test '[^-0-9.]' $amount && amount=
+< 	re_test '[.].*[.]' $amount && amount=
+---
+> 	[[ $amount =~ [.].*[.] || ! $amount =~ $-?[0-9.]$ ]] && amount=
+146c161
+< 	if re_test '^-' $amount ; then
+---
+> 	if [[ $amount =~ ^- ]]; then

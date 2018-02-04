@@ -1,0 +1,5 @@
+The difference between a data element of type int and int * is that int is a
+32-bit integer and int * is the address of a 32-bit integer (on x86 systems).
+In a program, the int is accessed by direct addressing of the element's symbol
+(e.g. pushl element) and the int * is accessed by immediate addressing of the
+element's symbol (e.g. pushl $element).

@@ -1,0 +1,232 @@
+#!/bin/bash
+
+# report: generate a simple financial report
+
+# usage: to stderr
+function usage
+{
+{
+	echo "$PROG: Usage: $PROG -c [RATE] -h [FILE|YEAR]"
+	echo
+	echo "  options:"
+	echo "  Only the first option is evaluated."
+	echo "  -c	convert amounts"
+	echo "  -h	show this message"
+} >&2
+}
+
+
+# help: to stderr
+function help
+{
+{
+	echo
+	echo " If FILE is provided, then it assumed"
+	echo " to be a ledger and processed.  If no"
+	echo " year is found in the file name, then"
+	echo " the user is prompted for a year."
+	echo
+	echo " Conversion is Local * RATE"
+} >&2
+}
+
+
+# help_screen: display a help screen from ui
+function help_screen
+{
+{
+	echo "TODO: help screen"
+} >&2
+}
+
+PROG=$(basename $0)
+
+ui=on  # user interface flag
+rate=  # conversion flag
+infile=
+# regexes
+year_chars='^[0-9]{1,4}$'
+amount_chars='[-]?[[:digit:]]+([.][[:digit:]]*)?'
+
+getopts :c:h opt
+
+case $opt in
+c)	[[ $OPTARG =~ ^\.?[[:digit:]]+ ]] && rate=$OPTARG || rate="ask user" ;;
+:)	rate="ask user" ;;
+h)	usage && help && exit 0 ;;
+\?)	if [ $OPTARG ] ; then
+		echo "Illegal option: $OPTARG" >&2
+		usage
+		exit 1
+	fi
+esac
+
+shift $((OPTIND - 1))
+
+testfile=${1:-$OPTARG}
+
+[ $testfile ] \
+&& if [ -f $testfile ] ; then
+	infile=$testfile
+	unset ui
+	year=$(basename $infile | cut -d- -f1)
+elif [[ $1 =~ $year_chars ]] ; then
+	year=$1
+else
+	echo "$PROG: file not found: '$testfile'" >&2
+	usage
+	exit 2
+fi
+
+until [[ $year =~ $year_chars ]] ; do
+	read -p "$PROG: Enter year > " year
+done
+
+# user interface
+if [ $ui ] ; then
+
+	infile=~/${year}-ledger
+	COLUMNS=$(tput cols)
+	margin=$((COLUMNS/2 + 3))
+	tab=$((COLUMNS / 5))
+
+	clear
+	printf '\e[4;1H'
+
+	while true ; do
+
+		# menu: to stderr
+		{
+			printf '\e[s\e[1;1H\e[0;46m\e[K'
+			printf "\e[30m%${margin}s\e[0m" 'Report'
+			printf '\e[2;1H\e[K'
+			printf "%s%${tab}s%${tab}s%${tab}s%${tab}s"    \
+				'q) quit' ' r) generate report'        \
+				' d) display ledger'  'e) edit ledger' \
+				' h) help'
+			printf '\e[3;1H\e[K\e[u'
+		} >&2
+		# end menu
+
+		# 'in2' is only to test for a menu entry.
+		read -p '* ' in1 in2
+
+		[ -z "$in2" ] \
+		&& case $in1 in
+		'')	continue ;;
+		q)	exit 0 ;;
+		r)	break ;;
+		d)	${PAGER:-less -N} $infile ; continue ;;
+		e)	${EDITOR:-vi} $infile ; continue ;;
+		h)	help_screen ; continue ;;
+		*)	echo "Inavlid option: '$in1'" >&2 ; continue ;;
+		esac
+
+		# The spaces are to handle if the amount is at the beginning
+		# or end of the line.
+		amount=$(grep -Eo "\s${amount_chars}\s" <<< " $in1 $in2 " \
+			| sed 's/\s//g')
+		if (( $(wc -l <<< $amount) > 1 )) ; then
+			{ echo "Invalid entry: '$in1 $in2'"
+			echo "Ambiguous amount" ; } >&2
+			continue
+		elif [ ! "$amount" ] ; then
+			{ echo "Invalid amount: '$in1 $in2'"
+			echo "Amount and item required" ; } >&2
+			continue
+		fi
+
+		item=$(sed "s/$amount/ /" <<< "$in1 $in2")
+
+		# record input
+		echo "$amount $item" >> $infile
+	done
+fi
+
+# generate the report
+
+
+# validate: validate that the argument is not empty
+validate () {
+	if [ -z "$1" ] ; then
+	{
+		echo "$PROG: invalid amount: line $nl"
+		echo
+		echo "    $line"
+		echo
+		echo "Format:  'amount item'"
+		echo "An amount and an item are required on each line."
+		echo "Amount is [-]DIGIT(S)[.][DIGIT(S)]"
+		echo
+		echo "exiting"
+	} >&2
+		exit 3
+	fi
+}
+
+insub=0
+outsub=0
+declare -A incomes outlays  # used to display total for each category of outlay
+
+while read -r line ; do
+	((++nl))  # line number
+	amount=$(cut -s -d' ' -f1 <<< "$line")
+	[[ "$amount" =~ $amount_chars ]] || validate
+	if [[ $amount =~ ^- ]] ; then
+		# 'amount' is negative
+		outsub=$(bc <<< "$outsub + $amount")
+		item=$(cut -s -d' ' -f2- <<< "$line" \
+			| tr '\t' ' ' | tr -s ' ' | tr ' ' _)
+		validate "$item"
+		outlays[$item]=$(bc <<< "${outlays[$item]:-0} + $amount")
+	else
+		# 'amount' is positive
+		insub=$(bc <<< "$insub + $amount")
+		item=$(cut -s -d' ' -f2- <<< "$line" \
+			| tr '\t' ' ' | tr -s ' ' | tr ' ' _)
+		validate "$item"
+		incomes[$item]=$(bc <<< "${incomes[$item]:-0} + $amount")
+	fi
+done < $infile
+
+
+# round: round to the nearest cent
+function round {
+	whole=$(cut -d. -f1 <<< $1)
+	fract=$(cut -d. -f2 <<< $1)
+	cent=${fract::2}
+	mil=${fract:2:1} 
+	[[ ${cent:=00} =~ [0-9]{2} ]] || cent+=0
+	amount="${whole:-0}.${cent}"
+	[ ${mil:-0} -ge 5 ] && amount=$(bc <<< "$amount + 0.01")
+	printf -- "$amount"
+}
+
+if [ -n "$rate" ] ; then
+	if [ "$rate" = "ask user" ] ; then
+		echo "Conversion is Local * Rate" >&2
+		read -p "Enter exchange rate for $year > " rate
+	fi
+	insub=$(round $(bc <<< "$insub * $rate"))
+	outsub=$(round $(bc <<< "$outsub * $rate"))
+	for i in "${!outlays[@]}" ; do
+		outlays[$i]=$(round $(bc <<< "${outlays[$i]} * $rate"))
+	done
+fi
+
+net=$(bc <<< "$insub + $outsub")  # outsub is stored as a negative int
+
+# display the report and save it in a file
+{
+	printf "*** Report for %4d ***\n.......................\n" $year
+	printf "Income:%16s\nOutlay:%16s\n" "$insub" "${outsub#-}"
+	for item in "${!outlays[@]}" ; do
+		printf " %s:%$((21-${#item}))s\n" \
+			"$(tr '_' ' ' <<< $item)" \
+			"${outlays[$item]#-}"
+	done
+	echo "......................."
+	printf "Net Total:%13s\n" "$net"
+
+} | tee ~/${year}-report
+

@@ -1,0 +1,4 @@
+The standard file descriptors are:
+    - 0  stdin:  used to provide input to a running program
+    - 1  stdout: used to display output from a running program
+    - 2  stderr: used to display error messages from a running program

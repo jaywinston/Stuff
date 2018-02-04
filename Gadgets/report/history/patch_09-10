@@ -1,0 +1,17 @@
+33a34,41
+> # help_screen: display a help screen from ui
+> function help_screen
+> {
+> {
+> 	echo "TODO: help screen"
+> } >&2
+> }
+> 
+91c99
+< 			printf "\e[1;30m%${margin}s\e[0m" 'Report'
+---
+> 			printf "\e[30m%${margin}s\e[0m" 'Report'
+111c119
+< 		h)	echo "TODO: help screen" ; continue ;;
+---
+> 		h)	help_screen ; continue ;;

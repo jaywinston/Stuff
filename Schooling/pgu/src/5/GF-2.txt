@@ -1,0 +1,151 @@
+Error results for  'open', 'close', 'read', and 'write':
+
+    open
+        EACCESS
+            This is caused by lack of permission for the running process.
+        EDQUOT
+            This occurs when a file is to be created, it does not exist, and
+            the user's quota of inodes or disk blocks has been exhausted.
+        EEXIST
+            This occurs when O_CREAT and O_EXCL are specified and the file
+            already exists.  O_EXCL is an option for returning an error if the
+            file already exists.  It only has an effect if O_CREAT is also
+            used.
+        EFAULT
+            This occurs when a filename is given that is outside of the
+            program's accessible address space.
+        EFBIG
+            See EOVERFLOW.
+        EINTR
+            This occurs when the call was interrupted by a signal handler.
+        EINVAL
+            This can occur on three different errors.  The O_DIRECT option was
+            used on a filesystem that does not support it, an invalid option
+            was used, or O_TMPFILE option was used without O_WRONLY or O_RDWR.
+        EISDIR
+            This occurs on two errors. Either the filename refers to a
+            directory and the access requested involved writing or O_TMPFILE
+            with O_WRONLY or O_RDWR were used and the kernel version does not
+            provide O_TMPFILE.
+        ELOOP
+            This can occur when either too many symbolic links were encountered
+            in resolving a pathname or the file name given was a symbolic link
+            and the option O_NOFOLLOW but not O_PATH was used.
+        EMFILE
+            This occurs when the process's limit of open files has been
+            reached.
+        ENAMETOOLONG
+            This occurs when the file name given was too long.
+        ENFILE
+            This occurs when the system-wide limit for open files has been
+            reached.
+        ENODEV
+            This occurs when the file name refers to device special file but
+            no corresponding device exists.
+        ENOENT
+            This can occur in two situations.  One is when O_CREAT is not set
+            and the named file does not exist, a component in the pathname does
+            not exist or is a broken symbolic link, the file name refers to a
+            non-existent directory, or O_TMPFILE with O_WRONLY or O_RDWR were
+            specified but the kernel version does not support O_TMPFILE
+            functionality.
+        ENOMEM
+            This occurs when there is not enough kernel memory.
+        ENOSPC
+            This occurs when the file was to be created but the device has no
+            room for the new file.
+        ENOTDIR
+            This occurs when either a component used as a directory in a
+            pathname is not a pathname or O_DIRECTORY was used and the file
+            did not refer to a directory.
+        ENXIO
+            This occurs when either an option, O_NONBLOCK or O_WRONLY was used,
+            the file name refers to a FIFO, and no process has the file open
+            for reading or the file is a device special file and no
+            corresponding device exists.
+        EOPNOTSUPP
+            This occurs when the filesystem containing the named file does not
+            support O_TMPFILE.
+        EOVERFLOW
+            This occurs when the file given refers to a file that is too large
+            to be opened.
+        EPERM
+            This occurs when the O_NOATIME option was used but the effective
+            user id of the caller did not match the owner of the file and the
+            caller was not privileged.
+        EROFS
+            This occurs when the file given is in a read-only filesystem and
+            write access was requested.
+        ETXTBSY
+            This occurs when the given file refers to an executable image which
+            is currently being executed and write access was requested.
+        EWOULDBLOCK
+            This occurs when O_NONBLOCK was used and an incompatable lease was
+            held on the file.  A lease is a mechanism that enables a process to
+            prepare for another process to write to or truncate a file that was
+            opened by the first process.
+    close
+        EBADF
+            This occurs when the file descriptor does not refer to a valid open
+            file.
+        EINTR
+            This occurs when the call to "close" was interrupted by a signal.
+        EIO
+            This occurs when an I/O error occured.
+    read
+        EAGAIN
+            This occurs when the file descriptor refers to a file other than a
+            socket and has been marked nonblocking and the read would block.
+            Nonblocking (O_NONBLOCK) is that no operation on the file, even the
+            "open" call, will cause the calling process to wait.
+        EAGAIN or EWOULDBLOCK
+            This occurs when the file descriptor refers to a socket and has
+            been marked nonblocking and the read would block.
+        EBADF
+            This occurs if the file descriptor is not valid or is not open for
+            reading.
+        EFAULT
+            This occurs when the given buffer address is outside of the
+            process's address space.
+        EINTR
+            This occurs when the "read" call was interrupted by a signal.
+        EINVAL
+            This occurs when either the file descriptor refers to an object
+            unsuitable for reading or the file was opened with the O_DIRECT
+            option, and either the address for the buffer or the length for the
+            buffer given or the file offset is not suitably aligned.
+        EIO
+            This occurs when an I/O error occurs.
+        EISDIR
+            This occurs when the file descriptor refers to a directory.
+    write
+        EAGAIN or EWOULDBLOCK
+        EBADF
+            see "read"
+        EDESTADDRREQ
+            This occurs when the file descriptor refers to a datagram socket
+            for which a peer address has not been set using "connect".
+        EDQUOT
+            see "open"
+        EFAULT
+            see "read"
+        EFBIG
+            This occurs when an attempt was made to write a file that exceeds
+            the maximum file size or to write at a position past the maximum
+            allowed offset.
+        EINTR
+            This occurs when the call was interrupted before any data was
+            written.
+        EINVAL
+            see "read"
+        EIO
+            This occurs when a low-level I/O error occurred while modifying the
+            inode.
+        ENOSPC
+            see "open"
+        EPERM
+            This occurs when the operation was prevented by a file seal.
+            A file seal limits the set of allowed operations on a given file.
+        EPIPE
+            This occurs when the given gile descriptor refers to a pipe or
+            socket whose reading end is closed.

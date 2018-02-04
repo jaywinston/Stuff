@@ -1,0 +1,5 @@
+Stubs and drivers are for testing the program before it is usable.  Stubs are
+functions that just return a usable value without any processing.  They are
+used in place functions that are not developed yet but are called by the
+function being developed now.  Drivers are functions that test funtions being
+developed.  They load the function, supply it with data and check the results.

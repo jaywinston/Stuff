@@ -1,0 +1,3 @@
+The difference between the .data and .bss sections is that in the .data
+section, the storage can be initiated.  But in the .bss section, the storage
+can not be initiated.

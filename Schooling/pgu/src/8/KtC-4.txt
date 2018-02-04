@@ -1,0 +1,1 @@
+ld (-L .)? -dynamic-linker /lib/ld-linux.so.2 -lkramer foo.o bar.o (-o <name>)?

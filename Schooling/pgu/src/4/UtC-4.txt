@@ -1,0 +1,11 @@
+The problems that would arise without a standard calling convention could
+be essentially one, increased likelyhood of human error.  Were every function
+to have its own calling convention, such would become an additional part of its
+interface.  And the added parameter of its use would add another opportunity
+for error.  The calling convention seems especially prone to error in that the
+method of calling a function is a very low-level idea, usually given to the
+system.  In the case of assembly language, the convention relieves some of that
+burden from the programmer.  So leaving the programmer to remember a different
+convention for every function could easily be overwhelming and thus prone to
+error.  The results could be severe, from unexpected output to data loss to
+system corruption.

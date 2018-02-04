@@ -1,0 +1,18 @@
+power.s test cases:
+    The text precludes some of these tests but...
+
+    - decimal numbers
+    - negative numbers
+    - negative decimal numbers
+    - zero
+
+    all cases in either and both parameters in all combinations
+
+    Within the constraints of the text...
+
+    - all powers are positive integers of varying value
+    - bases of:
+        first positive, second positive
+        first positive, second negative
+        first negative, second positive
+        first negative, second negative

@@ -1,0 +1,2 @@
+If the error reporting function fails, I would investigate why it did because
+such a failure would imply a potentially serious problem with the program.

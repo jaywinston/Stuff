@@ -1,0 +1,7 @@
+53c53
+< [ $opt ] || shift `expr $OPTIND - 1`
+---
+> [ $opt ] || shift  `expr $OPTIND - 1`
+172,173d171
+< 
+< alias printf='printf -- '

@@ -1,0 +1,5 @@
+I think it balances out.  The larger set would make the system larger and
+more vulnerable to bugs but the applications could be smaller and more robust
+(as robust as the system).  The smaller set could make a smaller and more
+robust system but the applications would be larger and more prone to bugs.
+Perhaps it's a decision based on available resources.

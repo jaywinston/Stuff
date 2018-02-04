@@ -1,0 +1,31 @@
+#!/bin/bash
+
+source io_mod
+
+(
+    function cleanup {
+        printf '\033[u\f\f\f\f\f\f\f\f\n'
+        tput cnorm
+        exit
+    }
+
+    tput civis
+    putchar "${charset[0x20]}"
+    printf '\b\b\b\b\b\b\b\b\033[s'
+    trap cleanup SIGTERM SIGINT
+    ((x=y=0))
+    while : ; do
+        n=$(( $(date +'%N' | sed 's/^0*//') / 10000000 ))
+        if ((n==00 || n==50)) ; then
+        for i in $(date +'%H %M %S') ; do
+            putchar "${charset[0x$(printf ${i::1} | xxd -p)]}"
+            putchar "${charset[0x$(printf ${i:1}  | xxd -p)]}"
+            ((++x%3)) && ((h=++y%4?0x3a:0x20)) && putchar "${charset[h]}"
+        done
+        for ((q=0;q<64;q++)); do
+            printf '\b'
+        done
+        sleep 0.06
+        fi
+    done
+) 2>/dev/null

@@ -1,0 +1,30 @@
+abcdefghijklmnopqrstuvwxyz
+a bcdefghijklmnopqrstuvwxyz
+a  bcdefghijklmnopqrstuvwxyz
+abcdefghi jklmnopqrstuvwxyz
+abcdefghi  jklmnopqrstuvwxyz
+abcdefghij klmnopqrstuvwxyz
+abcdefghij  klmnopqrstuvwxyz
+abcdefghijk lmnopqrstuvwxyz
+abcdefghijk  lmnopqrstuvwxyz
+abcdefghijklmno pqrstuvwxyz
+abcdefghijklmno  pqrstuvwxyz
+abcdefghijklmnopqrst uvwxyz
+abcdefghijklmnopqrst  uvwxyz
+abcdefghijklmnopqrst     uvwxyz
+abcdefghijklmnopqrst     uvwxyX         z
+abcdefghijklmnopqrstuvwxyz
+a   bcdefghijklmnopqrstuvwxyz
+a       bcdefghijklmnopqrstuvwxyz
+abcdefghi   jklmnopqrstuvwxyz
+abcdefghi       jklmnopqrstuvwxyz
+abcdefghij  klmnopqrstuvwxyz
+abcdefghij      klmnopqrstuvwxyz
+abcdefghijk lmnopqrstuvwxyz
+abcdefghijk     lmnopqrstuvwxyz
+abcdefghijklmno pqrstuvwxyz
+abcdefghijklmno     pqrstuvwxyz
+abcdefghijklmnopqrst    uvwxyz
+abcdefghijklmnopqrst        uvwxyz
+abcdefghijklmnopqrst                    uvwxyz
+abcdefghijklmnopqrst                    uvwxyX                                  z

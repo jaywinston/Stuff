@@ -1,0 +1,129 @@
+#!/bin/bash
+
+# report: generates a simple financial report.
+
+ui=on    # user interface flag
+usd=off  # US dollar flag
+
+# handle parameters
+if [ -n "$*" ]; then
+	for param in "$@"; do
+		case $param in
+		-d)	usd=on ;;
+		*)	if [ -f $param ]; then
+				infile=$param
+				ui=off
+				year=$(basename $infile | cut -d "-" -f 1)
+			else
+				echo "report: No such file: '$param'"
+				echo "report: usage: report [-d] [file]"
+				echo
+				echo -e "options\n -d\tconvert to US dollars"
+				exit 1
+			fi
+			;;
+		esac
+	done
+fi
+
+# user interface
+if [ $ui = on ]; then
+	clear
+	echo "**************** Report ****************"
+	read -p "Enter year > " year
+
+	while [ "$input" != r ]; do
+		clear
+		echo "**************** Report ****************"
+		echo "Enter 'q' to quit"
+		echo "Enter 'r' to generate the report"
+		echo "Enter 'd' to display the ledger"
+		echo "Enter 'v' to view the last five entries"
+		echo
+		read -p "Enter item and amount > " input
+		case "$input" in
+		q)	exit 0  ;;
+		r)	continue  ;;  # don't record `r' to the ledger
+		d)	less -N ~/${year}-ledger
+			continue  # or `d'
+			;;
+		v)	cat -n ~/${year}-ledger | tail -n 5 
+			read -p "Press [Enter] key to continue.."
+			continue  # or `v'
+			;;
+		esac
+		item=$(grep '[[:alpha:]]' <<< "$input")
+		nan='[^[:alpha:][:punct:]]*'  # not a number
+		amount=$(grep -oE "${nan}-?[0-9]+\.?[0-9]*${nan}" <<< "$input")
+		if [ -z "$item" -o -z "$amount" -o "$item" = "$amount" ]; then
+			echo "Item and amount required"
+			read -p "Press [Enter] key to continue.." 
+			continue
+		fi
+		echo $input >> ~/${year}-ledger
+	done
+	infile=~/${year}-ledger
+fi
+
+# generate the report
+insub=0
+outsub=0
+declare -A outlays  # used to display total for each category of outlay
+clear
+echo "Generating report.."
+while read -r line; do
+	((++lineno))
+	amount=$(grep -oE '\-?[0-9]+\.?[0-9]*' <<< $line)
+	if [ $(grep '^\-' <<< $amount) ]; then
+		outsub=$(bc <<< "$outsub + $amount")
+		item=$(grep -o '[[:graph:]]*[[:alpha:]]\+[[:graph:]]*' \
+			<<< $line)
+		if [ -z "$item" ]; then
+			echo "report: bad entry: line $lineno"
+			exit 2
+		fi
+		outlays[$item]=$(bc <<<  "${outlays[$item]:-0} + $amount")
+	else
+		insub=$(bc <<< "$insub + $amount")
+	fi
+done < $infile
+
+# round: round to the nearest cent
+round () {
+	whole=$(cut -d '.' -f 1 <<< $1)
+	fract=$(cut -d "." -f 2 <<< $1)
+	cent=$(printf "%02d" "${fract:0:2}")
+	dollar="${whole:-0}.${cent}"
+	milli=${fract:2:1} 
+	[ ${milli:-0} -ge 5 ] && dollar=$(bc <<< "$dollar + 0.01")
+	echo -n "$dollar"
+}
+
+if [ $usd = on ]; then
+	clear
+	read -p "Enter exchange rate for $year > " rate
+	insub=$(round $(bc <<< "$insub * $rate"))
+	outsub=$(round $(bc <<< "$outsub * $rate"))
+	for d in "${!outlays[@]}"; do
+		outlays[$d]=$(round $(bc <<< "${outlays[$d]} * $rate"))
+	done
+fi
+
+net=$(bc <<< "$insub + $outsub")
+
+clear
+
+# save the report in a file
+{
+	echo -e "*** Report for $year ***\n......................."
+	printf "Income:%16s\nOutlay:%16s\n" "$insub" "${outsub#-}"
+	for i in "${!outlays[@]}"; do
+		printf " %s:%$((21-${#i}))s\n" "$i" "${outlays[$i]#-}"
+	done
+	echo "......................."
+	printf "Net Total:%13s\n" "$net"
+
+} > ~/${year}-report
+
+cat ~/${year}-report  # display the report
+

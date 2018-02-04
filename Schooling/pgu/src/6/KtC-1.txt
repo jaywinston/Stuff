@@ -1,0 +1,5 @@
+A record is a use of storage where information is represented as data in
+defined way.  i.e. a record is a block of storage where there is a defined way
+to access the information in it.  e.g. a record could represent information
+about a person where the last name starts at the 41st byte from the start of
+the record and is 40 bytes long.

@@ -1,0 +1,2 @@
+The advantage of fixed-length records over variable-length records is that the
+fields of a fixed-length record are more easily accessed.

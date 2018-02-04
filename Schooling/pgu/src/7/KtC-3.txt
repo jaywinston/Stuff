@@ -1,0 +1,5 @@
+Corner cases are cases at and around the boundaries of valid input or
+execution of a program.
+
+0, 1, -1, -257, 257, the upper and lower limits of valid input - on, 1 above,
+and one below of each

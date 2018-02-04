@@ -1,0 +1,11 @@
+okular
+
+    opened binary file - gave an error window and opened an empty reader window
+    no access to reader-window controls when popup is open
+    put invalid values in options with number fields - quietly changed them to
+                                                       valid values
+    put delimiter characters in options with string fields - accepted the input
+
+    Most of the input is in menu form and the menus are disabled when there is
+    not a valid object.  Some of the options take arbitrary input and I
+    couldn't break them.  But I don't know how to get the editor to open.

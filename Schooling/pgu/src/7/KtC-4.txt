@@ -1,0 +1,3 @@
+User testing is important because users usually find ways to misuse a program
+that they didn't write, i.e. they'll find bugs that the author of the program
+might not.

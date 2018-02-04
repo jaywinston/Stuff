@@ -1,0 +1,1 @@
+The ldd command shows shared object dependencies.

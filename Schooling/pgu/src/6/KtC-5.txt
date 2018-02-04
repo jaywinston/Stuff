@@ -1,0 +1,7 @@
+- "incl record_buffer + RECORD_AGE" increments the number stored in the four
+  bytes starting at the memory location found by adding the address of
+  'record_buffer' and the number represented by 'RECORD_AGE'.
+- direct
+- 1
+- "record_buffer + RECORD_AGE" is handled by the assembler and "incl ..." is
+  handled when the program is run.

@@ -1,0 +1,3 @@
+One might want to split up a project into multiple source files to divide the
+project into sections of related code.  That way, the project code can be kept
+organized which could help in developing and maintaining the project.

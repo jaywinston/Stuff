@@ -1,0 +1,5 @@
+155,156c155
+< 	[[ "$amount" =~ $amount_chars ]] || unset amount
+< 	validate "$amount"
+---
+> 	[[ "$amount" =~ $amount_chars ]] || validate

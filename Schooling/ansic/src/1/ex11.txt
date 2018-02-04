@@ -1,0 +1,5 @@
+To test the word count program, I would pass it various strings.
+
+The empty string, a string with several of each delimiter in sequence, with
+combinations of delimiters in sequence, and with no delimiters are most likely
+to uncover any bugs if there are any.

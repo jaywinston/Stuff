@@ -1,0 +1,3 @@
+Constants are included in multiple assembly source files by defining the
+constants one file and using the '.include' assembler directive to include
+that file in other files.

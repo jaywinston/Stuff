@@ -1,0 +1,11 @@
+    Of the methods, a special number, an ending address, or a length count,
+which to use to find the end of list could depend on the context.  If the list
+is completely arbitrary, than a special number could be used assuming the list
+is formed that way.  If the list starts at an unknown address but the ending
+address is known, than the ending address could be used.  If the length of the
+list is known, than the length count could be the best as it saves room in
+memory by not using the last item in the list to mark the end.
+    If the list were sorted, the ending address or length count would
+facilitate going straight to largest number without the loop (assuming the list
+is sorted in ascending order, otherwise the first item would be the largest).
+As such, the ending address would need fewer instructions.

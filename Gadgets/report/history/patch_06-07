@@ -1,0 +1,102 @@
+40a41
+> 
+44a46,50
+> \?)	if [ $OPTARG ] ; then
+> 		echo "Illegal option: $OPTARG" >&2
+> 		usage
+> 		exit 1
+> 	fi
+47,53c53
+< if [[ $opt = \? && $OPTARG ]] ; then
+< 	echo "Illegal option: $OPTARG" >&2
+< 	usage
+< 	exit 1
+< fi
+< [[ $opt =~ [:c] ]] && unset opt
+< [ $opt ] || shift  `expr $OPTIND - 1`
+---
+> shift  `expr $OPTIND - 1`
+69c69
+< 	read -p "Enter year > " year
+---
+> 	read -p "$PROG: Enter year > " year
+75,77d74
+< 	# pause: wait for user response
+< 	function pause { read -p "Press [Enter] key to continue" ; }
+< 
+78a76,78
+> 	COLUMNS=$(tput cols)
+> 	margin=$((COLUMNS/2 - 3))
+> 	tab=$((COLUMNS / 5))
+80a81
+> 	printf '\e[4;1H'
+82c83
+< 	while [ 1 ] ; do
+---
+> 	while true ; do
+85d85
+< 		clear
+87,92c87,94
+< 			echo "**************** Report ****************"
+< 			echo "Enter 'q' to quit"
+< 			echo "Enter 'r' to generate the report"
+< 			echo "Enter 'd' to display the ledger"
+< 			echo "Enter 'v' to view the last five entries"
+< 			echo
+---
+> 			printf '\e[s\e[1;1H\e[0;46m\e[K'
+> 			printf "\e[1;30m%${margin}s\e[0m" 'Report'
+> 			printf '\e[2;1H\e[K'
+> 			printf "%s%${tab}s%${tab}s%${tab}s%${tab}s"  \
+> 				'q) quit' 'r) generate report'       \
+> 				'd) display ledger' 'e) edit ledger' \
+> 				'h) help'
+> 			printf '\e[3;1H\e[K\e[u'
+94c96,97
+< 		read -p "Enter amount and item > " in1 in2
+---
+> 		# 'in2' is only to test for a menu entry.
+> 		read -p '* ' in1 in2
+97d99
+< 		# Null 'in2' means a menu entry.
+100,112c102,108
+< 		q)	exit 0  ;;
+< 		r)	break  ;;
+< 		d)	less -N $infile
+< 			continue
+< 			;;
+< 		v)	cat -n $infile | tail -n5 >&2
+< 			pause
+< 			continue
+< 			;;
+< 		*)	echo "Inavlid option: '$in1'" >&2
+< 			pause
+< 			continue
+< 			;;
+---
+> 		'')	continue ;;
+> 		q)	exit 0 ;;
+> 		r)	break ;;
+> 		d)	${PAGER:-less -N} $infile ; continue ;;
+> 		e)	${EDITOR:-vi} $infile ; continue ;;
+> 		h)	echo 'TODO: help screen' ; continue ;;
+> 		*)	echo "Inavlid option: '$in1'" >&2 ; continue ;;
+115c111,112
+< 		amount=$(grep -Eo "\s${amount_chars}\s" <<< " $in1 $in2 " | sed 's/\s//g')
+---
+> 		amount=$(grep -Eo "\s${amount_chars}\s" <<< " $in1 $in2 " \
+> 			| sed 's/\s//g')
+118,119c115
+< 			echo "* amount and item required" ; } >&2
+< 			pause
+---
+> 			echo "amount and item required" ; } >&2
+178c174
+< 	cent=${fract:0:2}
+---
+> 	cent=${fract::2}
+188d183
+< 		[ $ui ] && clear
+200,201d194
+< 
+< [ $ui ] && clear

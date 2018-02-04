@@ -1,0 +1,146 @@
+1-1:
+- file ends in ".c"
+- a function called "main"
+- keywords: include
+- `include' preceded by '#'
+- included file surrounded by """" or "<>"
+- argument list in parentheses before '{'
+- '{' before statements
+- '\' followed by valid escape character
+- '}' after statements
+
+1-2:
+- operators: =, <=, *, -, /, +
+- comments: closed, if they are in illegal places, they will generate
+    different errors
+- all variables declared before use
+- keywords: int, float, char, short, long, double, while
+- statements terminated by semicolon
+- `while' followed by parentheses
+
+1-3:
+- keywords: for
+- `for' followed by parentheses
+- `for' expression contains two ';'
+
+1-4:
+- keywords: define
+- `define' preceded by '#'
+
+1-5:
+- operators: !=, ++, --, ==, ||, &&
+- keywords: if, else
+- single quotes are a character constant, double quotes are a string constant,
+    escape sequences are one character
+
+1-6:
+- array indices are within bounds
+- operators: <, >=
+
+1-7:
+- functions declared before used
+- functions: type, name, parentheses, proper parameter declarations, braces
+- return type matches function type
+- function prototye matches definition, prarmeters do not need to be named
+    in the prototype
+
+1-8:
+- operators: >
+
+1-9:
+- keywords: void
+
+1-10:
+- external variables defined only once
+- keywords: extern
+- external variables properly declared
+
+balanced parentheses, brackets, braces quotes, comments
+keywords:
+    include, int, float, char, short, long, double, while, for, define, if,
+    else, void, extern
+operators:
+    =, <=, *, -, /, +, !=, ++, --, ==, ||, &&, <, >=, >
+
+points:
+- file ends in ".c"
+
+- a function called "main"
+
+- `include', `define'  preceded by '#'
+- included file surrounded by """" or "<>"
+
+- functions: type, name, parentheses, proper parameter declarations, braces
+- functions declared before used
+- return type matches function type
+- function prototye matches definition, prarmeters do not need to be named
+    in the prototype
+
+- statements terminated by semicolon
+- `while', `for' followed by parentheses
+- `for' expression contains two ';'
+
+- single quotes are a character constant, double quotes are a string constant,
+    escape sequences are one character
+- '\' followed by valid escape character
+
+- all variables declared before use
+- array indices are within bounds
+- external variables defined only once
+- external variables properly declared
+
+- balanced parentheses, brackets, braces quotes, comments
+
+The syntax to be checked in this program is only according to rules that have
+been covered in the book so far. Also, as in the other exercises, I am only
+using concepts that have been covered in the book so far.
+
+Ideas:
+My first idea is to approach this by reading characters. I think that reading
+lines would unnecessarily complicate the program.
+
+This program implies state as there are characters and stings that have
+different semantics depending on context, i.e. "/*" inside of a string literat
+is just part of the string while elseware, it indicates the beginning of a
+comment. One solution to keep state is an integer array with each state defined
+as an integer literal - i.e. "#define STRING 1" - and use the array as a stack.
+Another solution is to implement each state as a function.
+
+points:
+- file ends in ".c"
+    - This would require the argument to the program being visible within the
+      program which has not been covered in the book.
+
+- a function called "main"
+    - a flag to be read after the file has been read. if false, `NO_MAIN' error
+
+- `include', `define'  preceded by '#'
+    - '#' initiating a state with a special set of keywords
+      and terminated by a newline
+
+- included file surrounded by """" or "<>"
+    - `include' initiates a state which looks for '"' or '<' and is terminated
+      by a second '"' or '>' respectively. Perhaps another state is needed to
+      test for both opening and closing characters.
+
+- functions: type, name, parentheses, proper parameter declarations, braces
+- functions declared before used
+- return type matches function type
+- function prototye matches definition, prarmeters do not need to be named
+    in the prototype
+
+- statements terminated by semicolon
+- `while', `for' followed by parentheses
+- `for' expression contains two ';'
+
+- single quotes are a character constant, double quotes are a string constant,
+    escape sequences are one character
+- '\' followed by valid escape character
+
+- all variables declared before use
+- array indices are within bounds
+- external variables defined only once
+- external variables properly declared
+
+- balanced parentheses, brackets, braces quotes, comments
+

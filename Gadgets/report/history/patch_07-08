@@ -1,0 +1,3 @@
+149,150d148
+< [ $ui ] && clear && echo "Generating report.." >&2
+< 

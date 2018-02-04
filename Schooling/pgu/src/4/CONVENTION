@@ -1,0 +1,6 @@
+Paramters are pushed to the stack from last to first.
+Return value is put in place of the first parameter.
+All registers are undefined.
+
+I would push the return address before the parameters, pop all parameters and
+push the return value but I don't know how to access the return address.

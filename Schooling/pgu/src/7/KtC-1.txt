@@ -1,0 +1,7 @@
+The reason that programmers have trouble with scheduling is in fact many.  Some
+of them are that they don't schedule meetings or other non-coding activities
+that make up every day, they underestimate feedback times, they don't always
+understand the full scope of what they are producing, they often have to
+estimate a schedule on a totally different kind of project than they are used
+to, and they often underestimate the amount of time it takes to get a program
+fully robust.
