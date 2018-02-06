@@ -1,31 +1,24 @@
-all: links ../../lib/6                                                         \
+all: lib                                                         \
 	add-year add-year-2 add-year-3 add-year-4 add-year-5 add-year-6      \
-	unlink #largest-age largest-age-2 read-records read-records-2 read-records-3 \
+	#largest-age largest-age-2 read-records read-records-2 read-records-3 \
 	read-records-4 record-input record-loop record-loop-2 return-records \
 	smallest-age smallest-age-2 write-records write-records-2            \
 	write-records-3 write-records-4  \
 	
-links:
+includes:
 	@[ -f linux.s ] || ln -v ../../src/6/linux.s 
 	@[ -f record-def.s ] || ln -v ../../src/6/record-def.s 
 	@[ -f record-def-2.s ] || ln -v ../../src/6/record-def-2.s
-unlink:
+rmincludes:
 	@[ ! -f linux.s ] || rm -v linux.s
 	@[ ! -f record-def.s ] || rm -v record-def.s
 	@[ ! -f record-def-2.s ] || rm -v record-def-2.s
 
-.PHONY: all links unlink
+.PHONY: all includes rmincludes lib
 
-../../lib/6:
-	touch ../../lib/6
-	as -o ../../lib/6/compare-strings.o ../../src/6/compare-strings.s
-	as -o ../../lib/6/count-chars.o ../../src/6/count-chars.s
-	as -o ../../lib/6/exit-on-err.o ../../src/6/exit-on-err.s
-	as -o ../../lib/6/read-record.o ../../src/6/read-record.s
-	as -o ../../lib/6/read-record-2.o ../../src/6/read-record-2.s
-	as -o ../../lib/6/write-newline.o ../../src/6/write-newline.s
-	as -o ../../lib/6/write-record.o ../../src/6/write-record.s
-	as -o ../../lib/6/write-record-2.o ../../src/6/write-record-2.s
+lib:
+	#touch ../../lib/6
+	$(MAKE) -C ../../lib/6
 
 add-year: ../../src/6/add-year.s
 	as -o ../../lib/6/add-year.o ../../src/6/add-year.s
