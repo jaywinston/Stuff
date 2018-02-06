@@ -1,9 +1,7 @@
 all: ansic pgu
-.PHONY: all
+.PHONY: all ansic pgu
 
-ansic: ansic/Makefile
+ansic:
 	$(MAKE) -C ansic
-	touch ansic/Makefile
-pgu: pgu/Makefile
+pgu:
 	$(MAKE) -C pgu
-	touch pgu/Makefile
