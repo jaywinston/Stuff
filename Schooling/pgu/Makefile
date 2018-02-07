@@ -14,6 +14,7 @@ all: 3 4 5 6 7 8
 6:
 	$(MAKE) -C bin/6
 7:
+	$(MAKE) -C lib/7
 	$(MAKE) -C bin/7
 8:
 	$(MAKE) -C lib/8
