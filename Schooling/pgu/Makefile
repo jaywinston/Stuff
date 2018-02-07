@@ -2,7 +2,7 @@ infile ?= $(wildcard *.s)
 objfile = $(infile:.s=.o)
 binfile = $(objfile:.o=)
 
-all: 3 4 5 6# 7 8
+all: 3 4 5 6 7# 8
 .PHONY: all
 
 3:

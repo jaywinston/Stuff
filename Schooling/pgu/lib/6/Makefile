@@ -34,48 +34,48 @@ write-record.o: ../../src/6/write-record.s
 	as -o write-record.o ../../src/6/write-record.s
 write-record-2.o: ../../src/6/write-record-2.s
 	as -o write-record-2.o ../../src/6/write-record-2.s
-add-year: ../../src/6/add-year.s
+add-year.o: ../../src/6/add-year.s
 	as -o add-year.o ../../src/6/add-year.s
-add-year-2: ../../src/6/add-year-2.s
+add-year-2.o: ../../src/6/add-year-2.s
 	as -o add-year-2.o ../../src/6/add-year-2.s
-add-year-3: ../../src/6/add-year-3.s
+add-year-3.o: ../../src/6/add-year-3.s
 	as -o add-year-3.o ../../src/6/add-year-3.s
-add-year-4: ../../src/6/add-year-4.s
+add-year-4.o: ../../src/6/add-year-4.s
 	as -o add-year-4.o ../../src/6/add-year-4.s
-add-year-5: ../../src/6/add-year-5.s
+add-year-5.o: ../../src/6/add-year-5.s
 	as -o add-year-5.o ../../src/6/add-year-5.s
-add-year-6: ../../src/6/add-year-6.s
+add-year-6.o: ../../src/6/add-year-6.s
 	as -o add-year-6.o ../../src/6/add-year-6.s
-largest-age: ../../src/6/largest-age.s
+largest-age.o: ../../src/6/largest-age.s
 	as -o largest-age.o ../../src/6/largest-age.s
-largest-age-2: ../../src/6/largest-age-2.s
+largest-age-2.o: ../../src/6/largest-age-2.s
 	as -o largest-age-2.o ../../src/6/largest-age-2.s
-read-records: ../../src/6/read-records.s
+read-records.o: ../../src/6/read-records.s
 	as -o read-records.o ../../src/6/read-records.s
-read-records-2: ../../src/6/read-records-2.s
+read-records-2.o: ../../src/6/read-records-2.s
 	as -o read-records-2.o ../../src/6/read-records-2.s
-read-records-3: ../../src/6/read-records-3.s
+read-records-3.o: ../../src/6/read-records-3.s
 	as -o read-records-3.o ../../src/6/read-records-3.s
-read-records-4: ../../src/6/read-records-4.s
+read-records-4.o: ../../src/6/read-records-4.s
 	as -o read-records-4.o ../../src/6/read-records-4.s
-record-input: ../../src/6/record-input.s
+record-input.o: ../../src/6/record-input.s
 	as -o record-input.o ../../src/6/record-input.s
-record-loop: ../../src/6/record-loop.s
+record-loop.o: ../../src/6/record-loop.s
 	as -o record-loop.o ../../src/6/record-loop.s
-record-loop-2: ../../src/6/record-loop-2.s
+record-loop-2.o: ../../src/6/record-loop-2.s
 	as -o record-loop-2.o ../../src/6/record-loop-2.s
-return-records: ../../src/6/return-records.s
+return-records.o: ../../src/6/return-records.s
 	as -o return-records.o ../../src/6/return-records.s
-smallest-age: ../../src/6/smallest-age.s
+smallest-age.o: ../../src/6/smallest-age.s
 	as -o smallest-age.o ../../src/6/smallest-age.s
-smallest-age-2: ../../src/6/smallest-age-2.s
+smallest-age-2.o: ../../src/6/smallest-age-2.s
 	as -o smallest-age-2.o ../../src/6/smallest-age-2.s
-write-records: ../../src/6/write-records.s
+write-records.o: ../../src/6/write-records.s
 	as -o write-records.o ../../src/6/write-records.s
-write-records-2: ../../src/6/write-records-2.s
+write-records-2.o: ../../src/6/write-records-2.s
 	as -o write-records-2.o ../../src/6/write-records-2.s
-write-records-3: ../../src/6/write-records-3.s
+write-records-3.o: ../../src/6/write-records-3.s
 	as -o write-records-3.o ../../src/6/write-records-3.s
-write-records-4: ../../src/6/write-records-4.s
+write-records-4.o: ../../src/6/write-records-4.s
 	as -o write-records-4.o ../../src/6/write-records-4.s
 
