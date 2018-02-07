@@ -1,4 +1,4 @@
-  .include "src/6/linux.s"
+  .include "linux.s"
 #  .include "record-def.s"
 
   .section .data
