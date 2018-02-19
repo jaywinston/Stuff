@@ -1,4 +1,10 @@
- # Chapter 3: Use the Concepts: point 4
+ #CHAPTER 8 - Use the Concepts - 1
+ #            Rewrite one or more of the programs from the previous chapters to
+ #            print their results to the screen using printf rather than
+ #            returning the result as the exit status code.  Also, make the
+ #            exit status code be 0.
+ #
+
  # Modify the maximum program to use an ending address rather than the number
  # 0 to know when to stop.
  #
