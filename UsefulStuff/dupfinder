@@ -1,0 +1,40 @@
+#!/bin/ash
+
+## This is a filter written by Jack Wallens as appears on linux.com, slightly
+## modified by me.  I changed the fields for the calls to 'cut' from <n>-100
+## to <n>- to handle an arbitrary number of fields.
+##
+## find -not -empty -type f -printf "%sn" | sort -rn | uniq -d | xargs -I{} -n1 find -type f -size {}c -print0 | xargs -0 md5sum | sort | uniq -w32 --all-repeated=separate | cut -f3- -d ' ' | tr 'n.' 't.' | sed 's/tt/n/g' | cut -f2- | tr 't' 'n' | perl -i -pe 's/([ (){}-])/$1/g' | perl -i -pe 's/'''/'''/g' | xargs -pr rm -vi
+##
+##
+
+##
+## Here, I modified it for my needs.
+##
+
+# allow for optional, arbitrary paths
+for d in "$@" ; do
+    # allow for additional tests
+    if echo "$d" | grep -qv '^-' ; then
+        if [ ! -d $d ] ; then
+            echo "$(basename $0): directory not found '$d'"
+            exit 1 
+        fi
+    fi
+done
+
+find "$@" -not -empty -type f -printf "%s\n"        | \
+ sort -rn                                           | \
+ uniq -d                                            | \
+ xargs -I{} -n1 find "$@" -type f -size {}c -print0 | \
+ xargs -0 md5sum                                    | \
+ sort                                               | \
+ uniq -w32 --all-repeated=separate                  | \
+ cut -f3- -d ' ' # stop here and just show findings  | \
+# tr '\n.' '\t.'                                     | \
+# sed 's/\t\t/\n/g'                                  | \
+# cut -f2-                                           | \
+# tr '\t' '\n'                                       | \
+# perl -i -pe 's/([ (){}-])/\\$1/g'                  | \
+# perl -i -pe 's/'\''/\\'\''/g'                      | \
+# xargs -pr rm -v

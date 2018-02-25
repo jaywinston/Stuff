@@ -1,31 +1,39 @@
 #!/bin/bash
 
-source io_mod
+# for entertainment purposes only.
+
+source $(dirname $0)/char_mod
+
+function cleanup {
+    printf '\033[u\f\f\f\f\f\f\f\f\n'
+    tput cnorm
+    exit
+}
 
 (
-    function cleanup {
-        printf '\033[u\f\f\f\f\f\f\f\f\n'
-        tput cnorm
-        exit
-    }
-
     tput civis
     putchar "${charset[0x20]}"
     printf '\b\b\b\b\b\b\b\b\033[s'
-    trap cleanup SIGTERM SIGINT
     ((x=y=0))
+    trap cleanup SIGTERM SIGINT
+    while (( $(date +'%N' | sed 's/^0*//') / 10000000 )) ; do : ; done
+    t=( $(date +'%H %M %S') )
+    h=${t[0]}
+    m=${t[1]}
+    s=${t[2]}
     while : ; do
         n=$(( $(date +'%N' | sed 's/^0*//') / 10000000 ))
         if ((n==00 || n==50)) ; then
-        for i in $(date +'%H %M %S') ; do
-            putchar "${charset[0x$(printf ${i::1} | xxd -p)]}"
-            putchar "${charset[0x$(printf ${i:1}  | xxd -p)]}"
-            ((++x%3)) && ((h=++y%4?0x3a:0x20)) && putchar "${charset[h]}"
-        done
-        for ((q=0;q<64;q++)); do
-            printf '\b'
-        done
-        sleep 0.06
+            printf '\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b'
+            printf '\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b'
+            printf '\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b'
+            printf '\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b'
+            for t in $h $m $s ; do
+                putchar "${charset[$(printf '%#x' $(( ${t:0:1} + 0x30 )))]}"
+                putchar "${charset[$(printf '%#x' $(( ${t:1:1} + 0x30 )))]}"
+                ((++x%3)) && ((j=++y%4?0x3a:0x20)) && putchar "${charset[j]}"
+            done
+            ((n==00)) && (((++s && ((s%=60))) || (++m && ((m%=60))) || (++h && ((h%=24)))))
         fi
     done
 ) 2>/dev/null
