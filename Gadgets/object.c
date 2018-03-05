@@ -1,11 +1,9 @@
 #include <stdio.h>
 
-struct object {
+typedef struct {
     int i;
-    void (*method)();  /* hack parameter check */
-};
-
-typedef struct object object;
+    void (*method)();  /* turn off parameter check */
+} object;
 
 void method(object *o, int n)  /* How many parameters? */
 {
