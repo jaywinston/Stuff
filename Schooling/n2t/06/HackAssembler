@@ -10,12 +10,12 @@ import re
 import sys
 
 
-def abort_assembly():
+def abort_assembly(nl=0):
     '''print error message and exit
 
     This is a stub.'''
 
-    print('error')
+    print('error on line', nl)
     sys.exit()
 
 
@@ -33,23 +33,55 @@ if not infile.endswith('.asm'):
 outfile = infile[:-4] + ".hack"
 
 comp_tab = {
-    "0"   : "101010", "!A"  : "110001", "M+1" : "110111", "D-M" : "010011",
-    "1"   : "111111", "!M"  : "110001", "D-1" : "001110", "A-D" : "000111",
-    "-1"  : "111010", "-D"  : "001111", "A-1" : "110010", "M-D" : "000111",
-    "D"   : "001100", "-A"  : "110011", "M-1" : "110010", "D&A" : "000000",
-    "A"   : "110000", "-M"  : "110011", "D+A" : "000010", "D&M" : "000000",
-    "M"   : "110000", "D+1" : "011111", "D+M" : "000010", "D|A" : "010101",
-    "!D"  : "001101", "A+1" : "110111", "D-A" : "010011", "D|M" : "010101"
+    "0"   : "101010",
+    "1"   : "111111",
+    "-1"  : "111010",
+    "D"   : "001100",
+    "A"   : "110000",
+    "M"   : "110000",
+    "!D"  : "001101",
+    "!A"  : "110001",
+    "!M"  : "110001",
+    "-D"  : "001111",
+    "-A"  : "110011",
+    "-M"  : "110011",
+    "D+1" : "011111",
+    "A+1" : "110111",
+    "M+1" : "110111",
+    "D-1" : "001110",
+    "A-1" : "110010",
+    "M-1" : "110010",
+    "D+A" : "000010",
+    "D+M" : "000010",
+    "D-A" : "010011",
+    "D-M" : "010011",
+    "A-D" : "000111",
+    "M-D" : "000111",
+    "D&A" : "000000",
+    "D&M" : "000000",
+    "D|A" : "010101",
+    "D|M" : "010101"
 }
 
 jump_tab = {
-    ""    : "000", "JGT" : "001", "JEQ" : "010", "JGE" : "011",
-    "JLT" : "100", "JNE" : "101", "JLE" : "110", "JMP" : "111"
+    ""    : "000",
+    "JLT" : "100",
+    "JGT" : "001",
+    "JNE" : "101",
+    "JEQ" : "010",
+    "JLE" : "110",
+    "JGE" : "011",
+    "JMP" : "111"
 }
 
 sym_tab = {
-    "SP": 0, "LCL": 1, "ARG": 2, "THIS": 3, "THAT": 4,
-    "SCREEN": 16384, "KBD": 24576
+    "SP"     : 0,
+    "LCL"    : 1,
+    "ARG"    : 2,
+    "THIS"   : 3,
+    "THAT"   : 4,
+    "SCREEN" : 16384,
+    "KBD"    : 24576
 }
 
 nsym = 16
@@ -83,10 +115,10 @@ for nl, line in enumerate(asm):
         sym = line.strip('()')
 
         if not re_symbol.fullmatch(sym) or sym.startswith(digit):
-            abort_assembly()
+            abort_assembly(nl)
 
         if sym in sym_tab:
-            abort_assembly()
+            abort_assembly(nl)
 
         sym_tab[sym] = maddr
 
@@ -109,7 +141,7 @@ for nl, line in enumerate(asm):
 
         line = line[1:]
 
-        if line.startswith('R'):
+        if line.startswith('R'):  # could be a register
             reg = line[1:]
             if reg.isdigit():
                 reg = int(reg)
@@ -119,7 +151,7 @@ for nl, line in enumerate(asm):
         elif re_symbol.fullmatch(line):
 
             if line.startswith(digit):
-                abort_assembly()
+                abort_assembly(nl)
 
             if line not in sym_tab:
                 sym_tab[line] = nsym  
@@ -133,7 +165,7 @@ for nl, line in enumerate(asm):
             fo.write(mk_A_hack(int(line)))
 
         else:
-            abort_assembly()
+            abort_assembly(nl)
 
     else:  # C instruction
 
@@ -143,7 +175,7 @@ for nl, line in enumerate(asm):
         if not re_asm.fullmatch(line)  \
                 or line.count('=') > 1 \
                 or line.count(';') > 1:
-            abort_assembly()
+            abort_assembly(nl)
 
         eq = line.index('=') if '=' in line else 0
         sc = line.index(';') if ';' in line else len(line)
@@ -160,19 +192,19 @@ for nl, line in enumerate(asm):
 
         # comp field
         if comp not in comp_tab:
-            abort_assembly()
+            abort_assembly(nl)
         hack += comp_tab[comp]
 
         # dest field
         if not re.fullmatch('[ADM]*', dest):
-            abort_assembly()
+            abort_assembly(nl)
         hack += '1' if 'A' in dest else '0'
         hack += '1' if 'D' in dest else '0'
         hack += '1' if 'M' in dest else '0'
 
         # jump field
         if jump not in jump_tab:
-            abort_assembly()
+            abort_assembly(nl)
         hack += jump_tab[jump]
 
         hack += '\n'
