@@ -9,14 +9,21 @@
 import re
 import sys
 
+line = None  # a hack for diagnostics; Full diagnostics won't have this.
 
 def abort_assembly(nl=0):
     '''print error message and exit
 
     This is a stub.'''
 
+    global line
+
+    if not line:
+        line = 'program argument'
+
     print('error on line', nl)
-    sys.exit()
+    print(line.rstrip())
+    sys.exit(1)
 
 
 def mk_A_hack(n):
@@ -63,14 +70,25 @@ comp_tab = {
     "D|M" : "010101"
 }
 
+dest_tab = {
+    ""    : "000",
+    "M"   : "001",
+    "D"   : "010",
+    "MD"  : "011",
+    "A"   : "100",
+    "AM"  : "101",
+    "AD"  : "110",
+    "AMD" : "111"
+}
+
 jump_tab = {
     ""    : "000",
-    "JLT" : "100",
     "JGT" : "001",
-    "JNE" : "101",
     "JEQ" : "010",
-    "JLE" : "110",
     "JGE" : "011",
+    "JLT" : "100",
+    "JNE" : "101",
+    "JLE" : "110",
     "JMP" : "111"
 }
 
@@ -99,20 +117,23 @@ with open(infile, "Ur") as fi:
     asm = fi.readlines()
 
 #  install labels to symbol table
-maddr = 1  # memory address of cpu instruction for label
+maddr = 0  # memory address of cpu instruction for label
 for nl, line in enumerate(asm):
 
     nl += 1  # line number, not index
 
     # This will make any lines with no code the empty string.
-    line = decomment(line)
+    label = decomment(line)
 
-    if not line:
+    if not label:
         continue
 
-    if line.startswith('('):
+    if label.startswith('('):
 
-        sym = line.strip('()')
+        if not label.endswith(')'):
+            abort_assembly(nl)
+
+        sym = label.strip('()')
 
         if not re_symbol.fullmatch(sym) or sym.startswith(digit):
             abort_assembly(nl)
@@ -132,37 +153,37 @@ for nl, line in enumerate(asm):
 
     nl += 1
 
-    line = decomment(line)
+    instruction = decomment(line)
 
-    if not line or line.startswith('('):
+    if not instruction or instruction.startswith('('):
         continue
 
-    if line.startswith('@'):  # A instruction
+    if instruction.startswith('@'):  # A instruction
 
-        line = line[1:]
+        expr = instruction[1:]
 
-        if line.startswith('R'):  # could be a register
-            reg = line[1:]
+        if expr.isdigit():
+            fo.write(mk_A_hack(int(expr)))
+
+        elif expr.startswith('R'):  # could be a RAM register
+            reg = expr[1:]
             if reg.isdigit():
                 reg = int(reg)
                 if 0 <= reg <= 15:
                     fo.write(mk_A_hack(reg))
 
-        elif re_symbol.fullmatch(line):
+        elif re_symbol.fullmatch(expr):
 
-            if line.startswith(digit):
+            if expr.startswith(digit):
                 abort_assembly(nl)
 
-            if line not in sym_tab:
-                sym_tab[line] = nsym  
+            if expr not in sym_tab:
+                sym_tab[expr] = nsym  
                 nsym += 1
 
-            ref = sym_tab[line]
+            ref = sym_tab[expr]
 
             fo.write(mk_A_hack(ref))
-
-        elif line.isdigit():
-            fo.write(mk_A_hack(int(line)))
 
         else:
             abort_assembly(nl)
@@ -170,19 +191,19 @@ for nl, line in enumerate(asm):
     else:  # C instruction
 
         # remove internal whitespace
-        line = ''.join(line.split())
+        cmd = ''.join(instruction.split())
 
-        if not re_asm.fullmatch(line)  \
-                or line.count('=') > 1 \
-                or line.count(';') > 1:
+        if not re_asm.fullmatch(cmd)  \
+                or cmd.count('=') > 1 \
+                or cmd.count(';') > 1:
             abort_assembly(nl)
 
-        eq = line.index('=') if '=' in line else 0
-        sc = line.index(';') if ';' in line else len(line)
+        eq = cmd.index('=') if '=' in cmd else 0
+        sc = cmd.index(';') if ';' in cmd else len(cmd)
 
-        dest = line[:eq]
-        comp = line[eq:sc].strip('=')
-        jump = line[sc:].strip(';')
+        dest = cmd[:eq]
+        comp = cmd[eq:sc].lstrip('=')
+        jump = cmd[sc:].lstrip(';')
 
         # build hack line
         hack = '111'
@@ -196,11 +217,9 @@ for nl, line in enumerate(asm):
         hack += comp_tab[comp]
 
         # dest field
-        if not re.fullmatch('[ADM]*', dest):
+        if not dest in dest_tab:
             abort_assembly(nl)
-        hack += '1' if 'A' in dest else '0'
-        hack += '1' if 'D' in dest else '0'
-        hack += '1' if 'M' in dest else '0'
+        hack += dest_tab[dest]
 
         # jump field
         if jump not in jump_tab:
