@@ -36,8 +36,8 @@
     //   end
     //
 
-	@R2  // default result
-	M=0
+    @R2  // default result
+    M=0
 
     @sign
     M=1
@@ -91,7 +91,7 @@
     D=M
     @R1
     D=D-M
-    @NO_SWITCH
+    @NO_SWAP
     D;JGE
 
     @R0
@@ -109,22 +109,22 @@
     @R1
     M=D
 
-(NO_SWITCH)
+(NO_SWAP)
 
 (MULTIPLY)
 
-	@R1
-	MD=M-1
-	@ENDMULT
-	D;JLT
+    @R1
+    MD=M-1
+    @ENDMULT
+    D;JLT
 
-	@R0
-	D=M
-	@R2
-	M=D+M
+    @R0
+    D=M
+    @R2
+    M=D+M
 
-	@MULTIPLY
-	0;JMP
+    @MULTIPLY
+    0;JMP
 
 (ENDMULT)
 
@@ -137,7 +137,7 @@
     @R2
     M=-M
 
-(END)	
+(END)   
     @END
     0;JMP
 

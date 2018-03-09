@@ -14,9 +14,9 @@ CHIP FullAdder {
 
     PARTS:
     // Put you code here:
-	Xor(a=a, b=b, out=sumab);
-	Xor(a=c, b=sumab, out=sum);
-	Nand(a=a, b=b, out=carryab);
-	Nand(a=c, b=sumab, out=carryabc);
-	Nand(a=carryab, b=carryabc, out=carry);
+    Xor(a=a, b=b, out=sumab);
+    Xor(a=c, b=sumab, out=sum);
+    Nand(a=a, b=b, out=carryab);
+    Nand(a=c, b=sumab, out=carryabc);
+    Nand(a=carryab, b=carryabc, out=carry);
 }

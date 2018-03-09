@@ -11,17 +11,17 @@
 // Put your code here.
 
     // upper screen bound
-    @24576	
+    @24576  
     D=A
     @scrn_hi
     M=D
 
 (MAIN)
 
- 	@KBD
-	D=M
-	@NO_PRESS
-	D;JEQ
+    @KBD
+    D=M
+    @NO_PRESS
+    D;JEQ
 
     @color
     M=-1
@@ -39,10 +39,10 @@
     @KBD
     M=0
 
-	@SCREEN
-	D=A
-	@cursor
-	M=D
+    @SCREEN
+    D=A
+    @cursor
+    M=D
 
 (FILL)
 

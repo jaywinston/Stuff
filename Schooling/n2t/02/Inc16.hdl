@@ -29,5 +29,5 @@ CHIP Inc16 {
     HalfAdder(a=in[12], b=carry11, sum=out[12], carry=carry12);
     HalfAdder(a=in[13], b=carry12, sum=out[13], carry=carry13);
     HalfAdder(a=in[14], b=carry13, sum=out[14], carry=carry14);
-	Xor(a=in[15], b=carry14, out=out[15]);
+    Xor(a=in[15], b=carry14, out=out[15]);
 }

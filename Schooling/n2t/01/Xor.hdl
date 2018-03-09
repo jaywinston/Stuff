@@ -9,12 +9,12 @@
  */
 
 CHIP Xor {
-	IN a, b;
-	OUT out;
+    IN a, b;
+    OUT out;
 
-	PARTS:
-	// Put your code here:
-	Nand(a=a, b=b, out=aNandb);
-	Or(a=a, b=b, out=aOrb);
-	And(a=aNandb, b=aOrb, out=out);
+    PARTS:
+    // Put your code here:
+    Nand(a=a, b=b, out=aNandb);
+    Or(a=a, b=b, out=aOrb);
+    And(a=aNandb, b=aOrb, out=out);
 }
