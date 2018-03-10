@@ -14,6 +14,7 @@
 CHIP PC {
     IN in[16],load,inc,reset;
     OUT out[16];
+    BUILTIN Register;
 
     PARTS:
     // Put your code here:

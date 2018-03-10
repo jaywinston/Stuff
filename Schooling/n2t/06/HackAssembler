@@ -1,111 +1,30 @@
 #!/usr/bin/env python3
 
 
-'''a stripped down version of HackAssembler
+from os.path import basename
+from sys import argv, exit
+from instruction import asm2hack
+from symbol import install
 
-    Error checking has been replaced with stubs for clarity.'''
+PROG = basename(argv[0])
 
+def abort_assembly(nl=None, line=None, *args):
+    print(PROG + ': error', end='')
+    nl is not None and print(' on line', nl)
+    print('\t> '+line.rstrip() if line else ': program argument')
+    for l in args:
+        print(l)
+    exit(1)
 
-import re
-import sys
+if len(argv) != 2:
+    abort_assembly(0, 0,'Usage: '+PROG+' FILE')
 
-line = None  # a hack for diagnostics; Full diagnostics won't have this.
-
-def abort_assembly(nl=0):
-    '''print error message and exit
-
-    This is a stub.'''
-
-    global line
-
-    if not line:
-        line = 'program argument'
-
-    print('error on line', nl)
-    print(line.rstrip())
-    sys.exit(1)
-
-
-def mk_A_hack(n):
-    return '{:016b}\n'.format(n)
-
-if len(sys.argv) != 2:  # argv[0] == program name
-    abort_assembly()    # argv[1] == input file
-
-infile = sys.argv[1]
+infile = argv[1]
 
 if not infile.endswith('.asm'):
-    abort_assembly()
+    abort_assembly(0, 0, "expected 'asm' extension")
 
 outfile = infile[:-4] + ".hack"
-
-comp_tab = {
-    "0"   : "101010",
-    "1"   : "111111",
-    "-1"  : "111010",
-    "D"   : "001100",
-    "A"   : "110000",
-    "M"   : "110000",
-    "!D"  : "001101",
-    "!A"  : "110001",
-    "!M"  : "110001",
-    "-D"  : "001111",
-    "-A"  : "110011",
-    "-M"  : "110011",
-    "D+1" : "011111",
-    "A+1" : "110111",
-    "M+1" : "110111",
-    "D-1" : "001110",
-    "A-1" : "110010",
-    "M-1" : "110010",
-    "D+A" : "000010",
-    "D+M" : "000010",
-    "D-A" : "010011",
-    "D-M" : "010011",
-    "A-D" : "000111",
-    "M-D" : "000111",
-    "D&A" : "000000",
-    "D&M" : "000000",
-    "D|A" : "010101",
-    "D|M" : "010101"
-}
-
-dest_tab = {
-    ""    : "000",
-    "M"   : "001",
-    "D"   : "010",
-    "MD"  : "011",
-    "A"   : "100",
-    "AM"  : "101",
-    "AD"  : "110",
-    "AMD" : "111"
-}
-
-jump_tab = {
-    ""    : "000",
-    "JGT" : "001",
-    "JEQ" : "010",
-    "JGE" : "011",
-    "JLT" : "100",
-    "JNE" : "101",
-    "JLE" : "110",
-    "JMP" : "111"
-}
-
-sym_tab = {
-    "SP"     : 0,
-    "LCL"    : 1,
-    "ARG"    : 2,
-    "THIS"   : 3,
-    "THAT"   : 4,
-    "SCREEN" : 16384,
-    "KBD"    : 24576
-}
-
-nsym = 16
-re_symbol = re.compile('[$:.\w]+')
-re_asm = re.compile('[01ADMEGJLNPQT=;!+&|-]{1,11}')
-digit = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9') 
 
 
 # This is a bit of a misnomer
@@ -116,118 +35,42 @@ def decomment(line):
 with open(infile, "Ur") as fi:
     asm = fi.readlines()
 
+ninstr = 0  # instruction number
+
 #  install labels to symbol table
-maddr = 0  # memory address of cpu instruction for label
-for nl, line in enumerate(asm):
+for nl, asm_line in enumerate(asm):
 
     nl += 1  # line number, not index
 
-    # This will make any lines with no code the empty string.
-    label = decomment(line)
+    # This will make any line with no code the empty string.
+    asm_instr = decomment(asm_line)
 
-    if not label:
+    if not asm_instr:
         continue
 
-    if label.startswith('('):
-
-        if not label.endswith(')'):
-            abort_assembly(nl)
-
-        sym = label.strip('()')
-
-        if not re_symbol.fullmatch(sym) or sym.startswith(digit):
-            abort_assembly(nl)
-
-        if sym in sym_tab:
-            abort_assembly(nl)
-
-        sym_tab[sym] = maddr
+    if asm_instr.startswith('('):
+        if install(asm_instr, ninstr) is None:
+            abort_assembly(nl, asm_line, 'label invalid or redefined')
 
     else:
-        maddr += 1
+        ninstr += 1
 
-fo = open(outfile, "w")
+with open(outfile, "w") as fo:
 
-# assemble
-for nl, line in enumerate(asm):
+    # assemble
+    for nl, asm_line in enumerate(asm):
 
-    nl += 1
+        nl += 1
 
-    instruction = decomment(line)
+        asm_instr = decomment(asm_line)
 
-    if not instruction or instruction.startswith('('):
-        continue
+        if not asm_instr or asm_instr.startswith('('):
+            continue
 
-    if instruction.startswith('@'):  # A instruction
+        hack = asm2hack(asm_instr)
 
-        expr = instruction[1:]
-
-        if expr.isdigit():
-            fo.write(mk_A_hack(int(expr)))
-
-        elif expr.startswith('R'):  # could be a RAM register
-            reg = expr[1:]
-            if reg.isdigit():
-                reg = int(reg)
-                if 0 <= reg <= 15:
-                    fo.write(mk_A_hack(reg))
-
-        elif re_symbol.fullmatch(expr):
-
-            if expr.startswith(digit):
-                abort_assembly(nl)
-
-            if expr not in sym_tab:
-                sym_tab[expr] = nsym  
-                nsym += 1
-
-            ref = sym_tab[expr]
-
-            fo.write(mk_A_hack(ref))
-
-        else:
-            abort_assembly(nl)
-
-    else:  # C instruction
-
-        # remove internal whitespace
-        cmd = ''.join(instruction.split())
-
-        if not re_asm.fullmatch(cmd)  \
-                or cmd.count('=') > 1 \
-                or cmd.count(';') > 1:
-            abort_assembly(nl)
-
-        eq = cmd.index('=') if '=' in cmd else 0
-        sc = cmd.index(';') if ';' in cmd else len(cmd)
-
-        dest = cmd[:eq]
-        comp = cmd[eq:sc].lstrip('=')
-        jump = cmd[sc:].lstrip(';')
-
-        # build hack line
-        hack = '111'
-
-        # a field
-        hack += '1' if 'M' in comp else '0'
-
-        # comp field
-        if comp not in comp_tab:
-            abort_assembly(nl)
-        hack += comp_tab[comp]
-
-        # dest field
-        if not dest in dest_tab:
-            abort_assembly(nl)
-        hack += dest_tab[dest]
-
-        # jump field
-        if jump not in jump_tab:
-            abort_assembly(nl)
-        hack += jump_tab[jump]
-
-        hack += '\n'
+        if not hack:
+            abort_assembly(nl, asm_line)
 
         fo.write(hack)
 
-fo.close()

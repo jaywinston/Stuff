@@ -13,6 +13,7 @@
 CHIP RAM8 {
     IN in[16], load, address[3];
     OUT out[16];
+    BUILTIN Register;
 
     PARTS:
     // Put your code here:
