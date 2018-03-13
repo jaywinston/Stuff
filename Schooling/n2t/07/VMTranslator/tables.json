@@ -1,0 +1,186 @@
+{
+    "commands": {
+
+        "add": [
+            "@SP",
+            "AM=M-1",
+            "D=M",
+            "@SP",
+            "AM=M-1",
+            "M=D+M",
+            "@SP",
+            "M=M+1"
+        ],
+
+        "sub": [
+            "@SP",
+            "AM=M-1",
+            "D=-M",
+            "@SP",
+            "AM=M-1",
+            "M=D+M",
+            "@SP",
+            "M=M+1"
+        ],
+
+        "neg": [
+            "@SP",
+            "A=M-1",
+            "M=-M"
+        ],
+
+        "eq": [
+            "@SP",
+            "AM=M-1",
+            "D=M",
+            "@SP",
+            "AM=M-1",
+            "D=D-M",
+            "@EQ{tag}",
+            "D;JEQ",
+            "@SP",
+            "AM=M+1",
+            "A=A-1",
+            "M=0",
+            "@EQ{tag}END",
+            "0;JMP",
+            "(EQ{tag})",
+            "@SP",
+            "AM=M+1",
+            "A=A-1",
+            "M=-1",
+            "(EQ{tag}END)"
+        ],
+
+        "gt": [
+            "@SP",
+            "AM=M-1",
+            "D=M",
+            "@SP",
+            "AM=M-1",
+            "D=D-M",
+            "@GT{tag}",
+            "D;JLT",
+            "@SP",
+            "AM=M+1",
+            "A=A-1",
+            "M=0",
+            "@GT{tag}END",
+            "0;JMP",
+            "(GT{tag})",
+            "@SP",
+            "AM=M+1",
+            "A=A-1",
+            "M=-1",
+            "(GT{tag}END)"
+        ],
+
+        "lt": [
+            "@SP",
+            "AM=M-1",
+            "D=M",
+            "@SP",
+            "AM=M-1",
+            "D=D-M",
+            "@LT{tag}",
+            "D;JGT",
+            "@SP",
+            "AM=M+1",
+            "A=A-1",
+            "M=0",
+            "@LT{tag}END",
+            "0;JMP",
+            "(LT{tag})",
+            "@SP",
+            "AM=M+1",
+            "A=A-1",
+            "M=-1",
+            "(LT{tag}END)"
+        ],
+
+        "and": [
+            "@SP",
+            "AM=M-1",
+            "D=M",
+            "@SP",
+            "AM=M-1",
+            "M=D&M",
+            "@SP",
+            "M=M+1"
+        ],
+
+        "or": [
+            "@SP",
+            "AM=M-1",
+            "D=M",
+            "@SP",
+            "AM=M-1",
+            "M=D|M",
+            "@SP",
+            "M=M+1"
+        ],
+
+        "not": [
+            "@SP",
+            "A=M-1",
+            "M=!M"
+        ],
+
+        "push": [
+            "D={target}",
+            "@SP",
+            "AM=M+1",
+            "A=A-1",
+            "M=D"
+        ],
+
+        "pop": [
+            "D=A",
+            "@SP",
+            "AM=M-1",
+            "A=A+1",
+            "M=D",
+            "A=A-1",
+            "D=M",
+            "A=A+1",
+            "A=M",
+            "M=D"
+        ],
+
+        "label": [
+        ],
+
+        "goto": [
+        ],
+
+        "if-goto": [
+        ],
+
+        "function": [
+        ],
+
+        "call": [
+        ],
+
+        "return": [
+        ]
+    },
+
+    "segments": {
+
+        "argument" : "@ARG",
+        "local"    : "@LCL",
+        "static"   : "@{file}.{tag}",
+        "constant" : "@{cval}",
+        "this"     : "@THIS",
+        "that"     : "@THAT",
+        "pointer"  : "@3",
+        "temp"     : "@5",
+        "offset": [
+            "D={target}",
+            "@{off}",
+            "A=D+A"
+        ]
+    }
+}
+

@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+
+from function import PARSE_FUNCS, TRAN_FUNCS, set_static_segment
+from misc import abort, decomment, mk_path, process_arg
+from varcall import Varcall
+
+infiles, progname = process_arg()
+outfile = progname + '.asm'
+parser = Varcall(*PARSE_FUNCS)
+translator = Varcall(*TRAN_FUNCS)
+
+with open(outfile, "w") as fo:
+    for file in infiles:
+
+        set_static_segment(mk_path(file[:-3], ''))  # basename, no extension
+
+        with open(file) as fi:
+            for nl, vm_line in enumerate(fi):
+
+                nl += 1
+
+                vm_cmd = decomment(vm_line)
+
+                if not vm_cmd:
+                    continue
+
+                tokens = parser.run(vm_cmd)
+
+                if tokens is None:
+                    abort(nl, vm_line)
+
+                asm = translator.run(*tokens)
+
+                if asm is None:
+                    abort(nl, vm_line)
+
+                fo.write(asm)
+

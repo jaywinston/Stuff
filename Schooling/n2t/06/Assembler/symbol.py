@@ -1,11 +1,13 @@
 import json
 import re
+from os.path import dirname, join
 
 re_symbol = re.compile('[$:.\w]+')
 digit = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9') 
 addr = 15
 
-with open('tables.json') as f:
+json_file = join(dirname(__file__), 'tables.json')
+with open(json_file) as f:
     symtab = json.load(f)['symbol']
 
 

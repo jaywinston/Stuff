@@ -1,10 +1,12 @@
 import json
 import re
+from os.path import dirname, join
 from symbol import install, lookup
 
 re_asm = re.compile('[01ADMEGJLNPQT=;!+&|-]{1,11}')
 
-with open('tables.json') as f:
+json_file = join(dirname(__file__), 'tables.json')
+with open(json_file) as f:
     tables = json.load(f)
 
 comptab = tables['comp']
