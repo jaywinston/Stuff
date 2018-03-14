@@ -56,8 +56,7 @@ def install(name, defn=None):
 
     if defn is None:
         return install_symbol(name)
-    else:
-        return install_label(name, defn)
+    return install_label(name, defn)
 
 
 def lookup(name):
