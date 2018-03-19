@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+
+from os import listdir
+from os.path import basename, dirname, isfile, isdir, join
+from sys import argv, exit
+from parser import compile
+
+if len(argv) != 2:
+    exit(1)
+
+arg = argv[1]
+
+if isfile(arg):
+    if not arg.endswith('.jack'):
+        exit(1)
+    infiles = [ arg ]
+    fname = arg[:-5]
+elif isdir(arg):
+    infiles = listdir(arg)
+    fname = join(arg, basename(arg))
+
+for file in infiles:
+    if file.endswith('.jack'):
+        with                                                                  \
+                open(join(dirname(fname), basename(file)))                    \
+                    as fi,                                                    \
+                open(join(dirname(fname), basename(file))[:-5] + '.xml', 'w') \
+                    as fo:
+            compile(fi, fo)
+
