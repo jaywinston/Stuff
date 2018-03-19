@@ -11,11 +11,6 @@ digit = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9')
 nl = 1
 
 
-def init_lex(s):
-    global instream
-    instream = list(reversed(s))
-
-
 _buff = None
 def _getch():
     global _buff
@@ -130,6 +125,11 @@ def _next_token():
        _ungetch(c)
 
     return _classify(word)
+
+
+def init_lex(s):
+    global instream
+    instream = list(reversed(s))
 
 
 def next_token():
