@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+
+from os import listdir
+from os.path import basename, dirname, isfile, isdir, join
+from sys import argv, exit
+from lexer import lex
+from parser import compile
+
+PROG = basename(argv[0])
+
+if len(argv) != 2:
+    print(PROG + ': Usage:', PROG, 'FILE|DIR')
+    exit(1)
+
+arg = argv[1]
+
+if isfile(arg):
+    if not arg.endswith('.jack'):
+        print(PROG + ": file must end with '.jack'")
+        exit(1)
+    infiles = [ basename(arg) ]
+    dirname = dirname(arg)
+elif isdir(arg):
+    infiles = listdir(arg)
+    dirname = arg
+else:
+    print(PROG + ': Usage:', PROG, 'FILE|DIR')
+    exit(1)
+
+for fname in infiles:
+    if fname.endswith('.jack'):
+        infile  = join(dirname, fname)
+        outfile = join(dirname, fname[:-5] + '.vm')
+        compile(outfile, lex(infile))
+
