@@ -1,0 +1,99 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/Memory.jack
+
+/**
+ * This library provides two services: direct access to the computer's main
+ * memory (RAM), and allocation and recycling of memory blocks. The Hack RAM
+ * consists of 32,768 words, each holding a 16-bit binary number.
+ */ 
+class Memory {
+
+    static int base, cap;
+    static int length, next;
+    static Array memory, free;
+
+    /** Initializes the class. */
+    function void init() {
+        let memory = 0;
+        let length = 0;  // index of block's length
+        let next = 1;    // index of block's next
+        let free = 2048;  // base
+        let free[length] = 14334;
+        let free[next] = null;
+        return;
+    }
+
+    /** Returns the RAM value at the given address. */
+    function int peek(int address) {
+        return memory[address];
+    }
+
+    /** Sets the RAM value at the given address to the given value. */
+    function void poke(int address, int value) {
+        let memory[address] = value;
+        return;
+    }
+
+    /** Finds an available RAM block of the given size and returns
+     *  a reference to its base address. */
+    function int alloc(int size) {
+        var Array p, q;
+
+        if (size < 1) {
+            do Sys.error(5);
+        }
+        if (size > 14334) {
+            do Sys.error(6);
+        }
+
+        let p = free;
+        let q = p;
+
+        while ( ~(p[next]=null) & (p[length]<size) ) {
+            let q = p;
+            let p = p[next];
+        }
+
+        if (p[length] = size) {
+            let q[next] = p[next];
+        } else {
+            let p[length] = p[length] - (size+2);
+            let p = p + (p[length]+2);
+            let p[length] = size;
+        }
+
+        return p + 2;
+    }
+
+    /** De-allocates the given object (cast as an array) by making
+     *  it available for future allocations. */
+    function void deAlloc(Array o) {
+        var Array p, q;
+
+        let o = o - 2;
+
+        let p = free;
+        while ( ~(p[next]=null) & (p[next]<o) ) {
+            let p = p[next];
+        }
+        let q = p[next];
+
+        if ( ((o+o[length])+2) = q ) {
+            let o[length] = (o[length]+q[length]) + 2;
+            let o[next] = q[next];
+        } else {
+            let o[next] = q;
+        }
+            
+        if ( ((p+p[length])+2) = o ) {
+            let p[length] = (p[length]+o[length]) + 2;
+            let p[next] = o[next];
+        } else {
+            let p[next] = o;
+        }
+
+        return;
+    }    
+}

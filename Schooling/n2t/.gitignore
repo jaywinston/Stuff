@@ -1,9 +1,1 @@
-nand2tetris
-__pycache__
-**/*.tst
-**/*.cmp
-**/*.out
-**/*.hack
-**/*.asm
-**/*.vm
-**/*.jack
+**/*
