@@ -1,0 +1,146 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/Math.jack
+
+/**
+ * A library of commonly used mathematical functions.
+ * Note: Jack compilers implement multiplication and division using OS method calls.
+ */
+class Math {
+
+    static int _2qy;
+
+    /** Initializes the library. */
+    function void init() {
+        return;
+    }
+
+    /** Returns the absolute value of x. */
+    function int abs(int x) {
+        if (x < 0) {
+            return -x;
+        }
+        return x;
+    }
+
+    /** Returns the product of x and y. 
+     *  When a Jack compiler detects the multiplication operator '*' in the 
+     *  program's code, it handles it by invoking this method. In other words,
+     *  the Jack expressions x*y and multiply(x,y) return the same value.
+     */
+    function int multiply(int x, int y) {
+        var int b, i, sum;
+
+        let sum = 0;
+        let b = 1;
+        let i = 0;
+        while (i < 16) {
+            if ( (y&b) = b ) {
+                let sum = sum + x;
+            }
+            let x = x + x;
+            let b = b + b;
+            let i = i + 1;
+        }
+
+        return sum;
+    }
+
+    /** Returns the integer part of x/y.
+     *  When a Jack compiler detects the multiplication operator '/' in the 
+     *  program's code, it handles it by invoking this method. In other words,
+     *  the Jack expressions x/y and divide(x,y) return the same value.
+     */
+    function int divide(int x, int y) {
+        var int q, result;
+        var boolean negate;
+
+        if (y = 0) {
+            do Sys.error(3);
+        }
+
+        let negate = false;
+        if (x < 0) {
+            let negate = true;
+            let x = -x;
+        }
+        if (y < 0) {
+            let negate = ~negate;
+            let y = -y;
+        }
+
+        if (y > x) {
+            let _2qy = 0;
+            return 0;
+        }
+
+        let q = x / (y+y);
+        let result =  q + q;
+
+        if ( ~((x-_2qy) < y) ) {  /* cheaper than > | = */
+            let _2qy = _2qy + y;
+            let result =  result + 1;
+        }
+
+        if (negate) {
+            let result = -result;
+        }
+
+        return result;
+    }
+
+    /** Returns the integer part of the square root of x. */
+    function int sqrt(int x) {
+
+    /* I had a very hard time with this algorithm and resorted to running it on
+       range 0..32767 with several different configurations to find that it
+       returned several wrong results.  Any clarity on the matter would be much
+       appreciated. */
+
+    /* It would seem that 'high' should be initialized to 181 but that did
+     * not work.  In fact, 190 did work so 256 could be overkill.  But I
+     * don't know what's causing the problem so I went with a power of 2 as
+     * Bob Bemer used to say that powers of 2 are magic on computers.
+     * Also, the loop tests 'high-1' not 'high' because it would go infinitely
+     * on the latter.  Interestingly, it would loop forever on 'x=9' with
+     * 'high' inititalized to 181 but on 'x=32767' on 'high' initialized
+     * to 256.  Again, any clarity on the matter would be much appreciated.
+     */
+        var int low, med, high, test;
+
+        if (x < 0) {
+            do Sys.error(4);
+        }
+
+        let low = 0;
+        let high = 256;
+        while ( low < (high-1) ) {
+            let med = (low+high) / 2;
+            let test = med * med;
+            if ( (test>x) | (test<0) ) {  /* check for overflow */
+                let high = med - 1;
+            } else {
+                let low = med;
+            }
+        }
+
+        return low;
+    }
+
+    /** Returns the greater number. */
+    function int max(int a, int b) {
+        if (a > b) {
+            return a;
+        }
+        return b;
+    }
+
+    /** Returns the smaller number. */
+    function int min(int a, int b) {
+        if (a < b) {
+            return a;
+        }
+        return b;
+    }
+}
