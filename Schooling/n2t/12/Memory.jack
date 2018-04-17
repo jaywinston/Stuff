@@ -11,17 +11,17 @@
 class Memory {
 
     static int base, cap;
-    static int length, next;
+    static int SIZE, NEXT;
     static Array memory, free;
 
     /** Initializes the class. */
     function void init() {
         let memory = 0;
-        let length = 0;  // index of block's length
-        let next = 1;    // index of block's next
+        let SIZE = 0;  // index of block's size
+        let NEXT = 1;    // index of block's next
         let free = 2048;  // base
-        let free[length] = 14334;
-        let free[next] = null;
+        let free[SIZE] = 14334;
+        let free[NEXT] = null;
         return;
     }
 
@@ -51,17 +51,17 @@ class Memory {
         let p = free;
         let q = p;
 
-        while ( ~(p[next]=null) & (p[length]<size) ) {
+        while ( ~(p[NEXT]=null) & (p[SIZE]<size) ) {
             let q = p;
-            let p = p[next];
+            let p = p[NEXT];
         }
 
-        if (p[length] = size) {
-            let q[next] = p[next];
+        if (p[SIZE] = size) {
+            let q[NEXT] = p[NEXT];
         } else {
-            let p[length] = p[length] - (size+2);
-            let p = p + (p[length]+2);
-            let p[length] = size;
+            let p[SIZE] = p[SIZE] - (size+2);
+            let p = p + (p[SIZE]+2);
+            let p[SIZE] = size;
         }
 
         return p + 2;
@@ -75,23 +75,23 @@ class Memory {
         let o = o - 2;
 
         let p = free;
-        while ( ~(p[next]=null) & (p[next]<o) ) {
-            let p = p[next];
+        while ( ~(p[NEXT]=null) & (p[NEXT]<o) ) {
+            let p = p[NEXT];
         }
-        let q = p[next];
+        let q = p[NEXT];
 
-        if ( ((o+o[length])+2) = q ) {
-            let o[length] = (o[length]+q[length]) + 2;
-            let o[next] = q[next];
+        if ( ((o+o[SIZE])+2) = q ) {
+            let o[SIZE] = (o[SIZE]+q[SIZE]) + 2;
+            let o[NEXT] = q[NEXT];
         } else {
-            let o[next] = q;
+            let o[NEXT] = q;
         }
             
-        if ( ((p+p[length])+2) = o ) {
-            let p[length] = (p[length]+o[length]) + 2;
-            let p[next] = o[next];
+        if ( ((p+p[SIZE])+2) = o ) {
+            let p[SIZE] = (p[SIZE]+o[SIZE]) + 2;
+            let p[NEXT] = o[NEXT];
         } else {
-            let p[next] = o;
+            let p[NEXT] = o;
         }
 
         return;
