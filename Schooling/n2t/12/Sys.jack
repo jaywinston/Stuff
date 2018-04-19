@@ -31,9 +31,9 @@ class Sys {
         var int timer;
 
         while (duration > 0) {
-            let timer = -100;
-            while (timer < 0) {
-                let timer = timer + 1;
+            let timer = 100;
+            while (timer > 0) {
+                let timer = timer - 1;
             }
             let duration = duration - 1;
         }
@@ -43,7 +43,7 @@ class Sys {
     /** Displays the given error code in the form "ERR<errorCode>",
      *  and halts the program's execution. */
     function void error(int errorCode) {
-        do Output.printString("err");
+        do Output.printString("ERR");
         do Output.printInt(errorCode);
         do Sys.halt();
         return;
