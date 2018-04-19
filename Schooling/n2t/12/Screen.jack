@@ -1,0 +1,208 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/Screen.jack
+
+/**
+ * A library of functions for displaying graphics on the screen.
+ * The Hack physical screen consists of 512 rows (indexed 0..511, top to bottom)
+ * of 256 pixels each (indexed 0..255, left to right). The top left pixel on 
+ * the screen is indexed (0,0).
+ */
+class Screen {
+
+    static boolean black;
+
+    /** Initializes the Screen. */
+    function void init() {
+        let black = true;
+        return;
+    }
+
+    /** Erases the entire screen. */
+    function void clearScreen() {
+        var int i;
+        let i = 16384;
+        while (i < 25476) {
+            do Memory.poke(i, 0);
+        }
+        return;
+    }
+
+    /** Sets the current color, to be used for all subsequent drawXXX commands.
+     *  Black is represented by true, white by false. */
+    function void setColor(boolean b) {
+        let black = b;
+        return;
+    }
+
+    /** Draws the (x,y) pixel, using the current color. */
+    function void drawPixel(int x, int y) {
+        var int addr, mod, pxl, q, word;
+
+        if ( ((x<0) | (x>512)) | ((y<0) | (y>256)) ) {
+            do Sys.error(7);
+        }
+
+        let q = x / 16;
+        let mod = x - (q*16);
+        let addr = 16384 + ((y*32)+q);
+        let pxl = 1;
+        while (mod > 0) {
+            let pxl = pxl + pxl;
+            let mod = mod - 1;
+        }
+
+        if (black) {
+            let word = Memory.peek(addr) | pxl;
+        } else {
+            let word = Memory.peek(addr) & ~pxl;
+        }
+
+        do Memory.poke(addr, word);
+
+        return;
+    }
+
+
+    /* These functions draw the line for drawLine.  'Neg' refers to
+       coordinate '1' being greater than coordinate '2', not the actual
+       difference used in the algorithm. */
+    function void doDrawLineDxPosDyPos(int x1, int y1, int x2, int y2) {
+        var int adybdx, dx, dy;
+
+        let dx = x2 - x1;
+        let dy = y2 - y1;
+        let adybdx = dx > dy;
+        while ( (x1<x2) | (y1<y2) ) {
+            do Screen.drawPixel(x1, y1);
+            if (adybdx < 0) {
+                let x1 = x1 + 1;
+                let adybdx = adybdx + dy;
+            } else {
+                let y1 = y1 + 1;
+                let adybdx = adybdx - dx;
+            }
+        }
+        return;
+    }
+    function void doDrawLineDxPosDyNeg(int x1, int y1, int x2, int y2) {
+        var int adybdx, dx, dy;
+
+        let dx = x2 - x1;
+        let dy = y1 - y2;
+        let adybdx = dx > dy;
+        while ( (x1<x2) | (y1>y2) ) {
+            do Screen.drawPixel(x1, y1);
+            if (adybdx < 0) {
+                let x1 = x1 + 1;
+                let adybdx = adybdx + dy;
+            } else {
+                let y1 = y1 - 1;
+                let adybdx = adybdx - dx;
+            }
+        }
+        return;
+    }
+    function void doDrawLineDxNegDyPos(int x1, int y1, int x2, int y2) {
+        var int adybdx, dx, dy;
+
+        let dx = x1 - x2;
+        let dy = y2 - y1;
+        let adybdx = dx > dy;
+        while ( (x1>x2) | (y1<y2) ) {
+            do Screen.drawPixel(x1, y1);
+            if (adybdx < 0) {
+                let x1 = x1 - 1;
+                let adybdx = adybdx + dy;
+            } else {
+                let y1 = y1 + 1;
+                let adybdx = adybdx - dx;
+            }
+        }
+        return;
+    }
+    function void doDrawLineDxNegDyNeg(int x1, int y1, int x2, int y2) {
+        var int adybdx, dx, dy;
+
+        let dx = x1 - x2;
+        let dy = y1 - y2;
+        let adybdx = dx > dy;
+        while ( (x1>x2) | (y1>y2) ) {
+            do Screen.drawPixel(x1, y1);
+            if (adybdx < 0) {
+                let x1 = x1 - 1;
+                let adybdx = adybdx + dy;
+            } else {
+                let y1 = y1 - 1;
+                let adybdx = adybdx - dx;
+            }
+        }
+        return;
+    }
+
+    /** Draws a line from pixel (x1,y1) to pixel (x2,y2), using the current color. */
+    function void drawLine(int x1, int y1, int x2, int y2) {
+
+        if ((( (x1 < 0) | (x1 > 512) ) | ( (x2 < 0) | (x2 > 512) ))
+           |(( (y1 < 0) | (y1 > 256) ) | ( (y2 < 0) | (y2 > 256) ))) {
+            do Sys.error(8);
+        }
+
+        if ( ~(x1>x2) & ~(y1>y2) ) {
+            do Screen.doDrawLineDxPosDyPos(x1, y1, x2, y2);
+        } else { if ( ~(x1>x2) & (y1>y2) ) {
+            do Screen.doDrawLineDxPosDyNeg(x1, y1, x2, y2);
+        } else { if ( (x1>x2) & ~(y1>y2) ) {
+            do Screen.doDrawLineDxNegDyPos(x1, y1, x2, y2);
+        } else { if ( (x1>x2) & (y1>y2)  ) {
+            do Screen.doDrawLineDxNegDyNeg(x1, y1, x2, y2);
+        }}}}
+
+        return;
+    }
+
+    /** Draws a filled rectangle whose top left corner is (x1, y1)
+     * and bottom right corner is (x2,y2), using the current color. */
+    function void drawRectangle(int x1, int y1, int x2, int y2) {
+        if (    ((( (x1 < 0) | (x1 > 512) )
+                | ( (x2 < 0) | (x2 > 512) ))
+                |(( (y1 < 0) | (y1 > 256) )
+                | ( (y2 < 0) | (y2 > 256) )))
+                | ( (x2 < x1) | (y2 < y1) )
+        ) {
+            do Sys.error(9);
+        }
+
+        while ( ~(y1>y2) ) {
+            do Screen.drawLine(x1, y1, x2, y1);
+            let y1 = y1 + 1;
+        }
+
+        return;
+    }
+
+    /** Draws a filled circle of radius r<=181 around (x,y), using the current color. */
+    function void drawCircle(int x, int y, int r) {
+        var int dy, nx, px, ydy;
+
+        if ( ((x<0) | (x>512)) | ((y<0) | (y>256)) ) {
+            do Sys.error(12);
+        }
+        if ( (r<0) | (r>181) ) {
+            do Sys.error(13);
+        }
+
+        let dy = -r;
+        while ( ~(dy>r) ) {
+            let nx = x - Math.sqrt((r*r)-(dy*dy));
+            let px = x + Math.sqrt((r*r)-(dy*dy));
+            let ydy = y + dy;
+            do Screen.drawLine(nx, ydy, px, ydy);
+            let dy = dy + 1;
+                               
+        }
+
+        return;
+    }
+}
