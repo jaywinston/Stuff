@@ -75,7 +75,7 @@ class Screen {
         let dx = x2 - x1;
         let dy = y2 - y1;
         let adybdx = dx > dy;
-        while ( (x1<x2) | (y1<y2) ) {
+        while ( ~((x1>x2) | (y1>y2)) ) {
             do Screen.drawPixel(x1, y1);
             if (adybdx < 0) {
                 let x1 = x1 + 1;
@@ -93,7 +93,7 @@ class Screen {
         let dx = x2 - x1;
         let dy = y1 - y2;
         let adybdx = dx > dy;
-        while ( (x1<x2) | (y1>y2) ) {
+        while ( ~((x1>x2) | (y1<y2)) ) {
             do Screen.drawPixel(x1, y1);
             if (adybdx < 0) {
                 let x1 = x1 + 1;
@@ -111,7 +111,7 @@ class Screen {
         let dx = x1 - x2;
         let dy = y2 - y1;
         let adybdx = dx > dy;
-        while ( (x1>x2) | (y1<y2) ) {
+        while ( ~((x1<x2) | (y1>y2)) ) {
             do Screen.drawPixel(x1, y1);
             if (adybdx < 0) {
                 let x1 = x1 - 1;
@@ -129,7 +129,7 @@ class Screen {
         let dx = x1 - x2;
         let dy = y1 - y2;
         let adybdx = dx > dy;
-        while ( (x1>x2) | (y1>y2) ) {
+        while ( ~((x1<x2) | (y1<y2)) ) {
             do Screen.drawPixel(x1, y1);
             if (adybdx < 0) {
                 let x1 = x1 - 1;
@@ -139,37 +139,6 @@ class Screen {
                 let adybdx = adybdx - dx;
             }
         }
-        return;
-    }
-
-
-    /** Draws a line within the screen boundaries. */
-    function void drawLineSafely(int x1, int y1, int x2, int y2) {
-        if (x1 < 0) {
-            let x1 = 0;
-        }
-        if (x1 > 511) {
-            let x1 = 511;
-        }
-        if (y1 < 0) {
-            let y1 = 0;
-        }
-        if (y1 > 255) {
-            let y1 = 255;
-        }
-        if (x2 < 0) {
-            let x2 = 0;
-        }
-        if (x2 > 511) {
-            let x2 = 511;
-        }
-        if (y2 < 0) {
-            let y2 = 0;
-        }
-        if (y2 > 255) {
-            let y2 = 255;
-        }
-        do Screen.drawLine(x1, y1, x2, y2);
         return;
     }
 
@@ -183,14 +152,32 @@ class Screen {
 
         if ( ~(x1>x2) & ~(y1>y2) ) {
             do Screen.doDrawLineDxPosDyPos(x1, y1, x2, y2);
+
         } else { if ( ~(x1>x2) & (y1>y2) ) {
             do Screen.doDrawLineDxPosDyNeg(x1, y1, x2, y2);
+
         } else { if ( (x1>x2) & ~(y1>y2) ) {
             do Screen.doDrawLineDxNegDyPos(x1, y1, x2, y2);
+
         } else { if ( (x1>x2) & (y1>y2)  ) {
             do Screen.doDrawLineDxNegDyNeg(x1, y1, x2, y2);
+
         }}}}
 
+        return;
+    }
+
+    /** Draws a line within the screen boundaries, truncating on overflow. */
+    function void drawLineSafely(int x1, int y1, int x2, int y2) {
+        if (x1 < 0)   { let x1 = 0;   }
+        if (x1 > 511) { let x1 = 511; }
+        if (y1 < 0)   { let y1 = 0;   }
+        if (y1 > 255) { let y1 = 255; }
+        if (x2 < 0)   { let x2 = 0;   }
+        if (x2 > 511) { let x2 = 511; }
+        if (y2 < 0)   { let y2 = 0;   }
+        if (y2 > 255) { let y2 = 255; }
+        do Screen.drawLine(x1, y1, x2, y2);
         return;
     }
 
