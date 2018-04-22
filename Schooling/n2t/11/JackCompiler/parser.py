@@ -7,8 +7,8 @@ uoptab = {'-': 'neg', '~': '  not'}
 optab = {
     '+'  : 'add',
     '-'  : 'sub',
-    '*'  : 'call\tMath.multiply 2',
-    '/'  : 'call\tMath.divide 2',
+    '*'  : 'call' '\t' 'Math.multiply 2',
+    '/'  : 'call' '\t' 'Math.divide 2',
     '&'  : 'and',
     '|'  : 'or',
     '<'  : 'lt',
@@ -19,10 +19,10 @@ optab = {
 }
 
 kw_consttab = {
-    'true'  : 'push\tconstant 0\nnot',
-    'false' : 'push\tconstant 0',
-    'null'  : 'push\tconstant 0',
-    'this'  : 'push\tpointer 0'
+    'true'  : 'push' '\t' 'constant 0' '\n' 'not',
+    'false' : 'push' '\t' 'constant 0',
+    'null'  : 'push' '\t' 'constant 0',
+    'this'  : 'push' '\t' 'pointer 0'
 }
 
 
@@ -48,18 +48,18 @@ def buffer(tkn):
 
 
 def advance(buffered=False):
-    global nl, token
+
+    def _advance(src_f, *a):
+        global nl, token
+        token = src_f(*a)
+        while token == 'NEWLINE':
+            nl += 1
+            token = src_f(*a)
+
     if buffered:
-        # not worth a Queue()
-        token = tknbuf.pop(0)
-        while token == 'NEWLINE':
-            nl += 1
-            token = tknbuf.pop(0)
+        _advance(tknbuf.pop, 0)
     else:
-        token = next_token()
-        while token == 'NEWLINE':
-            nl += 1
-            token = next_token()
+        _advance(next_token)
 
 
 tagtab = {'if': 0, 'while': 0}
@@ -89,7 +89,7 @@ def compile_expression_list(buffered=False):
         if token[0] != ',' and token[0] != ')':
             abort('in expression list')
         if token[0] == ',':
-            advance()
+            advance(buffered)
 
     if token is None:
         abort('unexpected EOF in expression list')
@@ -102,15 +102,15 @@ def compile_subroutine_call(ident, buffered=False):
     if token[0] == '(':
         routine = _class + '.' + ident
         advance(buffered)
-        fwrite('push\tpointer 0\n')
+        fwrite('push' '\t' 'pointer 0' '\n')
         narg = 1 + compile_expression_list(buffered)
         advance(buffered)  # ')'
-        fwrite('call\t', routine, ' ', str(narg), '\n')
+        fwrite('call' '\t', routine, ' ', str(narg), '\n')
 
     elif token[0] == '.':
         obj = lookup(ident)
         if obj is not None:
-            fwrite('push\t', obj['segment'], ' ', obj['index'], '\n')
+            fwrite('push' '\t', obj['segment'], ' ', obj['index'], '\n')
             routine = obj['type']
             narg = 1
         else:
@@ -127,7 +127,7 @@ def compile_subroutine_call(ident, buffered=False):
         advance(buffered)
         narg += compile_expression_list(buffered)
         advance(buffered)  # ')'
-        fwrite('call\t', routine, ' ', str(narg), '\n')
+        fwrite('call' '\t', routine, ' ', str(narg), '\n')
 
     else:
         abort('in subroutine call')
@@ -165,16 +165,16 @@ def compile_term(buffered=False):
 
     # integerConstant
     elif token[1] == 2:
-        fwrite('push\tconstant ', token[0], '\n')
+        fwrite('push' '\t' 'constant ', token[0], '\n')
         advance(buffered)
 
     # stringConstant
     elif token[1] == 3:
-        fwrite('push\tconstant ', str(len(token[0])), '\n'
-               'call\tString.new 1\n')
+        fwrite('push' '\t' 'constant ', str(len(token[0])), '\n'
+               'call' '\t' 'String.new 1' '\n')
         for c in token[0]:
-            fwrite('push\tconstant ', str(ord(c)), '\n'
-                   'call\tString.appendChar 2\n')
+            fwrite('push' '\t' 'constant ', str(ord(c)), '\n'
+                   'call' '\t' 'String.appendChar 2' '\n')
         advance(buffered)
 
     # varName className subroutineName
@@ -190,15 +190,15 @@ def compile_term(buffered=False):
             obj = lookup(ident)
             if obj is None:
                 abort('undeclared identifier')
-            fwrite('push\t', obj['segment'], ' ', obj['index'], '\n')
+            fwrite('push' '\t', obj['segment'], ' ', obj['index'], '\n')
             advance(buffered)
             compile_expression(buffered)
             if token[0] != ']':
                 abort("expected ']'")
             advance(buffered)
-            fwrite('add\n'
-                   'pop\tpointer 1\n'
-                   'push\tthat 0\n')
+            fwrite('add' '\n'
+                   'pop' '\t' 'pointer 1' '\n'
+                   'push' '\t' 'that 0' '\n')
 
         elif token[0] == '(' or token[0] == '.':
             compile_subroutine_call(ident, buffered)
@@ -207,7 +207,7 @@ def compile_term(buffered=False):
             obj = lookup(ident)
             if obj is None:
                 abort('undeclared identifier')
-            fwrite('push\t', obj['segment'], ' ', obj['index'], '\n')
+            fwrite('push' '\t', obj['segment'], ' ', obj['index'], '\n')
 
 
 def compile_expression(buffered=False):
@@ -230,7 +230,7 @@ def compile_return_statement():
     advance()
 
     if token[0] == ';':
-        fwrite('push\tconstant 0\n')
+        fwrite('push' '\t' 'constant 0' '\n')
     else:
         compile_expression()
 
@@ -238,7 +238,7 @@ def compile_return_statement():
         abort("expected ';'")
     advance()
 
-    fwrite('return\n')
+    fwrite('return' '\n')
 
 
 def compile_do_statement():
@@ -258,8 +258,8 @@ def compile_do_statement():
         abort("expected ';'")
     advance()
 
-    fwrite('pop\tpointer 1\n')  # ignore return value
-                                  # that is only used in an expression.
+    fwrite('pop' '\t' 'pointer 1' '\n')  # ignore return value
+                                         # that is only used in an expression.
 
 def compile_while_statement():
 
@@ -276,9 +276,9 @@ def compile_while_statement():
 
     compile_expression()
 
-    fwrite('if-goto\tWHILE', tag, 'DO\n'
-           'goto\tWHILE', tag, 'END\n'
-           'label WHILE', tag, 'DO\n')
+    fwrite('if-goto' '\t' 'WHILE', tag, 'DO' '\n'
+           'goto' '\t' 'WHILE', tag, 'END' '\n'
+           'label WHILE', tag, 'DO' '\n')
 
     if token[0] != ')':
         abort("expected ')'")
@@ -294,8 +294,8 @@ def compile_while_statement():
         abort("expected '}'")
     advance()
 
-    fwrite('goto\tWHILE', tag, '\n'
-           'label WHILE', tag, 'END\n')
+    fwrite('goto' '\t' 'WHILE', tag, '\n'
+           'label WHILE', tag, 'END' '\n')
 
 
 def compile_if_statement():
@@ -315,9 +315,9 @@ def compile_if_statement():
         abort("expected ')'")
     advance()
 
-    fwrite('if-goto\tIF', tag, 'YES\n'
-           'goto\tIF', tag, 'NOT\n'
-           'label IF', tag, 'YES\n')
+    fwrite('if-goto' '\t' 'IF', tag, 'YES' '\n'
+           'goto' '\t' 'IF', tag, 'NOT' '\n'
+           'label IF', tag, 'YES' '\n')
 
     if token[0] != '{':
         abort("expected '{'")
@@ -330,8 +330,8 @@ def compile_if_statement():
     advance()
 
     if token[0] == 'else':
-        fwrite('goto\tIF', tag, 'END\n'
-               'label IF', tag, 'NOT\n')
+        fwrite('goto' '\t' 'IF', tag, 'END' '\n'
+               'label IF', tag, 'NOT' '\n')
 
         advance()
 
@@ -345,9 +345,9 @@ def compile_if_statement():
             abort("expected '}'")
         advance()
 
-        fwrite('label IF', tag, 'END\n')
+        fwrite('label IF', tag, 'END' '\n')
     else:
-        fwrite('label IF', tag, 'NOT\n')
+        fwrite('label IF', tag, 'NOT' '\n')
 
 
 def compile_let_statement():
@@ -393,16 +393,16 @@ def compile_let_statement():
 
     if array:
         advance(buffered=True)  # ';'
-        fwrite('push\t', obj['segment'], ' ', obj['index'], '\n')
+        fwrite('push' '\t', obj['segment'], ' ', obj['index'], '\n')
         compile_expression(buffered=True)
         advance(buffered=True)  # ']'
-        fwrite('add\n'
-               'pop\tpointer 1\n')
+        fwrite('add' '\n'
+               'pop' '\t' 'pointer 1' '\n')
         dest = 'that 0'
     else:
         dest = obj['segment'] + ' ' + obj['index']
 
-    fwrite('pop\t', dest, '\n')
+    fwrite('pop' '\t', dest, '\n')
 
     if token[0] != ';':
         abort("expected ';'")
@@ -484,13 +484,13 @@ def compile_subroutine_body(srtype, nfield):
     fwrite(str(nvar), '\n')  # nlocals
 
     if srtype == 'constructor':
-        fwrite('push\tconstant ', nfield, '\n'
-               'call\tMemory.alloc 1\n'
-               'pop\tpointer 0\n')
+        fwrite('push' '\t' 'constant ', nfield, '\n'
+               'call' '\t' 'Memory.alloc 1' '\n'
+               'pop' '\t' 'pointer 0' '\n')
 
     if srtype == 'method':
-        fwrite('push\targument 0\n',
-               'pop\tpointer 0\n')
+        fwrite('push' '\t' 'argument 0' '\n',
+               'pop' '\t' 'pointer 0' '\n')
 
     compile_statements()
 
@@ -523,6 +523,9 @@ def compile_parameter_list(srtype):
     if token is None:
         abort('EOF in parameters declaration')
  
+    if token[0] != ')':
+        abort('in parameters declaration')
+ 
 
 def compile_subroutine_dec(nfield):
 
@@ -554,9 +557,7 @@ def compile_subroutine_dec(nfield):
 
     compile_parameter_list(srtype)
 
-    if token[0] != ')':
-        abort("expected ')'")
-    advance()
+    advance()  # ')'
 
     # subroutineBody
     if token[0] != '{':

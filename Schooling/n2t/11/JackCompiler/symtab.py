@@ -14,7 +14,7 @@ class Symtab(dict):
     def install(self, name, segment, type):
         self[name] = {
             'segment' : segment,
-            'type'    : type,
-            'index'   : self._next_index(segment)
+            'index'   : self._next_index(segment),
+            'type'    : type
         }
 
