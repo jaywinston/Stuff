@@ -8,9 +8,10 @@ usage () {
     echo "$PROG: Usage: $PROG [options] PDF-FILE"
 }
 
+# temporary arg handler
 for arg ; do
     if [[ $arg =~ ^--sheets= ]] ; then
-        sheets=${arg#--sheets=}
+        sheets=${arg#--sheets=}  # eval ${arg#--}, but I haven't read the docs.
         if [[ ! $sheets =~ ^[0-9]+$ ]] ; then
         {
             echo "$PROG: invalid argument to option 'sheets'"
@@ -42,7 +43,7 @@ pages=$(pdfinfo -meta $infile | grep Pages: | cut -d: -f2)
 pps=$(( ${sheets:-4} * 4 ))  # pages per style; 4 pages per sheet
 len_seq=$pps
 styles=$(( (pages-1) / pps + 1 ))
-last_style=$(( pages%pps + (4-pages%5) ))
+last_style=$(( pages%pps + (-(pages%4)&3) ))  # Arithmetically anyone?
 fmt_w=${#styles}  # width for zero padding in the output filenames
 
 
@@ -71,7 +72,7 @@ for ((ns=0; ns<styles; ns++)) ; do
 
     if ((ns+1 == styles && last_style>0)) ; then
         len_seq=$last_style
-        sequence=( $(make_sequence $len_seq) )
+        sequence=( $(make_sequence $last_style) )
     fi
 
     for ((i=0; i<len_seq; i++)) ; do
