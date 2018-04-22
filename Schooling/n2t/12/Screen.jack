@@ -23,8 +23,9 @@ class Screen {
     function void clearScreen() {
         var int i;
         let i = 16384;
-        while (i < 25476) {
+        while (i < 24576) {
             do Memory.poke(i, 0);
+            let i = i + 1;
         }
         return;
     }
@@ -141,6 +142,37 @@ class Screen {
         return;
     }
 
+
+    /** Draws a line within the screen boundaries. */
+    function void drawLineSafely(int x1, int y1, int x2, int y2) {
+        if (x1 < 0) {
+            let x1 = 0;
+        }
+        if (x1 > 511) {
+            let x1 = 511;
+        }
+        if (y1 < 0) {
+            let y1 = 0;
+        }
+        if (y1 > 255) {
+            let y1 = 255;
+        }
+        if (x2 < 0) {
+            let x2 = 0;
+        }
+        if (x2 > 511) {
+            let x2 = 511;
+        }
+        if (y2 < 0) {
+            let y2 = 0;
+        }
+        if (y2 > 255) {
+            let y2 = 255;
+        }
+        do Screen.drawLine(x1, y1, x2, y2);
+        return;
+    }
+
     /** Draws a line from pixel (x1,y1) to pixel (x2,y2), using the current color. */
     function void drawLine(int x1, int y1, int x2, int y2) {
 
@@ -198,7 +230,7 @@ class Screen {
             let nx = x - Math.sqrt((r*r)-(dy*dy));
             let px = x + Math.sqrt((r*r)-(dy*dy));
             let ydy = y + dy;
-            do Screen.drawLine(nx, ydy, px, ydy);
+            do Screen.drawLineSafely(nx, ydy, px, ydy);
             let dy = dy + 1;
                                
         }
