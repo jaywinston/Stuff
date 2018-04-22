@@ -51,6 +51,8 @@
   cmpl  $5, %edi            # End of string?
   je    return              # yes, goto end
   movb  (%ebx,%edi,1), %dl  # %dl <- s[%edi]
+  cmpb  $0, %dl             # s[%edi] == 0?
+  je    return              # yes, goto end
   movb  (%ecx,%edi,1), %dh  # %dh <- t[%edi]
   incl  %edi
   cmpb  %dh, %dl            # s[%edi] == t[%edi] ?

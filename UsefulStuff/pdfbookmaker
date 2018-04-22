@@ -2,19 +2,21 @@
 
 # format a pdf file for brochure-style printing
 
-PROGNAME=$(basename $0)
+PROG=$(basename $0)
 
 usage () {
-    echo "$PROGNAME: Usage: $PROGNAME [options] PDF-FILE"
+    echo "$PROG: Usage: $PROG [options] PDF-FILE"
 }
 
 for arg ; do
     if [[ $arg =~ ^--sheets= ]] ; then
         sheets=${arg#--sheets=}
-        if [[ ! $sheets =~ ^[0-9]+$ || $sheets -le 0 ]] ; then
-            echo "$PROGNAME: invalid argument to option 'sheets'" >&2
+        if [[ ! $sheets =~ ^[0-9]+$ ]] ; then
+        {
+            echo "$PROG: invalid argument to option 'sheets'"
             echo "  Arguments to 'sheets' must be a positive integer."
             exit 1
+        } >&2
         fi
         shift
 break  # With one option for now, let's quit while we're ahead.
@@ -26,20 +28,22 @@ if [ $# -ne 1 ] ; then
     exit 2
 fi
 
-if [ $(dd if=$1 bs=4 count=1 2>/dev/null) != '%PDF' ] ; then
+if [ "$(dd if=$1 bs=4 count=1 2>/dev/null)" != '%PDF' ] ; then
     {
-        echo "$PROGNAME: input file does not appear to be in PDF format"
+        echo "$PROG: input file does not appear to be in PDF format"
         usage
-        echo "$PROGNAME: exiting"
+        echo "$PROG: exiting"
     } >&2
     exit 3
 fi
 
 infile=$1
 pages=$(pdfinfo -meta $infile | grep Pages: | cut -d: -f2)
-pps=$(( ${sheets:=4} * 4 ))  # pages per style; 4 pages per sheet
-styles=$(( pages / pps ))
-(( pages % pps )) && ((++styles))
+pps=$(( ${sheets:-4} * 4 ))  # pages per style; 4 pages per sheet
+len_seq=$pps
+styles=$(( (pages-1) / pps + 1 ))
+last_style=$(( pages%pps + (4-pages%5) ))
+fmt_w=${#styles}  # width for zero padding in the output filenames
 
 
 function make_sequence {
@@ -55,32 +59,34 @@ function make_sequence {
 }
 
 sequence=( $(make_sequence) )
-len_seq=$pps
-fmt_w=${#styles}  # width for zero padding in the output filenames
+
 pdfseparate $infile page-%d.pdf
 echo | groff -T pdf > blank.pdf
 
 # ns: number of style
 for ((ns=0; ns<styles; ns++)) ; do
+
     # po: page offset
-    po=$((ns * pps))
-    # todo: option for full padding
-    if ((ns+1 == styles && pages%pps)) ; then
-        len_seq=$((pages - po + pages%4)) 
+    po=$(( ns * pps ))
+
+    if ((ns+1 == styles && last_style>0)) ; then
+        len_seq=$last_style
         sequence=( $(make_sequence $len_seq) )
     fi
+
     for ((i=0; i<len_seq; i++)) ; do
-        page_no=$((po + ${sequence[i]}))
-        if (($page_no <= $pages)) ; then
-            page=page-${page_no}.pdf 
-            style[$i]=$page 
+        page_no=$(( po + ${sequence[i]} ))
+        if ((page_no <= pages)) ; then
+            style[$i]="page-${page_no}.pdf"
         else
             style[$i]=blank.pdf
         fi
     done
+
     pdfunite ${style[@]} style-$(printf "%0${fmt_w}d" $ns).pdf
     rm $(grep -o 'page[^ ]*' <<< ${style[@]})
     unset style
+
 done
 
 rm blank.pdf

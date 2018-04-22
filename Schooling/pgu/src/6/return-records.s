@@ -86,13 +86,6 @@
  no_null:                               # because the input might be less than
                                         # 5 bytes,
  read_loop:
-#pushl $0
-#pushl $0
-#popl %edi
-#cmpl $1,%edi
-#je exit
-#incl %edi
-#pushl %edi
   ###READ A RECORD###
   pushl ST_FD(%ebp)
   pushl $record_buffer
@@ -107,8 +100,8 @@
   jne   finished_reading
 
   ###CHECK FOR A MATCH###
-  pushl $input_buffer
   pushl $record_buffer
+  pushl $input_buffer
   call  compare_strings
   addl  $8, %esp
   cmpl  $1, %eax
