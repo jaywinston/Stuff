@@ -1,0 +1,20 @@
+class Main {
+
+    function void main() {
+        do util.init();
+        do Output.printInt((0));do Output.printInt(util.cos(0));do Output.println();
+        do Output.printInt((28));do Output.printInt(util.cos(28));do Output.println();
+        do Output.printInt((90));do Output.printInt(util.cos(90));do Output.println();
+        do Output.printInt((91));do Output.printInt(util.cos(91));do Output.println();
+        do Output.printInt((167));do Output.printInt(util.cos(167));do Output.println();
+        do Output.printInt((180));do Output.printInt(util.cos(180));do Output.println();
+        do Output.printInt((190));do Output.printInt(util.cos(190));do Output.println();
+        do Output.printInt((270));do Output.printInt(util.cos(270));do Output.println();
+        do Output.printInt((345));do Output.printInt(util.cos(345));do Output.println();
+        do Output.printInt((360));do Output.printInt(util.cos(360));do Output.println();
+/*
+*/
+        return;
+    }
+
+}

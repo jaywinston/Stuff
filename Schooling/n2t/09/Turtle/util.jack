@@ -1,0 +1,72 @@
+class util {
+
+    static Array trigv;
+
+    function void init() {
+
+        let trigv = Array.new(91);
+
+/*                          populate trig table                             */
+/* These values don't change, whether for sine or cosine.  The appropriate
+ * value is retrieved by using an offset from the start of the table or the end
+ * and applying the right sign.  Indices are in degrees.  Values are
+ * multiplied by 100 because Hack has no floating point values and 1000 would
+ * likely cause a lot of overflow.
+ */
+let trigv[0] = 0; let trigv[1] = 2; let trigv[2] = 3; let trigv[3] = 5;
+let trigv[4] = 7; let trigv[5] = 9; let trigv[6] = 10; let trigv[7] = 12;
+let trigv[8] = 14; let trigv[9] = 16; let trigv[10] = 17; let trigv[11] = 19;
+let trigv[12] = 21; let trigv[13] = 22; let trigv[14] = 24; let trigv[15] = 26;
+let trigv[16] = 28; let trigv[17] = 29; let trigv[18] = 31; let trigv[19] = 33;
+let trigv[20] = 34; let trigv[21] = 36; let trigv[22] = 37; let trigv[23] = 39;
+let trigv[24] = 41; let trigv[25] = 42; let trigv[26] = 44; let trigv[27] = 45;
+let trigv[28] = 47; let trigv[29] = 48; let trigv[30] = 50; let trigv[31] = 52;
+let trigv[32] = 53; let trigv[33] = 54; let trigv[34] = 56; let trigv[35] = 57;
+let trigv[36] = 59; let trigv[37] = 60; let trigv[38] = 62; let trigv[39] = 63;
+let trigv[40] = 64; let trigv[41] = 66; let trigv[42] = 67; let trigv[43] = 68;
+let trigv[44] = 69; let trigv[45] = 71; let trigv[46] = 72; let trigv[47] = 73;
+let trigv[48] = 74; let trigv[49] = 75; let trigv[50] = 77; let trigv[51] = 78;
+let trigv[52] = 79; let trigv[53] = 80; let trigv[54] = 81; let trigv[55] = 82;
+let trigv[56] = 83; let trigv[57] = 84; let trigv[58] = 85; let trigv[59] = 86;
+let trigv[60] = 87; let trigv[61] = 87; let trigv[62] = 88; let trigv[63] = 89;
+let trigv[64] = 90; let trigv[65] = 91; let trigv[66] = 91; let trigv[67] = 92;
+let trigv[68] = 93; let trigv[69] = 93; let trigv[70] = 94; let trigv[71] = 95;
+let trigv[72] = 95; let trigv[73] = 96; let trigv[74] = 96; let trigv[75] = 97;
+let trigv[76] = 97; let trigv[77] = 97; let trigv[78] = 98; let trigv[79] = 98;
+let trigv[80] = 98; let trigv[81] = 99; let trigv[82] = 99; let trigv[83] = 99;
+let trigv[84] = 99; let trigv[85] = 100; let trigv[86] = 100;
+let trigv[87] = 100; let trigv[88] = 100; let trigv[89] = 100;
+let trigv[90] = 100;
+/*                          end trig table                                  */
+        return;
+    }
+
+    function int sin(int a) {
+        var boolean neg;
+
+        let neg = a > 180;
+        if (neg) {
+            let a = util.mod(a, 180);
+        }
+        if (a > 90) {
+            let a = 90 - (util.mod(a-1, 90)+1);
+        }
+        if (neg) {
+            return -trigv[a];
+        } else {
+            return trigv[a];
+        }
+    }
+
+    function int cos(int a) {
+        return util.sin(a+90);
+    }
+
+    function int mod(int n, int d) {
+        var int q;
+
+        let q = n / d;
+        return n - (q*d);
+    }
+
+}
