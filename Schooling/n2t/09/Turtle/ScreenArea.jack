@@ -1,0 +1,54 @@
+/* 16384 - 24575 */
+
+class ScreenArea {
+
+    field int orig;
+    field List words;
+
+    constructor ScreenArea new(int x, int y, int m, int a) {
+        var int word, x2, y2;
+        var Vector v;
+
+        let word = 16384 + ((y*32) + (x/16));
+        let v = Vector.new();
+        do v.calculate(m, a);
+        let x2 = x + v.x();
+        let y2 = y + v.y();
+        do v.dispose();
+        return this;
+    }
+
+    method void dispose() {
+        do words.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    method void copy() {
+        var List p;
+        var Word w;
+
+        let p = words;
+        while ( ~(p=null) ) {
+            let w = p.object();
+            do w.setValue(Memory.peek(w.address()));
+            let p = p.next();
+        }
+
+        return;
+    }
+
+    method void restore() {
+        var List p;
+        var Word w;
+
+        let p = words;
+        while ( ~(p=null) ) {
+            let w = p.object();
+            do Memory.poke(w.address(), w.value());
+            let p = p.next();
+        }
+
+        return;
+    }
+}

@@ -1,0 +1,34 @@
+class Word {
+
+    field int addr, val;
+
+    constructor Word new(int a, int v) {
+        let addr = a;
+        let val = v;
+        return this;
+    }
+
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    method int address() {
+        return addr;
+    }
+
+    method int value() {
+        return val;
+    }
+
+    method int setAddress(int a) {
+        let addr = a;
+        return addr;
+    }
+
+    method int setValue(int v) {
+        let val = v;
+        return v;
+    }
+
+}

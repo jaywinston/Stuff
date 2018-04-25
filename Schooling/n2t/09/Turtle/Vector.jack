@@ -12,6 +12,11 @@ class Vector {
         return this;
     }
 
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+
     method int x() {
         return x;
     }

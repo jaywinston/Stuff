@@ -1,0 +1,49 @@
+class List {
+
+    field int o, n;
+
+    constructor List new() {
+        let n = 0;
+        return this;
+    }
+
+    method void dispose() {
+        var List p, q;
+
+        let p = this;
+        while ( ~(p=null) ) {
+            let q = p.next();
+            do Memory.deAlloc(p);
+            let p = q;
+        }
+
+        return;
+    }
+
+    method List insert(int o) {
+        var List l;
+
+        let l = List.new();
+        do l.setObject(o);
+        do l.setNext(this);
+        return l;
+    }
+
+    method int object() {
+        return o;
+    }
+
+    method int next() {
+        return n;
+    }
+
+    method void setObject(int obj) {
+        let o = obj;
+        return;
+    }
+
+    method void setNext(int next) {
+        let n = next;
+        return;
+    }
+}
