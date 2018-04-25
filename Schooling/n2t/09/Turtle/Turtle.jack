@@ -1,16 +1,19 @@
 class Turtle {
 
     field int direction, _x, _y;
+    field boolean _pendown;
 
-    constructor Turtle new(int dir, int x, int y) {
-        let direction = util.mod(dir, 360);
+    constructor Turtle new(int x, int y, int dir) {
         let _x = x;
         let _y = y;
+        let direction = setDirection(dir);
+        let _pendown = false;
+        do show();
         return this;
     }
 
     method int setDirection(int val) {
-        let direction = util.mod(direction+val, 360);
+        let direction = util.mod(val, 360);
         if (direction < 0) {
             let direction = direction + 360;
         }
@@ -40,9 +43,71 @@ class Turtle {
     }
 
     method void drawTurtle() {
-        var int x1, y1, x2, y2;
+        var int i, l, tlen;
 
-        let x1 = 0;
+        let tlen = 10;
+        let i = 150;
+        let l = 0;
+        while (i < 180) {
+            do util.drawVector(_x, _y, tlen-(l/6), direction+i);
+            let i = i + 1;
+            let l = l + 1;
+        }
+        do util.drawVector(_x, _y, tlen-(l/6), direction+i);
+        while (i < 210) {
+            do util.drawVector(_x, _y, tlen-(l/6), direction+i);
+            let i = i + 1;
+            let l = l - 1;
+        }
+        do util.drawVector(_x, _y, tlen-(l/6), direction+i);
+
+        return;
+    }
+
+    method void show() {
+        do Screen.setColor(true);
+        do drawTurtle();
+        return;
+    }
+
+    method void hide() {
+        do Screen.setColor(false);
+        do drawTurtle();
+        return;
+    }
+
+    method int turn(int d) {
+        do setDirection(direction + d);
+        return direction;
+    }
+
+    method void turnleft(int d) {
+        do turn(d);
+        return;
+    }
+
+    method void turnright(int d) {
+        do turn(-d);
+        return;
+    }
+
+    method void forward(int l) {
+        if (_pendown) {
+            do Screen.setColor(true);
+        } else {
+            do Screen.setColor(false);
+        }
+        do util.drawVector(_x, _y, l, direction);
+        return;
+    }
+
+    method void penup() {
+        let _pendown = false;
+        return;
+    }
+
+    method void pendown() {
+        let _pendown = true;
         return;
     }
 }

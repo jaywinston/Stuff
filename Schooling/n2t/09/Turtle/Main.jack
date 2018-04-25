@@ -1,19 +1,48 @@
 class Main {
 
     function void main() {
-        do util.init();
-        do Output.printInt((0));do Output.printInt(util.cos(0));do Output.println();
-        do Output.printInt((28));do Output.printInt(util.cos(28));do Output.println();
-        do Output.printInt((90));do Output.printInt(util.cos(90));do Output.println();
-        do Output.printInt((91));do Output.printInt(util.cos(91));do Output.println();
-        do Output.printInt((167));do Output.printInt(util.cos(167));do Output.println();
-        do Output.printInt((180));do Output.printInt(util.cos(180));do Output.println();
-        do Output.printInt((190));do Output.printInt(util.cos(190));do Output.println();
-        do Output.printInt((270));do Output.printInt(util.cos(270));do Output.println();
-        do Output.printInt((345));do Output.printInt(util.cos(345));do Output.println();
-        do Output.printInt((360));do Output.printInt(util.cos(360));do Output.println();
+        var int i, x, y;
+        var Turtle t;
+
+        do Trig100.init();
+        let t = Turtle.new(100, 100, 90);
+        do t.pendown();
+        do t.forward(50);
+        do t.turnright(90);
+        do t.forward(50);
+        do t.turnright(90);
+        do t.forward(50);
+        do t.turnright(90);
+        do t.forward(50);
+        do t.turnright(90);
 /*
+        let i = 0;
+        while (i < 360) {
+            do util.drawVector(150,50,50,i);
+            let i = i + 1;
+        }
+
+        do Screen.drawRectangle(0,0,20,20);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(5,5,15,15);
+
+        let i = 0;
+        let x = 10;
+        let y = 10;
+        while (i < 360) {
+            do t.setX(x);
+            do t.setY(y);
+            do t.setDirection(i);
+            do t.show();
+            let x = x + 10;
+            if (x > 490) {
+                let x = 15;
+                let y = y + 30;
+            }
+            let i = i + 1;
+        }
 */
+
         return;
     }
 
