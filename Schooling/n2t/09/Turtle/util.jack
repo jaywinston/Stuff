@@ -9,9 +9,11 @@ class util {
 
     function void drawVector(int x, int y, int l, int a) {
         do Screen.drawLine(x, y,
-                           x + ((((l*Trig100.cos(a))-50) / 100) + 1),
+                           //x + ((((l*Trig100.cos(a))-50) / 100) + 1),
+                           x + ((((l*Trig100.cos(a))) / 100) ),
                 /* The screen is a vertical inverse of coordinate the plane. */
-                           y - ((((l*Trig100.sin(a))-50) / 100) + 1));
+                           //y - ((((l*Trig100.sin(a))-50) / 100) + 1));
+                           y - ((((l*Trig100.sin(a))) / 100) ));
         return;
     }
 }

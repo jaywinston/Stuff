@@ -1,12 +1,14 @@
 class Turtle {
 
     field int direction, _x, _y;
+    field Vector v;
     field boolean _pendown;
 
     constructor Turtle new(int x, int y, int dir) {
         let _x = x;
         let _y = y;
         let direction = setDirection(dir);
+        let v = Vector.new();
         let _pendown = false;
         do show();
         return this;
@@ -49,17 +51,21 @@ class Turtle {
         let i = 150;
         let l = 0;
         while (i < 180) {
-            do util.drawVector(_x, _y, tlen-(l/6), direction+i);
+            do v.calculate(tlen-(l/6), direction+i);
+            do Screen.drawLine(_x, _y, _x+v.x(), _y-v.y());
             let i = i + 1;
             let l = l + 1;
         }
-        do util.drawVector(_x, _y, tlen-(l/6), direction+i);
+        do v.calculate(tlen-(l/6), direction+i);
+        do Screen.drawLine(_x, _y, _x+v.x(), _y-v.y());
         while (i < 210) {
-            do util.drawVector(_x, _y, tlen-(l/6), direction+i);
+            do v.calculate(tlen-(l/6), direction+i);
+            do Screen.drawLine(_x, _y, _x+v.x(), _y-v.y());
             let i = i + 1;
             let l = l - 1;
         }
-        do util.drawVector(_x, _y, tlen-(l/6), direction+i);
+        do v.calculate(tlen-(l/6), direction+i);
+        do Screen.drawLine(_x, _y, _x+v.x(), _y-v.y());
 
         return;
     }
@@ -77,7 +83,9 @@ class Turtle {
     }
 
     method int turn(int d) {
+        do hide();
         do setDirection(direction + d);
+        do show();
         return direction;
     }
 
@@ -92,12 +100,27 @@ class Turtle {
     }
 
     method void forward(int l) {
+        var int x, y;
+
+        do hide();
+
         if (_pendown) {
             do Screen.setColor(true);
         } else {
             do Screen.setColor(false);
         }
-        do util.drawVector(_x, _y, l, direction);
+
+        do v.calculate(l, direction);
+        let x = _x + v.x();
+        let y = _y - v.y();
+
+        do Screen.drawLine(_x, _y, x, y);
+
+        do setX(x);
+        do setY(y);
+
+        do show();
+
         return;
     }
 

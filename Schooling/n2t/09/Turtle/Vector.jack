@@ -1,0 +1,22 @@
+class Vector {
+
+    field int x, y;
+
+    constructor Vector new() {
+        return this;
+    }
+
+    method Vector calculate(int m, int a) {
+        let x = (m*Trig100.cos(a)) / 100;
+        let y = (m*Trig100.sin(a)) / 100;
+        return this;
+    }
+
+    method int x() {
+        return x;
+    }
+
+    method int y() {
+        return y;
+    }
+}
