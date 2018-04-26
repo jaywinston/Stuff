@@ -1,6 +1,29 @@
 class Main {
 
     function void main() {
+        var ScreenArea s;
+
+/*
+        do Screen.drawLine(0,0,511,255);
+        do Screen.drawLine(20,0,51,255);
+        do Screen.drawLine(200,0,311,255);
+        do Screen.drawLine(100,0,111,255);
+        do Screen.drawLine(208,0,11,255);
+        do Screen.drawLine(29,0,411,255);
+        do Screen.drawLine(145,0,211,255);
+        do Screen.drawLine(78,0,1,255);
+        do Screen.drawRectangle(21,21,99,99);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(25,25,95,95);
+        do Screen.setColor(true);
+        do Screen.drawRectangle(30,30,90,90);
+        let s = ScreenArea.new();
+        do s.copy(20,20,100,100);
+        do Screen.clearScreen();
+        do Screen.drawRectangle(0,0,200,200);
+        do s.restore();
+*/
+
         var int i, x, y;
         var Turtle t;
 
@@ -15,6 +38,27 @@ class Main {
         do t.turnright(90);
         do t.forward(50);
         do t.turnright(90);
+
+        do t.penup();
+        do t.turnright(135);
+        do t.forward(100);
+        do t.pendown();
+        do t.forward(20);
+        do t.turnleft(45);
+        do t.forward(20);
+        do t.turnleft(45);
+        do t.forward(20);
+        do t.turnleft(45);
+        do t.forward(20);
+        do t.turnleft(45);
+        do t.forward(20);
+        do t.turnleft(45);
+        do t.forward(20);
+        do t.turnleft(45);
+        do t.forward(20);
+        do t.turnleft(45);
+        do t.forward(20);
+        do t.turnleft(45);
 /*
         let i = 0;
         while (i < 360) {

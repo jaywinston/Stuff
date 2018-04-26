@@ -21,6 +21,7 @@ class Word {
         return val;
     }
 
+/*
     method int setAddress(int a) {
         let addr = a;
         return addr;
@@ -30,5 +31,5 @@ class Word {
         let val = v;
         return v;
     }
-
+*/
 }

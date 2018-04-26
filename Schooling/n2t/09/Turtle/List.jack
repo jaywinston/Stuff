@@ -20,15 +20,6 @@ class List {
         return;
     }
 
-    method List insert(int o) {
-        var List l;
-
-        let l = List.new();
-        do l.setObject(o);
-        do l.setNext(this);
-        return l;
-    }
-
     method int object() {
         return o;
     }
@@ -45,5 +36,15 @@ class List {
     method void setNext(int next) {
         let n = next;
         return;
+    }
+
+    method List insert(int o) {
+        var List l;
+
+        let l = List.new();
+        do l.setObject(o);
+        do l.setNext(this);
+
+        return l;
     }
 }

@@ -1,35 +1,29 @@
 class Turtle {
 
+    static int TLEN;
     field int direction, _x, _y;
     field Vector v;
+    field ScreenArea sa;
     field boolean _pendown;
 
-    constructor Turtle new(int x, int y, int dir) {
+    constructor Turtle new(int x, int y, int d) {
+        let TLEN = 10;
         let _x = x;
         let _y = y;
-        let direction = setDirection(dir);
+        let direction = setDirection(d);
         let v = Vector.new();
+        let sa = ScreenArea.new();
         let _pendown = false;
         do show();
         return this;
     }
 
-    method int setDirection(int val) {
-        let direction = util.mod(val, 360);
+    method int setDirection(int d) {
+        let direction = util.mod(d, 360);
         if (direction < 0) {
             let direction = direction + 360;
         }
         return direction;
-    }
-
-    method int setX(int val) {
-        let _x = val;
-        return _x;
-    }
-
-    method int setY(int val) {
-        let _y = val;
-        return _y;
     }
 
     method int direction() {
@@ -71,6 +65,10 @@ class Turtle {
     }
 
     method void show() {
+        do sa.clear();
+        //do v.calculate(TLEN, direction);
+        //do sa.copy(_x-v.x(), _y-v.y(), _x+v.x(), _y+v.y());
+        do sa.copy(_x-TLEN, _y-TLEN, _x+TLEN, _y+TLEN);
         do Screen.setColor(true);
         do drawTurtle();
         return;
@@ -79,6 +77,7 @@ class Turtle {
     method void hide() {
         do Screen.setColor(false);
         do drawTurtle();
+        do sa.restore();
         return;
     }
 
@@ -89,14 +88,12 @@ class Turtle {
         return direction;
     }
 
-    method void turnleft(int d) {
-        do turn(d);
-        return;
+    method int turnleft(int d) {
+        return turn(d);
     }
 
-    method void turnright(int d) {
-        do turn(-d);
-        return;
+    method int turnright(int d) {
+        return turn(-d);
     }
 
     method void forward(int l) {
@@ -104,20 +101,17 @@ class Turtle {
 
         do hide();
 
-        if (_pendown) {
-            do Screen.setColor(true);
-        } else {
-            do Screen.setColor(false);
-        }
-
         do v.calculate(l, direction);
         let x = _x + v.x();
         let y = _y - v.y();
 
-        do Screen.drawLine(_x, _y, x, y);
+        if (_pendown) {
+            do Screen.setColor(true);
+            do Screen.drawLine(_x, _y, x, y);
+        }
 
-        do setX(x);
-        do setY(y);
+        let _x = x;
+        let _y = y;
 
         do show();
 
