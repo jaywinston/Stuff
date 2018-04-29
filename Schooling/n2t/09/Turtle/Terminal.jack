@@ -1,0 +1,18 @@
+class Terminal {
+
+    field Array linebuf;
+    field String PS1, PS2, ps;
+    field TextBox tb;
+
+    constructor Terminal new(String ps1, String ps2,
+                             int i, int j, int h, int w) {
+        let tb = TextBox.new(i, j, h, w);
+        let linebuf = Array.new(100);
+        let PS1 = ps1;
+        let PS2 = ps2;
+        let ps = PS1;
+        do tb.puts(ps);
+        return this;
+    }
+
+}

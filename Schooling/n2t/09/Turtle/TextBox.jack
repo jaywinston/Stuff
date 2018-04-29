@@ -3,7 +3,7 @@ class TextBox {
     field int row, col;
     field int left, right, top, bottom;
 
-    constructor TextBox new(int i, int j, int w, int h) {
+    constructor TextBox new(int i, int j, int h, int w) {
 
         let left = j;
         let right = j + w;
@@ -21,59 +21,87 @@ class TextBox {
     method void clear() {
         var int x1, y1, x2, y2;
 
-        let x1 = (left*8) - 2;
-        let y1 = (top*11) - 2;
-        let x2 = (right*8);
-        let y2 = (bottom*11) + 1;
+        if (left > 0) {
+            let x1 = (left*8) - 2;
+        } else {
+            let x1 = 0;
+        }
+        if (top > 0) {
+            let y1 = (top*11) - 2;
+        } else {
+            let y1 = 0;
+        }
+        if (right < 64) {
+            let x2 = (right*8);
+        } else {
+            let x2 = 510;
+        }
+        if (bottom < 23) {
+            let y2 = (bottom*11) + 1;
+        } else {
+            let y2 = 255;
+        }
+
         do Screen.setColor(true);
         do Screen.drawRectangle(x1, y1, x2, y2);
-        let x1 = x1 + 1;
-        let y1 = y1 + 1;
-        let x2 = x2 - 1;
-        let y2 = y2 - 1;
+
+        if (x1 > 0) {
+            let x1 = x1 + 1;
+        }
+        if (y1 > 0) {
+            let y1 = y1 + 1;
+        }
+        if (x2 < 510) {
+            let x2 = x2 - 1;
+        }
+        if (y2 < 255) {
+            let y2 = y2 - 1;
+        }
+
         do Screen.setColor(false);
         do Screen.drawRectangle(x1, y1, x2, y2);
 
         return;
     }
 
-    method void putchar(int c) {
-        if (col = right) {
-            let col = left;
-            let row = row + 1;
-        }
-        if (row = bottom) {
-            let row = bottom - 1;
-            do scroll();
-        }
-        do Output.moveCursor(row, col);
-        do Output.printChar(c);
-        /* The vm emulator insists on an extra column to the right. */
-        do Screen.setColor(true);
-        do Screen.drawLine(right*8, top*11, right*8, bottom*11);
-        let col = col + 1;
-        do Output.moveCursor(row, col);
+    method void reset() {
+        do clear();
+        let row = top;
+        let col = left;
         return;
     }
 
-    method void scroll() {
-/*
-        var int c, r;  // column, row
-        var int b, l;  // bottom, line
-        let c = 16384 + ((top*352) + ((left*8)/16));
-        let l = 0;
-        while (r < b) {
-            while (c < l) {
-                do Memory.poke(c, Memory.peek(c+352));
-                let c = c + 1;
+    method void putchar(int c) {
+        do Output.moveCursor(row, col);
+        do Output.printChar(c);
+
+        let col = col + 1;
+
+        if (col = right) {
+            let col = left;
+            let row = row + 1;
+            /* The vm emulator insists on an extra column to the right. */
+            if (right < 64)  {
+                do Screen.setColor(true);
+                do Screen.drawLine(right*8, top*11, right*8, bottom*11);
             }
         }
-        let end = end + 352;
-        while (i < end) {
-            do Memory.poke(i, 0);
-            let i = i + 1;
+        if (row = bottom) {
+            let row = bottom - 1;
         }
-*/
+
         return;
     }
+
+    method void puts(String s) {
+        var int i;
+
+        let i = 0;
+        while (i < s.length()) {
+            do putchar(s.charAt(i));
+            let i = i + 1;
+        }
+        return;
+    }
+
 }

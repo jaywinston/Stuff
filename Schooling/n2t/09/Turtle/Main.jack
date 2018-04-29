@@ -1,86 +1,19 @@
 class Main {
 
     function void main() {
+        var Banner banner;
         var Turtle t;
-        var ScreenArea s;
-        var int i, x, y;
-        var int x1,y1,x2,y2;
-        var TextBox tb;
+        var Terminal term;
         var char c;
 
+        do Trig100.init();
+
+        let banner = Banner.new(
+                        "                       Turtle 0.01",
+                        0,0,1,64);
+        let term = Terminal.new("> ", "| ",2,1,20,30);
+        do banner.flash("Bang!");
 /*
-
-        let tb = TextBox.new(1,1,10,10);
-        let c = 32;
-        while (c < 127) {
-            do tb.putchar(c);
-            let c = c + 1;
-        }
-        do tb.putchar(103);
-        do tb.putchar(103);
-        do tb.putchar(103);
-        do tb.putchar(103);
-        do tb.putchar(103);
-        do tb.putchar(103);
-        let i = 0;
-        let x1 = 100;
-        let y1 = 70;
-        let y2 = 70;
-        while (i < 3) {
-            do Screen.drawLine(x1,y1,x1,y2);
-            let i = i + 1;
-            let x1 = x1 + 1;
-            let y1 = y1 - 1;
-            let y2 = y2 - 3;
-        }
-        while (i > -1) {
-            do Screen.drawLine(x1,y1,x1,y2);
-            let i = i - 1;
-            let x1 = x1 + 1;
-            let y1 = y1 + 1;
-            let y2 = y2 + 3;
-        }
-        let i = 0;
-        do Screen.drawRectangle(0,12, 509, 13);
-        do Output.moveCursor(0,0);
-        while (i<63) { do Output.printChar(65); let i = i + 1; }
-        do Output.printChar(66); 
-
-        do Screen.drawLine(0,0,511,255);
-        do Screen.drawLine(20,0,51,255);
-        do Screen.drawLine(200,0,311,255);
-        do Screen.drawLine(100,0,111,255);
-        do Screen.drawLine(208,0,11,255);
-        do Screen.drawLine(29,0,411,255);
-        do Screen.drawLine(145,0,211,255);
-        do Screen.drawLine(78,0,1,255);
-        do Screen.drawRectangle(21,21,99,99);
-        do Screen.setColor(false);
-        do Screen.drawRectangle(25,25,95,95);
-        do Screen.setColor(true);
-        do Screen.drawRectangle(30,30,90,90);
-        let s = ScreenArea.new(3,5);
-        do s.copy(0,0,2,4);
-        do Screen.clearScreen();
-        do Screen.drawRectangle(0,0,200,200);
-        do s.restore();
-
-
-        //do Trig100.init();
-        let i = 0;
-        let x = 10;
-        let y = 10;
-        while (i < 360) {
-            let t = Turtle.new(x, y, i);
-            do t.dispose();
-            let i = i + 1;
-            let x = x + 12;
-            if ( (x+10) > 504) {
-                let x = 10;
-                let y = y + 24;
-            }
-        }
-*/
         let t = Turtle.new(100, 100, 90);
         do t.pendown();
         do t.forward(50);
@@ -112,31 +45,6 @@ class Main {
         do t.turnleft(45);
         do t.forward(20);
         do t.turnleft(45);
-/*
-*/
-/*
-        let i = 0;
-        while (i < 360) {
-            do t.turnright(1);
-            let i = i + 1;
-        }
-
-        do Screen.drawRectangle(0,0,20,20);
-        do Screen.setColor(false);
-        do Screen.drawRectangle(5,5,15,15);
-
-        let i = 0;
-        let x = 10;
-        let y = 10;
-        while (i < 360) {
-            let x = x + 10;
-            if (x > 490) {
-                let x = 15;
-                let y = y + 30;
-            }
-            let i = i + 1;
-
-        }
 */
 
         return;
