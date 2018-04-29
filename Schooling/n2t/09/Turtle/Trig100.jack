@@ -8,10 +8,12 @@
 class Trig100 {
 
     static Array trigv;
+    static boolean initialized;
 
     function void init() {
 
         let trigv = Array.new(91);
+        let initialized = true;
 
 /*                          populate trig table                             */
 
@@ -70,5 +72,9 @@ let trigv[90] = 100;
 
     function int cos(int a) {
         return Trig100.sin(a+90);
+    }
+
+    function boolean isInitialized() {
+        return initialized;
     }
 }

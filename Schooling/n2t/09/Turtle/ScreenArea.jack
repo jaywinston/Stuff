@@ -1,80 +1,81 @@
 class ScreenArea {
 
-    field List words;
-    static Array orig;
+    field int alen, height, width;
+    field Array orig, words;
 
-    constructor ScreenArea new() {
-        let words = null;
+    constructor ScreenArea new(int w, int h) {
+        var int i;
+
+        let width = (w/16) + 1;
+        let height = h;
+        let alen = width * height;
+        let orig = 16384;
+        let words = Array.new(alen);
+        let i = 0;
+        while (i < alen) {
+            let words[i] = Word.new(0, 0);
+            let i = i + 1;
+        }
+
         return this;
     }
 
     method void dispose() {
-        do clear();
+        var int i;
+        var Word w;
+
+        let i = 0;
+        while (i < alen) {
+            let w = words[i];
+            do w.dispose();
+            let i = i + 1;
+        }
+        do words.dispose();
+
         do Memory.deAlloc(this);
+
         return;
     }
 
     method void clear() {
-        var List p;
-        var Word w;
-
-        let p = words;
-        while ( ~(p=null) ) {
-            let w = p.object();
-            do w.dispose();
-            let p = p.next();
-        }
-        do words.dispose();
         return;
     }
 
-    method int copy(int x1, int y1, int x2, int y2) {
-        var int i, n;
-        var Array orig;
-        var int off;
+    method int copy(int x, int y) {
+        var int i;
+        var int h, w;
+        var int base, off;
+        var Word word;
 
-        if (x1 > x2) {
-            let x1 = x1 - x2;
-            let x2 = x1 + x2;
-            let x1 = x2 - x1;
-        }
-        if (y1 > y2) {
-            let y1 = y1 - y2;
-            let y2 = y1 + y2;
-            let y1 = y2 - y1;
-        }
-
-        let orig = 16384;
-        let words = null;
-        let n = 0;
-        while ( ~(y1>y2) ) {
-            let off = (y1*32) + (x1/16);
-            let i = x1;
-            while ( ~(i>x2) ) {
-                let words = words.insert(Word.new(orig+off, orig[off]));
-                let i = i + 16;
-                let off = off + 1;
-                let n = n + 1;
+        let base = (x/16) + (y*32);
+        let h = 0;
+        let i = 0;
+        while (h < height) {
+            let off = base + (h*32);
+            let w = 0;
+            while (w < width) {
+                let word = words[i];
+                let i = i + 1;
+                do word.setAddress(orig+(off+w));
+                do word.setValue(orig[off+w]);
+                let w = w + 1;
             }
-            let y1 = y1 + 1;
+            let h = h + 1;
         }
 
-        return n;
+        return i;
     }
 
     method int restore() {
-        var List p;
         var Word w;
         var Array a;
         var int n;
 
-        let p = words;
         let a = 0;
         let n = 0;
-        while ( ~(p=null) ) {
-            let w = p.object();
+        while (n < alen) {
+            let w = words[n];
             let a[w.address()] = w.value();
-            let p = p.next();
             let n = n + 1;
         }
 

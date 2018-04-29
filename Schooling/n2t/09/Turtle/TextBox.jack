@@ -57,10 +57,11 @@ class TextBox {
     }
 
     method void scroll() {
+/*
         var int c, r;  // column, row
         var int b, l;  // bottom, line
         let c = 16384 + ((top*352) + ((left*8)/16));
-        let l = 
+        let l = 0;
         while (r < b) {
             while (c < l) {
                 do Memory.poke(c, Memory.peek(c+352));
@@ -72,6 +73,7 @@ class TextBox {
             do Memory.poke(i, 0);
             let i = i + 1;
         }
+*/
         return;
     }
 }

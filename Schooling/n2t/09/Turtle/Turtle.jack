@@ -12,7 +12,7 @@ class Turtle {
         let _y = y;
         let direction = setDirection(d);
         let v = Vector.new();
-        let sa = ScreenArea.new();
+        let sa = ScreenArea.new(TLEN*2, TLEN);
         let _pendown = false;
         if (~Trig100.isInitialized()) {
             do Trig100.init();
@@ -23,6 +23,8 @@ class Turtle {
 
     method void dispose() {
         do hide();
+        do v.dispose();
+        do sa.dispose();
         do Memory.deAlloc(this);
         return;
     }
@@ -48,76 +50,31 @@ class Turtle {
     }
 
     method void drawTurtle() {
-        var int i, l, x1, x2, y, x, y1, y2;
-        var int cos, sin;
-/*
-var int x1r,y1r,x2r,y2r;
+        var int i, l, x, y;
 
-        let i = 0;
-        let x = _x - 3;
-        let y1 = _y + 3;
-        let y2 = y1;
-        let x1 = _x - 3;
-        let x2 = x1;
-        let y = _y - 3;
-        let cos = Trig100.cos(direction);
-        let sin = Trig100.sin(direction);
-        while (i < 3) {
-let x1r = _x + ( ((cos*(x1-_x)) / 100) + (( sin*(y-_y)) / 100) );
-let y1r = _y - ( ((sin*(x1-_x)) / 100) + (( cos*(y-_y)) / 100) );
-let x2r = _x + ( ((cos*(x2-_x)) / 100) + (( sin*(y-_y)) / 100) );
-let y2r = _y - ( ((sin*(x2-_x)) / 100) + (( cos*(y-_y)) / 100) );
-//            do Screen.drawLine(
-            do Screen.drawLine(x1r,y1r,x2r,y2r);
-//            );
-            let i = i + 1;
-            let x = x + 1;
-            let y1 = y1 - 1;
-            let y2 = y2 - 3;
-            let x1 = x1 + 1;
-            let x2 = x2 + 3;
-            let y = y + 1;
-        }
-        while (i > -1) {
-let x1r = _x + ( ((cos*(x1-_x)) / 100) + (( sin*(y-_y)) / 100) );
-let y1r = _y - ( ((sin*(x1-_x)) / 100) + (( cos*(y-_y)) / 100) );
-let x2r = _x + ( ((cos*(x2-_x)) / 100) + (( sin*(y-_y)) / 100) );
-let y2r = _y - ( ((sin*(x2-_x)) / 100) + (( cos*(y-_y)) / 100) );
-            do Screen.drawLine(x1r,y1r,x2r,y2r);
-            let i = i - 1;
-            let x = x + 1;
-            let y1 = y1 + 1;
-            let y2 = y2 + 3;
-            let x1 = x1 - 1;
-            let x2 = x2 - 3;
-            let y = y + 1;
-        }
-*/
+        do v.calculate(TLEN/2, direction);
+        let x = _x + v.x();
+        let y = _y - v.y();
         let i = 160;
         let l = 0;
         while (i < 180) {
             do v.calculate(TLEN-(l/6), direction+i);
-            do Screen.drawLine(_x, _y, _x+v.x(), _y-v.y());
+            do Screen.drawLine(x, y, x+v.x(), y-v.y());
             let i = i + 2;
             let l = l + 1;
         }
         while (i < 200) {
             do v.calculate(TLEN-(l/6), direction+i);
-            do Screen.drawLine(_x, _y, _x+v.x(), _y-v.y());
+            do Screen.drawLine(x, y, x+v.x(), y-v.y());
             let i = i + 2;
             let l = l - 1;
         }
-        do v.calculate(TLEN-(l/6), direction+i);
-        do Screen.drawLine(_x, _y, _x+v.x(), _y-v.y());
 
         return;
     }
 
     method void show() {
-        do sa.clear();
-        //do v.calculate(TLEN, direction);
-        //do sa.copy(_x-v.x(), _y-v.y(), _x+v.x(), _y+v.y());
-        do sa.copy(_x-TLEN, _y-TLEN, _x+TLEN, _y+TLEN);
+        do sa.copy(_x-(TLEN/2), _y-(TLEN/2));
         do Screen.setColor(true);
         do drawTurtle();
         return;
