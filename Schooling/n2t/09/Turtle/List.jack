@@ -1,9 +1,12 @@
 class List {
 
     field int o, n;
+    field List end;
 
-    constructor List new() {
+    constructor List new(int obj) {
+        let o = obj;
         let n = 0;
+        let end = this;
         return this;
     }
 
@@ -38,13 +41,14 @@ class List {
         return;
     }
 
-    method List insert(int o) {
+    method void append(int obj) {
         var List l;
 
-        let l = List.new();
-        do l.setObject(o);
-        do l.setNext(this);
-
-        return l;
+        let l = List.new(obj);
+        do l.setNext(end.next());
+        do end.setNext(l);
+        let end = l;
+        return;
     }
+
 }

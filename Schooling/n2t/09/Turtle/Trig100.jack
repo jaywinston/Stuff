@@ -51,15 +51,15 @@ let trigv[90] = 100;
         var boolean neg;
 
         if (Math.abs(a) > 360) {
-            let a = mod.ulo(a, 360);
+            let a = lib.mod(a, 360);
         }
 
         let neg = a > 180;
         if (neg) {
-            let a = mod.ulo(a, 180);
+            let a = lib.mod(a, 180);
         }
         if (a > 90) {
-            let a = 90 - (mod.ulo(a-1, 90)+1);
+            let a = 90 - (lib.mod(a-1, 90)+1);
         }
         if (neg) {
             return -trigv[a];

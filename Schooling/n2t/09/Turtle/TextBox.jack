@@ -18,6 +18,11 @@ class TextBox {
         return this;
     }
 
+    method void dispose() {
+        do Memory.dealloc(this);
+        return;
+    }
+
     method void clear() {
         var int x1, y1, x2, y2;
 
@@ -81,7 +86,11 @@ class TextBox {
         do Output.moveCursor(row, col);
         do Output.printChar(c);
 
-        let col = col + 1;
+        if (c = 129) {
+            let col = col - 1;
+        } else {
+            let col = col + 1;
+        }
 
         if (col = right) {
             do newline();
@@ -112,6 +121,7 @@ class TextBox {
         do puts(s);
         while (col < right) {
             do putchar(32);
+            let col = col + 1;
         }
         do newline();
         return;

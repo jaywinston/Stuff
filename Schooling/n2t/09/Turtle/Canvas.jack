@@ -1,0 +1,41 @@
+class Canvas {
+
+    field int top, left, height, width;
+    field Turtle t;
+    field TextBox tb;
+
+    constructor Canvas new(int i, int j, int h, int w) {
+        let top = i;
+        let left = j;
+        let height = h;
+        let width = w;
+        let tb = TextBox.new(top, left, height, width);
+        do getTurtle();
+        return this;
+    }
+
+    method void dispose() {
+        do t.dispose();
+        do tb.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    method void clear() {
+        do tb.clear();
+        do t.dispose();
+        do getTurtle();
+        return;
+    }
+
+    method void getTurtle() {
+        let t = Turtle.new(((left*2)+width)*4,
+                           (top+(height/2))*11, 90);
+        return;
+    }
+
+    method String eval(String s) {
+        do tb.prints(s);
+        return s;
+    }
+}

@@ -1,31 +1,28 @@
 class Terminal {
 
     field int BUFSIZ, MAXLEN, SCRSIZ;
-    field int bp;
-    field Array LINBUF;
-    field String INBUF, PS1, PS2, ps;
+    field int bp, scrtop;
+    field List LINBUF, bp;
+    field String /*INBUF,*/ PS1, PS2, ps;
     field TextBox tb;
 
     constructor Terminal new(String ps1, String ps2,
                              int i, int j, int h, int w) {
-        var int k;
 
         let BUFSIZ = 100;
         let MAXLEN = 50;
+        let SCRSIZ = h;
         let LINBUF = Array.new(BUFSIZ);
-        let k = 0;
-        while (k < BUFSIZ) {
-            let LINBUF[k] = String.new(MAXLEN);
-            let k = k + 1;
+        let bp = 0;
+        while (bp < BUFSIZ) {
+            let LINBUF[bp] = String.new(MAXLEN);
+            let bp = bp + 1;
         }
-        let INBUF = String.new(MAXLEN);
         let bp = 0;
         let PS1 = ps1;
         let PS2 = ps2;
         let ps = PS1;
-        let SCRSIZ = h;
         let tb = TextBox.new(i, j, h, w);
-        do tb.puts(ps);
         return this;
     }
 
@@ -34,11 +31,39 @@ class Terminal {
         return;
     }
 
-    method void read() {
+    method String read() {
         var char c;
+        var String s;
+
+        let s = LINBUF[bp];
+        while (s.length() > 0) {
+            do s.eraseLastChar();
+        }
 
         do prompt();
 
-        return;
+        let c = 0;
+        while ( ~(c=128) ) {
+            let c = Keyboard.keyPressed();
+            while (c = 0) {
+                let c = Keyboard.keyPressed();
+            }
+            if ( (c>31) & (c<127) ) {
+                do s.appendChar(c);
+            } else { if (c = 129) {
+                do s.eraseLastChar();
+            }}
+            do tb.putchar(c);
+            do Sys.wait(300);
+        }
+
+        let bp = bp + 1;
+        if (bp = BUFSIZ) {
+            let bp = 0;
+        }
+
+        do tb.newline();
+
+        return s;
     }
 }

@@ -1,51 +1,12 @@
 class Main {
 
     function void main() {
-        var Banner banner;
-        var Turtle t;
-        var Terminal term;
-        var char c;
+        var Console console;
 
         do Trig100.init();
 
-        let banner = Banner.new(
-                        "                       Turtle 0.01",
-                        0,0,1,64);
-        let term = Terminal.new("> ", "| ",2,1,20,30);
-        do banner.flash("Bang!");
-/*
-        let t = Turtle.new(100, 100, 90);
-        do t.pendown();
-        do t.forward(50);
-        do t.turnright(90);
-        do t.forward(50);
-        do t.turnright(90);
-        do t.forward(50);
-        do t.turnright(90);
-        do t.forward(50);
-        do t.turnright(90);
-
-        do t.penup();
-        do t.turnright(135);
-        do t.forward(100);
-        do t.pendown();
-        do t.forward(20);
-        do t.turnleft(45);
-        do t.forward(20);
-        do t.turnleft(45);
-        do t.forward(20);
-        do t.turnleft(45);
-        do t.forward(20);
-        do t.turnleft(45);
-        do t.forward(20);
-        do t.turnleft(45);
-        do t.forward(20);
-        do t.turnleft(45);
-        do t.forward(20);
-        do t.turnleft(45);
-        do t.forward(20);
-        do t.turnleft(45);
-*/
+        let console = Console.new();
+        do console.run();
 
         return;
     }
