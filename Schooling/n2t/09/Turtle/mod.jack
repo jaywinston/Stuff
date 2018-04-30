@@ -1,6 +1,6 @@
-class util {
+class mod {
 
-    function int mod(int n, int d) {
+    function int ulo(int n, int d) {
         var int q;
 
         let q = n / d;

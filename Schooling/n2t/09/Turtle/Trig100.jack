@@ -8,12 +8,10 @@
 class Trig100 {
 
     static Array trigv;
-    static boolean initialized;
 
     function void init() {
 
         let trigv = Array.new(91);
-        let initialized = true;
 
 /*                          populate trig table                             */
 
@@ -53,15 +51,15 @@ let trigv[90] = 100;
         var boolean neg;
 
         if (Math.abs(a) > 360) {
-            let a = util.mod(a, 360);
+            let a = mod.ulo(a, 360);
         }
 
         let neg = a > 180;
         if (neg) {
-            let a = util.mod(a, 180);
+            let a = mod.ulo(a, 180);
         }
         if (a > 90) {
-            let a = 90 - (util.mod(a-1, 90)+1);
+            let a = 90 - (mod.ulo(a-1, 90)+1);
         }
         if (neg) {
             return -trigv[a];
@@ -74,7 +72,4 @@ let trigv[90] = 100;
         return Trig100.sin(a+90);
     }
 
-    function boolean isInitialized() {
-        return initialized;
-    }
 }

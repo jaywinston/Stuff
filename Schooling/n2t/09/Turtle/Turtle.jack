@@ -14,9 +14,6 @@ class Turtle {
         let v = Vector.new();
         let sa = ScreenArea.new(TLEN*2, TLEN);
         let _pendown = false;
-        if (~Trig100.isInitialized()) {
-            do Trig100.init();
-        }
         do show();
         return this;
     }
@@ -30,7 +27,7 @@ class Turtle {
     }
 
     method int setDirection(int d) {
-        let direction = util.mod(d, 360);
+        let direction = mod.ulo(d, 360);
         if (direction < 0) {
             let direction = direction + 360;
         }

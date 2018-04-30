@@ -1,18 +1,44 @@
 class Terminal {
 
-    field Array linebuf;
-    field String PS1, PS2, ps;
+    field int BUFSIZ, MAXLEN, SCRSIZ;
+    field int bp;
+    field Array LINBUF;
+    field String INBUF, PS1, PS2, ps;
     field TextBox tb;
 
     constructor Terminal new(String ps1, String ps2,
                              int i, int j, int h, int w) {
-        let tb = TextBox.new(i, j, h, w);
-        let linebuf = Array.new(100);
+        var int k;
+
+        let BUFSIZ = 100;
+        let MAXLEN = 50;
+        let LINBUF = Array.new(BUFSIZ);
+        let k = 0;
+        while (k < BUFSIZ) {
+            let LINBUF[k] = String.new(MAXLEN);
+            let k = k + 1;
+        }
+        let INBUF = String.new(MAXLEN);
+        let bp = 0;
         let PS1 = ps1;
         let PS2 = ps2;
         let ps = PS1;
+        let SCRSIZ = h;
+        let tb = TextBox.new(i, j, h, w);
         do tb.puts(ps);
         return this;
     }
 
+    method void prompt() {
+        do tb.puts(ps);
+        return;
+    }
+
+    method void read() {
+        var char c;
+
+        do prompt();
+
+        return;
+    }
 }

@@ -71,6 +71,12 @@ class TextBox {
         return;
     }
 
+    method void newline() {
+        let col = left;
+        let row = row + 1;
+        return;
+    }
+
     method void putchar(int c) {
         do Output.moveCursor(row, col);
         do Output.printChar(c);
@@ -78,16 +84,12 @@ class TextBox {
         let col = col + 1;
 
         if (col = right) {
-            let col = left;
-            let row = row + 1;
+            do newline();
             /* The vm emulator insists on an extra column to the right. */
             if (right < 64)  {
                 do Screen.setColor(true);
                 do Screen.drawLine(right*8, top*11, right*8, bottom*11);
             }
-        }
-        if (row = bottom) {
-            let row = bottom - 1;
         }
 
         return;
@@ -101,6 +103,17 @@ class TextBox {
             do putchar(s.charAt(i));
             let i = i + 1;
         }
+        do s.dispose();
+
+        return;
+    }
+
+    method void prints(String s) {
+        do puts(s);
+        while (col < right) {
+            do putchar(32);
+        }
+        do newline();
         return;
     }
 
