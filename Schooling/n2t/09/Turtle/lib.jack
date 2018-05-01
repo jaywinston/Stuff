@@ -1,12 +1,12 @@
 class lib {
 
     static Array trigv;
-    static String NULLS;
+    static String NS;
 
     function void init() {
 
         let trigv = Array.new(91);
-        let NULLS = "";
+        let NS = "";
 
 /*                          populate trig table                             */
 
@@ -93,6 +93,10 @@ let trigv[90] = 100;
         }
 
         return h;
+    }
+
+    function String NULLS() {
+        return NS;
     }
 
 }

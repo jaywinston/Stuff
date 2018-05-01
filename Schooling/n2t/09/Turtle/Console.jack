@@ -9,17 +9,23 @@ class Console {
         let banner = Banner.new(
                         "                       Turtle 0.01",
                         0, 0, 1, 64);
-        let term = Terminal.new(">", "|", 2, 1, 20, 30);
+        let term = Terminal.new(2, 1, 20, 30);
         let canv = Canvas.new(2, 32, 20, 31);
+
+        do try(canv.eval(lib.NULLS()));
 
         return this;
     }
 
     method void run() {
-        
         while (true) {
-            do canv.eval(term.read());
+            do try(canv.eval(term.read()));
         }
+        return;
+    }
+
+    method void try(String s) {
+        do term.print(s);
         return;
     }
 

@@ -1,6 +1,7 @@
 class Canvas {
 
     field int top, left, height, width;
+    field String /*INBUF,*/ PS1, PS2, ps;
     field Turtle t;
     field TextBox tb;
 
@@ -9,6 +10,9 @@ class Canvas {
         let left = j;
         let height = h;
         let width = w;
+        let PS1 = ">";
+        let PS2 = "|";
+        let ps = PS1;
         let tb = TextBox.new(top, left, height, width);
         do getTurtle();
         return this;
@@ -35,7 +39,9 @@ class Canvas {
     }
 
     method String eval(String s) {
-        do tb.prints(s);
-        return s;
+        if (s.length() > 0) {
+            do tb.prints(s);
+        }
+        return PS1;
     }
 }

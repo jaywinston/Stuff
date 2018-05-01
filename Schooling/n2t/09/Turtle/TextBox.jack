@@ -82,16 +82,31 @@ class TextBox {
         return;
     }
 
-    method void putchar(int c) {
+    method void backspace() {
+        if ( (col=left) & (row>top) ) {
+            let col = right;
+            let row = row - 1;
+        } else { if (col > left) {
+            let col = col - 1;
+        }}
+
+        return;
+    }
+
+    method void putc(int c) {
         do Output.moveCursor(row, col);
         do Output.printChar(c);
 
-        if (c = 129) {
-            let col = col - 1;
-        } else {
-            let col = col + 1;
-        }
+        if (c = 128) {
+            do newline();
+            return;
+        } else { if (c = 129) {
+            do backspace();
+            do Output.printChar(c);
+            return;
+        }}
 
+        let col = col + 1;
         if (col = right) {
             do newline();
             /* The vm emulator insists on an extra column to the right. */
@@ -109,10 +124,9 @@ class TextBox {
 
         let i = 0;
         while (i < s.length()) {
-            do putchar(s.charAt(i));
+            do putc(s.charAt(i));
             let i = i + 1;
         }
-        do s.dispose();
 
         return;
     }
@@ -120,7 +134,7 @@ class TextBox {
     method void prints(String s) {
         do puts(s);
         while (col < right) {
-            do putchar(32);
+            do putc(32);
             let col = col + 1;
         }
         do newline();
