@@ -1,0 +1,83 @@
+class Parser {
+
+    static String tknbuf;
+    static Array stack;
+
+    function void init() {
+        var int STKSIZ;
+
+        let STKSIZ = 50;
+
+        let tknbuf = String.new(lib.MAXLEN());
+        let stack = Array.new(STKSIZ);
+
+        return;
+    }
+
+    function List parse(String s) {
+        var int i;
+        var char c;
+        var List argv;
+
+        if (s.length() = 0) {
+            return null;
+        }
+
+        let i = 0;
+        let c = s.charAt(i);
+        while ( ~(c=32) ) {
+            do tknbuf.appendChar(c);
+            let i = i + 1;
+        }
+
+        let argv = List.new(lib.hash(tknbuf));
+
+        while (tknbuf.length() > 0) {
+            do tknbuf.eraseLastChar();
+        }
+
+        while (i < s.length()) {
+            do tknbuf.appendChar(s.charAt(i));
+            let i = i + 1;
+        }
+
+        do argv.append(Parser.eval(tknbuf));
+
+        return argv;
+    }
+
+    function List eval(String s) {
+        var int i, sp;
+        var String sbuf;
+        var List argv;
+
+        if (s.length() = 0) {
+            return null;
+        }
+
+        let argv = null;
+        let sp = 0;
+        let i = 0;
+        while (i < s.length()) {
+            if ( (s.charAt(i)>47) & (s.charAt(i)<58) ) {
+                while ( (s.charAt(i)>47) & (s.charAt(i)<58) ) {
+                    let i = i + 1;
+                }
+                let stack[sp] = s.intVal();
+                let sp = sp + 1;
+            }
+        }
+
+        let sp = sp - 1;
+        let argv = List.new(stack[sp]);
+
+        let sp = sp - 1;
+        while (sp > -1) {
+            do argv.append(stack[sp]);
+            let sp = sp - 1;
+        }
+
+        return argv;
+    }
+
+}

@@ -102,7 +102,6 @@ class TextBox {
             return;
         } else { if (c = 129) {
             do backspace();
-            do Output.printChar(c);
             return;
         }}
 
@@ -132,11 +131,15 @@ class TextBox {
     }
 
     method void prints(String s) {
-        do puts(s);
-        while (col < right) {
-            do putc(32);
-            let col = col + 1;
+        var int i;
+
+        do Output.moveCursor(row, col);
+        let i = col;
+        while (i < right) {
+            do Output.printChar(32);
+            let i = i + 1;
         }
+        do puts(s);
         do newline();
         return;
     }

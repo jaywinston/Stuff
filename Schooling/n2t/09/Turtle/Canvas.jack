@@ -5,6 +5,9 @@ class Canvas {
     field Turtle t;
     field TextBox tb;
 
+    static int PENUP, PENDOWN, TURNLEFT, TURNRIGHT, FORWARD, BLOCK;
+    static Array ERRTAB;
+
     constructor Canvas new(int i, int j, int h, int w) {
         let top = i;
         let left = j;
@@ -25,6 +28,35 @@ class Canvas {
         return;
     }
 
+    function void init() {
+        var String s;
+
+        let s = "penup";
+        let PENUP     = lib.hash(s);
+        do s.dispose();
+        let s = "pendown";
+        let PENDOWN   = lib.hash(s);
+        do s.dispose();
+        let s = "turnleft";
+        let TURNLEFT  = lib.hash(s);
+        do s.dispose();
+        let s = "turnright";
+        let TURNRIGHT = lib.hash(s);
+        do s.dispose();
+        let s = "forward";
+        let FORWARD   = lib.hash(s);
+        do s.dispose();
+        let s = "block";
+        let BLOCK     = lib.hash(s);
+        do s.dispose();
+
+        let ERRTAB[0] = "too many arguments";
+        let ERRTAB[1] = "too few arguments";
+        let ERRTAB[2] = "wrong type; expected integer";
+
+        return;
+    }
+
     method void clear() {
         do tb.clear();
         do t.dispose();
@@ -38,10 +70,70 @@ class Canvas {
         return;
     }
 
-    method String eval(String s) {
-        if (s.length() > 0) {
-            do tb.prints(s);
+    method String exec(String s) {
+        var int tknhash;
+        var int n;
+        var List argv, p;
+
+        let argv = Parser.parse(s);
+
+        if (argv = null) {
+            return ps;
         }
-        return PS1;
+
+        let tknhash = argv.object();
+        let p = argv;
+        let argv = argv.next();
+        do p.setNext(null);
+        do p.dispose();
+
+        if (tknhash = PENUP) {
+            if ( ~(argv=null) ) {
+                return ERRTAB[0];
+            }
+            do t.penup();
+        }
+        if (tknhash = PENDOWN) {
+            if ( ~(argv=null) ) {
+                return ERRTAB[0];
+            }
+            do t.pendown();
+        }
+        if (tknhash = TURNLEFT) {
+            if (argv = null) {
+                return ERRTAB[1];
+            }
+            if (~(argv.next() = null)) {
+                do argv.dispose();
+                return ERRTAB[0];
+            }
+            do t.turnleft(argv.object());
+        }
+        if (tknhash = TURNRIGHT) {
+            if (argv = null) {
+                return ERRTAB[1];
+            }
+            if (~(argv.next() = null)) {
+                do argv.dispose();
+                return ERRTAB[0];
+            }
+            do t.turnright(argv.object());
+        }
+        if (tknhash = FORWARD) {
+            if (argv = null) {
+                return ERRTAB[1];
+            }
+            if (~(argv.next() = null)) {
+                do argv.dispose();
+                return ERRTAB[0];
+            }
+            do t.forward(argv.object());
+        }
+        if (tknhash = BLOCK) {
+            let ps = PS2;
+        }
+
+        do argv.dispose();
+        return ps;
     }
 }

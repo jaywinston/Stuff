@@ -1,12 +1,14 @@
 class lib {
 
+    static int maxlen;
     static Array trigv;
-    static String NS;
+    static String nulls;
 
     function void init() {
 
+        let maxlen = 50;
         let trigv = Array.new(91);
-        let NS = "";
+        let nulls = "";
 
 /*                          populate trig table                             */
 
@@ -95,8 +97,38 @@ let trigv[90] = 100;
         return h;
     }
 
-    function String NULLS() {
-        return NS;
+    function int MAXLEN() {
+        return maxlen;
     }
+
+    function String NULLS() {
+        return nulls;
+    }
+
+/*
+    /** convert horizontal position of pixel coordinate
+        to character coordinate  * /
+    function int xtoj(int x) {
+        return x;
+    }
+
+    /** convert horizontal position of character coordinate
+        to pixel coordinate  * /
+    function int jtox(int j) {
+        return j;
+    }
+
+    /** convert vertical position of pixel coordinate
+        to character coordinate  * /
+    function int ytoi(int y) {
+        return y;
+    }
+
+    /** convert vertical position of character coordinate
+        to pixel coordinate  * /
+    function int itoy(int i) {
+        return i;
+    }
+*/
 
 }

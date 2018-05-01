@@ -1,6 +1,6 @@
 class Terminal {
 
-    field int BUFSIZ, MAXLEN, SCRSIZ;
+    field int BUFSIZ, SCRSIZ;
     field int bp, scrtop;
     field Array LINBUF;
     field TextBox tb;
@@ -8,12 +8,11 @@ class Terminal {
     constructor Terminal new(int i, int j, int h, int w) {
 
         let BUFSIZ = 100;
-        let MAXLEN = 50;
         let SCRSIZ = h;
         let LINBUF = Array.new(BUFSIZ);
         let bp = 0;
         while (bp < BUFSIZ) {
-            let LINBUF[bp] = String.new(MAXLEN);
+            let LINBUF[bp] = String.new(lib.MAXLEN());
             let bp = bp + 1;
         }
         let bp = 0;
@@ -30,27 +29,24 @@ class Terminal {
             do s.eraseLastChar();
         }
 
-        let c = 0;
+        let c = Keyboard.keyPressed();
         while ( ~(c=128) ) {
-            do tb.putc(0);
-            do tb.backspace();
+            if ( (c>31) & (c<127) ) {
+                do s.appendChar(c);
+                do tb.putc(c);
+            } else { if ( (c=129) & (s.length()>0) ) {
+                do s.eraseLastChar();
+                do tb.putc(c);
+            }}
+
+            do tb.putc(0);      // show cursor
+            do tb.backspace();  // next char overwrite cursor
 
             let c = Keyboard.keyPressed();
             while (c = 0) {
                 let c = Keyboard.keyPressed();
-
             }
-
-            if ( (c>31) & (c<127) ) {
-                do s.appendChar(c);
-                do tb.putc(c);
-            } else { if (c = 129) {
-                do s.eraseLastChar();
-//                do tb.backspace();
-                do tb.putc(c);
-            }}
-
-            do Sys.wait(300);
+            do Memory.poke(24576, 0);
         }
 
         let bp = bp + 1;
@@ -58,7 +54,7 @@ class Terminal {
             let bp = 0;
         }
 
-        do Output.printChar(129);
+        do Output.printChar(129);   // erase cursor
         do tb.newline();
 
         return s;
