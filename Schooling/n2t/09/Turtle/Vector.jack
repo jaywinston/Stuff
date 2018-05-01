@@ -7,8 +7,8 @@ class Vector {
     }
 
     method Vector calculate(int m, int a) {
-        let x = (m*Trig100.cos(a)) / 100;
-        let y = (m*Trig100.sin(a)) / 100;
+        let x = (m*lib.cos100(a)) / 100;
+        let y = (m*lib.sin100(a)) / 100;
         return this;
     }
 

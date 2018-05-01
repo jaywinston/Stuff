@@ -1,13 +1,27 @@
 class Main {
 
     function void main() {
+
+        do Output.printInt(lib.hash("penup"));
+        do Output.println();
+        do Output.printInt(lib.hash("pendown"));
+        do Output.println();
+        do Output.printInt(lib.hash("turnright"));
+        do Output.println();
+        do Output.printInt(lib.hash("turnleft"));
+        do Output.println();
+        do Output.printInt(lib.hash("forward"));
+        do Output.println();
+        do Output.printInt(lib.hash("{"));
+/*
         var Console console;
 
-        do Trig100.init();
+        do lib.init();
 
         let console = Console.new();
         do console.run();
 
+*/
         return;
     }
 
