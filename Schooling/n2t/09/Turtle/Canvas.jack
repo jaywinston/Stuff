@@ -50,9 +50,9 @@ class Canvas {
         let BLOCK     = lib.hash(s);
         do s.dispose();
 
-        let ERRTAB[0] = "too many arguments";
-        let ERRTAB[1] = "too few arguments";
-        let ERRTAB[2] = "wrong type; expected integer";
+        let ERRTAB[1] = "too many arguments";
+        let ERRTAB[2] = "too few arguments";
+        let ERRTAB[3] = "wrong type; expected integer";
 
         return;
     }
@@ -70,10 +70,14 @@ class Canvas {
         return;
     }
 
-    method String exec(String s) {
+    method String exec(String s, List errno) {
         var int tknhash;
         var int n;
         var List argv, p;
+
+        if (s.length() = 0) {
+            return ps;
+        }
 
         let argv = Parser.parse(s);
 
@@ -88,46 +92,45 @@ class Canvas {
         do p.dispose();
 
         if (tknhash = PENUP) {
-            if ( ~(argv=null) ) {
-                return ERRTAB[0];
+            if (~(argv = null)) {
+                do errno.setObject(1);
+            } else {
+                do t.penup();
             }
-            do t.penup();
         }
         if (tknhash = PENDOWN) {
-            if ( ~(argv=null) ) {
-                return ERRTAB[0];
+            if (~(argv = null)) {
+                do errno.setObject(1);
+            } else {
+                do t.pendown();
             }
-            do t.pendown();
         }
         if (tknhash = TURNLEFT) {
             if (argv = null) {
-                return ERRTAB[1];
-            }
-            if (~(argv.next() = null)) {
-                do argv.dispose();
-                return ERRTAB[0];
-            }
-            do t.turnleft(argv.object());
+                do errno.setObject(2);
+            } else { if (~(argv.next() = null)) {
+                do errno.setObject(1);
+            } else {
+                do t.turnleft(argv.object());
+            }}
         }
         if (tknhash = TURNRIGHT) {
             if (argv = null) {
-                return ERRTAB[1];
-            }
-            if (~(argv.next() = null)) {
-                do argv.dispose();
-                return ERRTAB[0];
-            }
-            do t.turnright(argv.object());
+                do errno.setObject(2);
+            } else { if (~(argv.next() = null)) {
+                do errno.setObject(1);
+            } else {
+                do t.turnright(argv.object());
+            }}
         }
         if (tknhash = FORWARD) {
             if (argv = null) {
-                return ERRTAB[1];
-            }
-            if (~(argv.next() = null)) {
-                do argv.dispose();
-                return ERRTAB[0];
-            }
-            do t.forward(argv.object());
+                do errno.setObject(2);
+            } else { if (~(argv.next() = null)) {
+                do errno.setObject(1);
+            } else {
+                do t.forward(argv.object());
+            }}
         }
         if (tknhash = BLOCK) {
             let ps = PS2;
@@ -135,5 +138,9 @@ class Canvas {
 
         do argv.dispose();
         return ps;
+    }
+
+    method String error(int errno) {
+        return ERRTAB[errno];
     }
 }

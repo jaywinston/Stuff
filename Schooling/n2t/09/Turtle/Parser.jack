@@ -25,7 +25,7 @@ class Parser {
 
         let i = 0;
         let c = s.charAt(i);
-        while ( ~(c=32) ) {
+        while (~(c = 32)) {
             do tknbuf.appendChar(c);
             let i = i + 1;
         }

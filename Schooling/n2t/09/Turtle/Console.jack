@@ -2,7 +2,8 @@ class Console {
 
     field Banner banner;
     field Terminal term;
-    field Canvas canv;
+    field Canvas canvas;
+    field List errno;
 
     constructor Console new() {
 
@@ -10,21 +11,26 @@ class Console {
                         "                       Turtle 0.01",
                         0, 0, 1, 64);
         let term = Terminal.new(2, 1, 20, 30);
-        let canv = Canvas.new(2, 32, 20, 31);
+        let canvas = Canvas.new(2, 32, 20, 31);
+        let errno = List.new(0);
 
-        do try(canv.exec(lib.NULLS()));
+        do try(canvas.exec(lib.NULLS(), errno));
 
         return this;
     }
 
     method void run() {
         while (true) {
-            do try(canv.exec(term.read()));
+            do try(canvas.exec(term.read(), errno));
         }
         return;
     }
 
     method void try(String s) {
+        if (~(errno.object() = 0)) {
+            do term.print(canvas.error(errno.object()));
+            do ernno.setObject(0);
+        }
         do term.print(s);
         return;
     }
