@@ -1,11 +1,13 @@
 class Canvas {
 
     field int top, left, height, width;
-    field String /*INBUF,*/ PS1, PS2, ps;
+    field int _errno;
+    field String PS1, PS2, ps;
+    field Parser parser;
     field Turtle t;
     field TextBox tb;
 
-    static int PENUP, PENDOWN, TURNLEFT, TURNRIGHT, FORWARD, BLOCK;
+    static int PENUP, PENDOWN, TURNLEFT, TURNRIGHT, FORWARD, BLOCK, CLEAR;
     static Array ERRTAB;
 
     constructor Canvas new(int i, int j, int h, int w) {
@@ -13,11 +15,13 @@ class Canvas {
         let left = j;
         let height = h;
         let width = w;
+        let _errno = 0;
         let PS1 = ">";
         let PS2 = "|";
         let ps = PS1;
         let tb = TextBox.new(top, left, height, width);
         do getTurtle();
+        let parser = Parser.new();
         return this;
     }
 
@@ -31,30 +35,29 @@ class Canvas {
     function void init() {
         var String s;
 
-        let s = "penup";
-        let PENUP     = lib.hash(s);
-        do s.dispose();
-        let s = "pendown";
-        let PENDOWN   = lib.hash(s);
-        do s.dispose();
-        let s = "turnleft";
-        let TURNLEFT  = lib.hash(s);
-        do s.dispose();
-        let s = "turnright";
-        let TURNRIGHT = lib.hash(s);
-        do s.dispose();
-        let s = "forward";
-        let FORWARD   = lib.hash(s);
-        do s.dispose();
-        let s = "block";
-        let BLOCK     = lib.hash(s);
-        do s.dispose();
+        let PENUP     = Canvas.hash("PENUP");
+        let PENDOWN   = Canvas.hash("PENDOWN");
+        let TURNLEFT  = Canvas.hash("TURNLEFT");
+        let TURNRIGHT = Canvas.hash("TURNRIGHT");
+        let FORWARD   = Canvas.hash("FORWARD");
+        let BLOCK     = Canvas.hash("BLOCK");
+        let CLEAR     = Canvas.hash("CLEAR");
 
+        let ERRTAB = Array.new(4);
+        let ERRTAB[0] = lib.NULLS();
         let ERRTAB[1] = "too many arguments";
         let ERRTAB[2] = "too few arguments";
-        let ERRTAB[3] = "wrong type; expected integer";
+        let ERRTAB[3] = "wrong type";
 
         return;
+    }
+
+    function int hash(String s) {
+        var int n;
+
+        let n = lib.hash(s);
+        do s.dispose();
+        return n;
     }
 
     method void clear() {
@@ -70,7 +73,7 @@ class Canvas {
         return;
     }
 
-    method String exec(String s, List errno) {
+    method String exec(String s) {
         var int tknhash;
         var int n;
         var List argv, p;
@@ -79,7 +82,7 @@ class Canvas {
             return ps;
         }
 
-        let argv = Parser.parse(s);
+        let argv = parser.parse(s);
 
         if (argv = null) {
             return ps;
@@ -93,41 +96,41 @@ class Canvas {
 
         if (tknhash = PENUP) {
             if (~(argv = null)) {
-                do errno.setObject(1);
+                let _errno = 1;
             } else {
                 do t.penup();
             }
         }
         if (tknhash = PENDOWN) {
             if (~(argv = null)) {
-                do errno.setObject(1);
+                let _errno = 1;
             } else {
                 do t.pendown();
             }
         }
         if (tknhash = TURNLEFT) {
             if (argv = null) {
-                do errno.setObject(2);
+                let _errno = 2;
             } else { if (~(argv.next() = null)) {
-                do errno.setObject(1);
+                let _errno = 1;
             } else {
                 do t.turnleft(argv.object());
             }}
         }
         if (tknhash = TURNRIGHT) {
             if (argv = null) {
-                do errno.setObject(2);
+                let _errno = 2;
             } else { if (~(argv.next() = null)) {
-                do errno.setObject(1);
+                let _errno = 1;
             } else {
                 do t.turnright(argv.object());
             }}
         }
         if (tknhash = FORWARD) {
             if (argv = null) {
-                do errno.setObject(2);
+                let _errno = 2;
             } else { if (~(argv.next() = null)) {
-                do errno.setObject(1);
+                let _errno = 1;
             } else {
                 do t.forward(argv.object());
             }}
@@ -140,7 +143,15 @@ class Canvas {
         return ps;
     }
 
-    method String error(int errno) {
-        return ERRTAB[errno];
+    method int errno() {
+        return _errno;
+    }
+
+    method String error() {
+        var int en;
+
+        let en = -_errno;
+        let _errno = 0;
+        return ERRTAB[en];
     }
 }

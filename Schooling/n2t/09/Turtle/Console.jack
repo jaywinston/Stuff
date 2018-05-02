@@ -14,22 +14,21 @@ class Console {
         let canvas = Canvas.new(2, 32, 20, 31);
         let errno = List.new(0);
 
-        do try(canvas.exec(lib.NULLS(), errno));
+        do try(canvas.exec(lib.NULLS()));
 
         return this;
     }
 
     method void run() {
         while (true) {
-            do try(canvas.exec(term.read(), errno));
+            do try(canvas.exec(term.read()));
         }
         return;
     }
 
     method void try(String s) {
-        if (~(errno.object() = 0)) {
-            do term.print(canvas.error(errno.object()));
-            do ernno.setObject(0);
+        if (canvas.errno() < 0) {
+            do term.print(canvas.error());
         }
         do term.print(s);
         return;

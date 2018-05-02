@@ -1,9 +1,9 @@
 class Parser {
 
-    static String tknbuf;
-    static Array stack;
+    field String tknbuf;
+    field Array stack;
 
-    function void init() {
+    constructor Parser new() {
         var int STKSIZ;
 
         let STKSIZ = 50;
@@ -11,10 +11,10 @@ class Parser {
         let tknbuf = String.new(lib.MAXLEN());
         let stack = Array.new(STKSIZ);
 
-        return;
+        return this;
     }
 
-    function List parse(String s) {
+    method List parse(String s) {
         var int i;
         var char c;
         var List argv;
@@ -23,14 +23,26 @@ class Parser {
             return null;
         }
 
+        while (tknbuf.length() > 0) {
+            do tknbuf.eraseLastChar();
+        }
+
         let i = 0;
-        let c = s.charAt(i);
-        while (~(c = 32)) {
-            do tknbuf.appendChar(c);
+        let c = s.charAt(0);
+        while ( ~(c=32) & (i<s.length()) ) {
+            do tknbuf.appendChar(s.charAt(i));
+            let c = s.charAt(i);
             let i = i + 1;
         }
 
         let argv = List.new(lib.hash(tknbuf));
+
+        if (i < s.length()) {
+        let c = s.charAt(i);
+        while ( (c=32) & (i<s.length()) ) {
+            let c = s.charAt(i);
+            let i = i + 1;
+        }
 
         while (tknbuf.length() > 0) {
             do tknbuf.eraseLastChar();
@@ -41,12 +53,13 @@ class Parser {
             let i = i + 1;
         }
 
-        do argv.append(Parser.eval(tknbuf));
+        do argv.append(eval(tknbuf));
+        }
 
         return argv;
     }
 
-    function List eval(String s) {
+    method List eval(String s) {
         var int i, sp;
         var String sbuf;
         var List argv;
@@ -57,16 +70,15 @@ class Parser {
 
         let argv = null;
         let sp = 0;
-        let i = 0;
-        while (i < s.length()) {
-            if ( (s.charAt(i)>47) & (s.charAt(i)<58) ) {
-                while ( (s.charAt(i)>47) & (s.charAt(i)<58) ) {
-                    let i = i + 1;
-                }
-                let stack[sp] = s.intVal();
-                let sp = sp + 1;
-            }
-        }
+/* very wrong! fix it! */
+//        let i = 0;
+//        while (i < s.length()) {
+//            while ( (s.charAt(i)>47) & (s.charAt(i)<58) ) {
+//                let i = i + 1;
+//            }
+            let stack[sp] = s.intValue();
+            let sp = sp + 1;
+//        }
 
         let sp = sp - 1;
         let argv = List.new(stack[sp]);
