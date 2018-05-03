@@ -1,19 +1,21 @@
 class Parser {
 
-    field String tknbuf;
+    field String token, delims;
     field Array stack;
 
     constructor Parser new() {
         var int STKSIZ;
 
         let STKSIZ = 50;
+        let delims = " +-*/%()";
 
-        let tknbuf = String.new(lib.MAXLEN());
+        let token = String.new(lib.MAXLEN());
         let stack = Array.new(STKSIZ);
 
         return this;
     }
 
+    /* stub */
     method List parse(String s) {
         var int i;
         var char c;
@@ -23,42 +25,14 @@ class Parser {
             return null;
         }
 
-        while (tknbuf.length() > 0) {
-            do tknbuf.eraseLastChar();
+        while (token.length() > 0) {
+            do token.eraseLastChar();
         }
 
-        let i = 0;
-        let c = s.charAt(0);
-        while ( ~(c=32) & (i<s.length()) ) {
-            do tknbuf.appendChar(s.charAt(i));
-            let c = s.charAt(i);
-            let i = i + 1;
-        }
-
-        let argv = List.new(lib.hash(tknbuf));
-
-        if (i < s.length()) {
-        let c = s.charAt(i);
-        while ( (c=32) & (i<s.length()) ) {
-            let c = s.charAt(i);
-            let i = i + 1;
-        }
-
-        while (tknbuf.length() > 0) {
-            do tknbuf.eraseLastChar();
-        }
-
-        while (i < s.length()) {
-            do tknbuf.appendChar(s.charAt(i));
-            let i = i + 1;
-        }
-
-        do argv.append(eval(tknbuf));
-        }
-
-        return argv;
+        return eval(s);
     }
 
+    /* stub */
     method List eval(String s) {
         var int i, sp;
         var String sbuf;
@@ -68,28 +42,7 @@ class Parser {
             return null;
         }
 
-        let argv = null;
-        let sp = 0;
-/* very wrong! fix it! */
-//        let i = 0;
-//        while (i < s.length()) {
-//            while ( (s.charAt(i)>47) & (s.charAt(i)<58) ) {
-//                let i = i + 1;
-//            }
-            let stack[sp] = s.intValue();
-            let sp = sp + 1;
-//        }
-
-        let sp = sp - 1;
-        let argv = List.new(stack[sp]);
-
-        let sp = sp - 1;
-        while (sp > -1) {
-            do argv.append(stack[sp]);
-            let sp = sp - 1;
-        }
-
-        return argv;
+        return List.new(lib.strtkn(s, token, delims));
     }
 
 }

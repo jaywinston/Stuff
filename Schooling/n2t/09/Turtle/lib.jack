@@ -1,11 +1,12 @@
 class lib {
 
-    static int maxlen;
+    static int hashsiz, maxlen;
     static Array trigv;
     static String nulls;
 
     function void init() {
 
+        let hashsiz = 50;
         let maxlen = 50;
         let trigv = Array.new(91);
         let nulls = "";
@@ -45,13 +46,10 @@ let trigv[90] = 100;
     }
 
 /**
- *  These functions provides access to trigonometric values.  As there are no
- *  fractional values on the Hack platform, all values are multiplied by
- *  100.  That is analogous to rounding to two decimal places.  Using 1000
- *  would likely cause much overflow.  The user must correct values as needed.
- *  The user must call lib.init() before use.
+ * These functions provide access to trigonometric values multiplied by 100.
+ * The idea is to use the value and then divide by 100.  This is close enough
+ * for my needs here.  The user must call lib.init() before use.
  */
-
     function int sin100(int a) {
         var boolean neg;
 
@@ -60,12 +58,14 @@ let trigv[90] = 100;
         }
 
         let neg = a > 180;
+
         if (neg) {
             let a = lib.mod(a, 180);
         }
         if (a > 90) {
             let a = 90 - (lib.mod(a-1, 90)+1);
         }
+
         if (neg) {
             return -trigv[a];
         } else {
@@ -90,11 +90,48 @@ let trigv[90] = 100;
         let h = 0;
         let i = 0;
         while (i < s.length()) {
-            let h = s.charAt(i) + (2*h);
+            let h = s.charAt(i) + (15*h);
             let i = i + 1;
         }
 
-        return h;
+        return lib.mod(h, hashsiz);
+    }
+
+    /**
+     * move characters from s into t, up to and including a delimiter from list
+     */
+    function String strtkn(String s, String t, String list) {
+        var int i, j;
+        var boolean continue;
+
+        let continue = true;
+        let i = 0;
+        while ( (i<s.length()) & continue ) {
+            let j = 0;
+            while ( (j<list.length()) & continue ) {
+                let continue = ~(s.charAt(i) = list.charAt(j));
+                let j = j + 1;
+            }
+            do t.appendChar(s.charAt(i));
+            let i = i + 1;
+        }
+
+        let j = 0;
+        while (j+i < s.length()) {
+            do s.setCharAt(j, s.charAt(j+i));
+            let j = j + 1;
+        }
+
+        while (i > 0) {
+            do s.eraseLastChar();
+            let i = i - 1;
+        }
+
+        return t;
+    }
+
+    function int HASHSIZ() {
+        return hashsiz;
     }
 
     function int MAXLEN() {
