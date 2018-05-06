@@ -10,14 +10,15 @@ class Canvas {
     static int PENUP, PENDOWN, TURNLEFT, TURNRIGHT, FORWARD, BLOCK, CLEAR;
     static Array ERRTAB;
 
-    constructor Canvas new(int i, int j, int h, int w) {
+    constructor Canvas new(int i, int j, int h, int w,
+                           String ps1, String ps2) {
         let top = i;
         let left = j;
         let height = h;
         let width = w;
         let _errno = 0;
-        let PS1 = ">";
-        let PS2 = "|";
+        let PS1 = ps1;
+        let PS2 = ps2;
         let ps = PS1;
         let tb = TextBox.new(top, left, height, width);
         do getTurtle();
@@ -33,8 +34,6 @@ class Canvas {
     }
 
     function void init() {
-        var String s;
-
         let PENUP     = Canvas.hash("PENUP");
         let PENDOWN   = Canvas.hash("PENDOWN");
         let TURNLEFT  = Canvas.hash("TURNLEFT");
@@ -68,8 +67,9 @@ class Canvas {
     }
 
     method void getTurtle() {
-        let t = Turtle.new(((left*2)+width)*4,
-                           (top+(height/2))*11, 90);
+        let t = Turtle.new(((left*2) + width) * 4,
+                           (top + (height/2)) * 11,
+                           90);
         return;
     }
 
@@ -148,10 +148,14 @@ class Canvas {
     }
 
     method String error() {
-        var int en;
+        return ERRTAB[-_errno];
+    }
 
-        let en = -_errno;
+    /* stub */
+    method String clearErr() {
+        var String s;
+
         let _errno = 0;
-        return ERRTAB[en];
+        return lib.NULLS();
     }
 }

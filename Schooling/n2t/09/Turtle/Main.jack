@@ -18,6 +18,7 @@ class Main {
         var Console console;
 
         do lib.init();
+        do Vector.init();
         do Canvas.init();
 
         let console = Console.new();

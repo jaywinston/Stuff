@@ -1,18 +1,16 @@
 class Console {
 
-    field Banner banner;
     field Terminal term;
     field Canvas canvas;
-    field List errno;
 
     constructor Console new() {
 
-        let banner = Banner.new(
-                        "                       Turtle 0.01",
-                        0, 0, 1, 64);
+        do Screen.drawLine(0, 13, 509, 13);
+        do Output.moveCursor(0, 0);
+        do Output.printString("                       Turtle 0.01");
+
         let term = Terminal.new(2, 1, 20, 30);
-        let canvas = Canvas.new(2, 32, 20, 31);
-        let errno = List.new(0);
+        let canvas = Canvas.new(2, 32, 20, 31, ">", "|");
 
         do try(canvas.exec(lib.NULLS()));
 
@@ -35,3 +33,4 @@ class Console {
     }
 
 }
+
