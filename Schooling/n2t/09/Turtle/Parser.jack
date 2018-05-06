@@ -42,7 +42,14 @@ class Parser {
             return null;
         }
 
-        return List.new(lib.strtkn(s, token, delims));
+        let sbuf = String.new(s.length());
+        do lib.strtkn(s, sbuf, delims);
+        do sbuf.eraseLastChar();
+        let argv = List.new(lib.hash(sbuf));
+        if (s.length() > 0) {
+            do argv.append(String.intValue(lib.strtkn(s, token, delims)));
+        }
+        return argv;
     }
 
 }

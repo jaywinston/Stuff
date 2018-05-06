@@ -79,16 +79,53 @@ class TextBox {
     method void newline() {
         let col = left;
         let row = row + 1;
+
+        if (row = bottom) {
+            do scroll();
+            let row = row - 1;
+        }
+        return;
+    }
+
+    method void scroll() {
+        var int i, j, w, end;
+
+        let w = (right-left) / 2;
+        let end = 16384 + (((bottom-1)*352) + (left/2));
+        let i = 16384 + ((top*352) + (left/2));
+        while (i < end) {
+            let j = 0;
+            while (j < w) {
+                do Memory.poke(i+j, Memory.peek((i+j)+352));
+                let j = j + 1;
+            }
+            let i = i + 32;
+        }
+
+        do Output.moveCursor(bottom-1, left);
+        let i = left;
+        while (i < right) {
+            do Output.printChar(32);
+            let i = i + 1;
+        }
+
+        do Screen.setColor(true);
+        do Screen.drawLine((left*8)-2, top*11, (left*8)-2, bottom*11);
+
         return;
     }
 
     method void backspace() {
         if ( (col=left) & (row>top) ) {
-            let col = right;
+            let col = right - 1;
             let row = row - 1;
-        } else { if (col > left) {
+            if (left > 0)  {
+                do Screen.setColor(true);
+                do Screen.drawLine((left*8)-2, top*11, (left*8)-2, bottom*11);
+            }
+        } else {
             let col = col - 1;
-        }}
+        }
 
         return;
     }
@@ -139,8 +176,10 @@ class TextBox {
             do Output.printChar(32);
             let i = i + 1;
         }
+
         do puts(s);
         do newline();
+
         return;
     }
 

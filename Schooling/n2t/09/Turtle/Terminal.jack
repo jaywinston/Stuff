@@ -30,7 +30,7 @@ class Terminal {
         }
 
         let c = Keyboard.keyPressed();
-        while ( ~(c=128) ) {
+        while (~(c = 128)) {
             if ( (c>31) & (c<127) ) {
                 do s.appendChar(c);
                 do tb.putc(c);
