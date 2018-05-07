@@ -31,13 +31,33 @@ class lib {
         return lib.mod(h, hashsiz);
     }
 
+    function boolean streq(String s, String t) {
+        var int i;
+
+        let i = 0;
+        while ( (i<s.length()) & (i<t.length()) ) {
+            if (~(s.chatAt(i) = t.charAt(i))) {
+                return false;
+            }
+            let i = i + 1;
+        }
+
+        if ( (i<s.length()) | (i<t.length())) {
+            return false;
+        }
+
+        return true;
+    }
+
     /**
-     * move characters from s into t, up to and including a delimiter from list
+     * return characters from s, up to and including a delimiter from list
      */
-    function String strtkn(String s, String t, String list) {
+    function String strtkn(String s, String dummy, String list) {
         var int i, j;
         var boolean continue;
+        var String t;
 
+        let t = String.new(s.length());
         let continue = true;
         let i = 0;
         while ( (i<s.length()) & continue ) {

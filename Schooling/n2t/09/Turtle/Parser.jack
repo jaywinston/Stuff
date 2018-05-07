@@ -1,25 +1,54 @@
 class Parser {
 
-    field String token, delims;
-    field Array stack;
+    field String /*token,*/ delims;
+//    field Array stack;
+    field HashTable symtab;
+
+    static int CMD, INT, STR;
 
     constructor Parser new() {
         var int STKSIZ;
 
         let STKSIZ = 50;
         let delims = " +-*/%()";
+        //let token = String.new(lib.MAXLEN());
+        //let stack = Array.new(STKSIZ);
+        let symtab = HashTable.new();
+        let CMD = 0;
+        let INT = 1;
+        let STR = 2;
 
-        let token = String.new(lib.MAXLEN());
-        let stack = Array.new(STKSIZ);
+        do installKWs();
 
         return this;
     }
 
+    method void installKWs() {
+        do kwInstall("PENDOWN",   CMD, 0);
+        do kwInstall("PENUP",     CMD, 1);
+        do kwInstall("TURNLEFT",  CMD, 2);
+        do kwInstall("TURNRIGHT", CMD, 3);
+        do kwInstall("FORWARD",   CMD, 4);
+        do kwInstall("BLOCK",     CMD, 5);
+        do kwInstall("PRINT",     CMD, 6);
+        do kwInstall("CLEAR",     CMD, 7);
+        do kwInstall("QUIT",      CMD, 8);
+        return;
+    }
+
+    method void kwInstall(String name, int type, int val) {
+        do symtab.install(name, type, val);
+        do name.dispose();
+        return;
+    }
+
     /* stub */
     method List parse(String s) {
+/*
         var int i;
         var char c;
-        var List argv;
+        var Object argv;
+*/
 
         if (s.length() = 0) {
             return null;
@@ -35,19 +64,29 @@ class Parser {
     /* stub */
     method List eval(String s) {
         var int i, sp;
-        var String sbuf;
-        var List argv;
+        var String token;
+        var Object argv, p;
 
         if (s.length() = 0) {
             return null;
         }
 
-        let sbuf = String.new(s.length());
-        do lib.strtkn(s, sbuf, delims);
-        do sbuf.eraseLastChar();
-        let argv = List.new(lib.hash(sbuf));
+        let token = lib.strtkn(s, token, delims);
+        if (~(token.charAt(token.length()-1) = 32)) {
+            /* abort */
+        }
+        do token.eraseLastChar();
+        let argv = symtab.lookup(token);
+        if (argv = null) {
+            /* abort */
+        }
+        if (~(argv.type() = CMD)) {
+            /* abort */
+        }
+
         if (s.length() > 0) {
-            do argv.append(String.intValue(lib.strtkn(s, token, delims)));
+            let p = Object.new(lib.NULLS(), INT,
+                               String.intValue(lib.strtkn(s, token, delims)));
         }
         return argv;
     }

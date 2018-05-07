@@ -1,0 +1,64 @@
+class HashTable {
+
+    static int HASHSIZ;
+    field Array table;
+
+    constructor HashTable new() {
+        var int i;
+
+        let HASHSIZ = 50;
+        let table = Array.new(HASHSIZ);
+        let i = 0;
+        while (i < HASHSIZ) {
+            let table[i] = null;
+            let i = i + 1;
+        }
+        return this;
+    }
+
+    method Object lookup(String s) {
+        var Object p;
+
+        let p = table[HashTable.hash(s)];
+        while (~(p = null)) {
+            if (lib.streq(s, p.name())) {
+                return p;
+            }
+            let p = p.next();
+        }
+        return null;
+    }
+
+    method void install(String name, int type, int val) {
+        var int nhash;
+        var Object p;
+
+        let p = lookup(name);
+        if (p = null) {
+            let p = Object.new(name, type, val);
+            let nhash = HashTable.hash(name);
+            do p.setNext(table[nhash]);
+            let table[nhash] = p;
+        } else {
+            do p.setType(type);
+            do p.setValue(val);
+        }
+
+        return;
+    }
+
+    function int hash(String s) {
+        var int h, i;
+
+        let h = 0;
+        let i = 0;
+        while (i < s.length()) {
+            let h = s.charAt(i) + (15*h);
+            let i = i + 1;
+        }
+
+        return lib.mod(h, HASHSIZ);
+    }
+
+}
+

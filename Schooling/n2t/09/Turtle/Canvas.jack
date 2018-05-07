@@ -7,11 +7,15 @@ class Canvas {
     field Turtle t;
     field TextBox tb;
 
-    static int PENUP, PENDOWN, TURNLEFT, TURNRIGHT, FORWARD, BLOCK, CLEAR;
+    static int PENUP, PENDOWN, TURNLEFT, TURNRIGHT, FORWARD, BLOCK, PRINT,
+               CLEAR, QUIT;
+    static int CMD, INT, STR;
     static Array ERRTAB;
 
     constructor Canvas new(int i, int j, int h, int w,
                            String ps1, String ps2) {
+        var Object p;
+
         let top = i;
         let left = j;
         let height = h;
@@ -21,8 +25,20 @@ class Canvas {
         let PS2 = ps2;
         let ps = PS1;
         let tb = TextBox.new(top, left, height, width);
-        do getTurtle();
         let parser = Parser.new();
+
+        let p = parser.parse("PENUP");     let PENUP     = p.value();
+        let p = parser.parse("PENDOWN");   let PENDOWN   = p.value();
+        let p = parser.parse("TURNLEFT");  let TURNLEFT  = p.value();
+        let p = parser.parse("TURNRIGHT"); let TURNRIGHT = p.value();
+        let p = parser.parse("FORWARD");   let FORWARD   = p.value();
+        let p = parser.parse("BLOCK");     let BLOCK     = p.value();
+        let p = parser.parse("PRINT");     let PRINT     = p.value();
+        let p = parser.parse("CLEAR");     let CLEAR     = p.value();
+        let p = parser.parse("QUIT");      let QUIT      = p.value();
+
+        do getTurtle();
+
         return this;
     }
 
@@ -34,13 +50,9 @@ class Canvas {
     }
 
     function void init() {
-        let PENUP     = Canvas.hash("PENUP");
-        let PENDOWN   = Canvas.hash("PENDOWN");
-        let TURNLEFT  = Canvas.hash("TURNLEFT");
-        let TURNRIGHT = Canvas.hash("TURNRIGHT");
-        let FORWARD   = Canvas.hash("FORWARD");
-        let BLOCK     = Canvas.hash("BLOCK");
-        let CLEAR     = Canvas.hash("CLEAR");
+        let CMD = 0;
+        let INT = 1;
+        let STR = 2;
 
         let ERRTAB = Array.new(4);
         let ERRTAB[0] = lib.NULLS();
@@ -51,6 +63,7 @@ class Canvas {
         return;
     }
 
+/*
     function int hash(String s) {
         var int n;
 
@@ -58,6 +71,7 @@ class Canvas {
         do s.dispose();
         return n;
     }
+*/
 
     method void clear() {
         do tb.clear();
@@ -73,10 +87,12 @@ class Canvas {
         return;
     }
 
+    /* stub */
     method String exec(String s) {
-        var int tknhash;
+        var int cmd, type, nval;
         var int n;
-        var List argv, p;
+        var String sval;
+        var Object argv, p;
 
         if (s.length() = 0) {
             return ps;
@@ -88,54 +104,56 @@ class Canvas {
             return ps;
         }
 
-        let tknhash = argv.object();
+        if (~(argv.type() = CMD)) {
+            /* abort */
+        }
+        let cmd = argv.value();
         let p = argv;
         let argv = argv.next();
-        do p.setNext(null);
         do p.dispose();
 
-        if (tknhash = PENUP) {
+        if (cmd = PENUP) {
             if (~(argv = null)) {
                 let _errno = 1;
             } else {
                 do t.penup();
             }
         }
-        if (tknhash = PENDOWN) {
+        if (cmd = PENDOWN) {
             if (~(argv = null)) {
                 let _errno = 1;
             } else {
                 do t.pendown();
             }
         }
-        if (tknhash = TURNLEFT) {
+        if (cmd = TURNLEFT) {
             if (argv = null) {
                 let _errno = 2;
             } else { if (~(argv.next() = null)) {
                 let _errno = 1;
             } else {
-                do t.turnleft(argv.object());
+                do t.turnleft(argv.value());
             }}
         }
-        if (tknhash = TURNRIGHT) {
+        if (cmd = TURNRIGHT) {
             if (argv = null) {
                 let _errno = 2;
             } else { if (~(argv.next() = null)) {
                 let _errno = 1;
             } else {
-                do t.turnright(argv.object());
+                do t.turnright(argv.value());
             }}
         }
-        if (tknhash = FORWARD) {
+        if (cmd = FORWARD) {
             if (argv = null) {
                 let _errno = 2;
             } else { if (~(argv.next() = null)) {
                 let _errno = 1;
             } else {
-                do t.forward(argv.object());
+                do t.forward(argv.value());
             }}
         }
-        if (tknhash = BLOCK) {
+        if (cmd = BLOCK) {
             let ps = PS2;
         }
 
@@ -158,4 +176,5 @@ class Canvas {
         let _errno = 0;
         return lib.NULLS();
     }
+
 }

@@ -1,0 +1,52 @@
+class Object {
+
+    field int type, value;
+    field String name;
+    field Object next;
+
+    constructor Object new(String nam, int typ, int val) {
+        let name = nam;
+        let type = typ;
+        let value = val;
+        let next = null;
+        return this;
+    }
+
+    method void dispose() {
+        do name.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    method int name() {
+        return name;
+    }
+
+    method int type() {
+        return type;
+    }
+
+    method int value() {
+        return value;
+    }
+
+    method int next() {
+        return next;
+    }
+
+    method void setType(int typ) {
+        let type = typ;
+        return;
+    }
+
+    method void setValue(int val) {
+        let value = val;
+        return;
+    }
+
+    method void setNext(int nex) {
+        let next = nex;
+        return;
+    }
+
+}
