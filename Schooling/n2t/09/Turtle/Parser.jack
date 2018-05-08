@@ -54,9 +54,9 @@ class Parser {
             return null;
         }
 
-        while (token.length() > 0) {
-            do token.eraseLastChar();
-        }
+//        while (token.length() > 0) {
+//            do token.eraseLastChar();
+//        }
 
         return eval(s);
     }
@@ -71,14 +71,21 @@ class Parser {
             return null;
         }
 
-        let token = lib.strtkn(s, token, delims);
-        if (~(token.charAt(token.length()-1) = 32)) {
-            /* abort */
+        let token = Str.tkn(s, token, delims);
+
+/* fix me */
+//        if (~(token.charAt(token.length()-1) = 32)) {
+//            /* abort */
+//        }
+//        do token.eraseLastChar();
+        if (token.charAt(token.length()-1) = 32) {
+       		do token.eraseLastChar();
         }
-        do token.eraseLastChar();
+/* end (this) fix me */
+
         let argv = symtab.lookup(token);
         if (argv = null) {
-            /* abort */
+            return null;
         }
         if (~(argv.type() = CMD)) {
             /* abort */
@@ -86,8 +93,9 @@ class Parser {
 
         if (s.length() > 0) {
             let p = Object.new(lib.NULLS(), INT,
-                               String.intValue(lib.strtkn(s, token, delims)));
+                               String.intValue(Str.tkn(s, token, delims)));
         }
+
         return argv;
     }
 

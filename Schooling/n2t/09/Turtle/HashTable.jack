@@ -21,11 +21,12 @@ class HashTable {
 
         let p = table[HashTable.hash(s)];
         while (~(p = null)) {
-            if (lib.streq(s, p.name())) {
+            if (Str.eq(s, p.name())) {
                 return p;
             }
             let p = p.next();
         }
+
         return null;
     }
 
@@ -57,7 +58,7 @@ class HashTable {
             let i = i + 1;
         }
 
-        return lib.mod(h, HASHSIZ);
+        return Math.abs(lib.mod(h, HASHSIZ));
     }
 
 }

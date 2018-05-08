@@ -5,7 +5,10 @@ class Object {
     field Object next;
 
     constructor Object new(String nam, int typ, int val) {
-        let name = nam;
+        let name = Str.dup(nam);
+        if (name = null) {
+            /* abort */
+        }
         let type = typ;
         let value = val;
         let next = null;

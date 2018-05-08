@@ -27,29 +27,16 @@ class Canvas {
         let tb = TextBox.new(top, left, height, width);
         let parser = Parser.new();
 
-        let p = parser.parse("PENUP");     let PENUP     = p.value();
-        let p = parser.parse("PENDOWN");   let PENDOWN   = p.value();
-        let p = parser.parse("TURNLEFT");  let TURNLEFT  = p.value();
-        let p = parser.parse("TURNRIGHT"); let TURNRIGHT = p.value();
-        let p = parser.parse("FORWARD");   let FORWARD   = p.value();
-        let p = parser.parse("BLOCK");     let BLOCK     = p.value();
-        let p = parser.parse("PRINT");     let PRINT     = p.value();
-        let p = parser.parse("CLEAR");     let CLEAR     = p.value();
-        let p = parser.parse("QUIT");      let QUIT      = p.value();
+        let p = parser.eval("PENUP");     let PENUP     = p.value();
+        let p = parser.eval("PENDOWN");   let PENDOWN   = p.value();
+        let p = parser.eval("TURNLEFT");  let TURNLEFT  = p.value();
+        let p = parser.eval("TURNRIGHT"); let TURNRIGHT = p.value();
+        let p = parser.eval("FORWARD");   let FORWARD   = p.value();
+        let p = parser.eval("BLOCK");     let BLOCK     = p.value();
+        let p = parser.eval("PRINT");     let PRINT     = p.value();
+        let p = parser.eval("CLEAR");     let CLEAR     = p.value();
+        let p = parser.eval("QUIT");      let QUIT      = p.value();
 
-        do getTurtle();
-
-        return this;
-    }
-
-    method void dispose() {
-        do t.dispose();
-        do tb.dispose();
-        do Memory.deAlloc(this);
-        return;
-    }
-
-    function void init() {
         let CMD = 0;
         let INT = 1;
         let STR = 2;
@@ -60,18 +47,24 @@ class Canvas {
         let ERRTAB[2] = "too few arguments";
         let ERRTAB[3] = "wrong type";
 
+        do getTurtle();
+
+        return this;
+    }
+
+    method void dispose() {
+        do PS1.dispose();
+        do PS2.dispose();
+        do parser.dispose();
+        do t.dispose();
+        do tb.dispose();
+        do Memory.deAlloc(this);
         return;
     }
 
-/*
-    function int hash(String s) {
-        var int n;
-
-        let n = lib.hash(s);
-        do s.dispose();
-        return n;
+    function void init() {
+        return;
     }
-*/
 
     method void clear() {
         do tb.clear();
@@ -101,11 +94,13 @@ class Canvas {
         let argv = parser.parse(s);
 
         if (argv = null) {
-            return ps;
+            /* abort */
+            return "ENOARG"; // stub
         }
 
         if (~(argv.type() = CMD)) {
             /* abort */
+            return "ENOCMD"; // stub
         }
         let cmd = argv.value();
         let p = argv;
@@ -157,7 +152,23 @@ class Canvas {
             let ps = PS2;
         }
 
-        do argv.dispose();
+/* will be ...
+        if (cmd = PENDOWN) {
+        } else { if (cmd = PENUP) {
+        } else { if (cmd = TURNLEFT) {
+        } else { if (cmd = TURNRIGHT) {
+        } else { if (cmd = FORWARD) {
+        } else { if (cmd = PRINT) {
+        } else { if (cmd = BLOCK) {
+        } else { if (cmd = CLEAR) {
+        } else { if (cmd = QUIT) {
+        }}}}}}}}}
+*/
+
+        if (~(argv = null)) {
+            do argv.dispose();
+        }
+
         return ps;
     }
 

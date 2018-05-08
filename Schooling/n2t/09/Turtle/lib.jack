@@ -36,7 +36,7 @@ class lib {
 
         let i = 0;
         while ( (i<s.length()) & (i<t.length()) ) {
-            if (~(s.chatAt(i) = t.charAt(i))) {
+            if (~(s.charAt(i) = t.charAt(i))) {
                 return false;
             }
             let i = i + 1;
