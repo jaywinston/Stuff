@@ -50,19 +50,19 @@ class Turtle {
         var int i, l, x, y;
 
         do v.calculate(TLEN/2, direction);
-        let x = _x + v.x();
-        let y = _y - v.y();
+        let x = _x + v.re();
+        let y = _y - v.im();
         let i = 160;
         let l = 0;
         while (i < 180) {
             do v.calculate(TLEN-(l/6), direction+i);
-            do Screen.drawLine(x, y, x+v.x(), y-v.y());
+            do Screen.drawLine(x, y, x+v.re(), y-v.im());
             let i = i + 2;
             let l = l + 1;
         }
         while (i < 200) {
             do v.calculate(TLEN-(l/6), direction+i);
-            do Screen.drawLine(x, y, x+v.x(), y-v.y());
+            do Screen.drawLine(x, y, x+v.re(), y-v.im());
             let i = i + 2;
             let l = l - 1;
         }
@@ -105,8 +105,8 @@ class Turtle {
         do hide();
 
         do v.calculate(l, direction);
-        let x = _x + v.x();
-        let y = _y - v.y();
+        let x = _x + v.re();
+        let y = _y - v.im();
 
         if (_pendown) {
             do Screen.setColor(true);

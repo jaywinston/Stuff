@@ -1,6 +1,6 @@
 class Vector {
 
-    field int x, y;
+    field int _re, _im;
     static Array trigv;
 
     constructor Vector new() {
@@ -8,8 +8,8 @@ class Vector {
     }
 
     method Vector calculate(int m, int a) {
-        let x = (m*Vector.cos(a)) / 100;
-        let y = (m*Vector.sin(a)) / 100;
+        let _re = (m*Vector.cos(a)) / 100;
+        let _im = (m*Vector.sin(a)) / 100;
         return this;
     }
 
@@ -18,12 +18,12 @@ class Vector {
         return;
     }
 
-    method int x() {
-        return x;
+    method int re() {
+        return _re;
     }
 
-    method int y() {
-        return y;
+    method int im() {
+        return _im;
     }
 
     function void init() {
@@ -75,6 +75,10 @@ let trigv[90] = 100;
 
         if (Math.abs(a) > 360) {
             let a = lib.mod(a, 360);
+        }
+
+        if (a < 0) {
+            let a = 360 + a;
         }
 
         let neg = a > 180;

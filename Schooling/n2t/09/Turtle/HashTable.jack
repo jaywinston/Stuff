@@ -16,6 +16,12 @@ class HashTable {
         return this;
     }
 
+    method void dispose() {
+        do table.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+
     method Object lookup(String s) {
         var Object p;
 

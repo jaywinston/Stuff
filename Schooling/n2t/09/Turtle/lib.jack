@@ -1,11 +1,10 @@
 class lib {
 
-    static int hashsiz, maxlen;
+    static int maxlen;
     static String nulls;
 
     function void init() {
 
-        let hashsiz = 50;
         let maxlen = 50;
         let nulls = "";
         return;
@@ -18,76 +17,6 @@ class lib {
         return n - (q*d);
     }
 
-    function int hash(String s) {
-        var int h, i;
-
-        let h = 0;
-        let i = 0;
-        while (i < s.length()) {
-            let h = s.charAt(i) + (15*h);
-            let i = i + 1;
-        }
-
-        return lib.mod(h, hashsiz);
-    }
-
-    function boolean streq(String s, String t) {
-        var int i;
-
-        let i = 0;
-        while ( (i<s.length()) & (i<t.length()) ) {
-            if (~(s.charAt(i) = t.charAt(i))) {
-                return false;
-            }
-            let i = i + 1;
-        }
-
-        if ( (i<s.length()) | (i<t.length())) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * return characters from s, up to and including a delimiter from list
-     */
-    function String strtkn(String s, String dummy, String list) {
-        var int i, j;
-        var boolean continue;
-        var String t;
-
-        let t = String.new(s.length());
-        let continue = true;
-        let i = 0;
-        while ( (i<s.length()) & continue ) {
-            let j = 0;
-            while ( (j<list.length()) & continue ) {
-                let continue = ~(s.charAt(i) = list.charAt(j));
-                let j = j + 1;
-            }
-            do t.appendChar(s.charAt(i));
-            let i = i + 1;
-        }
-
-        let j = 0;
-        while ((j+i) < s.length()) {
-            do s.setCharAt(j, s.charAt(j+i));
-            let j = j + 1;
-        }
-
-        while (i > 0) {
-            do s.eraseLastChar();
-            let i = i - 1;
-        }
-
-        return t;
-    }
-
-    function int HASHSIZ() {
-        return hashsiz;
-    }
-
     function int MAXLEN() {
         return maxlen;
     }
@@ -95,29 +24,5 @@ class lib {
     function String NULLS() {
         return nulls;
     }
-
-//    /** convert horizontal position of pixel coordinate
-//        to character coordinate  */
-//    function int xtoj(int x) {
-//        return x / 8;
-//    }
-//
-//    /** convert horizontal position of character coordinate
-//        to pixel coordinate  */
-//    function int jtox(int j) {
-//        return j * 8;
-//    }
-//
-//    /** convert vertical position of pixel coordinate
-//        to character coordinate  */
-//    function int ytoi(int y) {
-//        return y;
-//    }
-//
-//    /** convert vertical position of character coordinate
-//        to pixel coordinate  */
-//    function int itoy(int i) {
-//        return i;
-//    }
 
 }

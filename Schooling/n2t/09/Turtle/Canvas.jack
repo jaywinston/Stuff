@@ -2,6 +2,7 @@ class Canvas {
 
     field int top, left, height, width;
     field int _errno;
+    field int errmsg;
     field String PS1, PS2, ps;
     field Parser parser;
     field Turtle t;
@@ -21,6 +22,7 @@ class Canvas {
         let height = h;
         let width = w;
         let _errno = 0;
+        let errmsg = lib.NULLS();
         let PS1 = ps1;
         let PS2 = ps2;
         let ps = PS1;
@@ -91,7 +93,7 @@ class Canvas {
             return ps;
         }
 
-        let argv = parser.parse(s);
+        let argv = parser.eval(s);
 
         if (argv = null) {
             /* abort */
@@ -100,8 +102,9 @@ class Canvas {
 
         if (~(argv.type() = CMD)) {
             /* abort */
-            return "ENOCMD"; // stub
+            return "ENOTCMD"; // stub
         }
+
         let cmd = argv.value();
         let p = argv;
         let argv = argv.next();
@@ -182,10 +185,8 @@ class Canvas {
 
     /* stub */
     method String clearErr() {
-        var String s;
-
         let _errno = 0;
-        return lib.NULLS();
+        return errmsg;
     }
 
 }

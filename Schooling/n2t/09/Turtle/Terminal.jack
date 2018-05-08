@@ -1,18 +1,19 @@
 class Terminal {
 
-    field int BUFSIZ, SCRSIZ;
+    field int BUFSIZ;
     field int bp, scrtop;
-    field Array LINBUF;
+    field Array linbuf;
+    field String ESFULL;
     field TextBox tb;
 
     constructor Terminal new(int i, int j, int h, int w) {
 
         let BUFSIZ = 100;
-        let SCRSIZ = h;
-        let LINBUF = Array.new(BUFSIZ);
+        let linbuf = Array.new(BUFSIZ);
+        let ESFULL = "buffer full";
         let bp = 0;
         while (bp < BUFSIZ) {
-            let LINBUF[bp] = String.new(lib.MAXLEN());
+            let linbuf[bp] = String.new(lib.MAXLEN());
             let bp = bp + 1;
         }
         let bp = 0;
@@ -20,11 +21,19 @@ class Terminal {
         return this;
     }
 
+    method void dispose() {
+        do linbuf.dispose();
+        do ESFULL.dispose();
+        do tb.dispose();
+        do Memory.dealloc(this);
+        return;
+    }
+
     method String read() {
         var char c;
         var String s;
 
-        let s = LINBUF[bp];
+        let s = linbuf[bp];
         while (s.length() > 0) {
             do s.eraseLastChar();
         }
@@ -32,8 +41,13 @@ class Terminal {
         let c = Keyboard.keyPressed();
         while (~(c = 128)) {
             if ( (c>31) & (c<127) ) {
-                do s.appendChar(c);
-                do tb.putc(c);
+                if (s.length() = lib.MAXLEN()) {
+                    do tb.newline();
+                    do tb.prints(ESFULL);
+                } else {
+                    do s.appendChar(c);
+                    do tb.putc(c);
+                }
             } else { if ( (c=129) & (s.length()>0) ) {
                 do s.eraseLastChar();
                 do tb.putc(c);

@@ -89,8 +89,11 @@ class TextBox {
 
     method void scroll() {
         var int i, j, w, end;
+        var int oddChar;
+        var boolean odd;
 
         let w = (right-left) / 2;
+        let odd = -(w & 1);
         let end = 16384 + (((bottom-1)*352) + (left/2));
         let i = 16384 + ((top*352) + (left/2));
         while (i < end) {
@@ -98,6 +101,11 @@ class TextBox {
             while (j < w) {
                 do Memory.poke(i+j, Memory.peek((i+j)+352));
                 let j = j + 1;
+            }
+            if (odd) {
+                let oddChar = Memory.peek((i+j)+352) & 255;
+                let oddChar = oddChar | (Memory.peek(i+j) & -256);
+                do Memory.poke(i+j, oddChar);
             }
             let i = i + 32;
         }
