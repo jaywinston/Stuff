@@ -78,7 +78,7 @@ class Parser {
             return null;
         }
 
-        let token = Str.tkn(s, token, delims);
+        let token = Str.tkn(s, delims);
 
 /* fix me */
 //        if (~(token.charAt(token.length()-1) = 32)) {
@@ -100,7 +100,7 @@ class Parser {
 
         if (s.length() > 0) {
             let p = Object.new(lib.NULLS(), INT,
-                               String.intValue(Str.tkn(s, token, delims)));
+                               String.intValue(Str.tkn(s, delims)));
         }
 
         return argv;

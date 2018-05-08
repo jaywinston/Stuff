@@ -1,54 +1,51 @@
 class Object {
 
-    field int type, value;
-    field String name;
-    field Object next;
+    field int _type, _value;
+    field String _name;
+    field Object _next;
 
-    constructor Object new(String nam, int typ, int val) {
-        let name = Str.dup(nam);
-        if (name = null) {
-            /* abort */
-        }
-        let type = typ;
-        let value = val;
-        let next = null;
+    constructor Object new(String name, int type, int value) {
+        let _name = Str.dup(name);
+        let _type = type;
+        let _value = value;
+        let _next = null;
         return this;
     }
 
     method void dispose() {
-        do name.dispose();
+        do _name.dispose();
         do Memory.deAlloc(this);
         return;
     }
 
     method int name() {
-        return name;
+        return _name;
     }
 
     method int type() {
-        return type;
+        return _type;
     }
 
     method int value() {
-        return value;
+        return _value;
     }
 
     method int next() {
-        return next;
+        return _next;
     }
 
-    method void setType(int typ) {
-        let type = typ;
+    method void setType(int type) {
+        let _type = type;
         return;
     }
 
-    method void setValue(int val) {
-        let value = val;
+    method void setValue(int value) {
+        let _value = value;
         return;
     }
 
-    method void setNext(int nex) {
-        let next = nex;
+    method void setNext(int next) {
+        let _next = next;
         return;
     }
 

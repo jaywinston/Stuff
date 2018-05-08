@@ -1,17 +1,42 @@
 class Str {
 
-    function boolean eq(String s, String t) {
-        var int i;
+    function void cpy(String s, String t) {
+        var int i, sLen;
+
+        let sLen = s.length();
+        if (sLen > t.length()) {
+            /* todo: abort */
+            return;
+        }
+
+        while (t.length() < 0) {
+            do t.eraseLastChar();
+        }
 
         let i = 0;
-        while ( (i<s.length()) & (i<t.length()) ) {
+        while (i < sLen) {
+            do t.appendChar(s.charAt(i));
+            let i = i + 1;
+        }
+
+        return;
+    }
+
+    function boolean eq(String s, String t) {
+        var int i;
+        var int sLen, tLen;
+
+        let sLen = s.length();
+        let tLen = t.length();
+        let i = 0;
+        while ( (i<sLen) & (i<tLen) ) {
             if (~(s.charAt(i) = t.charAt(i))) {
                 return false;
             }
             let i = i + 1;
         }
 
-        if ( (i<s.length()) | (i<t.length())) {
+        if ( (i<sLen) | (i<tLen)) {
             return false;
         }
 
@@ -33,20 +58,21 @@ class Str {
         return t;
     }
 
-    /**
-     * return characters from s, up to and including a delimiter from list
-     */
-    function String tkn(String s, String dummy, String list) {
+    /** return token from s, up to and including delimiter from list */
+    function String tkn(String s, String list) {
         var int i, j;
+        var int sLen, listLen;
         var boolean continue;
         var String t;
 
-        let t = String.new(s.length());
+        let sLen = s.length();
+        let listLen = list.length();
+        let t = String.new(sLen);
         let continue = true;
         let i = 0;
-        while ( (i<s.length()) & continue ) {
+        while ( (i<sLen) & continue ) {
             let j = 0;
-            while ( (j<list.length()) & continue ) {
+            while ( (j<listLen) & continue ) {
                 let continue = ~(s.charAt(i) = list.charAt(j));
                 let j = j + 1;
             }
@@ -55,7 +81,7 @@ class Str {
         }
 
         let j = 0;
-        while ((j+i) < s.length()) {
+        while ((j+i) < sLen) {
             do s.setCharAt(j, s.charAt(j+i));
             let j = j + 1;
         }
