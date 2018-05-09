@@ -58,40 +58,31 @@ class Str {
         return t;
     }
 
-    /** return token from s, up to and including delimiter from list */
-    function String tkn(String s, String list) {
-        var int i, j;
+    function int tkn(String s, String t, String list, int i) {
+        var char c;
+        var int j;
         var int sLen, listLen;
         var boolean continue;
-        var String t;
 
         let sLen = s.length();
         let listLen = list.length();
-        let t = String.new(sLen);
         let continue = true;
-        let i = 0;
         while ( (i<sLen) & continue ) {
+            let c = s.charAt(i);
             let j = 0;
             while ( (j<listLen) & continue ) {
-                let continue = ~(s.charAt(i) = list.charAt(j));
+                let continue = ~(c = list.charAt(j));
                 let j = j + 1;
             }
-            do t.appendChar(s.charAt(i));
+            do t.appendChar(c);
             let i = i + 1;
         }
 
-        let j = 0;
-        while ((j+i) < sLen) {
-            do s.setCharAt(j, s.charAt(j+i));
-            let j = j + 1;
+        while (s.charAt(i) = 32) {
+            let i = i + 1;
         }
 
-        while (i > 0) {
-            do s.eraseLastChar();
-            let i = i - 1;
-        }
-
-        return t;
+        return i;
     }
 
 }
