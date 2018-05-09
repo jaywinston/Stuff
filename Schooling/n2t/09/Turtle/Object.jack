@@ -49,4 +49,11 @@ class Object {
         return;
     }
 
+    function Object dup(Object o) {
+        if (o = null) {
+            return null;
+        }
+        return Object.new(o.name(), o.type(), o.value());
+    }
+
 }

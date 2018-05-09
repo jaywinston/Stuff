@@ -86,4 +86,9 @@ class Terminal {
         do tb.puts(s);
         return;
     }
+
+    method void echo(String s) {
+        do tb.prints(s);
+        return;
+    }
 }

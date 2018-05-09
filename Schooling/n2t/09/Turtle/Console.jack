@@ -25,8 +25,9 @@ class Console {
     }
 
     method void try(String s) {
-        if (canvas.errno() < 0) {
-            do term.print(canvas.error());
+        if (~(canvas.errno() = 0)) {
+            do term.echo(canvas.error());
+            do canvas.clearErr();
         }
         do term.print(s);
         return;

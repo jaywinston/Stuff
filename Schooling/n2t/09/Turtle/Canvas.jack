@@ -2,15 +2,15 @@ class Canvas {
 
     field int top, left, height, width;
     field int _errno;
-    field int errmsg;
+    field String errmsg;
     field String PS1, PS2, ps;
     field Parser parser;
     field Turtle t;
     field TextBox tb;
 
-    static int PENUP, PENDOWN, TURNLEFT, TURNRIGHT, FORWARD, BLOCK, PRINT,
-               CLEAR, QUIT;
-    static int CMD, INT, STR;
+    static int BLOCK, CLEAR, FORWARD, FUNCTION, PENDOWN, PENUP, PRINT,
+                TURNLEFT, TURNRIGHT, QUIT;
+    static int CMD, CMDLIN, INT, STR;
     static Array ERRTAB;
 
     constructor Canvas new(int i, int j, int h, int w,
@@ -29,25 +29,28 @@ class Canvas {
         let tb = TextBox.new(top, left, height, width);
         let parser = Parser.new();
 
-        let p = parser.eval("PENUP");     let PENUP     = p.value();
-        let p = parser.eval("PENDOWN");   let PENDOWN   = p.value();
-        let p = parser.eval("TURNLEFT");  let TURNLEFT  = p.value();
-        let p = parser.eval("TURNRIGHT"); let TURNRIGHT = p.value();
-        let p = parser.eval("FORWARD");   let FORWARD   = p.value();
-        let p = parser.eval("BLOCK");     let BLOCK     = p.value();
-        let p = parser.eval("PRINT");     let PRINT     = p.value();
-        let p = parser.eval("CLEAR");     let CLEAR     = p.value();
-        let p = parser.eval("QUIT");      let QUIT      = p.value();
+        let p = parser.parse("BLOCK");      let BLOCK     = p.value();
+        let p = parser.parse("CLEAR");      let CLEAR     = p.value();
+        let p = parser.parse("FORWARD");    let FORWARD   = p.value();
+        let p = parser.parse("FUNCTION");   let FUNCTION  = p.value();
+        let p = parser.parse("PENUP");      let PENUP     = p.value();
+        let p = parser.parse("PENDOWN");    let PENDOWN   = p.value();
+        let p = parser.parse("PRINT");      let PRINT     = p.value();
+        let p = parser.parse("TURNLEFT");   let TURNLEFT  = p.value();
+        let p = parser.parse("TURNRIGHT");  let TURNRIGHT = p.value();
+        let p = parser.parse("QUIT");       let QUIT      = p.value();
 
         let CMD = 0;
         let INT = 1;
         let STR = 2;
+        let CMDLIN = 3;
 
-        let ERRTAB = Array.new(4);
+        let ERRTAB = Array.new(5);
         let ERRTAB[0] = lib.NULLS();
         let ERRTAB[1] = "too many arguments";
-        let ERRTAB[2] = "too few arguments";
+        let ERRTAB[2] = "not enough arguments";
         let ERRTAB[3] = "wrong type";
+        let ERRTAB[4] = "not a command";
 
         do getTurtle();
 
@@ -93,16 +96,16 @@ class Canvas {
             return ps;
         }
 
-        let argv = parser.eval(s);
+        let argv = parser.parse(s);
 
         if (argv = null) {
-            /* abort */
-            return "ENOARG"; // stub
+            let _errno = 4;
+            return ps;
         }
 
         if (~(argv.type() = CMD)) {
-            /* abort */
-            return "ENOTCMD"; // stub
+            let _errno = 4;
+            return ps;
         }
 
         let cmd = argv.value();
@@ -156,16 +159,17 @@ class Canvas {
         }
 
 /* will be ...
-        if (cmd = PENDOWN) {
+        if (cmd = BLOCK) {
+        } else { if (cmd = CLEAR) {
+        } else { if (cmd = FORWARD) {
+        } else { if (cmd = FUNCTION) {
+        } else { if (cmd = PENDOWN) {
         } else { if (cmd = PENUP) {
+        } else { if (cmd = PRINT) {
         } else { if (cmd = TURNLEFT) {
         } else { if (cmd = TURNRIGHT) {
-        } else { if (cmd = FORWARD) {
-        } else { if (cmd = PRINT) {
-        } else { if (cmd = BLOCK) {
-        } else { if (cmd = CLEAR) {
         } else { if (cmd = QUIT) {
-        }}}}}}}}}
+        }}}}}}}}}}
 */
 
         if (~(argv = null)) {
@@ -180,7 +184,7 @@ class Canvas {
     }
 
     method String error() {
-        return ERRTAB[-_errno];
+        return ERRTAB[_errno];
     }
 
     /* stub */

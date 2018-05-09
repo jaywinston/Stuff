@@ -1,18 +1,21 @@
 class Parser {
 
-    field String delims;
+    field String blank, delims;
     field HashTable symtab;
 
-    static int CMD, INT, STR;
+    /* token types */
+    static int CMD, CMDLIN, INT, STR;
 
     constructor Parser new() {
         var int STKSIZ;
 
-        let delims = " +-*/%(){}";
+        let blank = " ";
+        let delims = "+-*/%(){}";
         let symtab = HashTable.new();
         let CMD = 0;
         let INT = 1;
         let STR = 2;
+        let CMDLIN = 3;
         let STKSIZ = 50;
 
         do installKWs();
@@ -31,14 +34,15 @@ class Parser {
         var int i;
 
         let i = 0;
+        do installKW("BLOCK",     CMD, i);  let i = i + 1;
+        do installKW("CLEAR",     CMD, i);  let i = i + 1;
+        do installKW("FORWARD",   CMD, i);  let i = i + 1;
+        do installKW("FUNCTION",  CMD, i);  let i = i + 1;
         do installKW("PENDOWN",   CMD, i);  let i = i + 1;
         do installKW("PENUP",     CMD, i);  let i = i + 1;
+        do installKW("PRINT",     CMD, i);  let i = i + 1;
         do installKW("TURNLEFT",  CMD, i);  let i = i + 1;
         do installKW("TURNRIGHT", CMD, i);  let i = i + 1;
-        do installKW("FORWARD",   CMD, i);  let i = i + 1;
-        do installKW("BLOCK",     CMD, i);  let i = i + 1;
-        do installKW("PRINT",     CMD, i);  let i = i + 1;
-        do installKW("CLEAR",     CMD, i);  let i = i + 1;
         do installKW("QUIT",      CMD, i);
 
         return;
@@ -51,74 +55,74 @@ class Parser {
     }
 
     /* stub */
-    method List parse(String s) {
-/*
+    method Object parse(String s) {
         var int i;
-        var char c;
-        var Object argv;
-*/
+        var String token;
+        var Object cmd, argv;
 
-        if (s.length() = 0) {
-            return null;
+        let token = String.new(s.length());
+        let i = Str.tkn(s, token, blank, 0);
+        if (token.charAt(i-1) = 32) {
+            do token.eraseLastChar();
+        }
+        let cmd = symtab.lookup(token);
+        let argv = Object.dup(cmd);
+        while (i < s.length()) {
+            do Str.truncate(token);
+            let i = Str.tkn(s, token, blank, i);
+            do argv.setNext(eval(token, 0));
         }
 
-//        while (token.length() > 0) {
-//            do token.eraseLastChar();
-//        }
+        do token.dispose();
 
-        return eval(s);
+        return argv;
     }
 
     /* stub */
-    method List eval(String s) {
+    method Object eval(String s, int i) {
         var char op;
-        var int i;
+        var int n;
         var String token;
-        var Object argv, p;
-
-        if (s.length() = 0) {
-            return null;
-        }
+        var Object arg;
 
         let token = String.new(s.length());
 
-        let i =  Str.tkn(s, token, delims, i);
-        let op = token.charAt(token.length() - 1);
-
-        if (op = 32) {
-       		do token.eraseLastChar();
-        } else { if (op = 0) {  // +
-        } else { if (op = 0) {  // -
-        } else { if (op = 0) {  // *
-        } else { if (op = 0) {  // /
-        } else { if (op = 0) {  // %
-        } else { if (op = 0) {  // {
-        } else { if (op = 0) {  // )
-        } else { if (op = 0) {  // "
-        } else { if ( (token.charAt(0)>48) & (token.charAt(0)<58) ) {  // int
-        } else { if ( ((token.charAt(0)|32) > 97)
-                    & ((token.charAt(0)|32) < 122) ) {  // symbol
-        }}}}}}}}}}}
-
-        let argv = symtab.lookup(token);
-        if (argv = null) {
-            return null;
-        }
-        if (~(argv.type() = CMD)) {
-            /* abort */
-        }
-
-        /* stub */
+        let i = Str.tkn(s, token, delims, i);
         if (i < s.length()) {
-            while (token.length() > 0) {
-                do token.eraseLastChar();
-            }
-            let i = Str.tkn(s, token, delims, i);
-            do argv.setNext(Object.new(
-                            lib.NULLS(), INT, String.intValue(token)));
+            let op = token.charAt(token.length()-1);
+        } else {
+            let op = 0;
         }
 
-        return argv;
+        if (~(op = 0)) {
+       		do token.eraseLastChar();
+        }
+
+        if (op = 34) {
+            let arg = Object.new(lib.NULLS(), STR, token);
+        }
+        let n = String.intValue(s);
+        let arg = Object.new(lib.NULLS(), INT, n);
+
+        do token.dispose();
+
+        return arg;
+    }
+
+    method void expr(String s) {
+        var char op;
+
+        if (op = 43) {  // +
+        } else { if (op = 45) {  // -
+        } else { if (op = 42) {  // *
+        } else { if (op = 47) {  // /
+        } else { if (op = 37) {  // %
+        } else { if (op = 34) {  // "
+        } else { if (op = 41) {  // )
+        } else { if (op = 123) {  // {
+        }}}}}}}}
+
+        return;
     }
 
 }
