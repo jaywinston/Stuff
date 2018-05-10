@@ -4,7 +4,7 @@ class Parser {
     field HashTable symtab;
 
     /* token types */
-    static int CMD, CMDLIN, INT, STR, TYPE;
+    static int CMD, CMDLIN, FUNC, INT, STR, TYPE;
 
     constructor Parser new() {
         var int STKSIZ;
@@ -40,6 +40,7 @@ class Parser {
         let p = symtab.lookup("type");    let TYPE   = p.value();
         let p = symtab.lookup("cmd");     let CMD    = p.value();
         let p = symtab.lookup("cmdlin");  let CMDLIN = p.value();
+        let p = symtab.lookup("func");    let FUNC   = p.value();
         let p = symtab.lookup("int");     let INT    = p.value();
         let p = symtab.lookup("str");     let STR    = p.value();
 

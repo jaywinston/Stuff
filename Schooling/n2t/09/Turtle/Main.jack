@@ -6,12 +6,22 @@ class Main {
         do lib.init();
         do Vector.init();
         do Canvas.init();
+        do Error.init(Main.errTab());
 
         let console = Console.new();
 
         do console.run();
 
         return;
+    }
+
+    function Array errTab() {
+        var Array tab;
+
+        let tab = Array.new(5);
+        let tab[0] = lib.NULLS();
+
+        return tab;
     }
 
 }

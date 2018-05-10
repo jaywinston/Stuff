@@ -1,16 +1,30 @@
 class Error {
 
     static int _errno;
-    static Array errtab;
+    static Array ERRTAB;
 
-    constructor Error new(Array tab) {
-        let errtab = tab;
-        return this;
+    function void init(Array tab) {
+        let ERRTAB = tab;
+        let _errno = 0;
+        return;
     }
 
     function void set(int i) {
         let _errno = i;
         return;
+    }
+
+    function int n() {
+        return _errno;
+    }
+
+    function String msg() {
+        return ERRTAB[_errno];
+    }
+
+    function String clear() {
+        let _errno = 0;
+        return lib.NULLS();
     }
 
 }

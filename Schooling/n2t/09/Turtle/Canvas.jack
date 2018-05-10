@@ -1,8 +1,6 @@
 class Canvas {
 
     field int top, left, height, width;
-    field int _errno;
-    field String errmsg;
     field String PS1, PS2, ps;
     field Parser parser;
     field Turtle t;
@@ -10,8 +8,7 @@ class Canvas {
 
     static int BLOCK, CLEAR, FORWARD, FUNCTION, PENDOWN, PENUP, PRINT,
                 TURNLEFT, TURNRIGHT, QUIT;
-    static int CMD, CMDLIN, INT, STR;
-    static Array ERRTAB;
+    static int TYPE, CMD, CMDLIN, FUNC, INT, STR;
 
     constructor Canvas new(int i, int j, int h, int w,
                            String ps1, String ps2) {
@@ -21,8 +18,6 @@ class Canvas {
         let left = j;
         let height = h;
         let width = w;
-        let _errno = 0;
-        let errmsg = lib.NULLS();
         let PS1 = ps1;
         let PS2 = ps2;
         let ps = PS1;
@@ -40,18 +35,15 @@ class Canvas {
         let p = parser.parse("TURNRIGHT");  let TURNRIGHT = p.value();
         let p = parser.parse("QUIT");       let QUIT      = p.value();
 
-        let CMD = 0;
-        let INT = 1;
-        let STR = 2;
-        let CMDLIN = 3;
+        let p = parser.parse("type");       let TYPE      = p.value();
+        let p = parser.parse("cmd");        let CMD       = p.value();
+        let p = parser.parse("cmdlin");     let CMDLIN    = p.value();
+        let p = parser.parse("func");       let FUNC      = p.value();
+        let p = parser.parse("int");        let INT       = p.value();
+        let p = parser.parse("str");        let STR       = p.value();
 
-        let ERRTAB = Array.new(5);
-        let ERRTAB[0] = lib.NULLS();
-        let ERRTAB[1] = "too many arguments";
-        let ERRTAB[2] = "not enough arguments";
-        let ERRTAB[3] = "wrong type";
-        let ERRTAB[4] = "not a command";
-
+        do p.dispose();
+        do Error.set(0);
         do getTurtle();
 
         return this;
@@ -99,12 +91,12 @@ class Canvas {
         let argv = parser.parse(s);
 
         if (argv = null) {
-            let _errno = 4;
+            do Error.set(4);
             return ps;
         }
 
         if (~(argv.type() = CMD)) {
-            let _errno = 4;
+            do Error.set(4);
             return ps;
         }
 
@@ -115,41 +107,41 @@ class Canvas {
 
         if (cmd = PENUP) {
             if (~(argv = null)) {
-                let _errno = 1;
+                do Error.set(1);
             } else {
                 do t.penup();
             }
         }
         if (cmd = PENDOWN) {
             if (~(argv = null)) {
-                let _errno = 1;
+                do Error.set(1);
             } else {
                 do t.pendown();
             }
         }
         if (cmd = TURNLEFT) {
             if (argv = null) {
-                let _errno = 2;
+                do Error.set(2);
             } else { if (~(argv.next() = null)) {
-                let _errno = 1;
+                do Error.set(1);
             } else {
                 do t.turnleft(argv.value());
             }}
         }
         if (cmd = TURNRIGHT) {
             if (argv = null) {
-                let _errno = 2;
+                do Error.set(2);
             } else { if (~(argv.next() = null)) {
-                let _errno = 1;
+                do Error.set(1);
             } else {
                 do t.turnright(argv.value());
             }}
         }
         if (cmd = FORWARD) {
             if (argv = null) {
-                let _errno = 2;
+                do Error.set(2);
             } else { if (~(argv.next() = null)) {
-                let _errno = 1;
+                do Error.set(1);
             } else {
                 do t.forward(argv.value());
             }}
@@ -177,20 +169,6 @@ class Canvas {
         }
 
         return ps;
-    }
-
-    method int errno() {
-        return _errno;
-    }
-
-    method String error() {
-        return ERRTAB[_errno];
-    }
-
-    /* stub */
-    method String clearErr() {
-        let _errno = 0;
-        return errmsg;
     }
 
 }
