@@ -4,7 +4,7 @@ class Parser {
     field HashTable symtab;
 
     /* token types */
-    static int CMD, CMDLIN, INT, STR;
+    static int CMD, CMDLIN, INT, STR, TYPE;
 
     constructor Parser new() {
         var int STKSIZ;
@@ -12,10 +12,6 @@ class Parser {
         let blank = " ";
         let delims = "+-*/%(){}";
         let symtab = HashTable.new();
-        let CMD = 0;
-        let INT = 1;
-        let STR = 2;
-        let CMDLIN = 3;
         let STKSIZ = 50;
 
         do installKWs();
@@ -32,6 +28,22 @@ class Parser {
 
     method void installKWs() {
         var int i;
+        var Object p;
+
+        let i = 0;
+        do installKW("type",    0, i);  let i = i + 1;  // 'type' must be first
+        do installKW("cmd",     0, i);  let i = i + 1;
+        do installKW("cmdline", 0, i);  let i = i + 1;
+        do installKW("int",     0, i);  let i = i + 1;
+        do installKW("str",     0, i);
+
+        let p = symtab.lookup("type");    let TYPE   = p.value();
+        let p = symtab.lookup("cmd");     let CMD    = p.value();
+        let p = symtab.lookup("cmdlin");  let CMDLIN = p.value();
+        let p = symtab.lookup("int");     let INT    = p.value();
+        let p = symtab.lookup("str");     let STR    = p.value();
+
+        do p.dispose();
 
         let i = 0;
         do installKW("BLOCK",     CMD, i);  let i = i + 1;
@@ -61,15 +73,21 @@ class Parser {
         var Object cmd, argv;
 
         let token = String.new(s.length());
+
         let i = Str.tkn(s, token, blank, 0);
         if (token.charAt(i-1) = 32) {
             do token.eraseLastChar();
         }
-        let cmd = symtab.lookup(token);
-        let argv = Object.dup(cmd);
+
+        let cmd = Object.dup(sytab.lookup(token));
+        let argv = cmd;
+
         while (i < s.length()) {
             do Str.truncate(token);
             let i = Str.tkn(s, token, blank, i);
+            if (token.charAt(i-1) = 32) {
+                do token.eraseLastChar();
+            }
             do argv.setNext(eval(token, 0));
         }
 
@@ -80,7 +98,7 @@ class Parser {
 
     /* stub */
     method Object eval(String s, int i) {
-        var char op;
+        var char c, op;
         var int n;
         var String token;
         var Object arg;
@@ -88,18 +106,22 @@ class Parser {
         let token = String.new(s.length());
 
         let i = Str.tkn(s, token, delims, i);
+
+        let c = token.charAt(0);
+
         if (i < s.length()) {
             let op = token.charAt(token.length()-1);
+       		do token.eraseLastChar();
         } else {
             let op = 0;
         }
 
-        if (~(op = 0)) {
-       		do token.eraseLastChar();
-        }
-
-        if (op = 34) {
-            let arg = Object.new(lib.NULLS(), STR, token);
+        if (c = 34) {
+            if (op = 34) {
+                let arg = Object.new(lib.NULLS(), STR, token);
+            } else {
+                do Error.set(0);
+            }
         }
         let n = String.intValue(s);
         let arg = Object.new(lib.NULLS(), INT, n);

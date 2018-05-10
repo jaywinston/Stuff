@@ -1,0 +1,16 @@
+class Error {
+
+    static int _errno;
+    static Array errtab;
+
+    constructor Error new(Array tab) {
+        let errtab = tab;
+        return this;
+    }
+
+    function void set(int i) {
+        let _errno = i;
+        return;
+    }
+
+}
