@@ -42,7 +42,7 @@ class HashTable {
 
         let p = lookup(name);
         if (p = null) {
-            let p = Object.new(name, type, val);
+            let p = Object.new(Str.dup(name), type, val);
             let nhash = HashTable.hash(name);
             do p.setNext(table[nhash]);
             let table[nhash] = p;

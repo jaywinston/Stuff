@@ -7,19 +7,15 @@ class Parser {
     static int CMD, CMDLIN, FUNC, INT, STR, TYPE;
 
     constructor Parser new() {
-        var int STKSIZ;
-
         let blank = " ";
         let delims = "+-*/%(){}";
         let symtab = HashTable.new();
-        let STKSIZ = 50;
-
         do installKWs();
-
         return this;
     }
 
     method void dispose() {
+        do blank.dispose();
         do delims.dispose();
         do symtab.dispose();
         do Memory.deAlloc(this);
@@ -33,7 +29,8 @@ class Parser {
         let i = 0;
         do installKW("type",    0, i);  let i = i + 1;  // 'type' must be first
         do installKW("cmd",     0, i);  let i = i + 1;
-        do installKW("cmdline", 0, i);  let i = i + 1;
+        do installKW("cmdlin",  0, i);  let i = i + 1;
+        do installKW("func",    0, i);  let i = i + 1;
         do installKW("int",     0, i);  let i = i + 1;
         do installKW("str",     0, i);
 
@@ -54,6 +51,7 @@ class Parser {
         do installKW("PENDOWN",   CMD, i);  let i = i + 1;
         do installKW("PENUP",     CMD, i);  let i = i + 1;
         do installKW("PRINT",     CMD, i);  let i = i + 1;
+//        do installKW("REPEAT",    CMD, i);  let i = i + 1;
         do installKW("TURNLEFT",  CMD, i);  let i = i + 1;
         do installKW("TURNRIGHT", CMD, i);  let i = i + 1;
         do installKW("QUIT",      CMD, i);
@@ -80,7 +78,7 @@ class Parser {
             do token.eraseLastChar();
         }
 
-        let cmd = Object.dup(sytab.lookup(token));
+        let cmd = Object.dup(symtab.lookup(token));
         let argv = cmd;
 
         while (i < s.length()) {
@@ -89,24 +87,25 @@ class Parser {
             if (token.charAt(i-1) = 32) {
                 do token.eraseLastChar();
             }
-            do argv.setNext(eval(token, 0));
+            do argv.append(eval(token));
         }
 
         do token.dispose();
 
-        return argv;
+        return cmd;
     }
 
     /* stub */
-    method Object eval(String s, int i) {
-        var char c, op;
+    method Object eval(String s) {
+        var char i,c, op;
         var int n;
         var String token;
         var Object arg;
 
+/*
         let token = String.new(s.length());
 
-        let i = Str.tkn(s, token, delims, i);
+        let i = Str.tkn(s, token, delims, 0);
 
         let c = token.charAt(0);
 
@@ -116,36 +115,62 @@ class Parser {
         } else {
             let op = 0;
         }
+*/
 
         if (c = 34) {
-            if (op = 34) {
-                let arg = Object.new(lib.NULLS(), STR, token);
+            if (s.charAt(s.length()-1) = 34) {
+                let arg = Object.new(token, STR, expr(token, 0));
             } else {
                 do Error.set(0);
+                return null;
             }
-        }
-        let n = String.intValue(s);
-        let arg = Object.new(lib.NULLS(), INT, n);
+        } else { if ( ((c>48) & (c<58)) | (((c|32)>96) & ((c|32)<123)) ) {
+            let arg = Object.new(token, INT, expr(token, 0));
+        } else {
+            do Error.set(0);
+            return null;
+        }}
 
         do token.dispose();
 
         return arg;
     }
 
-    method void expr(String s) {
+    method String expr(String s, int i) {
         var char op;
+        var int sLen;
+        var String n, token;
 
-        if (op = 43) {  // +
-        } else { if (op = 45) {  // -
-        } else { if (op = 42) {  // *
-        } else { if (op = 47) {  // /
-        } else { if (op = 37) {  // %
-        } else { if (op = 34) {  // "
-        } else { if (op = 41) {  // )
+        if (s.charAt(0) = 34) {
+            do s.eraseLastChar();
+            let i = 1;
+            let sLen = s.length();
+            while (i < sLen) {
+                do s.setCharAt(i-1, s.charAt(i));
+                let i = i + 1;
+            }
+            do s.eraseLastChar();
+            return Str.dup(s);
+        }
+
+        let token = String.new(s.length());
+        let i = Str.tkn(s, token, delims, i);
+        if (i < s.length()) {
+            let op = s.charAt(i-1);
+        } else {
+            return String.intValue(token);
+        }
+
+        if (op = 43) {            // +
+        } else { if (op = 45) {   // -
+        } else { if (op = 42) {   // *
+        } else { if (op = 47) {   // /
+        } else { if (op = 37) {   // %
+        } else { if (op = 41) {   // )
         } else { if (op = 123) {  // {
-        }}}}}}}}
+        }}}}}}}
 
-        return;
+        return "";
     }
 
 }

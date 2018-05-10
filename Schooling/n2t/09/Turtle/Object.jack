@@ -3,12 +3,14 @@ class Object {
     field int _type, _value;
     field String _name;
     field Object _next;
+    field Object end;
 
     constructor Object new(String name, int type, int value) {
         let _name = Str.dup(name);
         let _type = type;
         let _value = value;
         let _next = null;
+        let end = this;
         return this;
     }
 
@@ -46,6 +48,12 @@ class Object {
 
     method void setNext(int next) {
         let _next = next;
+        return;
+    }
+
+    method void append(Object o) {
+        do o.setNext(end.next());
+        do end.setNext(o);
         return;
     }
 
