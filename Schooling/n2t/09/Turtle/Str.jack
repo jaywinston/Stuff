@@ -76,6 +76,14 @@ class Str {
         var int sLen, listLen;
         var boolean continue;
 
+        let sLen = s.length();
+
+        // skip blanks
+        while ( (i<sLen) & (c=32) ){
+            let c = s.charAt(i);
+            let i = i + 1;
+        }
+
         if (s.charAt(i) = 40) {
             return Str.parens(s, t, i+1);
         }
@@ -84,7 +92,6 @@ class Str {
             return Str.quotes(s, t, i+1);
         }
 
-        let sLen = s.length();
         let listLen = list.length();
         let continue = true;
         while ( (i<sLen) & continue ) {
@@ -98,10 +105,10 @@ class Str {
             let i = i + 1;
         }
 
-        if (i < sLen) {
-            while (s.charAt(i) = 32) {
-                let i = i + 1;
-            }
+        // skip blanks
+        while ( (i<sLen) & (c=32) ){
+            let c = s.charAt(i);
+            let i = i + 1;
         }
 
         return i;

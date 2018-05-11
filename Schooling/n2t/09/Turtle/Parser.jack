@@ -41,8 +41,6 @@ class Parser {
         let p = symtab.lookup("int");     let INT    = p.value();
         let p = symtab.lookup("str");     let STR    = p.value();
 
-        do p.dispose();
-
         let i = 0;
         do installKW("BLOCK",     CMD, i);  let i = i + 1;
         do installKW("CLEAR",     CMD, i);  let i = i + 1;
@@ -51,7 +49,7 @@ class Parser {
         do installKW("PENDOWN",   CMD, i);  let i = i + 1;
         do installKW("PENUP",     CMD, i);  let i = i + 1;
         do installKW("PRINT",     CMD, i);  let i = i + 1;
-//        do installKW("REPEAT",    CMD, i);  let i = i + 1;
+        do installKW("REPEAT",    CMD, i);  let i = i + 1;
         do installKW("TURNLEFT",  CMD, i);  let i = i + 1;
         do installKW("TURNRIGHT", CMD, i);  let i = i + 1;
         do installKW("QUIT",      CMD, i);
@@ -69,7 +67,7 @@ class Parser {
     method Object parse(String s) {
         var int i;
         var String token;
-        var Object cmd, argv;
+        var Object argv;
 
         let token = String.new(s.length());
 
@@ -78,8 +76,7 @@ class Parser {
             do token.eraseLastChar();
         }
 
-        let cmd = Object.dup(symtab.lookup(token));
-        let argv = cmd;
+        let argv = Object.dup(symtab.lookup(token));
 
         while (i < s.length()) {
             do Str.truncate(token);
@@ -92,7 +89,7 @@ class Parser {
 
         do token.dispose();
 
-        return cmd;
+        return argv;
     }
 
     /* stub */
@@ -116,6 +113,8 @@ class Parser {
             let op = 0;
         }
 */
+
+        let c = s.charAt(0);
 
         if (c = 34) {
             if (s.charAt(s.length()-1) = 34) {
@@ -170,7 +169,7 @@ class Parser {
         } else { if (op = 123) {  // {
         }}}}}}}
 
-        return "";
+        return ""; // stub
     }
 
 }

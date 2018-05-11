@@ -88,33 +88,32 @@ class TextBox {
     }
 
     method void scroll() {
-        var int i, j, w, end;
+        var int w, end, off, pxRow;
         var int oddChar;
         var boolean odd;
 
         let w = (right-left) / 2;
         let odd = -(w & 1);
         let end = 16384 + (((bottom-1)*352) + (left/2));
-        let i = 16384 + ((top*352) + (left/2));
-        while (i < end) {
-            let j = 0;
-            while (j < w) {
-                do Memory.poke(i+j, Memory.peek((i+j)+352));
-                let j = j + 1;
+        let pxRow = 16384 + ((top*352) + (left/2));
+        while (pxRow < end) { let off = 0;
+            while (off < w) {
+                do Memory.poke(pxRow+off, Memory.peek((pxRow+off)+352));
+                let off = off + 1;
             }
             if (odd) {
-                let oddChar = Memory.peek((i+j)+352) & 255;
-                let oddChar = oddChar | (Memory.peek(i+j) & -256);
-                do Memory.poke(i+j, oddChar);
+                let oddChar = Memory.peek((pxRow+off)+352) & 255;
+                let oddChar = oddChar | (Memory.peek(pxRow+off) & -256);
+                do Memory.poke(pxRow+off, oddChar);
             }
-            let i = i + 32;
+            let pxRow = pxRow + 32;
         }
 
         do Output.moveCursor(bottom-1, left);
-        let i = left;
-        while (i < right) {
+        let w = left;  // recycle 'w'; nothing to do with it's name
+        while (w < right) {
             do Output.printChar(32);
-            let i = i + 1;
+            let w = w + 1;
         }
 
         do Screen.setColor(true);

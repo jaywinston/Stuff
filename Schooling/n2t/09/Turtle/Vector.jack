@@ -31,11 +31,6 @@ class Vector {
         let trigv = Array.new(91);
 
 /*                          populate trig table                             */
-
-/* These values don't change, whether for sine or cosine.  The appropriate
- * value is retrieved by using an offset from the start or the end of the table
- * and applying the right sign; see sin().  Indices are in degrees. 
- */
 let trigv[0] = 0; let trigv[1] = 2; let trigv[2] = 3; let trigv[3] = 5;
 let trigv[4] = 7; let trigv[5] = 9; let trigv[6] = 10; let trigv[7] = 12;
 let trigv[8] = 14; let trigv[9] = 16; let trigv[10] = 17; let trigv[11] = 19;
@@ -86,6 +81,7 @@ let trigv[90] = 100;
         if (neg) {
             let a = lib.mod(a, 180);
         }
+
         if (a > 90) {
             let a = 90 - (lib.mod(a-1, 90)+1);
         }

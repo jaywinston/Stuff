@@ -24,25 +24,40 @@ class Canvas {
         let tb = TextBox.new(top, left, height, width);
         let parser = Parser.new();
 
-        let p = parser.parse("BLOCK");      let BLOCK     = p.value();
-        let p = parser.parse("CLEAR");      let CLEAR     = p.value();
-        let p = parser.parse("FORWARD");    let FORWARD   = p.value();
-        let p = parser.parse("FUNCTION");   let FUNCTION  = p.value();
-        let p = parser.parse("PENUP");      let PENUP     = p.value();
-        let p = parser.parse("PENDOWN");    let PENDOWN   = p.value();
-        let p = parser.parse("PRINT");      let PRINT     = p.value();
-        let p = parser.parse("TURNLEFT");   let TURNLEFT  = p.value();
-        let p = parser.parse("TURNRIGHT");  let TURNRIGHT = p.value();
-        let p = parser.parse("QUIT");       let QUIT      = p.value();
-
         let p = parser.parse("type");       let TYPE      = p.value();
-        let p = parser.parse("cmd");        let CMD       = p.value();
-        let p = parser.parse("cmdlin");     let CMDLIN    = p.value();
-        let p = parser.parse("func");       let FUNC      = p.value();
-        let p = parser.parse("int");        let INT       = p.value();
-        let p = parser.parse("str");        let STR       = p.value();
-
         do p.dispose();
+        let p = parser.parse("cmd");        let CMD       = p.value();
+        do p.dispose();
+        let p = parser.parse("cmdlin");     let CMDLIN    = p.value();
+        do p.dispose();
+        let p = parser.parse("func");       let FUNC      = p.value();
+        do p.dispose();
+        let p = parser.parse("int");        let INT       = p.value();
+        do p.dispose();
+        let p = parser.parse("str");        let STR       = p.value();
+        do p.dispose();
+
+        let p = parser.parse("BLOCK");      let BLOCK     = p.value();
+        do p.dispose();
+        let p = parser.parse("CLEAR");      let CLEAR     = p.value();
+        do p.dispose();
+        let p = parser.parse("FORWARD");    let FORWARD   = p.value();
+        do p.dispose();
+        let p = parser.parse("FUNCTION");   let FUNCTION  = p.value();
+        do p.dispose();
+        let p = parser.parse("PENUP");      let PENUP     = p.value();
+        do p.dispose();
+        let p = parser.parse("PENDOWN");    let PENDOWN   = p.value();
+        do p.dispose();
+        let p = parser.parse("PRINT");      let PRINT     = p.value();
+        do p.dispose();
+        let p = parser.parse("TURNLEFT");   let TURNLEFT  = p.value();
+        do p.dispose();
+        let p = parser.parse("TURNRIGHT");  let TURNRIGHT = p.value();
+        do p.dispose();
+        let p = parser.parse("QUIT");       let QUIT      = p.value();
+        do p.dispose();
+
         do Error.set(0);
         do getTurtle();
 
@@ -56,10 +71,6 @@ class Canvas {
         do t.dispose();
         do tb.dispose();
         do Memory.deAlloc(this);
-        return;
-    }
-
-    function void init() {
         return;
     }
 
@@ -96,7 +107,7 @@ class Canvas {
         }
 
         if (~(argv.type() = CMD)) {
-            do Error.set(4);
+            do Error.set(3);
             return ps;
         }
 
