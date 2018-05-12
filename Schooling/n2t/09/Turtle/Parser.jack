@@ -81,7 +81,7 @@ class Parser {
         while (i < s.length()) {
             do Str.truncate(token);
             let i = Str.tkn(s, token, blank, i);
-            if (token.charAt(i-1) = 32) {
+            if (token.charAt(token.length()-1) = 32) {
                 do token.eraseLastChar();
             }
             do argv.append(eval(token));
@@ -99,7 +99,6 @@ class Parser {
         var String token;
         var Object arg;
 
-/*
         let token = String.new(s.length());
 
         let i = Str.tkn(s, token, delims, 0);
@@ -112,7 +111,6 @@ class Parser {
         } else {
             let op = 0;
         }
-*/
 
         let c = s.charAt(0);
 

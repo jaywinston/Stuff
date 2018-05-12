@@ -51,6 +51,8 @@ class Canvas {
         do p.dispose();
         let p = parser.parse("PRINT");      let PRINT     = p.value();
         do p.dispose();
+        let p = parser.parse("REPEAT");     let PRINT     = p.value();
+        do p.dispose();
         let p = parser.parse("TURNLEFT");   let TURNLEFT  = p.value();
         do p.dispose();
         let p = parser.parse("TURNRIGHT");  let TURNRIGHT = p.value();

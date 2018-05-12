@@ -78,17 +78,16 @@ class Str {
 
         let sLen = s.length();
 
-        // skip blanks
         while ( (i<sLen) & (c=32) ){
             let c = s.charAt(i);
             let i = i + 1;
         }
 
-        if (s.charAt(i) = 40) {
+        if ( (i<sLen) & (s.charAt(i) = 40) ) {
             return Str.parens(s, t, i+1);
         }
 
-        if (s.charAt(i) = 34) {
+        if ( (i<sLen) & (s.charAt(i)=34) ) {
             return Str.quotes(s, t, i+1);
         }
 
@@ -105,10 +104,12 @@ class Str {
             let i = i + 1;
         }
 
-        // skip blanks
-        while ( (i<sLen) & (c=32) ){
+        if (i < sLen) {
             let c = s.charAt(i);
-            let i = i + 1;
+            while ( (i<sLen) & (c=32) ){
+                let c = s.charAt(i);
+                let i = i + 1;
+            }
         }
 
         return i;
