@@ -52,8 +52,10 @@ class Symbol {
     }
 
     method void append(Symbol o) {
-        do o.setNext(end.next());
-        do end.setNext(o);
+        if (~(o = null)) {
+            do o.setNext(end.next());
+            do end.setNext(o);
+        }
         return;
     }
 

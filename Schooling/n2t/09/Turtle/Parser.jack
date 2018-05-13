@@ -112,7 +112,7 @@ class Parser {
 
         let token = String.new(s.length());
 
-        let i = Str.tkn(s, token, DELIMS, 0);
+        let i = Str.tkn(s, token, BLANK, 0);
 
         if (i < s.length()) {
             let op = token.charAt(token.length()-1);
@@ -127,13 +127,13 @@ class Parser {
 
         if (c = 34) {
             if (s.charAt(s.length()-1) = 34) {
-                let arg = Symbol.new(lib.NULLS(), STR, expr(token, 0));
+                let arg = Symbol.new(lib.NULLS(), STR, expr(token));
             } else {
                 do Error.set(0);
                 return null;
             }
-        } else { if ( ((c>48) & (c<58)) | (((c|32)>96) & ((c|32)<123)) ) {
-            let arg = Symbol.new(token, INT, expr(token, 0));
+        } else { if ( ((c>47) & (c<58)) | (((c|32)>96) & ((c|32)<123)) ) {
+            let arg = Symbol.new(token, INT, expr(token));
         } else {
             do Error.set(0);
             return null;
@@ -144,10 +144,11 @@ class Parser {
         return arg;
     }
 
-    method int expr(String s, int i) {
-        var char op;
-        var int n, sLen;
+    method int expr(String s) {
+        var char c, op;
+        var int i, n, sLen;
         var String token;
+        var Symbol p;
 
         if (s.charAt(0) = 34) {
             do s.eraseLastChar();
@@ -161,11 +162,25 @@ class Parser {
             return Str.dup(s);
         }
 
-        let token = String.new(s.length()-i);
+        let token = String.new(s.length());
 
-        let i = Str.tkn(s, token, DELIMS, i);
+        let i = Str.tkn(s, token, DELIMS, 0);
 
-        let n = String.intValue(token);
+        let c = token.charAt(0);
+        if ( (c>47) & (c<58) ) {
+            let n = String.intValue(token);
+        } else {
+            let c = c | 32;
+            if ( (c>96) & (c<127) ) {
+                do token.eraseLastChar();
+                let p = symtab.lookup(token);
+                /* todo: type check */
+                let n = p.value();
+            } else {
+                do Error.set(0);
+                return null;
+            }
+        }
 
         if (i < s.length()) {
             let op = s.charAt(i-1);
@@ -173,9 +188,9 @@ class Parser {
             do Str.tkn(s, token, DELIMS, i);
 
             if (op = 43) {                  // +
-                let n = n + expr(token, i);
+                let n = n + expr(token);
             } else { if (op = 45) {         // -
-                let n = n - expr(token, i);
+                let n = n - expr(token);
             } else { if (op = 42) {         // *
             } else { if (op = 47) {         // /
             } else { if (op = 37) {         // %
