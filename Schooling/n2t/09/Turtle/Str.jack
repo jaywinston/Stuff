@@ -154,4 +154,21 @@ class Str {
         return i;
     }
 
+    function void shift(String s, int off) {
+        var int i, sLen;
+
+        let sLen = s.length();
+        let i = off;
+        while (i < sLen) {
+            do s.setCharAt(i-off, s.charAt(i));
+            let i = i + 1;
+        }
+
+        while (off > 0) {
+            do s.eraseLastChar();
+            let off = off - 1;
+        }
+
+        return;
+    }
 }

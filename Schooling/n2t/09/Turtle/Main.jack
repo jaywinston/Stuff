@@ -18,9 +18,9 @@ class Main {
         var Array tab;
 
         let tab = Array.new(5);
-        let tab[0] = lib.NULLS();
-        let tab[1] = lib.NULLS();
-        let tab[2] = lib.NULLS();
+        let tab[0] = "errno 0";
+        let tab[1] = "errno 1";
+        let tab[2] = "errno 2";
         let tab[3] = "type is not CMD";
         let tab[4] = "parser returned null";
 
