@@ -12,8 +12,6 @@ class Canvas {
 
     constructor Canvas new(int i, int j, int h, int w,
                            String ps1, String ps2) {
-        var Object p;
-
         let top = i;
         let left = j;
         let height = h;
@@ -24,41 +22,24 @@ class Canvas {
         let tb = TextBox.new(top, left, height, width);
         let parser = Parser.new();
 
-        let p = parser.parse("type");       let TYPE      = p.value();
-        do p.dispose();
-        let p = parser.parse("cmd");        let CMD       = p.value();
-        do p.dispose();
-        let p = parser.parse("cmdlin");     let CMDLIN    = p.value();
-        do p.dispose();
-        let p = parser.parse("func");       let FUNC      = p.value();
-        do p.dispose();
-        let p = parser.parse("int");        let INT       = p.value();
-        do p.dispose();
-        let p = parser.parse("str");        let STR       = p.value();
-        do p.dispose();
+        let TYPE      = parser.lookup("type");
+        let CMD       = parser.lookup("cmd");
+        let CMDLIN    = parser.lookup("cmdlin");
+        let FUNC      = parser.lookup("func");
+        let INT       = parser.lookup("int");
+        let STR       = parser.lookup("str");
 
-        let p = parser.parse("BLOCK");      let BLOCK     = p.value();
-        do p.dispose();
-        let p = parser.parse("CLEAR");      let CLEAR     = p.value();
-        do p.dispose();
-        let p = parser.parse("FORWARD");    let FORWARD   = p.value();
-        do p.dispose();
-        let p = parser.parse("FUNCTION");   let FUNCTION  = p.value();
-        do p.dispose();
-        let p = parser.parse("PENUP");      let PENUP     = p.value();
-        do p.dispose();
-        let p = parser.parse("PENDOWN");    let PENDOWN   = p.value();
-        do p.dispose();
-        let p = parser.parse("PRINT");      let PRINT     = p.value();
-        do p.dispose();
-        let p = parser.parse("REPEAT");     let PRINT     = p.value();
-        do p.dispose();
-        let p = parser.parse("TURNLEFT");   let TURNLEFT  = p.value();
-        do p.dispose();
-        let p = parser.parse("TURNRIGHT");  let TURNRIGHT = p.value();
-        do p.dispose();
-        let p = parser.parse("QUIT");       let QUIT      = p.value();
-        do p.dispose();
+        let BLOCK     = parser.lookup("BLOCK");
+        let CLEAR     = parser.lookup("CLEAR");
+        let FORWARD   = parser.lookup("FORWARD");
+        let FUNCTION  = parser.lookup("FUNCTION");
+        let PENUP     = parser.lookup("PENUP");
+        let PENDOWN   = parser.lookup("PENDOWN");
+        let PRINT     = parser.lookup("PRINT");
+        let PRINT     = parser.lookup("REPEAT");
+        let TURNLEFT  = parser.lookup("TURNLEFT");
+        let TURNRIGHT = parser.lookup("TURNRIGHT");
+        let QUIT      = parser.lookup("QUIT");
 
         do Error.set(0);
         do getTurtle();
@@ -95,7 +76,7 @@ class Canvas {
         var int cmd, type, nval;
         var int n;
         var String sval;
-        var Object argv, p;
+        var Symbol argv, p;
 
         if (s.length() = 0) {
             return ps;

@@ -22,8 +22,8 @@ class HashTable {
         return;
     }
 
-    method Object lookup(String s) {
-        var Object p;
+    method Symbol lookup(String s) {
+        var Symbol p;
 
         let p = table[HashTable.hash(s)];
         while (~(p = null)) {
@@ -38,11 +38,11 @@ class HashTable {
 
     method void install(String name, int type, int val) {
         var int nhash;
-        var Object p;
+        var Symbol p;
 
         let p = lookup(name);
         if (p = null) {
-            let p = Object.new(Str.dup(name), type, val);
+            let p = Symbol.new(Str.dup(name), type, val);
             let nhash = HashTable.hash(name);
             do p.setNext(table[nhash]);
             let table[nhash] = p;

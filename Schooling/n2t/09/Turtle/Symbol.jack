@@ -1,11 +1,11 @@
-class Object {
+class Symbol {
 
     field int _type, _value;
     field String _name;
-    field Object _next;
-    field Object end;
+    field Symbol _next;
+    field Symbol end;
 
-    constructor Object new(String name, int type, int value) {
+    constructor Symbol new(String name, int type, int value) {
         let _name = Str.dup(name);
         let _type = type;
         let _value = value;
@@ -51,17 +51,17 @@ class Object {
         return;
     }
 
-    method void append(Object o) {
+    method void append(Symbol o) {
         do o.setNext(end.next());
         do end.setNext(o);
         return;
     }
 
-    function Object dup(Object o) {
+    function Symbol dup(Symbol o) {
         if (o = null) {
             return null;
         }
-        return Object.new(o.name(), o.type(), o.value());
+        return Symbol.new(o.name(), o.type(), o.value());
     }
 
 }
