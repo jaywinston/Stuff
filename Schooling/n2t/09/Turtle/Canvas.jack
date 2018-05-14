@@ -84,6 +84,10 @@ class Canvas {
 
         let argv = parser.parse(s);
 
+        if (argv = true) {
+            return ps;
+        }
+
         if (argv = null) {
             do Error.set(4);
             return ps;

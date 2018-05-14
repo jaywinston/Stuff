@@ -72,30 +72,48 @@ class Parser {
 
     /* stub */
     method Symbol parse(String s) {
+        var char op;
         var int i;
-        var String token;
+        var String name, token;
         var Symbol argv;
 
         let token = String.new(s.length());
 
         let i = Str.tkn(s, token, ST_DLMS, 0);
-        /* todo: assignment statement */
-        if (token.charAt(i-1) = 32) {
+
+        if (i < s.length()) {
+            let op = token.charAt(token.length()-1);
             do token.eraseLastChar();
+        } else {
+            let op = 0;
         }
 
-        let argv = Symbol.dup(symtab.lookup(token));
+        if (op = 61) {
+            let name = Str.dup(token);
+            do Str.truncate(token);
+            let i = Str.tkn(s, token, ST_DLMS, i);
+            if (i < s.length()) {
+                do Error.set(0);  // too many arguments fo assignment
+                return null;
+            }
+            let argv = eval(token);
+            do symtab.install(name, argv.type(), argv.value());
+            return true;
 
-        if (argv = null) {
-            do Error.set(0);
-            return null;
-        }
+        } else { if (op = 32) {
 
-        /* todo: assignment statement */
-        if (~(argv.type() = CMD)) {
-            do Error.set(0);
-            return null;
-        }
+            let argv = Symbol.dup(symtab.lookup(token));
+
+            if (argv = null) {
+                do Error.set(0);  // Parser.parse(): sym not found
+                return null;
+            }
+
+            if (~(argv.type() = CMD)) {
+                do Error.set(0);  // Parser.parse(): sym not cmd
+                return null;
+            }
+        }}
 
         while (i < s.length()) {
             do Str.truncate(token);
