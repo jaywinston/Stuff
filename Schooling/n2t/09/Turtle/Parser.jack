@@ -3,7 +3,7 @@ class Parser {
     field String ST_DLMS, EX_DLMS;
     field String _token, fName;
     field HashTable symtab;
-    field Symbol argv;
+    field Symbol block;
 
     /* token types */
     static int CMD, CMDLIN, FUNC, INT, STR, TYPE;
@@ -12,8 +12,9 @@ class Parser {
         let ST_DLMS = " =";
         let EX_DLMS = "+-*/%(){}";
         let _token = String.new(lib.MAXLEN());
-        let fName = String.new(lib.MAXLEN());
+        let fName = null;
         let symtab = HashTable.new();
+        let block = null;
         do installKWs();
         return this;
     }
@@ -21,7 +22,14 @@ class Parser {
     method void dispose() {
         do ST_DLMS.dispose();
         do EX_DLMS.dispose();
+        do _token.dispose();
         do symtab.dispose();
+        if (~(fName = null)) {
+            do fName.dispose();
+        }
+        if (~(block = null)) {
+            do clearBlock();
+        }
         do Memory.deAlloc(this);
         return;
     }
@@ -79,6 +87,7 @@ class Parser {
         var char op;
         var int i;
         var String name, token;
+        var Symbol argv;
 
         do Str.truncate(_token);
 
@@ -225,5 +234,12 @@ class Parser {
         if (op = 47) { return m / n; }
         if (op = 37) { return lib.mod(m, n); }
         return 0;
+    }
+
+    method void clearBlock() {
+        var String s;
+        var Symbol p, q;
+
+        return;
     }
 }
