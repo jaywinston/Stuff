@@ -1,7 +1,9 @@
 class Parser {
 
     field String ST_DLMS, EX_DLMS;
+    field String _token, fName;
     field HashTable symtab;
+    field Symbol argv;
 
     /* token types */
     static int CMD, CMDLIN, FUNC, INT, STR, TYPE;
@@ -9,6 +11,8 @@ class Parser {
     constructor Parser new() {
         let ST_DLMS = " =";
         let EX_DLMS = "+-*/%(){}";
+        let _token = String.new(lib.MAXLEN());
+        let fName = String.new(lib.MAXLEN());
         let symtab = HashTable.new();
         do installKWs();
         return this;
@@ -75,56 +79,55 @@ class Parser {
         var char op;
         var int i;
         var String name, token;
-        var Symbol argv;
 
-        let token = String.new(s.length());
+        do Str.truncate(_token);
 
-        let i = Str.tkn(s, token, ST_DLMS, 0);
+        let i = Str.tkn(s, _token, ST_DLMS, 0);
 
-        if (i < s.length()) {
-            let op = token.charAt(token.length()-1);
-            do token.eraseLastChar();
-        } else {
-            let op = 0;
+        if (i = s.length()) {
+            return Symbol.dup(symtab.lookup(_token));
         }
 
+        let op = _token.charAt(_token.length()-1);
+        do _token.eraseLastChar();
+
         if (op = 61) {
-            let name = Str.dup(token);
-            do Str.truncate(token);
-            let i = Str.tkn(s, token, ST_DLMS, i);
-            if (i < s.length()) {
+            let name = Str.dup(_token);
+            do Str.truncate(_token);
+            if (Str.tkn(s, _token, ST_DLMS, i) < s.length()) {
                 do Error.set(0);  // too many arguments for assignment
                 return null;
             }
-            let argv = eval(token);
+            let argv = eval(_token);
             do symtab.install(name, argv.type(), argv.value());
-            return true;
-
-        } else { if (op = 32) {
-
-            let argv = Symbol.dup(symtab.lookup(token));
-
-            if (argv = null) {
-                do Error.set(0);  // Parser.parse(): sym not found
-                return null;
-            }
-
-            if (~(argv.type() = CMD)) {
-                do Error.set(0);  // Parser.parse(): sym not cmd
-                return null;
-            }
-        }}
-
-        while (i < s.length()) {
-            do Str.truncate(token);
-            let i = Str.tkn(s, token, ST_DLMS, i);
-            if (token.charAt(token.length()-1) = 32) {
-                do token.eraseLastChar();
-            }
-            do argv.append(eval(token));
+            do argv.dispose();
+            return true;  // don't like this
         }
 
-        do token.dispose();
+        if (~(op = 32)) {
+            do Error.set(0);  // Parser.parse(): op not ' ' or =
+        }
+
+        let argv = Symbol.dup(symtab.lookup(_token));
+
+        if (argv = null) {
+            do Error.set(0);  // Parser.parse(): sym not found
+            return null;
+        }
+
+        if (~(argv.type() = CMD)) {
+            do Error.set(0);  // Parser.parse(): sym not cmd
+            return null;
+        }
+
+        while (i < s.length()) {
+            do Str.truncate(_token);
+            let i = Str.tkn(s, _token, ST_DLMS, i);
+            if (_token.charAt(_token.length()-1) = 32) {
+                do _token.eraseLastChar();
+            }
+            do argv.append(eval(_token));
+        }
 
         return argv;
     }

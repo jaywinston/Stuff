@@ -74,8 +74,8 @@ class Canvas {
     }
 
     method void clear() {
-        do tb.clear();
         do t.dispose();
+        do tb.clear();
         do getTurtle();
         return;
     }
@@ -124,6 +124,13 @@ class Canvas {
                 do Error.set(1);
             } else {
                 do t.penup();
+            }
+        }
+        if (cmd = CLEAR) {
+            if (~(argv = null)) {
+                do Error.set(1);
+            } else {
+                do clear();
             }
         }
         if (cmd = PENDOWN) {
