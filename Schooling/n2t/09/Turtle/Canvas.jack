@@ -1,25 +1,41 @@
 class Canvas {
 
-    field int top, left, height, width;
+    field int bottom, left, right, top;
     field String PS1, PS2, ps;
-    field Parser parser;
-    field Turtle t;
     field TextBox tb;
+    field Turtle t;
+    field Parser parser;
 
-    static int BLOCK, CLEAR, FORWARD, FUNCTION, PENDOWN, PENUP, PRINT,
-                TURNLEFT, TURNRIGHT, QUIT;
-    static int TYPE, CMD, CMDLIN, FUNC, INT, STR;
+    static int
+        BLOCK,
+        CLEAR,
+        FORWARD,
+        FUNCTION,
+        PENDOWN,
+        PENUP,
+        PRINT,
+        REPEAT,
+        TURNLEFT,
+        TURNRIGHT,
+        QUIT;
+    static int
+        TYPE,
+        CMD,
+        CMDLIN,
+        FUNC,
+        INT,
+        STR;
 
     constructor Canvas new(int i, int j, int h, int w,
                            String ps1, String ps2) {
         let top = i;
         let left = j;
-        let height = h;
-        let width = w;
+        let bottom = i + h;
+        let right = j + w;
         let PS1 = ps1;
         let PS2 = ps2;
         let ps = PS1;
-        let tb = TextBox.new(top, left, height, width);
+        let tb = TextBox.new(i, j, h, w);
         let parser = Parser.new();
 
         let TYPE      = parser.lookup("type");
@@ -65,8 +81,8 @@ class Canvas {
     }
 
     method void getTurtle() {
-        let t = Turtle.new(((left*2) + width) * 4,
-                           (top + (height/2)) * 11,
+        let t = Turtle.new(((2*left) + (right-left)) * 4,
+                           ((2*bottom) + (top-bottom)) * 5,
                            90);
         return;
     }
@@ -89,12 +105,12 @@ class Canvas {
         }
 
         if (argv = null) {
-            do Error.set(4);
+            do Error.set(0);  // Canvas.exec(): parser ruturned null
             return ps;
         }
 
         if (~(argv.type() = CMD)) {
-            do Error.set(3);
+            do Error.set(0);  // Canvas.exec(): argv.type not CMD
             return ps;
         }
 
@@ -156,10 +172,11 @@ class Canvas {
         } else { if (cmd = PENDOWN) {
         } else { if (cmd = PENUP) {
         } else { if (cmd = PRINT) {
+        } else { if (cmd = REPEAT) {
         } else { if (cmd = TURNLEFT) {
         } else { if (cmd = TURNRIGHT) {
         } else { if (cmd = QUIT) {
-        }}}}}}}}}}
+        }}}}}}}}}}}
 */
 
         if (~(argv = null)) {
