@@ -8,12 +8,12 @@ class Parser {
     /* token types */
     static int CMD, CMDLIN, FUNC, INT, STR, TYPE;
 
-    constructor Parser new() {
+    constructor Parser new(HashTable ht) {
         let ST_DLMS = " =";
         let EX_DLMS = "+-*/%(){}";
         let _token = String.new(lib.MAXLEN());
         let fName = null;
-        let symtab = HashTable.new();
+        let symtab = ht; 
         let block = null;
         do installKWs();
         return this;
