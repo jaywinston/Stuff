@@ -7,7 +7,7 @@ class Parser {
 
     constructor Parser new(String dlms) {
         let delims = dlms;
-        let token = String.new(lib.MAXLEN());
+        let token = String.new(const.MAXLEN());
         let INT = const.INT();
         let OP = const.OP();
         let STR = const.STR();
@@ -23,7 +23,7 @@ class Parser {
     }
 
     method Symbol parse(String s) {
-        var char c;
+        var char op;
         var int i, sLen;
         var Symbol stream;
 
@@ -31,35 +31,36 @@ class Parser {
         let i = Str.tkn(s, token, delims, 0);
 
         if (i = sLen) {
-            /* I would leave this out but I think I'll get hassled if do. */
-            let c = s.charAt(i-1);
-            if ( (c=37) | (((c|1)=43) | ((c|2)=47)) ) {
-                do Error.set(0); // op at EOS; expected expression
-                return null;
-            }
-
-            /* This is the point. */
             return Parser.classify(token);
         }
 
+        let op = s.charAt(i-1);
         let stream = Symbol.new(null, OP, s.charAt(i-1));
-        do token.eraseLastChar();
+        if (token.length() > 1) {
+            do token.eraseLastChar();
+        }
         do stream.append(Parser.classify(token));
 
         while (i < sLen) {
             do Str.truncate(token);
             let i = Str.tkn(s, token, delims, i);
+
             if (i < sLen) {
-                do stream.append(Symbol.new(null, OP, s.charAt(i-1)));
-                do token.eraseLastChar();
-            } else {
-                let c = s.charAt(i-1);
-                if ( (c=37) | (((c|1)=43) | ((c|2)=47)) ) {
-                    do Error.set(0); // op at EOS; expected expression
-                    return null;
+                let op = s.charAt(i-1);
+                if (token.length() > 1) {
+                    do token.eraseLastChar();
                 }
+                if ( (op=43) | (op=45) ) {
+                    do stream.append(Symbol.new(null, OP, s.charAt(i-1)));
+                    do stream.append(Parser.classify(token));
+                } else {
+                    do stream.append(Parser.classify(token));
+                    do stream.append(Symbol.new(null, OP, s.charAt(i-1)));
+                }
+            } else {
+                do stream.append(Parser.classify(token));
             }
-            do stream.append(Parser.classify(token));
+
         }
 
         return stream;
@@ -77,9 +78,11 @@ class Parser {
             return Symbol.new(null, STR, Str.dup(s));
         } else { if ( (c>47) & (c<58) ) {
             return Symbol.new(null, INT, String.intValue(s));
-        }} 
+        } else { if ((c|1) = 41) {
+            return Symbol.new(null, OP, c);
+        }}} 
 
-        return Symbol.new(null, SYM, s);
+        return Symbol.new(null, SYM, Str.dup(s));
     }
 
 }
