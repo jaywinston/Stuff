@@ -59,6 +59,10 @@ class Str {
         var int i, len;
         var String t;
 
+        if (s = null) {
+            return null;
+        }
+
         let len = s.length();
         let t = String.new(len);
         let i = 0;
@@ -71,6 +75,9 @@ class Str {
     }
 
     function int tkn(String s, String t, String list, int i) {
+        /* This is where excess blanks are ignored.  This makes this routine
+           less abstract.  When it is needed for use in a different project
+           this decision can be rethought. */
         var char c;
         var int j;
         var int sLen, listLen;
@@ -78,18 +85,22 @@ class Str {
 
         let sLen = s.length();
 
-        while ( (i<sLen) & (c=32) ){
+        while ( (i<sLen) & (c=32) ) {
             let c = s.charAt(i);
             let i = i + 1;
         }
 
+/*
         if ( (i<sLen) & (s.charAt(i) = 40) ) {
             return Str.parens(s, t, i+1);
         }
+*/
 
+/*
         if ( (i<sLen) & (s.charAt(i)=34) ) {
             return Str.quotes(s, t, i);
         }
+*/
 
         let listLen = list.length();
         let continue = true;

@@ -40,7 +40,7 @@ class Canvas {
         let symtab = HashTable.new();
         let parser = Parser.new(symtab);
 
-        do initKWs();
+        //do initKWs();
         do Error.set(0);
         do getTurtle();
 
@@ -57,6 +57,7 @@ class Canvas {
         return;
     }
 
+/*
     method void initKWs() {
         var int i;
         var Symbol p;
@@ -103,6 +104,7 @@ class Canvas {
 
         return;
     }
+*/
 
     method void installKW(String name, int type, int val) {
         do symtab.install(name, type, val);

@@ -1,0 +1,45 @@
+class const {
+
+    static int maxlen;
+    static int int_, end, op, str, sym;
+    static String nulls;
+
+    function void init() {
+        let maxlen = 50;
+        let nulls = "";
+        let int_ = 0;
+        let int_ = 1;
+        let op = 2;
+        let str = 3;
+        let sym = 4;
+        return;
+    }
+
+    function int MAXLEN() {
+        return maxlen;
+    }
+
+    function String NULLS() {
+        return nulls;
+    }
+
+    function int INT() {
+        return int_;
+    }
+
+    function int END() {
+        return end;
+    }
+
+    function int OP() {
+        return op;
+    }
+
+    function int STR() {
+        return str;
+    }
+
+    function int SYM() {
+        return sym;
+    }
+}
