@@ -75,94 +75,40 @@ class Str {
     }
 
     function int tkn(String s, String t, String list, int i) {
-        /* This is where excess blanks are ignored.  This makes this routine
-           less abstract.  When it is needed for use in a different project
-           this decision can be rethought. */
         var char c;
         var int j;
         var int sLen, listLen;
         var boolean continue;
 
         let sLen = s.length();
-
-        while ( (i<sLen) & (c=32) ) {
-            let c = s.charAt(i);
-            let i = i + 1;
+        if (i = sLen) {
+            return i;
         }
-
-/*
-        if ( (i<sLen) & (s.charAt(i) = 40) ) {
-            return Str.parens(s, t, i+1);
-        }
-*/
-
-/*
-        if ( (i<sLen) & (s.charAt(i)=34) ) {
-            return Str.quotes(s, t, i);
-        }
-*/
-
         let listLen = list.length();
         let continue = true;
+        let c = s.charAt(i);
+        let j = 0;
+        while ( (j<listLen) & continue ) {
+            let continue = ~(c = list.charAt(j));
+            let j = j + 1;
+        }
+        let i = i + 1;
+
         while ( (i<sLen) & continue ) {
+            do t.appendChar(c);
             let c = s.charAt(i);
             let j = 0;
             while ( (j<listLen) & continue ) {
                 let continue = ~(c = list.charAt(j));
                 let j = j + 1;
             }
-            do t.appendChar(c);
             let i = i + 1;
         }
 
-        if (i < sLen) {
-            let c = s.charAt(i);
-            while ( (i<sLen) & (c=32) ){
-                let c = s.charAt(i);
-                let i = i + 1;
-            }
+        if (continue) {
+            return i;
         }
-
-        return i;
-    }
-
-    function int parens(String s, String t, int i) {
-        var char c;
-        var int pars, sLen;
-
-        let pars = 1;
-        let sLen = s.length();
-        while ( (i<sLen) & (pars>0) ) {
-            let c = s.charAt(i);
-            if (c = 40) {
-                let pars = pars + 1;
-            } else { if (c = 41) {
-                let pars = pars - 1;
-                /* todo
-                if (pars < 0) {
-                    error!
-                } */
-            }}
-            do t.appendChar(c);
-            let i = i + 1;
-        }
-
-        return i;
-    }
-
-    function int quotes(String s, String t, int i) {
-        var char c;
-        var int sLen;
-
-        let c = 0;
-        let sLen = s.length();
-        while ( (i<sLen) & (~(c=34)) ) {
-            let c = s.charAt(i);
-            do t.appendChar(s.charAt(i));
-            let i = i + 1;
-        }
-
-        return i;
+        return i - 1;
     }
 
     function void shift(String s, int off) {

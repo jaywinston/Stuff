@@ -55,8 +55,8 @@ class Symbol {
         if (~(o = null)) {
             do o.setNext(end.next());
             do end.setNext(o);
+            let end = o;
         }
-        let end = o;
         return;
     }
 
