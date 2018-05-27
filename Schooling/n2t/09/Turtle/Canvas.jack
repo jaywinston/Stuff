@@ -127,6 +127,16 @@ class Canvas {
         }
 
         let argv = Parser.parse(s);
+        do deref(argv);
+        do eval(argv);
+        let arg = argv.next();
+
+        if (arg.value() = 61) {
+            let arg = eval(arg.next());
+                           /* argv! */   /* arg! */  /* arg! */
+            do symtab.install(argv.value(), arg.type(), arg.value());
+            return ps;
+        }
 
         if (argv.type() = CMD) {
             let cmd = argv.value();
@@ -136,66 +146,40 @@ class Canvas {
             return ps;
         }
 
-        let arg = argv.next();
+/*
+            if (arg = null) {
+                do Error.set(0);  // too few arguments
+            } else {
+                do t.forward(arg.value());
+            }
 
-        if ( (arg.type()=OP) | (arg.value()=61) ) {
-            let arg = eval(arg.next());
-                           /* argv! */  /* arg! */  /* arg! */
-            do symtab.install(argv.name(), arg.type(), arg.value());
-            return ps;
-        }
-
-        let arg = eval(arg);
-
-        if (cmd = BLOCK) {
             if (~(arg = null)) {
+                do Error.set(0);  // too many arguments
+            } else {
+                do t.pendown();
+            }
+
+            if (~(arg = null)) { //block
                 do Error.set(0);  // no newline after lbrace
             } else {
                 let block = Symbol.new(null, CMDLIN, null);
                 let inBlock = true;
                 let ps = PS2;
             }
-        } else { if (cmd = CLEAR) {
-            if (~(arg = null)) {
-                do Error.set(0);  // too many arguments
-            } else {
-                do clear();
-            }
-        } else { if (cmd = FORWARD) {
-            if (arg = null) {
-                do Error.set(0);  // too few arguments
-            } else {
-                do t.forward(arg.value());
-            }
-        } else { if (cmd = FUNCTION) {
-        } else { if (cmd = PENDOWN) {
-            if (~(arg = null)) {
-                do Error.set(0);  // too many arguments
-            } else {
-                do t.pendown();
-            }
-        } else { if (cmd = PENUP) {
-            if (~(arg = null)) {
-                do Error.set(0);  // too many arguments
-            } else {
-                do t.penup();
-            }
-        } else { if (cmd = PRINT) {
-        } else { if (cmd = REPEAT) {
-        } else { if (cmd = TURNLEFT) {
-            if (arg = null) {
-                do Error.set(0);  // too few arguments
-            } else {
-                do t.turnleft(arg.value());
-            }
-        } else { if (cmd = TURNRIGHT) {
-            if (arg = null) {
-                do Error.set(0);  // too few arguments
-            } else {
-                do t.turnright(arg.value());
-            }
-        } else { if (cmd = QUIT) {
-        }}}}}}}}}}}
+*/
+
+        if (cmd = BLOCK)            { do block(arg);     }
+        else { if (cmd = CLEAR)     { do clear(arg);     }
+        else { if (cmd = FORWARD)   { do forward(arg);   }
+        else { if (cmd = FUNCTION)  { do function(arg);  }
+        else { if (cmd = PENDOWN)   { do pendown(arg);   }
+        else { if (cmd = PENUP)     { do penup(arg);     }
+        else { if (cmd = PRINT)     { do print(arg);     }
+        else { if (cmd = REPEAT)    { do repeat(arg);    }
+        else { if (cmd = TURNLEFT)  { do turnleft(arg);  }
+        else { if (cmd = TURNRIGHT) { do turnright(arg); }
+        else { if (cmd = QUIT)      { do quit(arg);      }
+        }}}}}}}}}}
 
         do Canvas.clearSym(argv);
 
@@ -203,30 +187,88 @@ class Canvas {
     }
 
 
+    method void deref(Symbol sym) {
+        var Symbol p;
+
+        while (~(sym = null)) {
+            if (sym.type() = SYM) {
+                let p = symtab.lookup(sym.name());
+                do sym.setName(p.name());
+                do sym.setType(p.type());
+                do sym.setValue(p.value());
+            }
+            let sym = sym.next();
+        }
+
+        return;
+    }
+
     /* stub */
-    method Symbol eval(Symbol sym) {
+    method void eval(Symbol sym) {
         var int type;
 
         if (sym = null) {
-            return null;
+            return;
         }
 
         let type = sym.type();
-        if (type = INT) { return evalInt(sym); }
-        if (type = STR) { return evalStr(sym); }
 
-        return null;
+        if (type = CMD) { do  eval(sym.next()); }
+        else { if ( (type=INT) | (type=OP) ) { do evalInt(sym); }
+        else { if (type = STR) { do evalStr(sym); }}}
+
+        return;
     }
 
-    method Symbol evalInt(Symbol sym) {
-        return sym;
+    method void evalInt(Symbol sym) {
+        return;
     }
 
-    method Symbol evalStr(Symbol sym) {
-        return sym;
+    method void evalStr(Symbol sym) {
+        var String s, t;
+        var Symbol p;
+
+        
+        return;
     }
 
 /*
+    method int expr(String s, int i) {
+        var char c, op;
+        var int n, sLen;
+        var String token;
+        var Symbol p;
+
+        if (s.charAt(0) = 34) {     // "
+            do s.eraseLastChar();
+            do Str.shift(s, 1);
+            return Str.dup(s);
+        }
+
+        if (s.charAt(0) = 40) {     // (
+            do Str.shift(s, 1);
+        }
+
+        let token = String.new(s.length());
+
+        let i = Str.tkn(s, token, EX_DLMS, i);
+
+        let c = token.charAt(0);
+        if ( (c>47) & (c<58) ) {
+            let n = String.intValue(token);
+        } else {
+            let c = c | 32;
+            if ( (c>96) & (c<127) ) {
+                if (i < s.length()) {  /* fix me * /
+                    let op = token.charAt(token.length()-1);
+                    do token.eraseLastChar();
+        return;
+    }
+
+    method void evalStr(Symbol sym) {
+        return;
+    }
+
     method int expr(String s, int i) {
         var char c, op;
         var int n, sLen;
@@ -297,6 +339,54 @@ class Canvas {
         return 0;
     }
 
+    method void block(Symbol arg) {
+        return;
+    }
+
+//    method void clear(Symbol arg) {
+//        return;
+//    }
+
+    method void forward(Symbol arg) {
+        return;
+    }
+
+    method void function(Symbol arg) {
+        return;
+    }
+
+    method void pendown(Symbol arg) {
+        return;
+    }
+
+    method void penup(Symbol arg) {
+        return;
+    }
+
+    method void print(Symbol arg) {
+        return;
+    }
+
+    method void repeat(Symbol arg) {
+        return;
+    }
+
+    method void turnleft(Symbol arg) {
+        return;
+    }
+
+    method void turnright(Symbol arg) {
+        return;
+    }
+
+    method void quit(Symbol arg) {
+        return;
+    }
+
+    method void echo(Symbol sym) {
+        return;
+    }
+
     function void clearSym(Symbol sym) {
         var int type;
         var String s;
@@ -316,10 +406,6 @@ class Canvas {
             do p.dispose();
         }
 
-        return;
-    }
-
-    method void echo(Symbol sym) {
         return;
     }
 

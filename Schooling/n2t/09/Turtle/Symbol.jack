@@ -38,6 +38,11 @@ class Symbol {
         return _next;
     }
 
+    method void setName(int name) {
+        let _name = name;
+        return;
+    }
+
     method void setType(int type) {
         let _type = type;
         return;

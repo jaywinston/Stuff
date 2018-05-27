@@ -111,6 +111,7 @@ class Str {
         }
 
         if (continue) {
+            do t.appendChar(c);
             return i;
         }
         return i - 1;
