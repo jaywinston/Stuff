@@ -1,19 +1,22 @@
 class Canvas {
 
     field int bottom, left, right, top;
+    field boolean inBlock;
     field String PS1, PS2, ps;
+    field String fName;
     field TextBox tb;
     field Turtle t;
     field HashTable symtab;
-    field Parser parser;
+    field Symbol block;
 
     static int
-        TYPE,
         CMD,
         CMDLIN,
         FUNC,
         INT,
+        OP,
         STR,
+        SYM,
 
         BLOCK,
         CLEAR,
@@ -33,15 +36,24 @@ class Canvas {
         let left = j;
         let bottom = i + h;
         let right = j + w;
+        let inBlock = false;
+        let fName = null;
         let PS1 = ps1;
         let PS2 = ps2;
         let ps = PS1;
         let tb = TextBox.new(i, j, h, w);
         let symtab = HashTable.new();
-        let parser = Parser.new(symtab);
 
-        //do initKWs();
-        do Error.set(0);
+        let CMD    = const.CMD();
+        let CMDLIN = const.CMDLIN();
+        let FUNC   = const.FUNC();
+        let INT    = const.INT();
+        let OP     = const.OP();
+        let STR    = const.STR();
+        let SYM    = const.SYM();
+
+        do initKWs();
+        do Error.set(0);  // init
         do getTurtle();
 
         return this;
@@ -50,61 +62,30 @@ class Canvas {
     method void dispose() {
         do PS1.dispose();
         do PS2.dispose();
-        do parser.dispose();
         do t.dispose();
         do tb.dispose();
         do Memory.deAlloc(this);
         return;
     }
 
-/*
     method void initKWs() {
         var int i;
-        var Symbol p;
 
         let i = 0;
-        do installKW("type",    0, i);  let i = i + 1;  // 'type' must be first
-        do installKW("cmd",     0, i);  let i = i + 1;
-        do installKW("cmdlin",  0, i);  let i = i + 1;
-        do installKW("func",    0, i);  let i = i + 1;
-        do installKW("int",     0, i);  let i = i + 1;
-        do installKW("str",     0, i);
-
-        let p = symtab.lookup("type");    let TYPE   = p.value();
-        let p = symtab.lookup("cmd");     let CMD    = p.value();
-        let p = symtab.lookup("cmdlin");  let CMDLIN = p.value();
-        let p = symtab.lookup("func");    let FUNC   = p.value();
-        let p = symtab.lookup("int");     let INT    = p.value();
-        let p = symtab.lookup("str");     let STR    = p.value();
-
-        let i = 0;
-        do installKW("BLOCK",     CMD, i);  let i = i + 1;
-        do installKW("CLEAR",     CMD, i);  let i = i + 1;
-        do installKW("FORWARD",   CMD, i);  let i = i + 1;
-        do installKW("FUNCTION",  CMD, i);  let i = i + 1;
-        do installKW("PENDOWN",   CMD, i);  let i = i + 1;
-        do installKW("PENUP",     CMD, i);  let i = i + 1;
-        do installKW("PRINT",     CMD, i);  let i = i + 1;
-        do installKW("REPEAT",    CMD, i);  let i = i + 1;
-        do installKW("TURNLEFT",  CMD, i);  let i = i + 1;
-        do installKW("TURNRIGHT", CMD, i);  let i = i + 1;
-        do installKW("QUIT",      CMD, i);
-
-        let BLOCK     = parser.lookup("BLOCK");
-        let CLEAR     = parser.lookup("CLEAR");
-        let FORWARD   = parser.lookup("FORWARD");
-        let FUNCTION  = parser.lookup("FUNCTION");
-        let PENUP     = parser.lookup("PENUP");
-        let PENDOWN   = parser.lookup("PENDOWN");
-        let PRINT     = parser.lookup("PRINT");
-        let PRINT     = parser.lookup("REPEAT");
-        let TURNLEFT  = parser.lookup("TURNLEFT");
-        let TURNRIGHT = parser.lookup("TURNRIGHT");
-        let QUIT      = parser.lookup("QUIT");
+        do installKW("BLOCK",     CMD, i);  let BLOCK     = i;  let i = i + 1;
+        do installKW("CLEAR",     CMD, i);  let CLEAR     = i;  let i = i + 1;
+        do installKW("FORWARD",   CMD, i);  let FORWARD   = i;  let i = i + 1;
+        do installKW("FUNCTION",  CMD, i);  let FUNCTION  = i;  let i = i + 1;
+        do installKW("PENDOWN",   CMD, i);  let PENDOWN   = i;  let i = i + 1;
+        do installKW("PENUP",     CMD, i);  let PENUP     = i;  let i = i + 1;
+        do installKW("PRINT",     CMD, i);  let PRINT     = i;  let i = i + 1;
+        do installKW("REPEAT",    CMD, i);  let REPEAT    = i;  let i = i + 1;
+        do installKW("TURNLEFT",  CMD, i);  let TURNLEFT  = i;  let i = i + 1;
+        do installKW("TURNRIGHT", CMD, i);  let TURNRIGHT = i;  let i = i + 1;
+        do installKW("QUIT",      CMD, i);  let QUIT      = i;
 
         return;
     }
-*/
 
     method void installKW(String name, int type, int val) {
         do symtab.install(name, type, val);
@@ -129,205 +110,123 @@ class Canvas {
     /* stub */
     method String exec(String s) {
         var int cmd, type, nval;
-        var int n;
-        var String sval;
-        var Symbol argv, p;
+        var Symbol arg, argv;
 
         if (s.length() = 0) {
             return ps;
         }
 
-        let argv = parser.parse(s);
-
-        if (argv = true) {
-            return ps;
-        }
-
-        if (argv = null) {
-            do Error.set(0);  // Canvas.exec(): parser ruturned null
-            return ps;
-        }
-
-        if (~(argv.type() = CMD)) {
-            do Error.set(0);  // Canvas.exec(): argv.type not CMD
-            return ps;
-        }
-
-        let cmd = argv.value();
-        let p = argv;
-        let argv = argv.next();
-        do p.dispose();
-
-        if (cmd = PENUP) {
-            if (~(argv = null)) {
-                do Error.set(1);
+        if (inBlock) {
+            if (false) { // s == "}"
+                // install function here (if fName)?
+                // execute block
             } else {
-                do t.penup();
+                do block.append(Symbol.new(null, CMDLIN, Str.dup(s)));
             }
+            return ps;
         }
-        if (cmd = CLEAR) {
-            if (~(argv = null)) {
-                do Error.set(1);
+
+        let argv = Parser.parse(s);
+
+        if (argv.type() = CMD) {
+            let cmd = argv.value();
+        } else {
+            let argv = eval(argv);
+            do echo(argv);
+            return ps;
+        }
+
+        let arg = argv.next();
+
+        if ( (arg.type()=OP) | (arg.value()=61) ) {
+            let arg = eval(arg.next());
+                           /* argv! */  /* arg! */  /* arg! */
+            do symtab.install(argv.name(), arg.type(), arg.value());
+            return ps;
+        }
+
+        let arg = eval(arg);
+
+        if (cmd = BLOCK) {
+            if (~(arg = null)) {
+                do Error.set(0);  // no newline after lbrace
+            } else {
+                let block = Symbol.new(null, CMDLIN, null);
+                let inBlock = true;
+                let ps = PS2;
+            }
+        } else { if (cmd = CLEAR) {
+            if (~(arg = null)) {
+                do Error.set(0);  // too many arguments
             } else {
                 do clear();
             }
-        }
-        if (cmd = PENDOWN) {
-            if (~(argv = null)) {
-                do Error.set(1);
+        } else { if (cmd = FORWARD) {
+            if (arg = null) {
+                do Error.set(0);  // too few arguments
+            } else {
+                do t.forward(arg.value());
+            }
+        } else { if (cmd = FUNCTION) {
+        } else { if (cmd = PENDOWN) {
+            if (~(arg = null)) {
+                do Error.set(0);  // too many arguments
             } else {
                 do t.pendown();
             }
-        }
-        if (cmd = TURNLEFT) {
-            if (argv = null) {
-                do Error.set(2);
-            } else { if (~(argv.next() = null)) {
-                do Error.set(1);
-            } else {
-                do t.turnleft(argv.value());
-            }}
-        }
-        if (cmd = TURNRIGHT) {
-            if (argv = null) {
-                do Error.set(2);
-            } else { if (~(argv.next() = null)) {
-                do Error.set(1);
-            } else {
-                do t.turnright(argv.value());
-            }}
-        }
-        if (cmd = FORWARD) {
-            if (argv = null) {
-                do Error.set(2);
-            } else { if (~(argv.next() = null)) {
-                do Error.set(1);
-            } else {
-                do t.forward(argv.value());
-            }}
-        }
-        if (cmd = BLOCK) {
-            let ps = PS2;
-        }
-
-/* will be ...
-        if (cmd = BLOCK) {
-        } else { if (cmd = CLEAR) {
-        } else { if (cmd = FORWARD) {
-        } else { if (cmd = FUNCTION) {
-        } else { if (cmd = PENDOWN) {
         } else { if (cmd = PENUP) {
+            if (~(arg = null)) {
+                do Error.set(0);  // too many arguments
+            } else {
+                do t.penup();
+            }
         } else { if (cmd = PRINT) {
         } else { if (cmd = REPEAT) {
         } else { if (cmd = TURNLEFT) {
+            if (arg = null) {
+                do Error.set(0);  // too few arguments
+            } else {
+                do t.turnleft(arg.value());
+            }
         } else { if (cmd = TURNRIGHT) {
+            if (arg = null) {
+                do Error.set(0);  // too few arguments
+            } else {
+                do t.turnright(arg.value());
+            }
         } else { if (cmd = QUIT) {
         }}}}}}}}}}}
-*/
 
-        if (~(argv = null)) {
-            do argv.dispose();
-        }
+        do Canvas.clearSym(argv);
 
         return ps;
     }
 
-}
+
+    /* stub */
+    method Symbol eval(Symbol sym) {
+        var int type;
+
+        if (sym = null) {
+            return null;
+        }
+
+        let type = sym.type();
+        if (type = INT) { return evalInt(sym); }
+        if (type = STR) { return evalStr(sym); }
+
+        return null;
+    }
+
+    method Symbol evalInt(Symbol sym) {
+        return sym;
+    }
+
+    method Symbol evalStr(Symbol sym) {
+        return sym;
+    }
+
 /*
-
-    method int lookup(String s) {
-        var Symbol p;
-
-        let p = symtab.lookup(s);
-        return p.value();
-    }
-
-    /* stub * /
-    method Symbol parse(String s) {
-        var char op;
-        var int i;
-        var String name, token;
-        var Symbol argv;
-
-        do Str.truncate(_token);
-
-        let i = Str.tkn(s, _token, ST_DLMS, 0);
-
-        if (i = s.length()) {
-            return Symbol.dup(symtab.lookup(_token));
-        }
-
-        let op = _token.charAt(_token.length()-1);
-        do _token.eraseLastChar();
-
-        if (op = 61) {
-            let name = Str.dup(_token);
-            do Str.truncate(_token);
-            if (Str.tkn(s, _token, ST_DLMS, i) < s.length()) {
-                do Error.set(0);  // too many arguments for assignment
-                return null;
-            }
-            let argv = eval(_token);
-            do symtab.install(name, argv.type(), argv.value());
-            do argv.dispose();
-            return true;  // don't like this
-        }
-
-        if (~(op = 32)) {
-            do Error.set(0);  // Parser.parse(): op not ' ' or =
-        }
-
-        let argv = Symbol.dup(symtab.lookup(_token));
-
-        if (argv = null) {
-            do Error.set(0);  // Parser.parse(): sym not found
-            return null;
-        }
-
-        if (~(argv.type() = CMD)) {
-            do Error.set(0);  // Parser.parse(): sym not cmd
-            return null;
-        }
-
-        while (i < s.length()) {
-            do Str.truncate(_token);
-            let i = Str.tkn(s, _token, ST_DLMS, i);
-            if (_token.charAt(_token.length()-1) = 32) {
-                do _token.eraseLastChar();
-            }
-            do argv.append(eval(_token));
-        }
-
-        return argv;
-    }
-
-    /* stub * /
-    method Symbol eval(String s) {
-        var char c;
-        var Symbol arg;
-
-        let c = s.charAt(0);
-
-        if (c = 34) {
-            if (s.charAt(s.length()-1) = 34) {
-                let arg = Symbol.new(lib.NULLS(), STR, expr(s, 0));
-            } else {
-                do Error.set(0);  // Parser.eval(): open string
-                return null;
-            }
-
-        } else { if ( ((c>47) & (c<58)) | (((c|32)>96) & ((c|32)<123)) ) {
-            /* todo: string symbols * /
-            let arg = Symbol.new(s, INT, expr(s, 0));
-
-        } else {
-            do Error.set(0);  // Parser.eval(): unrecognized char
-            return null;
-        }}
-
-        return arg;
-    }
-
     method int expr(String s, int i) {
         var char c, op;
         var int n, sLen;
@@ -387,20 +286,41 @@ class Canvas {
         return n;
     }
 
+*/
     method int operate(int m, int n, char op) {
         if (op = 43) { return m + n; }
         if (op = 45) { return m - n; }
         if (op = 42) { return m * n; }
         if (op = 47) { return m / n; }
         if (op = 37) { return lib.mod(m, n); }
+        do Error.set(0);  // unrecognized operator
         return 0;
     }
 
-    method void clearBlock() {
+    function void clearSym(Symbol sym) {
+        var int type;
         var String s;
-        var Symbol p, q;
+        var Symbol p;
+
+        while (~(sym = null)) {
+            let p = sym;
+            let sym = sym.next();
+
+            let type = p.type();
+            if ( (type=STR) | (type=CMDLIN) ) {
+                let s = p.value();
+                if (~(s = null)) {
+                    do s.dispose();
+                }
+            }
+            do p.dispose();
+        }
 
         return;
     }
+
+    method void echo(Symbol sym) {
+        return;
+    }
+
 }
-*/

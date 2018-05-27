@@ -1,28 +1,27 @@
 class Parser {
 
-    field String delims, token;
 
     /* token types */
     static int INT, OP, STR, SYM;
+    static String delims, token;
 
-    constructor Parser new(String dlms) {
+    function void init() {
         let delims = " =+-*/%()";
         let token = String.new(const.MAXLEN());
         let INT = const.INT();
         let OP = const.OP();
         let STR = const.STR();
         let SYM = const.SYM();
-        return this;
-    }
-
-    method void dispose() {
-        do token.dispose();
-        do delims.dispose();
-        do Memory.deAlloc(this);
         return;
     }
 
-    method Symbol parse(String s) {
+    function void dispose() {
+        do token.dispose();
+        do delims.dispose();
+        return;
+    }
+
+    function Symbol parse(String s) {
         var int i, sLen;
         var Symbol stream; 
         let sLen = s.length();
@@ -56,16 +55,20 @@ class Parser {
 
         let c = s.charAt(0);
 
+        if ( (c>47) & (c<58) ) {
+            return Symbol.new(null, INT, String.intValue(s));
+        }
+
         if (c = 34) {
             do s.eraseLastChar();
             do Str.shift(s, 1);
             do s.eraseLastChar();
             return Symbol.new(null, STR, Str.dup(s));
-        } else { if ( (c>47) & (c<58) ) {
-            return Symbol.new(null, INT, String.intValue(s));
-        } else { if ((c|1) = 41) {
+        }
+
+        if ( ((c|6)=47) | ((c|10)=42) | ((c|24)=61) ) {
             return Symbol.new(null, OP, c);
-        }}} 
+        }
 
         return Symbol.new(null, SYM, Str.dup(s));
     }

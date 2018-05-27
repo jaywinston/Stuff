@@ -1,17 +1,19 @@
 class const {
 
     static int maxlen;
-    static int int_, end, op, str, sym;
+    static int cmd, cmdlin, func, _int, op, str, sym;
     static String nulls;
 
     function void init() {
         let maxlen = 50;
         let nulls = "";
-        let int_ = 0;
-        let int_ = 1;
-        let op = 2;
-        let str = 3;
-        let sym = 4;
+        let cmd    = 0;
+        let cmdlin = 1;
+        let func   = 2;
+        let _int   = 3;
+        let op     = 4;
+        let str    = 5;
+        let sym    = 6;
         return;
     }
 
@@ -23,12 +25,20 @@ class const {
         return nulls;
     }
 
-    function int INT() {
-        return int_;
+    function int CMD() {
+        return cmd;
     }
 
-    function int END() {
-        return end;
+    function int CMDLIN() {
+        return cmdlin;
+    }
+
+    function int FUNC() {
+        return func;
+    }
+
+    function int INT() {
+        return _int;
     }
 
     function int OP() {
