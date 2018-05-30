@@ -1,0 +1,9 @@
+class DB {
+
+    function void db(String s) {
+        do Output.moveCursor(0,0);
+        do Output.printString(s);
+        do Keyboard.readChar();
+        return;
+    }
+}
