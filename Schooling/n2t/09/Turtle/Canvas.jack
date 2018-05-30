@@ -3,6 +3,7 @@ class Canvas {
     field int bottom, left, right, top;
     field boolean inBlock;
     field String PS1, PS2, ps;
+    field String TKN_DLMS, EXP_DLMS;
     field String fName;
     field TextBox tb;
     field Turtle t;
@@ -28,7 +29,8 @@ class Canvas {
         REPEAT,
         TURNLEFT,
         TURNRIGHT,
-        QUIT;
+        QUIT,
+        _ECHO;
 
     constructor Canvas new(int i, int j, int h, int w,
                            String ps1, String ps2) {
@@ -43,18 +45,20 @@ class Canvas {
         let ps = PS1;
         let tb = TextBox.new(i, j, h, w);
         let symtab = HashTable.new();
+        let TKN_DLMS = " =";
+        let EXP_DLMS = "+-*/%";
 
-        let CMD    = const.CMD();
-        let CMDLIN = const.CMDLIN();
-        let FUNC   = const.FUNC();
-        let INT    = const.INT();
-        let OP     = const.OP();
-        let STR    = const.STR();
-        let SYM    = const.SYM();
+        let CMD    = 0;
+        let CMDLIN = 1;
+        let FUNC   = 2;
+        let INT    = 3;
+        let OP     = 4;
+        let STR    = 5;
+        let SYM    = 6;
 
-        do initKWs();
+        do installKWs();
         do Error.set(0);  // init
-        do getTurtle();
+        let t = newTurtle();
 
         return this;
     }
@@ -62,13 +66,15 @@ class Canvas {
     method void dispose() {
         do PS1.dispose();
         do PS2.dispose();
+        do TKN_DLMS.dispose();
+        do EXP_DLMS.dispose();
         do t.dispose();
         do tb.dispose();
         do Memory.deAlloc(this);
         return;
     }
 
-    method void initKWs() {
+    method void installKWs() {
         var int i;
 
         let i = 0;
@@ -82,7 +88,8 @@ class Canvas {
         do installKW("REPEAT",    CMD, i);  let REPEAT    = i;  let i = i + 1;
         do installKW("TURNLEFT",  CMD, i);  let TURNLEFT  = i;  let i = i + 1;
         do installKW("TURNRIGHT", CMD, i);  let TURNRIGHT = i;  let i = i + 1;
-        do installKW("QUIT",      CMD, i);  let QUIT      = i;
+        do installKW("QUIT",      CMD, i);  let QUIT      = i;  let i = i + 1;
+        let _ECHO = i;
 
         return;
     }
@@ -96,23 +103,25 @@ class Canvas {
     method void clear() {
         do t.dispose();
         do tb.clear();
-        do getTurtle();
+        let t = newTurtle();
         return;
     }
 
-    method void getTurtle() {
-        let t = Turtle.new(((2*left) + (right-left)) * 4,
+    method Turtle newTurtle() {
+        return Turtle.new(((2*left) + (right-left)) * 4,
                            ((2*bottom) + (top-bottom)) * 5,
                            90);
-        return;
     }
 
     /* stub */
     method String exec(String s) {
-        var int cmd, type, nval;
-        var Symbol arg, argv;
+        var int i, cmd, sLen;
+        var String token;
+        var Symbol argv;
 
-        if (s.length() = 0) {
+        let sLen = s.length();
+
+        if (sLen = 0) {
             return ps;
         }
 
@@ -126,209 +135,153 @@ class Canvas {
             return ps;
         }
 
-        let argv = Parser.parse(s);
-        do deref(argv);
-        do eval(argv);
-        let arg = argv.next();
+        let token = String.new(sLen);
+        let i = Str.tkn(s, token, TKN_DLMS, 0);
+        let argv = eval(token);
+        do token.dispose();
 
-        if (arg.value() = 61) {
-            let arg = eval(arg.next());
-                           /* argv! */   /* arg! */  /* arg! */
-            do symtab.install(argv.value(), arg.type(), arg.value());
+        if (i < sLen) { if (s.charAt(i) = 61) {  // '='
+            let token = String.new(sLen);
+            let i = Str.tkn(s, token, TKN_DLMS, i);
+            if (i < sLen) {
+                do Error.set(0); // too many args: assignment
+                return ps;
+            }
+            do argv.append(eval(token));
+            do doInstall(argv);
+            do token.dispose();
+            do Canvas.clearSym(argv);
+            return ps;
+        }}
+
+        while (i < sLen) {
+            let token = String.new(sLen);
+            let i = Str.tkn(s, token, TKN_DLMS, i);
+            do argv.append(eval(token));
+            do token.dispose();
+        }
+
+        if (argv = null) {
+            do Error.set(0);  // null argv
             return ps;
         }
 
         if (argv.type() = CMD) {
-            let cmd = argv.value();
+            let cmd = argv. value();
         } else {
-            let argv = eval(argv);
-            do echo(argv);
-            return ps;
+            let cmd = _ECHO;
         }
 
-/*
-            if (arg = null) {
-                do Error.set(0);  // too few arguments
-            } else {
-                do t.forward(arg.value());
-            }
-
-            if (~(arg = null)) {
-                do Error.set(0);  // too many arguments
-            } else {
-                do t.pendown();
-            }
-
-            if (~(arg = null)) { //block
-                do Error.set(0);  // no newline after lbrace
-            } else {
-                let block = Symbol.new(null, CMDLIN, null);
-                let inBlock = true;
-                let ps = PS2;
-            }
-*/
-
-        if (cmd = BLOCK)            { do block(arg);     }
-        else { if (cmd = CLEAR)     { do clear(arg);     }
-        else { if (cmd = FORWARD)   { do forward(arg);   }
-        else { if (cmd = FUNCTION)  { do function(arg);  }
-        else { if (cmd = PENDOWN)   { do pendown(arg);   }
-        else { if (cmd = PENUP)     { do penup(arg);     }
-        else { if (cmd = PRINT)     { do print(arg);     }
-        else { if (cmd = REPEAT)    { do repeat(arg);    }
-        else { if (cmd = TURNLEFT)  { do turnleft(arg);  }
-        else { if (cmd = TURNRIGHT) { do turnright(arg); }
-        else { if (cmd = QUIT)      { do quit(arg);      }
-        }}}}}}}}}}
+        if (cmd = _ECHO)            { do echo(argv.next());        }
+        else { if (cmd = BLOCK)     { do doBlock(argv.next());     }
+        else { if (cmd = CLEAR)     { do doClear(argv.next());     }
+        else { if (cmd = FORWARD)   { do doForward(argv.next());   }
+        else { if (cmd = FUNCTION)  { do doFunction(argv.next());  }
+        else { if (cmd = PENDOWN)   { do doPendown(argv.next());   }
+        else { if (cmd = PENUP)     { do doPenup(argv.next());     }
+        else { if (cmd = PRINT)     { do doPrint(argv.next());     }
+        else { if (cmd = REPEAT)    { do doRepeat(argv.next());    }
+        else { if (cmd = TURNLEFT)  { do doTurnleft(argv.next());  }
+        else { if (cmd = TURNRIGHT) { do doTurnright(argv.next()); }
+        else { if (cmd = QUIT)      { do doQuit(argv.next());      }
+        }}}}}}}}}}}
 
         do Canvas.clearSym(argv);
 
         return ps;
     }
 
-
-    method void deref(Symbol sym) {
-        var Symbol p;
-
-        while (~(sym = null)) {
-            if (sym.type() = SYM) {
-                let p = symtab.lookup(sym.name());
-                do sym.setName(p.name());
-                do sym.setType(p.type());
-                do sym.setValue(p.value());
-            }
-            let sym = sym.next();
-        }
-
-        return;
-    }
-
     /* stub */
-    method void eval(Symbol sym) {
-        var int type;
+    method Symbol eval(String s) {
+        var char c;
 
-        if (sym = null) {
-            return;
+        if (s.length() = 0) {
+            return null;
         }
 
-        let type = sym.type();
+        let c = s.charAt(0);
 
-        if (type = CMD) { do  eval(sym.next()); }
-        else { if ( (type=INT) | (type=OP) ) { do evalInt(sym); }
-        else { if (type = STR) { do evalStr(sym); }}}
-
-        return;
+        if ( (((c>47) & (c<58)) | (c|1=41)) ) {
+            return Symbol.new(null, INT, evalInt(s, 0));
+        } else { if (c = 34) {
+            return Symbol.new(null, STR, evalStr(s));
+        }}
+        return evalSym(s);
     }
 
-    method void evalInt(Symbol sym) {
-        return;
-    }
-
-    method void evalStr(Symbol sym) {
-        var String s, t;
-        var Symbol p;
-
-        
-        return;
-    }
-
-/*
-    method int expr(String s, int i) {
+    method int evalInt(String s, int i) {
         var char c, op;
         var int n, sLen;
         var String token;
-        var Symbol p;
 
-        if (s.charAt(0) = 34) {     // "
-            do s.eraseLastChar();
-            do Str.shift(s, 1);
-            return Str.dup(s);
-        }
+        let sLen = s.length();
 
-        if (s.charAt(0) = 40) {     // (
-            do Str.shift(s, 1);
-        }
-
-        let token = String.new(s.length());
-
-        let i = Str.tkn(s, token, EX_DLMS, i);
-
-        let c = token.charAt(0);
-        if ( (c>47) & (c<58) ) {
-            let n = String.intValue(token);
-        } else {
-            let c = c | 32;
-            if ( (c>96) & (c<127) ) {
-                if (i < s.length()) {  /* fix me * /
-                    let op = token.charAt(token.length()-1);
-                    do token.eraseLastChar();
-        return;
-    }
-
-    method void evalStr(Symbol sym) {
-        return;
-    }
-
-    method int expr(String s, int i) {
-        var char c, op;
-        var int n, sLen;
-        var String token;
-        var Symbol p;
-
-        if (s.charAt(0) = 34) {     // "
-            do s.eraseLastChar();
-            do Str.shift(s, 1);
-            return Str.dup(s);
-        }
-
-        if (s.charAt(0) = 40) {     // (
-            do Str.shift(s, 1);
-        }
-
-        let token = String.new(s.length());
-
-        let i = Str.tkn(s, token, EX_DLMS, i);
-
-        let c = token.charAt(0);
-        if ( (c>47) & (c<58) ) {
-            let n = String.intValue(token);
-        } else {
-            let c = c | 32;
-            if ( (c>96) & (c<127) ) {
-                if (i < s.length()) {  /* fix me * /
-                    let op = token.charAt(token.length()-1);
-                    do token.eraseLastChar();
-                } else {
-                    let op = 0;
-                }
-                let p = symtab.lookup(token);
-                /* todo: type check * /
-                let n = p.value();
-            } else {
-                do Error.set(0);  // Parser.expr(): unrecognized char
-                return null;
+        let token = String.new(sLen);
+        let i = Str.tkn(s, token, EXP_DLMS, i);
+        let op = s.charAt(i);
+            
+        if (token.charAt(0) = 40) {
+            do Str.shift(token, 1);
+            return operate(intExpr(token), evalInt(s, i+1), op);
+        } else { if ( (op=43) | (op=45) ) {
+            return operate(intExpr(token), evalInt(s, i+1), op);
+        } else { if ( ((op|5)=47) | (op=37) ) {
+            if (s.charAt(i+1) = 40) {
+                return operate(intExpr(token), evalInt(s, i+1), op);
             }
-        }
-
-        if (i < s.length()) {
-            if (op=0) {let op = token.charAt(token.length()-1);}
-            if ( (op=42) | ((op=47) | (op=37)) ) {
-                do Str.truncate(token);
-                let i = Str.tkn(s, token, EX_DLMS, i);
-                let n = operate(n, expr(token, 0), op);
-                let op = token.charAt(token.length()-1);
-            }
-            if (i < s.length()) {
-                let n = operate(n, expr(s, i), op);
-            }
-        }
-
-        do token.dispose();
+            let n = intExpr(token);
+            do token.dispose();
+            let token = String.new(sLen);
+            let i = Str.tkn(s, token, EXP_DLMS, i+1);
+            return operate(operate(n, intExpr(token), op),
+                            evalInt(s, i+1), s.charAt(i));
+        }}}
 
         return n;
     }
 
-*/
+    method int intExpr(String s) {
+        var char c;
+        var int n;
+        var Symbol p;
+
+        let c = s.charAt(0);
+
+        if ( (c>47) & (c<58) ) {
+            return String.intValue(s);
+        }
+
+        if ( ((c|32)>96) & ((c|32)<123) ) {
+            let p = symtab.lookup(s);
+            if (p = null) {
+                do Error.set(0); // name not in symtab
+                return 0;
+            }
+            if (~(p.type() = INT)) {
+                do Error.set(0); // wrong type
+                return 0;
+            }
+            return p.value();
+        }
+
+        do Error.set(0); // unexpected token
+        return 0;
+    }
+
+    method String evalStr(String s) {
+
+        return s;
+    }
+
+    method Symbol evalSym(String s) {
+        return null;
+    }
+
+    method int expr(String s, int i) {
+
+        return 0;
+    }
+
     method int operate(int m, int n, char op) {
         if (op = 43) { return m + n; }
         if (op = 45) { return m - n; }
@@ -339,51 +292,63 @@ class Canvas {
         return 0;
     }
 
-    method void block(Symbol arg) {
+    method void doInstall(Symbol sym) {
+        var Symbol p;
+
+        let p = sym.next();
+        do symtab.install(sym.name(), p.type(), p.value());
         return;
     }
 
-//    method void clear(Symbol arg) {
-//        return;
-//    }
-
-    method void forward(Symbol arg) {
+    method void doBlock(Symbol arg) {
         return;
     }
 
-    method void function(Symbol arg) {
+    method void doClear(Symbol arg) {
         return;
     }
 
-    method void pendown(Symbol arg) {
+    method void doForward(Symbol arg) {
         return;
     }
 
-    method void penup(Symbol arg) {
+    method void doFunction(Symbol arg) {
         return;
     }
 
-    method void print(Symbol arg) {
+    method void doPendown(Symbol arg) {
         return;
     }
 
-    method void repeat(Symbol arg) {
+    method void doPenup(Symbol arg) {
         return;
     }
 
-    method void turnleft(Symbol arg) {
+    method void doPrint(Symbol arg) {
         return;
     }
 
-    method void turnright(Symbol arg) {
+    method void doRepeat(Symbol arg) {
         return;
     }
 
-    method void quit(Symbol arg) {
+    method void doTurnleft(Symbol arg) {
+        return;
+    }
+
+    method void doTurnright(Symbol arg) {
+        return;
+    }
+
+    method void doQuit(Symbol arg) {
         return;
     }
 
     method void echo(Symbol sym) {
+        return;
+    }
+
+    method void echoInt(Symbol sym) {
         return;
     }
 
