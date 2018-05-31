@@ -57,7 +57,7 @@ class Canvas {
         let SYM    = 6;
 
         do installKWs();
-        do Error.set(0);  // init
+        do Error.set(1);  // init
         let t = newTurtle();
 
         return this;
@@ -172,7 +172,7 @@ class Canvas {
             let cmd = _ECHO;
         }
 
-        if (cmd = _ECHO)            { do echo(argv.next());        }
+        if (cmd = _ECHO)            { do echo(argv); }
         else { if (cmd = BLOCK)     { do doBlock(argv.next());     }
         else { if (cmd = CLEAR)     { do doClear(argv.next());     }
         else { if (cmd = FORWARD)   { do doForward(argv.next());   }
@@ -201,7 +201,7 @@ class Canvas {
 
         let c = s.charAt(0);
 
-        if ( (((c>47) & (c<58)) | (c|1=41)) ) {
+        if ( ((c>47) & (c<58)) | (c|1=41) ) {
             return Symbol.new(null, INT, evalInt(s, 0));
         } else { if (c = 34) {
             return Symbol.new(null, STR, evalStr(s));
@@ -217,25 +217,37 @@ class Canvas {
         let sLen = s.length();
 
         let token = String.new(sLen);
-        let i = Str.tkn(s, token, EXP_DLMS, i);
+        if (s.charAt(i) = 40) {
+            let i = Str.parens(s, token, i+1);
+            if (i < 0) {
+                do Error.set(0);  // unbalanced parens
+                return -i;
+            }
+            let n = evalInt(token, 0);
+        } else {
+            let i = Str.tkn(s, token, EXP_DLMS, i);
+            let n = intExpr(token);
+        }
+
+        do token.dispose();
+
+        if (i = sLen) {
+            return n;
+        }
+
         let op = s.charAt(i);
             
-        if (token.charAt(0) = 40) {
-            do Str.shift(token, 1);
-            return operate(intExpr(token), evalInt(s, i+1), op);
-        } else { if ( (op=43) | (op=45) ) {
-            return operate(intExpr(token), evalInt(s, i+1), op);
+       if ( (s.charAt(i+1)=40) | ((op=43) | (op=45)) ) {
+            return operate(n, evalInt(s, i+1), op);
         } else { if ( ((op|5)=47) | (op=37) ) {
-            if (s.charAt(i+1) = 40) {
-                return operate(intExpr(token), evalInt(s, i+1), op);
-            }
-            let n = intExpr(token);
-            do token.dispose();
             let token = String.new(sLen);
             let i = Str.tkn(s, token, EXP_DLMS, i+1);
+            if (i = sLen) {
+                return operate(n, intExpr(token), op);
+            }
             return operate(operate(n, intExpr(token), op),
                             evalInt(s, i+1), s.charAt(i));
-        }}}
+        }}
 
         return n;
     }
@@ -345,10 +357,19 @@ class Canvas {
     }
 
     method void echo(Symbol sym) {
+        if (sym.type() = INT) {
+            do echoInt(sym);
+        }
         return;
     }
 
     method void echoInt(Symbol sym) {
+        var String s;
+
+        let s = String.new(5);
+        do s.setInt(sym.value());
+        do Error.setMsg(s);
+        do Error.set(0);  // echo int
         return;
     }
 

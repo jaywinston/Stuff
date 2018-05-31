@@ -25,7 +25,7 @@ class Console {
     }
 
     method void try(String s) {
-        if (~(Error.n() = 0)) {
+        if (Error.n() < 1) {
             do term.echo(Error.msg());
             do Error.clear();
         }

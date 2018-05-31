@@ -66,7 +66,7 @@ class Parser {
             return Symbol.new(null, STR, Str.dup(s));
         }
 
-        if ( ((c|6)=47) | ((c|10)=42) | ((c|24)=61) ) {
+        if ( (((c|6)=47) | ((c|10)=42)) | ((c|24)=61) ) {
             return Symbol.new(null, OP, c);
         }
 

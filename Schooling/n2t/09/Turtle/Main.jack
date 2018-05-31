@@ -4,9 +4,9 @@ class Main {
         var Console console;
 
         do lib.init();
-        do const.init();
         do Error.init(Main.errTab(), 0);
-        do Parser.init();
+        //do const.init();
+        //do Parser.init();
         do Vector.init();
 
         let console = Console.new();
