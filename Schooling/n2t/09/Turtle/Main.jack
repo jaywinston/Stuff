@@ -4,12 +4,18 @@ class Main {
         var Console console;
 
         do lib.init();
+        do Error.init(Main.errTab(), 0);
+        //do const.init();
+        //do Parser.init();
         do Vector.init();
-        do Error.init(Main.errTab());
 
         let console = Console.new();
 
         do console.run();
+
+        do canvas.dispose();
+        do Parser.dispose();
+        do Error.dispose();
 
         return;
     }
@@ -21,8 +27,8 @@ class Main {
         let tab[0] = "errno 0";
         let tab[1] = "errno 1";
         let tab[2] = "errno 2";
-        let tab[3] = "type is not CMD";
-        let tab[4] = "parser returned null";
+        let tab[3] = "errno 3";
+        let tab[4] = "errno 4";
 
         return tab;
     }

@@ -15,7 +15,9 @@ class Symbol {
     }
 
     method void dispose() {
-        do _name.dispose();
+        if (~(_name = null)) {
+            do _name.dispose();
+        }
         do Memory.deAlloc(this);
         return;
     }
@@ -34,6 +36,11 @@ class Symbol {
 
     method int next() {
         return _next;
+    }
+
+    method void setName(int name) {
+        let _name = name;
+        return;
     }
 
     method void setType(int type) {
@@ -55,6 +62,7 @@ class Symbol {
         if (~(o = null)) {
             do o.setNext(end.next());
             do end.setNext(o);
+            let end = o;
         }
         return;
     }

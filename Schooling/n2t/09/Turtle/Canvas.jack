@@ -19,7 +19,6 @@ class Canvas {
         STR,
         SYM,
 
-        _ECHO,
         BLOCK,
         CLEAR,
         FORWARD,
@@ -30,7 +29,8 @@ class Canvas {
         REPEAT,
         TURNLEFT,
         TURNRIGHT,
-        QUIT;
+        QUIT,
+        _ECHO;
 
     constructor Canvas new(int i, int j, int h, int w,
                            String ps1, String ps2) {
@@ -57,7 +57,7 @@ class Canvas {
         let SYM    = 6;
 
         do installKWs();
-        do Error.set(0);  // init
+        do Error.set(1);  // init
         let t = newTurtle();
 
         return this;
@@ -78,7 +78,6 @@ class Canvas {
         var int i;
 
         let i = 0;
-        do installKW("_ECHO",     CMD, i);  let _ECHO     = i;  let i = i + 1;
         do installKW("BLOCK",     CMD, i);  let BLOCK     = i;  let i = i + 1;
         do installKW("CLEAR",     CMD, i);  let CLEAR     = i;  let i = i + 1;
         do installKW("FORWARD",   CMD, i);  let FORWARD   = i;  let i = i + 1;
@@ -89,7 +88,8 @@ class Canvas {
         do installKW("REPEAT",    CMD, i);  let REPEAT    = i;  let i = i + 1;
         do installKW("TURNLEFT",  CMD, i);  let TURNLEFT  = i;  let i = i + 1;
         do installKW("TURNRIGHT", CMD, i);  let TURNRIGHT = i;  let i = i + 1;
-        do installKW("QUIT",      CMD, i);  let QUIT      = i;
+        do installKW("QUIT",      CMD, i);  let QUIT      = i;  let i = i + 1;
+        let _ECHO = i;
 
         return;
     }
@@ -139,7 +139,7 @@ class Canvas {
         let i = Str.tkn(s, token, TKN_DLMS, 0);
         let argv = eval(token);
         do token.dispose();
-    
+
         if (i < sLen) { if (s.charAt(i) = 61) {  // '='
             let token = String.new(sLen);
             let i = Str.tkn(s, token, TKN_DLMS, i);
@@ -172,7 +172,7 @@ class Canvas {
             let cmd = _ECHO;
         }
 
-        if (cmd = _ECHO)            { do echo(argv.next());        }
+        if (cmd = _ECHO)            { do echo(argv); }
         else { if (cmd = BLOCK)     { do doBlock(argv.next());     }
         else { if (cmd = CLEAR)     { do doClear(argv.next());     }
         else { if (cmd = FORWARD)   { do doForward(argv.next());   }
@@ -201,24 +201,83 @@ class Canvas {
 
         let c = s.charAt(0);
 
-        if ( (((c>47) & (c<58)) | (c|1=41)) ) {
-            return Symbol.new(null, INT, evalStr(s));
+        if ( ((c>47) & (c<58)) | (c|1=41) ) {
+            return Symbol.new(null, INT, evalInt(s, 0));
         } else { if (c = 34) {
-            return Symbol.new(null, STR, evalInt(s, 0));
+            return Symbol.new(null, STR, evalStr(s));
         }}
         return evalSym(s);
     }
 
     method int evalInt(String s, int i) {
+        var char c, op;
         var int n, sLen;
         var String token;
 
         let sLen = s.length();
 
         let token = String.new(sLen);
-        let i = Str.tkn(s, token, EXP_DLMS, 0);
+        if (s.charAt(i) = 40) {
+            let i = Str.parens(s, token, i+1);
+            if (i < 0) {
+                do Error.set(0);  // unbalanced parens
+                return -i;
+            }
+            let n = evalInt(token, 0);
+        } else {
+            let i = Str.tkn(s, token, EXP_DLMS, i);
+            let n = intExpr(token);
+        }
+
+        do token.dispose();
+
+        if (i = sLen) {
+            return n;
+        }
+
+        let op = s.charAt(i);
+            
+       if ( (s.charAt(i+1)=40) | ((op=43) | (op=45)) ) {
+            return operate(n, evalInt(s, i+1), op);
+        } else { if ( ((op|5)=47) | (op=37) ) {
+            let token = String.new(sLen);
+            let i = Str.tkn(s, token, EXP_DLMS, i+1);
+            if (i = sLen) {
+                return operate(n, intExpr(token), op);
+            }
+            return operate(operate(n, intExpr(token), op),
+                            evalInt(s, i+1), s.charAt(i));
+        }}
 
         return n;
+    }
+
+    method int intExpr(String s) {
+        var char c;
+        var int n;
+        var Symbol p;
+
+        let c = s.charAt(0);
+
+        if ( (c>47) & (c<58) ) {
+            return String.intValue(s);
+        }
+
+        if ( ((c|32)>96) & ((c|32)<123) ) {
+            let p = symtab.lookup(s);
+            if (p = null) {
+                do Error.set(0); // name not in symtab
+                return 0;
+            }
+            if (~(p.type() = INT)) {
+                do Error.set(0); // wrong type
+                return 0;
+            }
+            return p.value();
+        }
+
+        do Error.set(0); // unexpected token
+        return 0;
     }
 
     method String evalStr(String s) {
@@ -298,6 +357,19 @@ class Canvas {
     }
 
     method void echo(Symbol sym) {
+        if (sym.type() = INT) {
+            do echoInt(sym);
+        }
+        return;
+    }
+
+    method void echoInt(Symbol sym) {
+        var String s;
+
+        let s = String.new(5);
+        do s.setInt(sym.value());
+        do Error.setMsg(s);
+        do Error.set(0);  // echo int
         return;
     }
 

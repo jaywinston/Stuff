@@ -1,16 +1,34 @@
 class Error {
 
     static int _errno;
+    static int TABSIZE;
     static Array ERRTAB;
 
-    function void init(Array tab) {
+    function void init(Array tab, int ts) {
         let ERRTAB = tab;
-        let _errno = 0;
+        let TABSIZE = ts;
+        let _errno = -1;
+        return;
+    }
+
+    function void dispose() {
+        var int i;
+        var String s;
+
+        let i = 0;
+        while (i < TABSIZE) {
+            let s = ERRTAB[i];
+            do s.dispose();
+            let i = i + 1;
+        }
+
+        do ERRTAB.dispose();
+
         return;
     }
 
     function void set(int i) {
-        let _errno = i;
+        let _errno = -i;
         return;
     }
 
@@ -19,7 +37,16 @@ class Error {
     }
 
     function String msg() {
-        return ERRTAB[_errno];
+        return ERRTAB[0];
+    }
+
+    function void setMsg(String s) {
+        var String old;
+
+        let old = ERRTAB[0];
+        do old.dispose();
+        let ERRTAB[0] = s;
+        return;
     }
 
     function String clear() {
