@@ -286,7 +286,15 @@ class Canvas {
     }
 
     method Symbol evalSym(String s) {
-        return Symbol.dup(symtab.lookup(s));
+        var Symbol p;
+
+        let p =  Symbol.dup(symtab.lookup(s));
+
+        if (p = null) {
+            return Symbol.new(s, null, null);
+        }
+
+        return p;
     }
 
     method int expr(String s, int i) {
