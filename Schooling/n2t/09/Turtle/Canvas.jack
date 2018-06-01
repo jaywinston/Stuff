@@ -321,6 +321,7 @@ class Canvas {
     }
 
     method void doForward(Symbol arg) {
+        do t.forward(arg.value());
         return;
     }
 
