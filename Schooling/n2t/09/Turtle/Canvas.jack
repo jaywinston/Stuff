@@ -142,7 +142,7 @@ class Canvas {
 
         if (i < sLen) { if (s.charAt(i) = 61) {  // '='
             let token = String.new(sLen);
-            let i = Str.tkn(s, token, TKN_DLMS, i);
+            let i = Str.tkn(s, token, TKN_DLMS, i+1);
             if (i < sLen) {
                 do Error.set(0); // too many args: assignment
                 return ps;
@@ -156,7 +156,7 @@ class Canvas {
 
         while (i < sLen) {
             let token = String.new(sLen);
-            let i = Str.tkn(s, token, TKN_DLMS, i);
+            let i = Str.tkn(s, token, TKN_DLMS, i+1);
             do argv.append(eval(token));
             do token.dispose();
         }
@@ -286,7 +286,7 @@ class Canvas {
     }
 
     method Symbol evalSym(String s) {
-        return null;
+        return Symbol.dup(symtab.lookup(s));
     }
 
     method int expr(String s, int i) {

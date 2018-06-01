@@ -80,7 +80,7 @@ class ScreenArea {
             let i = i + 2;
         }
 
-        return n;
+        return i;
     }
 
 }
