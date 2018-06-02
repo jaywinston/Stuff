@@ -25,9 +25,8 @@ class Console {
     }
 
     method void try(String s) {
-        if (Error.n() < 1) {
-            do term.echo(Error.msg());
-            do Error.clear();
+        while (Error.isSet()) {
+            do term.echo(Error.message());
         }
         do term.print(s);
         return;

@@ -4,9 +4,7 @@ class Main {
         var Console console;
 
         do lib.init();
-        do Error.init(Main.errTab(), 0);
-        //do const.init();
-        //do Parser.init();
+        do Error.init(Main.errTab(), 2);
         do Vector.init();
 
         let console = Console.new();
@@ -23,12 +21,9 @@ class Main {
     function Array errTab() {
         var Array tab;
 
-        let tab = Array.new(5);
-        let tab[0] = "errno 0";
-        let tab[1] = "errno 1";
-        let tab[2] = "errno 2";
-        let tab[3] = "errno 3";
-        let tab[4] = "errno 4";
+        let tab = Array.new(2);
+        let tab[0] = null;
+        let tab[1] = "error";
 
         return tab;
     }

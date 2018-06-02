@@ -11,6 +11,7 @@ class Canvas {
     field Symbol block;
 
     static int
+        NULL,
         CMD,
         CMDLIN,
         FUNC,
@@ -48,6 +49,7 @@ class Canvas {
         let TKN_DLMS = " =";
         let EXP_DLMS = "+-*/%";
 
+        let NULL   = -1;
         let CMD    = 0;
         let CMDLIN = 1;
         let FUNC   = 2;
@@ -57,7 +59,6 @@ class Canvas {
         let SYM    = 6;
 
         do installKWs();
-        do Error.set(1);  // init
         let t = newTurtle();
 
         return this;
@@ -78,7 +79,7 @@ class Canvas {
         var int i;
 
         let i = 0;
-        do installKW("BLOCK",     CMD, i);  let BLOCK     = i;  let i = i + 1;
+        do installKW("{",         CMD, i);  let BLOCK     = i;  let i = i + 1;
         do installKW("CLEAR",     CMD, i);  let CLEAR     = i;  let i = i + 1;
         do installKW("FORWARD",   CMD, i);  let FORWARD   = i;  let i = i + 1;
         do installKW("FUNCTION",  CMD, i);  let FUNCTION  = i;  let i = i + 1;
@@ -144,7 +145,7 @@ class Canvas {
             let token = String.new(sLen);
             let i = Str.tkn(s, token, TKN_DLMS, i+1);
             if (i < sLen) {
-                do Error.set(0); // too many args: assignment
+                do Error.set(1); // too many args: assignment
                 return ps;
             }
             do argv.append(eval(token));
@@ -162,7 +163,12 @@ class Canvas {
         }
 
         if (argv = null) {
-            do Error.set(0);  // null argv
+            do Error.set(1);  // null argv
+            return ps;
+        }
+
+        if (argv.type() = NULL) {
+            do Error.set(1);  // unrecognized symbol
             return ps;
         }
 
@@ -220,7 +226,7 @@ class Canvas {
         if (s.charAt(i) = 40) {
             let i = Str.parens(s, token, i+1);
             if (i < 0) {
-                do Error.set(0);  // unbalanced parens
+                do Error.set(1);  // unbalanced parens
                 return -i;
             }
             let n = evalInt(token, 0);
@@ -266,22 +272,23 @@ class Canvas {
         if ( ((c|32)>96) & ((c|32)<123) ) {
             let p = symtab.lookup(s);
             if (p = null) {
-                do Error.set(0); // name not in symtab
+                do Error.set(1); // name not in symtab
                 return 0;
             }
             if (~(p.type() = INT)) {
-                do Error.set(0); // wrong type
+                do Error.set(1); // wrong type
                 return 0;
             }
             return p.value();
         }
 
-        do Error.set(0); // unexpected token
+        do Error.set(1); // unexpected token
         return 0;
     }
 
     method String evalStr(String s) {
-
+        do s.eraseLastChar();
+        do Str.shift(s, 1);
         return s;
     }
 
@@ -291,15 +298,10 @@ class Canvas {
         let p =  Symbol.dup(symtab.lookup(s));
 
         if (p = null) {
-            return Symbol.new(s, null, null);
+            return Symbol.new(s, NULL, NULL);
         }
 
         return p;
-    }
-
-    method int expr(String s, int i) {
-
-        return 0;
     }
 
     method int operate(int m, int n, char op) {
@@ -308,7 +310,7 @@ class Canvas {
         if (op = 42) { return m * n; }
         if (op = 47) { return m / n; }
         if (op = 37) { return lib.mod(m, n); }
-        do Error.set(0);  // unrecognized operator
+        do Error.set(1);  // unrecognized operator
         return 0;
     }
 
@@ -321,10 +323,15 @@ class Canvas {
     }
 
     method void doBlock(Symbol arg) {
+        if (~(arg = null)) {
+            let block = arg;
+        }
+        let ps = PS2;
         return;
     }
 
     method void doClear(Symbol arg) {
+        do clear();
         return;
     }
 
@@ -338,10 +345,12 @@ class Canvas {
     }
 
     method void doPendown(Symbol arg) {
+        do t.pendown();
         return;
     }
 
     method void doPenup(Symbol arg) {
+        do t.penup();
         return;
     }
 
@@ -354,14 +363,17 @@ class Canvas {
     }
 
     method void doTurnleft(Symbol arg) {
+        do t.turnleft(arg.value());
         return;
     }
 
     method void doTurnright(Symbol arg) {
+        do t.turnright(arg.value());
         return;
     }
 
     method void doQuit(Symbol arg) {
+        do Sys.halt();
         return;
     }
 
@@ -377,8 +389,7 @@ class Canvas {
 
         let s = String.new(5);
         do s.setInt(sym.value());
-        do Error.setMsg(s);
-        do Error.set(0);  // echo int
+        do Error.send(s);
         return;
     }
 
