@@ -16,7 +16,6 @@ class Canvas {
         CMDLIN,
         FUNC,
         INT,
-        OP,
         STR,
         SYM,
 
@@ -54,7 +53,6 @@ class Canvas {
         let CMDLIN = 1;
         let FUNC   = 2;
         let INT    = 3;
-        let OP     = 4;
         let STR    = 5;
         let SYM    = 6;
 
@@ -127,11 +125,29 @@ class Canvas {
         }
 
         if (inBlock) {
-            if (false) { // s == "}"
-                // install function here (if fName)?
-                // execute block
+            if (s.charAt(0) = 125) { // s == "}"
+                if (s.length() > 1) {
+                    do Error.set(1);  // token after rbrace
+                    return ps;
+                }
+                let inBlock = false;
+                if (~(fName = null)) {
+                    do symtab.install(fName, FUNC, block);
+                    do fName.dispose();
+                    let fName = null;
+                } else {
+                    do execBlock(block);
+                    do Canvas.clearSym(block);
+                }
+                let block = null;
+                let ps = PS1;
+                return ps;
             } else {
-                do block.append(Symbol.new(null, CMDLIN, Str.dup(s)));
+                if (block = null) {
+                    let block =  Symbol.new(null, CMDLIN, Str.dup(s));
+                } else {
+                    do block.append(Symbol.new(null, CMDLIN, Str.dup(s)));
+                }
             }
             return ps;
         }
@@ -174,9 +190,12 @@ class Canvas {
 
         if (argv.type() = CMD) {
             let cmd = argv. value();
+        } else { if (argv.type() = FUNC) {
+            do execBlock(argv.value());
+            return ps;
         } else {
             let cmd = _ECHO;
-        }
+        }}
 
         if (cmd = _ECHO)            { do echo(argv); }
         else { if (cmd = BLOCK)     { do doBlock(argv.next());     }
@@ -197,7 +216,17 @@ class Canvas {
         return ps;
     }
 
-    /* stub */
+    method void execBlock(Symbol b) {
+        var Symbol p;
+
+        let p = b;
+        while (~(p = null)) {
+            do exec(p.value());
+            let p = p.next();
+        }
+        return;
+    }
+
     method Symbol eval(String s) {
         var char c;
 
@@ -216,7 +245,7 @@ class Canvas {
     }
 
     method int evalInt(String s, int i) {
-        var char c, op;
+        var char op;
         var int n, sLen;
         var String token;
 
@@ -243,7 +272,7 @@ class Canvas {
 
         let op = s.charAt(i);
             
-       if ( (s.charAt(i+1)=40) | ((op=43) | (op=45)) ) {
+        if ( (s.charAt(i+1)=40) | ((op=43) | (op=45)) ) {
             return operate(n, evalInt(s, i+1), op);
         } else { if ( ((op|5)=47) | (op=37) ) {
             let token = String.new(sLen);
@@ -323,9 +352,22 @@ class Canvas {
     }
 
     method void doBlock(Symbol arg) {
-        if (~(arg = null)) {
-            let block = arg;
+        if (arg = null) {
+            do Error.set(1);  // doBlock(): arg is null
+            return;
         }
+
+        if ( (~(arg.type()=CMD)) & (~(arg.value()=BLOCK)) ) {
+            do Error.set(1);  // doBlock(): not CMD or not BLOCK
+            return;
+        }
+
+        if (~(arg.next() = null)) {
+            do Error.set(1);  // token after lbrace
+            return;
+        }
+
+        let inBlock = true;
         let ps = PS2;
         return;
     }
@@ -341,6 +383,20 @@ class Canvas {
     }
 
     method void doFunction(Symbol arg) {
+
+        if (arg = null) { if (~(arg.type() = STR)) {
+            do Error.set(1);  // no function name
+            return;
+        }}
+
+        do doBlock(arg.next());
+
+        if (Error.isSet()) {
+            return;
+        }
+
+        let fName = Str.dup(arg.name());
+
         return;
     }
 
