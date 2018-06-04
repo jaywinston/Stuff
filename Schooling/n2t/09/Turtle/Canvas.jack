@@ -1,17 +1,18 @@
 class Canvas {
 
     field int bottom, left, right, top;
-    field boolean inBlock;
+    field int blkDepth;
     field String PS1, PS2, ps;
     field String TKN_DLMS, EXP_DLMS;
     field String fName;
     field TextBox tb;
     field Turtle t;
     field HashTable symtab;
-    field Symbol block;
+    field Symbol block, blocks, cmdp;
 
     static int
         NULL,
+        BLK,
         CMD,
         CMDLIN,
         FUNC,
@@ -38,7 +39,9 @@ class Canvas {
         let left = j;
         let bottom = i + h;
         let right = j + w;
-        let inBlock = false;
+        let block = null;
+        let blocks = null;
+        let blkDepth = 0;
         let fName = null;
         let PS1 = ps1;
         let PS2 = ps2;
@@ -47,17 +50,9 @@ class Canvas {
         let symtab = HashTable.new();
         let TKN_DLMS = " =";
         let EXP_DLMS = "+-*/%";
-
-        let NULL   = -1;
-        let CMD    = 0;
-        let CMDLIN = 1;
-        let FUNC   = 2;
-        let INT    = 3;
-        let STR    = 5;
-        let SYM    = 6;
-
-        do installKWs();
         let t = newTurtle();
+
+        do initKWs();
 
         return this;
     }
@@ -73,22 +68,44 @@ class Canvas {
         return;
     }
 
-    method void installKWs() {
+    /* intialize key words and internal symbols */
+    method void initKWs() {
         var int i;
 
         let i = 0;
-        do installKW("{",         CMD, i);  let BLOCK     = i;  let i = i + 1;
-        do installKW("CLEAR",     CMD, i);  let CLEAR     = i;  let i = i + 1;
-        do installKW("FORWARD",   CMD, i);  let FORWARD   = i;  let i = i + 1;
-        do installKW("FUNCTION",  CMD, i);  let FUNCTION  = i;  let i = i + 1;
-        do installKW("PENDOWN",   CMD, i);  let PENDOWN   = i;  let i = i + 1;
-        do installKW("PENUP",     CMD, i);  let PENUP     = i;  let i = i + 1;
-        do installKW("PRINT",     CMD, i);  let PRINT     = i;  let i = i + 1;
-        do installKW("REPEAT",    CMD, i);  let REPEAT    = i;  let i = i + 1;
-        do installKW("TURNLEFT",  CMD, i);  let TURNLEFT  = i;  let i = i + 1;
-        do installKW("TURNRIGHT", CMD, i);  let TURNRIGHT = i;  let i = i + 1;
-        do installKW("QUIT",      CMD, i);  let QUIT      = i;  let i = i + 1;
+        let NULL   = i;  let i = i + 1;
+        let BLK    = i;  let i = i + 1;
+        let CMD    = i;  let i = i + 1;
+        let CMDLIN = i;  let i = i + 1;
+        let FUNC   = i;  let i = i + 1;
+        let INT    = i;  let i = i + 1;
+        let STR    = i;  let i = i + 1;
+        let SYM    = i;  let i = i + 1;
+
+        let BLOCK     = i;  let i = i + 1;
+        let CLEAR     = i;  let i = i + 1;
+        let FORWARD   = i;  let i = i + 1;
+        let FUNCTION  = i;  let i = i + 1;
+        let PENDOWN   = i;  let i = i + 1;
+        let PENUP     = i;  let i = i + 1;
+        let PRINT     = i;  let i = i + 1;
+        let REPEAT    = i;  let i = i + 1;
+        let TURNLEFT  = i;  let i = i + 1;
+        let TURNRIGHT = i;  let i = i + 1;
+        let QUIT      = i;  let i = i + 1;
         let _ECHO = i;
+
+        do installKW("{",         CMD, BLOCK);
+        do installKW("CLEAR",     CMD, CLEAR);
+        do installKW("FORWARD",   CMD, FORWARD);
+        do installKW("FUNCTION",  CMD, FUNCTION);
+        do installKW("PENDOWN",   CMD, PENDOWN);
+        do installKW("PENUP",     CMD, PENUP);
+        do installKW("PRINT",     CMD, PRINT);
+        do installKW("REPEAT",    CMD, REPEAT);
+        do installKW("TURNLEFT",  CMD, TURNLEFT);
+        do installKW("TURNRIGHT", CMD, TURNRIGHT);
+        do installKW("QUIT",      CMD, QUIT);
 
         return;
     }
@@ -112,7 +129,7 @@ class Canvas {
                            90);
     }
 
-    /* stub */
+    /* parse and execute a command line */
     method String exec(String s) {
         var int i, cmd, sLen;
         var String token;
@@ -124,31 +141,43 @@ class Canvas {
             return ps;
         }
 
-        if (inBlock) {
-            if (s.charAt(0) = 125) { // s == "}"
+        if (blkDepth > 0) {
+
+            if (s.charAt(0) = 123) {  // '{'
+                if (s.length() > 1) {
+                    do Error.set(1);  // token after lbrace
+                    return ps;
+                }
+                let blkDepth = blkDepth + 1;
+            }
+
+            if (s.charAt(0) = 125) { // '}'
                 if (s.length() > 1) {
                     do Error.set(1);  // token after rbrace
                     return ps;
                 }
-                let inBlock = false;
-                if (~(fName = null)) {
+                let blkDepth = blkDepth - 1;
+            }
+
+            if (blkDepth = 0) {
+                if (fName = null) {
+                    do execBlock(block);
+                    do Canvas.clearSym(block);
+                } else {
                     do symtab.install(fName, FUNC, block);
                     do fName.dispose();
                     let fName = null;
-                } else {
-                    do execBlock(block);
-                    do Canvas.clearSym(block);
                 }
-                let block = null;
+                let block = popBlock();
                 let ps = PS1;
-                return ps;
             } else {
                 if (block = null) {
-                    let block =  Symbol.new(null, CMDLIN, Str.dup(s));
+                    let block = Symbol.new(null, CMDLIN, Str.dup(s));
                 } else {
                     do block.append(Symbol.new(null, CMDLIN, Str.dup(s)));
                 }
             }
+
             return ps;
         }
 
@@ -192,13 +221,13 @@ class Canvas {
             let cmd = argv. value();
         } else { if (argv.type() = FUNC) {
             do execBlock(argv.value());
-            return ps;
+            let cmd = NULL;
         } else {
             let cmd = _ECHO;
         }}
 
         if (cmd = _ECHO)            { do echo(argv); }
-        else { if (cmd = BLOCK)     { do doBlock(argv.next());     }
+        else { if (cmd = BLOCK)     { do doBlock(argv);            }
         else { if (cmd = CLEAR)     { do doClear(argv.next());     }
         else { if (cmd = FORWARD)   { do doForward(argv.next());   }
         else { if (cmd = FUNCTION)  { do doFunction(argv.next());  }
@@ -217,13 +246,16 @@ class Canvas {
     }
 
     method void execBlock(Symbol b) {
-        var Symbol p;
+        var int blkd;
 
-        let p = b;
-        while (~(p = null)) {
-            do exec(p.value());
-            let p = p.next();
+        let blkd = blkDepth;
+        let blkDepth = 0;
+        let cmdp = b;
+        while (~(cmdp = null)) {
+            do exec(cmdp.value());
+            let cmdp = cmdp.next();
         }
+        let blkDepth = blkd;
         return;
     }
 
@@ -367,8 +399,11 @@ class Canvas {
             return;
         }
 
-        let inBlock = true;
+        do pushBlock(block);
+        do pushCmd(arg);
+        let block = null;
         let ps = PS2;
+
         return;
     }
 
@@ -447,6 +482,27 @@ class Canvas {
         do s.setInt(sym.value());
         do Error.send(s);
         return;
+    }
+
+    method void pushBlock(Symbol blk) {
+        var Symbol top;
+
+        let top = Symbol.new(null, BLK, blk);
+        do top.append(blocks);
+        return;
+    }
+
+    method Symbol popBlock() {
+        var Symbol b, p;
+
+        let p = blocks;
+        if (p = null) {
+            return null;
+        }
+        let blocks = blocks.next();
+        let b = p.value();
+        do p.dispose();
+        return b;
     }
 
     function void clearSym(Symbol sym) {
