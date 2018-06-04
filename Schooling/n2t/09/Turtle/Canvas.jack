@@ -1,14 +1,15 @@
 class Canvas {
 
     field int bottom, left, right, top;
-    field int blkDepth;
+    field int braces;
+    field int repeat;
     field String PS1, PS2, ps;
     field String TKN_DLMS, EXP_DLMS;
     field String fName;
     field TextBox tb;
     field Turtle t;
     field HashTable symtab;
-    field Symbol block, blocks, cmdp;
+    field Symbol block, blocks, cmdp, cmds;
 
     static int
         NULL,
@@ -41,7 +42,8 @@ class Canvas {
         let right = j + w;
         let block = null;
         let blocks = null;
-        let blkDepth = 0;
+        let braces = 0;
+        let repeat = 1;
         let fName = null;
         let PS1 = ps1;
         let PS2 = ps2;
@@ -133,7 +135,7 @@ class Canvas {
     method String exec(String s) {
         var int i, cmd, sLen;
         var String token;
-        var Symbol argv;
+        var Symbol argv,p;
 
         let sLen = s.length();
 
@@ -141,28 +143,30 @@ class Canvas {
             return ps;
         }
 
-        if (blkDepth > 0) {
+        if (braces > 0) {
 
             if (s.charAt(0) = 123) {  // '{'
                 if (s.length() > 1) {
                     do Error.set(1);  // token after lbrace
                     return ps;
                 }
-                let blkDepth = blkDepth + 1;
-            }
-
-            if (s.charAt(0) = 125) { // '}'
+                let braces = braces + 1;
+            } else { if (s.charAt(0) = 125) { // '}'
                 if (s.length() > 1) {
                     do Error.set(1);  // token after rbrace
                     return ps;
                 }
-                let blkDepth = blkDepth - 1;
-            }
+                let braces = braces - 1;
+            }}
 
-            if (blkDepth = 0) {
+            if (braces = 0) {
                 if (fName = null) {
-                    do execBlock(block);
+                    while (repeat > 0) {
+                        do execBlock(block);
+                        let repeat = repeat - 1;
+                    }
                     do Canvas.clearSym(block);
+                    let repeat = 1;
                 } else {
                     do symtab.install(fName, FUNC, block);
                     do fName.dispose();
@@ -186,6 +190,11 @@ class Canvas {
         let argv = eval(token);
         do token.dispose();
 
+        if (argv = null) {
+            do Error.set(1);  // null argv
+            return ps;
+        }
+
         if (i < sLen) { if (s.charAt(i) = 61) {  // '='
             let token = String.new(sLen);
             let i = Str.tkn(s, token, TKN_DLMS, i+1);
@@ -194,27 +203,22 @@ class Canvas {
                 return ps;
             }
             do argv.append(eval(token));
-            do doInstall(argv);
+            do install(argv);
             do token.dispose();
             do Canvas.clearSym(argv);
             return ps;
         }}
+
+        if (argv.type() = NULL) {
+            do Error.set(1);  // unrecognized symbol
+            return ps;
+        }
 
         while (i < sLen) {
             let token = String.new(sLen);
             let i = Str.tkn(s, token, TKN_DLMS, i+1);
             do argv.append(eval(token));
             do token.dispose();
-        }
-
-        if (argv = null) {
-            do Error.set(1);  // null argv
-            return ps;
-        }
-
-        if (argv.type() = NULL) {
-            do Error.set(1);  // unrecognized symbol
-            return ps;
         }
 
         if (argv.type() = CMD) {
@@ -226,7 +230,7 @@ class Canvas {
             let cmd = _ECHO;
         }}
 
-        if (cmd = _ECHO)            { do echo(argv); }
+        if (cmd = _ECHO)            { do echo(argv);               }
         else { if (cmd = BLOCK)     { do doBlock(argv);            }
         else { if (cmd = CLEAR)     { do doClear(argv.next());     }
         else { if (cmd = FORWARD)   { do doForward(argv.next());   }
@@ -245,17 +249,27 @@ class Canvas {
         return ps;
     }
 
+    method void install(Symbol sym) {
+        var Symbol p;
+
+        let p = sym.next();
+        do symtab.install(sym.name(), p.type(), p.value());
+        return;
+    }
+
     method void execBlock(Symbol b) {
         var int blkd;
 
-        let blkd = blkDepth;
-        let blkDepth = 0;
+        let blkd = braces;
+        let braces = 0;
+        do pushCmd(cmdp);
         let cmdp = b;
         while (~(cmdp = null)) {
             do exec(cmdp.value());
             let cmdp = cmdp.next();
         }
-        let blkDepth = blkd;
+        let cmdp = popCmd();
+        let braces = blkd;
         return;
     }
 
@@ -304,9 +318,9 @@ class Canvas {
 
         let op = s.charAt(i);
             
-        if ( (s.charAt(i+1)=40) | ((op=43) | (op=45)) ) {
+        if ( (s.charAt(i+1)=40) | ((op=43) | (op=45)) ) {  // '(' '+' '-'
             return operate(n, evalInt(s, i+1), op);
-        } else { if ( ((op|5)=47) | (op=37) ) {
+        } else { if ( ((op|5)=47) | (op=37) ) {            // '*' '/' '%'
             let token = String.new(sLen);
             let i = Str.tkn(s, token, EXP_DLMS, i+1);
             if (i = sLen) {
@@ -375,14 +389,6 @@ class Canvas {
         return 0;
     }
 
-    method void doInstall(Symbol sym) {
-        var Symbol p;
-
-        let p = sym.next();
-        do symtab.install(sym.name(), p.type(), p.value());
-        return;
-    }
-
     method void doBlock(Symbol arg) {
         if (arg = null) {
             do Error.set(1);  // doBlock(): arg is null
@@ -394,13 +400,14 @@ class Canvas {
             return;
         }
 
+        /* might not */
         if (~(arg.next() = null)) {
             do Error.set(1);  // token after lbrace
             return;
         }
 
+        let braces = braces + 1;
         do pushBlock(block);
-        do pushCmd(arg);
         let block = null;
         let ps = PS2;
 
@@ -419,10 +426,15 @@ class Canvas {
 
     method void doFunction(Symbol arg) {
 
-        if (arg = null) { if (~(arg.type() = STR)) {
+        if (arg = null) {
             do Error.set(1);  // no function name
             return;
-        }}
+        }
+
+        if (~(arg.type() = STR)) {
+            do Error.set(1);  // no function name
+            return;
+        }
 
         do doBlock(arg.next());
 
@@ -450,6 +462,7 @@ class Canvas {
     }
 
     method void doRepeat(Symbol arg) {
+        let repeat = arg.value();
         return;
     }
 
@@ -487,22 +500,39 @@ class Canvas {
     method void pushBlock(Symbol blk) {
         var Symbol top;
 
-        let top = Symbol.new(null, BLK, blk);
+        let top = Symbol.new(null, SYM, blk);
         do top.append(blocks);
+        let blocks = top;
         return;
     }
 
     method Symbol popBlock() {
-        var Symbol b, p;
+        var Symbol blk, top;
 
-        let p = blocks;
-        if (p = null) {
-            return null;
-        }
+        let top = blocks;
         let blocks = blocks.next();
-        let b = p.value();
-        do p.dispose();
-        return b;
+        let blk = top.value();
+        do top.dispose();
+        return blk;
+    }
+
+    method void pushCmd(Symbol cmd) {
+        var Symbol top;
+
+        let top = Symbol.new(null, SYM, cmd);
+        do top.append(cmds);
+        let cmds = top;
+        return;
+    }
+
+    method Symbol popCmd() {
+        var Symbol cmd, top;
+
+        let top = cmds;
+        let cmds = cmds.next();
+        let cmd = top.value();
+        do top.dispose();
+        return cmd;
     }
 
     function void clearSym(Symbol sym) {
