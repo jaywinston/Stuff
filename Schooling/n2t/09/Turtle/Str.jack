@@ -1,5 +1,19 @@
 class Str {
 
+    function String format(String f, int i) {
+        var boolean continue;
+        var int i;
+        var String s, t;
+
+        if (f.length() = 0) {
+            return Str.dup(f);
+        }
+
+        let i = 0;
+        let continue 
+        return s;
+    }
+
     function String cat(String s, String t) {
         var String new;
 

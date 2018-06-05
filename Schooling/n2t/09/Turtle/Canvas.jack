@@ -224,7 +224,7 @@ class Canvas {
         if (argv.type() = CMD) {
             let cmd = argv. value();
         } else { if (argv.type() = FUNC) {
-            do execBlock(argv.value());
+            do call(argv);
             let cmd = NULL;
         } else {
             let cmd = _ECHO;
@@ -254,6 +254,24 @@ class Canvas {
 
         let p = sym.next();
         do symtab.install(sym.name(), p.type(), p.value());
+        return;
+    }
+
+    method void call(Symbol argv) {
+        var int n, type;
+        var String arg, intf;
+        var Symbol p;
+
+        let intf = "$%d";
+        let n = 1;
+        let p = argv.next();
+        while (~(p = null)) {
+            let arg = Str.format(intf, n);
+            do install.(arg, p.type(), p.value());
+            let n = n + 1;
+            let p = p.next();
+        }
+        do execBlock(argv.value());
         return;
     }
 
