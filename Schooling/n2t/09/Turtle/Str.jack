@@ -1,16 +1,72 @@
 class Str {
 
-    function String format(String f, int i) {
+    static int _maxlen;
+    static String _nulls;
+
+    function void init() {
+        let _maxlen = 50;
+        let _nulls = "";
+        return;
+    }
+
+    function int MAXLEN() {
+        return _maxlen;
+    }
+
+    function String NULLS() {
+        return _nulls;
+    }
+
+    /* todo: 2nd arg array */
+    function String format(String f, int arg) {
         var boolean continue;
-        var int i;
+        var char c;
+        var int i, j, fLen, tLen;
         var String s, t;
 
-        if (f.length() = 0) {
+        let fLen = f.length();
+
+        if (fLen < 2) {
             return Str.dup(f);
         }
 
+        let s = String.new(_maxlen);
+
         let i = 0;
-        let continue 
+        while (i < fLen) {
+            let c = f.charAt(i);
+            let continue = ~(c = 37);
+            let i = i + 1;
+            while ( (i<fLen) & continue ) {
+                do s.appendChar(c);
+                let c = f.charAt(i);
+                let continue = ~(c = 37);
+                let i = i + 1;
+            }
+            if (i < fLen) {
+                let c = f.charAt(i);
+                if (c = 100) {
+                    let t = String.new(6);
+                    do t.setInt(arg);
+                } else { if (c = 115) {
+                    let t = arg;
+                } else { if (c = 37) {
+                    if (i < _maxlen) {
+                        do s.appendChar(c);
+                    }
+                }}}
+                let tLen = t.length();  // dangerous!
+                let j = 0;
+                while (j < tLen) {
+                    do s.appendChar(t.charAt(j));
+                    let j = j + 1;
+                }
+            } else {
+                do s.appendChar(c);
+            }
+            let i = i + 1;
+        }
+
         return s;
     }
 

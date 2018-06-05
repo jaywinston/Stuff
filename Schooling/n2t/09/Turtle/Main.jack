@@ -4,6 +4,7 @@ class Main {
         var Console console;
 
         do lib.init();
+        do Str.init();
         do Error.init(Main.errTab(), 2);
         do Vector.init();
 

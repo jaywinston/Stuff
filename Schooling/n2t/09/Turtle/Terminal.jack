@@ -11,7 +11,7 @@ class Terminal {
         let linbuf = Array.new(BUFSIZ);
         let bp = 0;
         while (bp < BUFSIZ) {
-            let linbuf[bp] = String.new(lib.MAXLEN());
+            let linbuf[bp] = String.new(Str.MAXLEN());
             let bp = bp + 1;
         }
         let bp = 0;
@@ -57,7 +57,7 @@ class Terminal {
             do Memory.poke(24576, 0);
 
             if ( (c>31) & (c<127) ) {
-                if (s.length() < lib.MAXLEN()) {
+                if (s.length() < Str.MAXLEN()) {
                     do s.appendChar(c);
                     do tb.putc(c);
                 }

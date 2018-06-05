@@ -12,7 +12,7 @@ class Console {
         let term = Terminal.new(2, 1, 20, 30);
         let canvas = Canvas.new(2, 32, 20, 31, ">", "|");
 
-        do try(canvas.exec(lib.NULLS()));
+        do try(canvas.exec(Str.NULLS()));
 
         return this;
     }

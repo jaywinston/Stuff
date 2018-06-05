@@ -203,8 +203,8 @@ class Canvas {
                 return ps;
             }
             do argv.append(eval(token));
-            do install(argv);
             do token.dispose();
+            do installVar(argv);
             do Canvas.clearSym(argv);
             return ps;
         }}
@@ -249,7 +249,7 @@ class Canvas {
         return ps;
     }
 
-    method void install(Symbol sym) {
+    method void installVar(Symbol sym) {
         var Symbol p;
 
         let p = sym.next();
@@ -266,12 +266,12 @@ class Canvas {
         let n = 1;
         let p = argv.next();
         while (~(p = null)) {
-            let arg = Str.format(intf, n);
-            do install.(arg, p.type(), p.value());
+            do symtab.install(Str.format(intf, n), p.type(), p.value());
             let n = n + 1;
             let p = p.next();
         }
         do execBlock(argv.value());
+        do intf.dispose();
         return;
     }
 
@@ -449,16 +449,18 @@ class Canvas {
             return;
         }
 
-        if (~(arg.type() = STR)) {
-            do Error.set(1);  // no function name
-            return;
+        if (~(arg.type() = SYM)) {
+            //do Error.set(1);  // no function name
+            //return;
         }
 
+/*
         do doBlock(arg.next());
 
         if (Error.isSet()) {
             return;
         }
+*/
 
         let fName = Str.dup(arg.name());
 
