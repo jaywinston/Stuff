@@ -21,6 +21,7 @@ class Canvas {
         STR,
         SYM,
 
+        ASSGN,
         BLOCK,
         CLEAR,
         FORWARD,
@@ -84,6 +85,7 @@ class Canvas {
         let STR    = i;  let i = i + 1;
         let SYM    = i;  let i = i + 1;
 
+        let ASSGN     = i;  let i = i + 1;
         let BLOCK     = i;  let i = i + 1;
         let CLEAR     = i;  let i = i + 1;
         let FORWARD   = i;  let i = i + 1;
@@ -143,6 +145,7 @@ class Canvas {
             return ps;
         }
 
+/*
         if (braces > 0) {
 
             if (s.charAt(0) = 123) {  // '{'
@@ -184,30 +187,22 @@ class Canvas {
 
             return ps;
         }
+*/
 
         let token = String.new(sLen);
         let i = Str.tkn(s, token, TKN_DLMS, 0);
-        let argv = eval(token);
+        if (i < sLen) { if (s.charAt(i) = 61) {  // '='
+            let argv = Symbol.new(null, CMD, ASSGN);
+            do argv.append(eval(token));
+        }} else {
+            let argv = eval(token);
+        }
         do token.dispose();
 
         if (argv = null) {
             do Error.set(1);  // null argv
             return ps;
         }
-
-        if (i < sLen) { if (s.charAt(i) = 61) {  // '='
-            let token = String.new(sLen);
-            let i = Str.tkn(s, token, TKN_DLMS, i+1);
-            if (i < sLen) {
-                do Error.set(1); // too many args: assignment
-                return ps;
-            }
-            do argv.append(eval(token));
-            do token.dispose();
-            do installVar(argv);
-            do Canvas.clearSym(argv);
-            return ps;
-        }}
 
         if (argv.type() = NULL) {
             do Error.set(1);  // unrecognized symbol
@@ -231,6 +226,7 @@ class Canvas {
         }}
 
         if (cmd = _ECHO)            { do echo(argv);               }
+        else { if (cmd = ASSGN)     { do doAssign(argv.next());    }
         else { if (cmd = BLOCK)     { do doBlock(argv);            }
         else { if (cmd = CLEAR)     { do doClear(argv.next());     }
         else { if (cmd = FORWARD)   { do doForward(argv.next());   }
@@ -242,7 +238,7 @@ class Canvas {
         else { if (cmd = TURNLEFT)  { do doTurnleft(argv.next());  }
         else { if (cmd = TURNRIGHT) { do doTurnright(argv.next()); }
         else { if (cmd = QUIT)      { do doQuit(argv.next());      }
-        }}}}}}}}}}}
+        }}}}}}}}}}}}
 
         do Canvas.clearSym(argv);
 
@@ -405,6 +401,30 @@ class Canvas {
         if (op = 37) { return lib.mod(m, n); }
         do Error.set(1);  // unrecognized operator
         return 0;
+    }
+
+    method void doAssign(Symbol arg) {
+        var Symbol p;
+
+        if (arg = null) {
+            do Error.set(1);  // no symbol name
+            return;
+        }
+
+        let p = arg.next();
+
+        if (p = null) {
+            do Error.set(1);  // no value to assign
+            return;
+        }
+
+        do symtab.install(arg.name(), p.type(), p.value());
+
+        if (~(p.next() = null)) {
+            do Error.set(1);  // unexpected token
+        }
+
+        return;
     }
 
     method void doBlock(Symbol arg) {
