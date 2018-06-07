@@ -149,42 +149,40 @@ class Str {
         return t;
     }
 
-    function int tkn(String s, String t, String list, int i) {
+    function int index(String s, String list, int i) {
         var char c;
         var int j;
         var int sLen, listLen;
-        var boolean continue;
 
         let sLen = s.length();
-        if (i = sLen) {
-            return i;
-        }
         let listLen = list.length();
-        let continue = true;
-        let c = s.charAt(i);
-        let j = 0;
-        while ( (j<listLen) & continue ) {
-            let continue = ~(c = list.charAt(j));
-            let j = j + 1;
-        }
-        let i = i + 1;
 
-        while ( (i<sLen) & continue ) {
-            do t.appendChar(c);
+        while (i < sLen) {
             let c = s.charAt(i);
             let j = 0;
-            while ( (j<listLen) & continue ) {
-                let continue = ~(c = list.charAt(j));
+            while (j < listLen) {
+                if (c = list.charAt(j)) {
+                    return i;
+                }
                 let j = j + 1;
             }
             let i = i + 1;
         }
 
-        if (continue) {
-            do t.appendChar(c);
-            return i;
+        return i;
+    }
+
+    function int tkn(String s, String t, String list, int i) {
+        var int j;
+
+        let j = i;
+        let i = Str.index(s, list, i);
+        while (j < i) {
+            do t.appendChar(s.charAt(j));
+            let j = j + 1;
         }
-        return i - 1;
+
+        return i;
     }
 
     function int parens(String s, String t, int i) {
