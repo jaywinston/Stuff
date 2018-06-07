@@ -17,6 +17,23 @@ class Str {
         return _nulls;
     }
 
+    function boolean isInt(String s) {
+        var char c;
+        var int i, len;
+
+        let i = 0;
+        let len = s.length();
+        while (i < len) {
+            let c = s.charAt(i);
+            if (~( (c>47) & (c<58) )) {
+                return false;
+            }
+            let i = i + 1;
+        }
+
+        return true;
+    }
+
     /* todo: 2nd arg array */
     function String format(String f, int arg) {
         var boolean continue;
@@ -213,13 +230,37 @@ class Str {
         return i + 1;
     }
 
+    function int quotes(String s, String t, int i) {
+        var char c;
+        var int len;
+
+        let len = s.length();
+        while (i < len) {
+            let c = s.charAt(i);
+            if (c = 34) {
+                return i + 1;
+            }
+            do t.appendChar(c);
+            let i = i + 1;
+        }
+
+        return -i;  // EOS while scanning for quote
+    }
+
     function void shift(String s, int off) {
         var int i, sLen;
 
         let sLen = s.length();
-        let i = off;
+
+        if ( (sLen=0) | (sLen<off) ) {
+            return;
+        }
+
+        let i = 0;
         while (i < sLen) {
-            do s.setCharAt(i-off, s.charAt(i));
+            if ( (i+off) < sLen ) {
+                do s.setCharAt(i, s.charAt(i+off));
+            }
             let i = i + 1;
         }
 

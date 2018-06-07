@@ -5,6 +5,7 @@ class Canvas {
     field int repeat;
     field String PS1, PS2, ps;
     field String TKN_DLMS, EXP_DLMS;
+    field String ADDS, BLANKS, EQS, MULS;
     field String fName;
     field TextBox tb;
     field Turtle t;
@@ -53,6 +54,10 @@ class Canvas {
         let symtab = HashTable.new();
         let TKN_DLMS = " =";
         let EXP_DLMS = "+-*/%";
+        let BLANKS = " ";
+        let EQS = "=";
+        let ADDS = "+-";
+        let MULS = "*/%";
         let t = newTurtle();
 
         do initKWs();
@@ -133,15 +138,12 @@ class Canvas {
                            90);
     }
 
-    /* parse and execute a command line */
+    /* execute a command line */
     method String exec(String s) {
-        var int i, cmd, sLen;
-        var String token;
-        var Symbol argv,p;
+        var int cmd;
+        var Symbol argv;
 
-        let sLen = s.length();
-
-        if (sLen = 0) {
+        if (s.length() = 0) {
             return ps;
         }
 
@@ -189,15 +191,7 @@ class Canvas {
         }
 */
 
-        let token = String.new(sLen);
-        let i = Str.tkn(s, token, TKN_DLMS, 0);
-        if (i < sLen) { if (s.charAt(i) = 61) {  // '='
-            let argv = Symbol.new(null, CMD, ASSGN);
-            do argv.append(eval(token));
-        }} else {
-            let argv = eval(token);
-        }
-        do token.dispose();
+        let argv = eval(s, 0);
 
         if (argv = null) {
             do Error.set(1);  // null argv
@@ -209,15 +203,8 @@ class Canvas {
             return ps;
         }
 
-        while (i < sLen) {
-            let token = String.new(sLen);
-            let i = Str.tkn(s, token, TKN_DLMS, i+1);
-            do argv.append(eval(token));
-            do token.dispose();
-        }
-
         if (argv.type() = CMD) {
-            let cmd = argv. value();
+            let cmd = argv.value();
         } else { if (argv.type() = FUNC) {
             do call(argv);
             let cmd = NULL;
@@ -287,23 +274,150 @@ class Canvas {
         return;
     }
 
-    method Symbol eval(String s) {
-        var char c;
+    method Symbol eval(String s, int i) {
+        var int i;
+        var String t;
+        var Symbol argv;
 
         if (s.length() = 0) {
             return null;
         }
 
-        let c = s.charAt(0);
+        let t = String.new(s.length());
 
-        if ( ((c>47) & (c<58)) | (c|1=41) ) {
-            return Symbol.new(null, INT, evalInt(s, 0));
-        } else { if (c = 34) {
-            return Symbol.new(null, STR, evalStr(s));
-        }}
-        return evalSym(s);
+        if (s.charAt(0) = 34) {
+            let i = Str.quotes(s, t, 0);
+            if (i < 0) {
+                do Error.set(1);  // EOS while scanning for quote
+                do t.dispose();
+                return null;
+            }
+        } else {
+            let i = Str.tkn(s, t, BLANKS, i);
+        }
+
+        let argv = evalWord(t);
+
+        if (i < s.length()) {
+            do argv.append(eval(s, i+1));
+        }
+
+        do t.dispose();
+
+        return argv;
     }
 
+    method Symbol evalWord(String s) {
+        var int i;
+        var String t;
+        var Symbol argv;
+
+        if (s.length() = 0) {
+            return null;
+        }
+
+        if (s.charAt(0) = 34) {
+            return evalString(s);
+        }
+
+        let t = String.new(s.length());
+        let i = Str.tkn(s, t, EQS, 0);
+
+        if (i = s.length()) {
+            let argv = evalExpression(s, 0);
+        } else {
+            let argv = Symbol.new(null, CMD, ASSGN);
+            do argv.append(Symbol.new(t, SYM, NULL));
+            do argv.append(evalExpression(s, i+1));
+        }
+
+        do t.dispose();
+
+        return argv;
+    }
+
+    method Symbol evalString(String s) {
+        do Str.shift(s, 1);
+        return Symbol.new(null, STR, Str.dup(s));
+    }
+
+    method Symbol evalExpression(String s, int i) {
+        var int j;
+        var String t;
+        var Symbol argv;
+
+        let t = String.new(s.length());
+        let j = Str.tkn(s, t, EXP_DLMS, i);
+
+        if (j = s.length()) {
+            let argv = evalAtom(t);
+        } else {
+            let argv = Symbol.new(null, INT, evalAdd(s, i));
+        }
+
+        do t.dispose();
+
+        return argv;
+    }
+
+    method int evalAdd(String s, int i) {
+        var int n;
+        var String t;
+
+        let t = String.new(s.length());
+        let i = Str.tkn(s, t, ADDS, i);
+        let n = evalMul(t, 0);
+
+        do t.dispose();
+
+        if (i = s.length()) {
+            return n;
+        }
+
+        return operate(n, evalAdd(s, i+1), s.charAt(i));
+    }
+
+    method int evalMul(String s, int i) {
+        var int n;
+        var String t;
+        var Symbol p;
+
+        let t = String.new(s.length());
+        let i = Str.tkn(s, t, ADDS, i);
+        let p = evalAtom(t);
+
+        if (~(p.type() = INT)) {
+            do Error.set(1);  // not an int
+            return 0;
+        }
+
+        let n = p.value();
+        do p.dispose();
+
+        if (i = s.length()) {
+            return n;
+        }
+
+        return operate(n, evalMul(s, i+1), s.charAt(i));
+    }
+
+    method int evalAtom(String s) {
+        var char c;
+
+        let c = s.charAt(0);
+
+        if ( (c>47) & (c<58) ) {
+            if (~(Str.isInt(s))) {
+                do Error.set(1);  // malformed int
+                return null;
+            }
+            return Symbol.new(null, INT, String.intValue(s));
+        }
+
+        return Symbol.dup(symtab.lookup(s));
+    }
+
+/*
     method int evalInt(String s, int i) {
         var char op;
         var int n, sLen;
@@ -392,6 +506,7 @@ class Canvas {
 
         return p;
     }
+*/
 
     method int operate(int m, int n, char op) {
         if (op = 43) { return m + n; }
@@ -418,11 +533,11 @@ class Canvas {
             return;
         }
 
-        do symtab.install(arg.name(), p.type(), p.value());
-
         if (~(p.next() = null)) {
             do Error.set(1);  // unexpected token
         }
+
+        do symtab.install(arg.name(), p.type(), p.value());
 
         return;
     }
