@@ -87,7 +87,9 @@ class TextBox {
         return;
     }
 
+    /* a vile concoction of noxious components and devious incantations */
     method void scroll() {
+        /* */
         var int w, end, off, pxRow;
         var int oddChar;
         var boolean odd;
@@ -96,6 +98,7 @@ class TextBox {
         let odd = -(w & 1);
         let end = 16384 + (((bottom-1)*352) + (left/2));
         let pxRow = 16384 + ((top*352) + (left/2));
+
         while (pxRow < end) { let off = 0;
             while (off < w) {
                 do Memory.poke(pxRow+off, Memory.peek((pxRow+off)+352));
@@ -110,7 +113,9 @@ class TextBox {
         }
 
         do Output.moveCursor(bottom-1, left);
+
         let w = left;  // recycle 'w'; nothing to do with it's name
+
         while (w < right) {
             do Output.printChar(32);
             let w = w + 1;
@@ -138,6 +143,7 @@ class TextBox {
     }
 
     method void putc(int c) {
+
         do Output.moveCursor(row, col);
         do Output.printChar(c);
 
@@ -150,6 +156,7 @@ class TextBox {
         }}
 
         let col = col + 1;
+
         if (col = right) {
             do newline();
             /* The vm emulator insists on an extra column to the right. */
@@ -163,10 +170,11 @@ class TextBox {
     }
 
     method void puts(String s) {
-        var int i;
+        var int i, len;
 
+        let len = s.length();
         let i = 0;
-        while (i < s.length()) {
+        while (i < len) {
             do putc(s.charAt(i));
             let i = i + 1;
         }

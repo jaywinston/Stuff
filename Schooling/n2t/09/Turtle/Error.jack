@@ -50,12 +50,6 @@ class Error {
     }
 
     function void send(String s) {
-        var String old;
-
-        let old = ERRTAB[0];
-        if (~(old = null)) {
-            do old.dispose();
-        }
         let ERRTAB[0] = s;
         let e = 0;
         return;

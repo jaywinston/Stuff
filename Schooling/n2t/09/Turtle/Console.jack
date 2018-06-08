@@ -4,15 +4,21 @@ class Console {
     field Canvas canvas;
 
     constructor Console new() {
+        var String banner, nulls;
+
+        let banner = "                       Turtle 0.01";
+        let nulls = "";
 
         do Screen.drawLine(0, 13, 509, 13);
         do Output.moveCursor(0, 0);
-        do Output.printString("                       Turtle 0.01");
+        do Output.printString(banner);
+        do banner.dispose();
 
         let term = Terminal.new(2, 1, 20, 30);
         let canvas = Canvas.new(2, 32, 20, 31, ">", "|");
 
-        do try(canvas.exec(Str.NULLS()));
+        do try(canvas.exec(nulls));
+        do nulls.dispose();
 
         return this;
     }
