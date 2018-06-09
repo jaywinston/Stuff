@@ -1,0 +1,73 @@
+class Const {
+
+    static int
+        /* types */
+        _null,
+        blk,
+        cmd,
+        cmdlin,
+        func,
+        _int,
+        str,
+        sym,
+
+        /* commands */
+        assgn,
+        block,
+        clear,
+        forward,
+        _function,
+        pendown,
+        penup,
+        print,
+        repeat,
+        turnleft,
+        turnright,
+        quit;
+
+    function void init() {
+        let _null     = 0;
+        let blk       = 1;
+        let cmd       = 2;
+        let cmdlin    = 3;
+        let func      = 4;
+        let _int      = 5;
+        let str       = 6;
+        let sym       = 7;
+        let assgn     = 8;
+        let block     = 9;
+        let clear     = 10;
+        let forward   = 11;
+        let _function = 12;
+        let pendown   = 13;
+        let penup     = 14;
+        let print     = 15;
+        let repeat    = 16;
+        let turnleft  = 17;
+        let turnright = 18;
+        let quit      = 19;
+        return;
+    }
+
+    function int NULL      () { return _null;     }
+    function int BLK       () { return blk;       }
+    function int CMD       () { return cmd;       }
+    function int CMDLIN    () { return cmdlin;    }
+    function int FUNC      () { return func;      }
+    function int INT       () { return _int;      }
+    function int STR       () { return str;       }
+    function int SYM       () { return sym;       }
+    function int ASSGN     () { return assgn;     }
+    function int BLOCK     () { return block;     }
+    function int CLEAR     () { return clear;     }
+    function int FORWARD   () { return forward;   }
+    function int FUNCTION  () { return _function; }
+    function int PENDOWN   () { return pendown;   }
+    function int PENUP     () { return penup;     }
+    function int PRINT     () { return print;     }
+    function int REPEAT    () { return repeat;    }
+    function int TURNLEFT  () { return turnleft;  }
+    function int TURNRIGHT () { return turnright; }
+    function int QUIT      () { return quit;      }
+
+}
