@@ -3,7 +3,7 @@ class Canvas {
     field int bottom, left, right, top;
     field int braces;
     field int repeat;
-    field String PS1, PS2, ps;
+    field Symbol PS1, PS2, ps;
     field String TKN_DLMS, EXP_DLMS;
     field String ADDS, BLANKS, EQS, MULS;
     field String fName;
@@ -38,6 +38,11 @@ class Canvas {
 
     constructor Canvas new(int i, int j, int h, int w,
                            String ps1, String ps2) {
+
+        let symtab = HashTable.new();
+
+        do initKWs();
+
         let top = i;
         let left = j;
         let bottom = i + h;
@@ -47,11 +52,10 @@ class Canvas {
         let braces = 0;
         let repeat = 1;
         let fName = null;
-        let PS1 = ps1;
-        let PS2 = ps2;
+        let PS1 = Symbol.new(null, STR, ps1);
+        let PS2 = Symbol.new(null, STR, ps2);
         let ps = PS1;
         let tb = TextBox.new(i, j, h, w);
-        let symtab = HashTable.new();
         let TKN_DLMS = " =";
         let EXP_DLMS = "+-*/%";
         let BLANKS = " ";
@@ -59,8 +63,6 @@ class Canvas {
         let ADDS = "+-";
         let MULS = "*/%";
         let t = newTurtle();
-
-        do initKWs();
 
         return this;
     }
@@ -80,29 +82,29 @@ class Canvas {
     method void initKWs() {
         var int i;
 
-        let i = 0;
-        let NULL   = i;  let i = i + 1;
-        let BLK    = i;  let i = i + 1;
-        let CMD    = i;  let i = i + 1;
-        let CMDLIN = i;  let i = i + 1;
-        let FUNC   = i;  let i = i + 1;
-        let INT    = i;  let i = i + 1;
-        let STR    = i;  let i = i + 1;
-        let SYM    = i;  let i = i + 1;
+//        let i = 0;
+        let NULL   = Const.NULL();
+        let BLK    = Const.BLK();
+        let CMD    = Const.CMD();
+        let CMDLIN = Const.CMDLIN();
+        let FUNC   = Const.FUNC();
+        let INT    = Const.INT();
+        let STR    = Const.STR();
+        let SYM    = Const.SYM();
 
-        let ASSGN     = i;  let i = i + 1;
-        let BLOCK     = i;  let i = i + 1;
-        let CLEAR     = i;  let i = i + 1;
-        let FORWARD   = i;  let i = i + 1;
-        let FUNCTION  = i;  let i = i + 1;
-        let PENDOWN   = i;  let i = i + 1;
-        let PENUP     = i;  let i = i + 1;
-        let PRINT     = i;  let i = i + 1;
-        let REPEAT    = i;  let i = i + 1;
-        let TURNLEFT  = i;  let i = i + 1;
-        let TURNRIGHT = i;  let i = i + 1;
-        let QUIT      = i;  let i = i + 1;
-        let _ECHO = i;
+        let ASSGN     = Const.ASSGN();
+        let BLOCK     = Const.BLOCK();
+        let CLEAR     = Const.CLEAR();
+        let FORWARD   = Const.FORWARD();
+        let FUNCTION  = Const.FUNCTION();
+        let PENDOWN   = Const.PENDOWN();
+        let PENUP     = Const.PENUP();
+        let PRINT     = Const.PRINT();
+        let REPEAT    = Const.REPEAT();
+        let TURNLEFT  = Const.TURNLEFT();
+        let TURNRIGHT = Const.TURNRIGHT();
+        let QUIT      = Const.QUIT();
+//        let _ECHO = i;
 
         do installKW("{",         CMD, BLOCK);
         do installKW("CLEAR",     CMD, CLEAR);
@@ -139,7 +141,7 @@ class Canvas {
     }
 
     /* execute a command line */
-    method String exec(String s) {
+    method Symbol exec(String s) {
         var int cmd;
         var Symbol argv;
 
@@ -172,8 +174,8 @@ class Canvas {
             let cmd = _ECHO;
         }}
 
-        if (cmd = _ECHO)            { do echo(argv);               }
-        else { if (cmd = ASSGN)     { do doAssign(argv.next());    }
+        /*if (cmd = _ECHO)            { do echo(argv);               }
+        else {*/ if (cmd = ASSGN)     { do doAssign(argv.next());    }
         else { if (cmd = BLOCK)     { do doBlock(argv);            }
         else { if (cmd = CLEAR)     { do doClear(argv.next());     }
         else { if (cmd = FORWARD)   { do doForward(argv.next());   }
@@ -185,6 +187,8 @@ class Canvas {
         else { if (cmd = TURNLEFT)  { do doTurnleft(argv.next());  }
         else { if (cmd = TURNRIGHT) { do doTurnright(argv.next()); }
         else { if (cmd = QUIT)      { do doQuit(argv.next());      }
+        else {
+            return argv;
         }}}}}}}}}}}}
 
         do Canvas.clearSym(argv);
@@ -345,7 +349,7 @@ class Canvas {
         let t = String.new(len);
 
         if (s.charAt(i) = 40) {
-            let i = Str.parens(s, t, i+1);
+            let i = Str.block(s, t, 40, 41, i+1);
             if (i > len) {
                 do Error.set(1);  // unbalanced parens
                 return i;

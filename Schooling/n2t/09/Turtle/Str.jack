@@ -203,7 +203,7 @@ class Str {
         return i;
     }
 
-    function int parens(String s, String t, int i) {
+    function int block(String s, String t, char l, char r, int i) {
         var char c;
         var int prs, sLen;
 
@@ -211,9 +211,9 @@ class Str {
         let prs = 1;
         while ( (i<sLen)) { // & (prs>0) ) {
             let c = s.charAt(i);
-            if (c = 40) {
+            if (c = l) {
                 let prs = prs + 1;
-            } else { if (c = 41) {
+            } else { if (c = r) {
                 let prs = prs - 1;
             }}
             let i = i + 1;

@@ -30,11 +30,11 @@ class Console {
         return;
     }
 
-    method void try(String s) {
+    method void try(Symbol s) {
         while (Error.isSet()) {
             do term.echo(Error.message());
         }
-        do term.print(s);
+        do term.print(s.value());
         return;
     }
 

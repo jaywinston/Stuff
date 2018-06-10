@@ -3,6 +3,7 @@ class Main {
     function void main() {
         var Console console;
 
+        do Const.init();
         do lib.init();
         do Str.init();
         do Error.init(Main.errTab(), 2);
