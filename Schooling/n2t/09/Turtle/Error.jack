@@ -42,11 +42,22 @@ class Error {
     }
 
     function String message() {
-        var int n;
+        var String s;
 
-        let n = -e;
-        let e = 1;
-        return ERRTAB[n];
+        let s = ERRTAB[-e];
+
+        if (e = 0) {
+            let e = 1;
+            let ERRTAB[0] = null;
+        } else {
+            if (ERRTAB[0] = null) {
+                let e = 1;
+            } else {
+                let e = 0;
+            }
+        }
+
+        return s;
     }
 
     function void send(String s) {

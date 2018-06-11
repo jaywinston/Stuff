@@ -12,7 +12,7 @@ name:
     namstart namend
 
 namstart:
-    any printable char except ' ' '=' '{' '}' '(' ')' '"' ;+' '-' '*' '/' '%'
+    any printable char except ' ' '=' '{' '}' '(' ')' '"' '+' '-' '*' '/' '%'
                               '0' '1' '2' '3' '4' '5' '6' '7' '8' '9'
 
 namend:
@@ -20,7 +20,7 @@ namend:
     namchar namend
 
 namchar:
-    any printable char except ' ' '=' '{' '}' '(' ')' '"' ;+' '-' '*' '/' '%'
+    any printable char except ' ' '=' '{' '}' '(' ')' '"' '+' '-' '*' '/' '%'
 
 word:
     expression
@@ -92,4 +92,3 @@ space:
     'blank'
     'blank' space
 
-    
