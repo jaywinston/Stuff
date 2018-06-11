@@ -1,0 +1,95 @@
+Grammar:
+
+cmdline:
+    assgn
+    arglist
+
+assgn:
+    name'='word
+
+name:
+    namstart
+    namstart namend
+
+namstart:
+    any printable char except ' ' '=' '{' '}' '(' ')' '"' ;+' '-' '*' '/' '%'
+                              '0' '1' '2' '3' '4' '5' '6' '7' '8' '9'
+
+namend:
+    namchar
+    namchar namend
+
+namchar:
+    any printable char except ' ' '=' '{' '}' '(' ')' '"' ;+' '-' '*' '/' '%'
+
+word:
+    expression
+    block
+
+expression:
+    addexpr
+    stringexpr
+
+addexpr:
+    mulexpr
+    mulexpr addop addexpr
+
+mulexpr:
+    atom
+    atom mulop mulexpr
+
+atom:
+    name
+    intatom
+    parenatom
+    block
+
+intatom:
+    intchar
+    intchar intatom
+
+intchar:
+    '0' '1' '2' '3' '4' '5' '6' '7' '8' '9'
+
+parenatom:
+    '(' addexpr ')
+
+block:
+    '{' cmdlist '}
+
+cmdlist:
+    cmdlin
+    cmdlin 'newline' cmdlist
+
+mulop:
+    '*' '/' '%'
+
+addop:
+    '+' '-'
+
+stringexpr:
+    '"' text '"'
+
+text:
+    textchar
+    textchar text
+
+textchar:
+    any printable char except '"' '%'
+    formatseq
+
+formatseq:
+    '%' formatspec
+
+formatspec:
+    '%' '"'
+
+arglist:
+    word
+    word space arglist
+
+space:
+    'blank'
+    'blank' space
+
+    
