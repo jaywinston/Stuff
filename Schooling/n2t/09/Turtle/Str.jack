@@ -270,4 +270,27 @@ class Str {
 
         return;
     }
+
+    function int lskip(String s, char c, int i) {
+        while (i < s.length()) {
+            if (~(s.charAt(i) = c)) {
+                return i;
+            }
+            let i = i + 1;
+        }
+
+        return i;
+    }
+
+    function void rstrip(String s, char c) {
+        while (s.length() > 0) {
+            if (~(s.charAt(s.length()-1) = c)) {
+                return;
+            }
+            do s.eraseLastChar();
+        }
+
+        return;
+    }
+       
 }

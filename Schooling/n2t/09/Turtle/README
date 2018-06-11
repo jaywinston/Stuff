@@ -5,7 +5,7 @@ cmdline:
     arglist
 
 assgn:
-    name'='word
+    name '=' word
 
 name:
     namstart

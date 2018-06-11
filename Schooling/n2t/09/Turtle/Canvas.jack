@@ -6,6 +6,7 @@ class Canvas {
     field Symbol PS1, PS2, ps;
     field String TKN_DLMS, EXP_DLMS;
     field String ADDS, BLANKS, EQS, MULS;
+    field String CL_DLMS;
     field String fName;
     field TextBox tb;
     field Turtle t;
@@ -60,6 +61,12 @@ class Canvas {
         let EXP_DLMS = "+-*/%";
         let BLANKS = " ";
         let EQS = "=";
+        let CL_DLMS = String.new(5);
+        do CL_DLMS.appendChar(32);
+        do CL_DLMS.appendChar(34);
+        do CL_DLMS.appendChar(40);
+        do CL_DLMS.appendChar(61);
+        do CL_DLMS.appendChar(123);
         let ADDS = "+-";
         let MULS = "*/%";
         let t = newTurtle();
@@ -154,7 +161,7 @@ class Canvas {
         let argv = eval(s, 0);
 
         if (argv = null) {
-            do Error.send("null argv");
+            do Error.send("null argv"); // ## DB ##
             do Error.set(1);  // null argv
             return ps;
         }
@@ -231,7 +238,8 @@ class Canvas {
     }
 
     method Symbol eval(String s, int i) {
-        var int i;
+        var char c;
+        //var int i;
         var String t;
         var Symbol arg, argv;
 
@@ -239,40 +247,43 @@ class Canvas {
             return null;
         }
 
-        if (s.length() = 0) {
+        if ( (s.length()=0) | (s.length()=i) ) {
             return null;
         }
 
+        let i = Str.lskip(s, 32, i);
+
+        if (s.charAt(Str.index(s, CL_DLMS, i)) = 61) {
+            return evalAssgn(s, i);
+        }
+
+        return evalArgList(s, i);
+    }
+
+    method Symbol evalAssgn(String s, int i) {
+        var String t;
+        var Symbol argv;
+
         let t = String.new(s.length());
-
-        if (s.charAt(i) = 34) {
-            let i = Str.quotes(s, t, i);
-            if (i > s.length()) {
-                do t.dispose();
-                do Error.set(1);  // EOS while scanning for quote
-                return null;
-            }
-        } else {
-            let i = Str.tkn(s, t, TKN_DLMS, i);
-        }
-
-        let argv = evalWord(t);
+        let i = Str.tkn(s, t, EQS, i);
+        let argv = Symbol.new(null, CMD, ASSGN);
+        do argv.append(evalName(t, 0));
         do t.dispose();
-
-        if (i < s.length()) {
-            if (s.charAt(i) = 61) {
-                let arg = Symbol.new(null, CMD, ASSGN);
-                do arg.append(argv);
-                let argv = arg;
-            }
-            do argv.append(eval(s, i+1));
-        }
+        do argv.append(evalWord(s, i+1));
 
         return argv;
     }
 
-    method Symbol evalWord(String s) {
-        var int i;
+    method Symbol evalName(String s, int i) {
+        return null;
+    }
+
+    method Symbol evalArgList(String s, int i) {
+        return null;
+    }
+
+    method Symbol evalWord(String s, int i) {
+        //var int i;
         var String t;
         var Symbol argv;
 
