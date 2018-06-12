@@ -315,10 +315,34 @@ class Canvas {
     }
 
     method String evalStringExpr(String s, int i) {
+        return format(t, i);
+    }
+
+    method String format(String s, int i) {
         var String t;
 
         let t = String.new(s.length());
-        do Str.block(s, t, null, 34, i+1);
+        let i = Str.block(s, t, null, 34, i+1);
+        /* todo: error check */
+        let i = -2;
+        while (i < t.length()) {
+            let i = Str.index(t, "%", i+2);
+            if ((i+1) < t.length()) {
+                
+                if (t.charAt(i+1) = 113) {
+                    do t.setCharAt(i, 34);
+                } else { if (t.charAt(i+1) = 112) {
+                    do t.setCharAt(i, 37);
+                } else {
+                    do Error.send("unrecognized format specifier");  // ##DB##
+                    do Error.set(1);
+                    do t.dispose();
+                    return null;
+                }}
+
+                do Str.shift(t, 1, i+1);
+            }
+        }
         return t;
     }
 

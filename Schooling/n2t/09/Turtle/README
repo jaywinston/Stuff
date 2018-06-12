@@ -12,23 +12,39 @@ name:
     namstart namend
 
 namstart:
-    any printable char except ' ' '=' '{' '}' '(' ')' '"' '+' '-' '*' '/' '%'
-                              '0' '1' '2' '3' '4' '5' '6' '7' '8' '9'
+    (?![ ={}()"+*/%[:digit:]-])[[:graph:]]
 
 namend:
     namchar
     namchar namend
 
 namchar:
-    any printable char except ' ' '=' '{' '}' '(' ')' '"' '+' '-' '*' '/' '%'
+    (?![ ={}()"+*/%-])[[:graph:]]
 
 word:
     expression
     block
 
 expression:
-    intexpr
     stringexpr
+    intexpr
+
+stringexpr:
+    '"' text '"'
+
+text:
+    textchar
+    textchar text
+
+textchar:
+    (?![%"])[[:graph:]]
+    formatseq
+
+formatseq:
+    '%' formatspec
+
+formatspec:
+    'p' 'q'
 
 intexpr:
     blockexpr
@@ -36,8 +52,9 @@ intexpr:
     addexpr op blockexpr
 
 blockexpr:
-    parenexpr
     block
+    block op intexpr
+    parenexpr
 
 parenexpr:
     parenatom
@@ -83,23 +100,6 @@ addop:
 
 mulop:
     '*' '/' '%'
-
-stringexpr:
-    '"' text '"'
-
-text:
-    textchar
-    textchar text
-
-textchar:
-    any printable char except '"' '%'
-    formatseq
-
-formatseq:
-    '%' formatspec
-
-formatspec:
-    '%' '"'
 
 arglist:
     word

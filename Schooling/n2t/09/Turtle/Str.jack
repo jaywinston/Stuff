@@ -48,6 +48,7 @@ class Str {
         }
 
         let s = String.new(_maxlen);
+        let t = null;
 
         let i = 0;
         while (i < fLen) {
@@ -64,19 +65,28 @@ class Str {
                 let c = f.charAt(i);
                 if (c = 100) {
                     let t = String.new(6);
+                    let tLen = t.length();
                     do t.setInt(arg);
                 } else { if (c = 115) {
                     let t = arg;
+                    let tLen = t.length();
                 } else { if (c = 37) {
                     if (i < _maxlen) {
                         do s.appendChar(c);
                     }
-                }}}
-                let tLen = t.length();  // dangerous!
-                let j = 0;
-                while (j < tLen) {
-                    do s.appendChar(t.charAt(j));
-                    let j = j + 1;
+                } else { if (c = 110) {
+                    if (i < _maxlen) {
+                        do s.appendChar(128);
+                    }
+                }}}}
+                if (~(t = null)) {
+                    let j = 0;
+                    while (j < tLen) {
+                        do s.appendChar(t.charAt(j));
+                        let j = j + 1;
+                    }
+                    do t.dispose();
+                    let t = null;
                 }
             } else {
                 do s.appendChar(c);
@@ -246,7 +256,7 @@ class Str {
         return i + 1;  // EOS while scanning for quote
     }
 
-    function void shift(String s, int off) {
+    function void shift(String s, int off, int whence) {
         var int i, sLen;
 
         let sLen = s.length();
@@ -255,7 +265,7 @@ class Str {
             return;
         }
 
-        let i = 0;
+        let i = whence;
         while (i < sLen) {
             if ( (i+off) < sLen ) {
                 do s.setCharAt(i, s.charAt(i+off));
