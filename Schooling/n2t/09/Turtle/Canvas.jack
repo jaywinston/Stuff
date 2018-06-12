@@ -162,8 +162,8 @@ class Canvas {
         let argv = eval(s, 0);
 
         if (argv = null) {
-            do Error.send("null argv"); // ## DB ##
-            do Error.set(1);  // null argv
+            //do Error.send("null argv"); // ## DB ##
+            //do Error.set(1);  // null argv
             return ps;
         }
 
@@ -240,7 +240,7 @@ class Canvas {
 
     method Symbol eval(String s, int i) {
         var char c;
-        //var int i;
+        var int j;
         var String t;
         var Symbol arg, argv;
 
@@ -249,10 +249,11 @@ class Canvas {
         }
 
         let i = Str.lskip(s, 32, i);
+        let j = Str.index(s, CL_DLMS, i);
 
-        if (s.charAt(Str.index(s, CL_DLMS, i)) = 61) {
+        if (j < s.length()) { if (s.charAt(j) = 61) {
             return evalAssgn(s, i);
-        }
+        }}
 
         return evalArgList(s, i);
     }
@@ -284,7 +285,6 @@ class Canvas {
 */
 
     method Symbol evalWord(String s, int i) {
-        //var int i;
         var String t;
         var Symbol argv;
 
@@ -306,11 +306,18 @@ class Canvas {
     }
 
     method Symbol evalExpression(String s, int i) {
+        var char c;
 
-        if (s.charAt(i) = 34) {
+        let c = s.charAt(i);
+
+        if (c = 34) {
             return Symbol.new(null, STR, evalStringExpr(s, i));
         }
 
+        if ( (((c|32)>96) & ((c|32)<123))
+                & (Str.index(s, EXP_DLMS, i)=s.length()) ) {
+            return evalSymbolExpr(s);
+        }
         return Symbol.new(null, INT, evalIntExpr(s, i));
     }
 
@@ -341,9 +348,21 @@ class Canvas {
                 }}
 
                 do Str.shift(t, 1, i+1);
-            }
+            }  // todo: error no fspec
         }
         return t;
+    }
+
+    method Symbol evalSymbolExpr(String s) {
+        var Symbol p;
+
+        let p = symtab.lookup(s);
+        if (p = null) {
+            do Error.send("undefined symbol");  // ##DB##
+            do Error.set(1);
+            return null;
+        }
+        return Symbol.new(null, p.type(), p.value());
     }
 
     method int evalIntExpr(String s, int i) {
@@ -359,13 +378,11 @@ class Canvas {
             return evalBlockExpr(s, i);
         }
 
+        let n = evalAddExpr(t, 0);
+
         if (i < s.length()) {
             do t.eraseLastChar();  /* kill op */
-            let n = operate(evalAddExpr(t, 0),
-                            evalBlockExpr(s, i),
-                            s.charAt(i-1));  /* op */
-        } else {
-            let n = evalAddExpr(t, 0);
+            let n = operate(n, evalBlockExpr(s, i), s.charAt(i-1));
         }
 
         do t.dispose();
@@ -374,11 +391,51 @@ class Canvas {
     }
 
     method int evalBlockExpr(String s, int i) {
-        return 0;
+        var int n;
+        var String t;
+
+        if (s.charAt(i) = 40) {
+            let t = String.new(s.length());
+            let i = Str.block(s, t, 40, 41, i+1);
+            let n = evalIntExpr(t, 0);
+            if (i < s.length()) {
+                let n = operate(n, evalIntExpr(s, i+1), s.charAt(i));
+            }
+        }
+        do t.dispose();
+        return n;
     }
 
     method int evalAddExpr(String s, int i) {
-        return 0;
+        var int n;
+        var String t;
+
+        let t = String.new(s.length());
+        let i = Str.tkn(s, t, ADDS, i);
+        let n = evalMulExpr(t, 0);
+        if (i < s.length()) {
+            let n = operate(n, evalAddExpr(s, i+1), s.charAt(i));
+        }
+        do t.dispose();
+        return n;
+    }
+
+    method int evalMulExpr(String s, int i) {
+        var int n;
+        var String t;
+
+        let t = String.new(s.length());
+        let i = Str.tkn(s, t, MULS, i);
+        let n = evalAtom(t);
+        if (i < s.length()) {
+            let n = operate(n, evalMulExpr(s, i+1), s.charAt(i));
+        }
+        do t.dispose();
+        return n;
+    }
+
+    method int evalAtom(String s) {
+        return s.intValue();
     }
 
     method int operate(int m, int n, char op) {
