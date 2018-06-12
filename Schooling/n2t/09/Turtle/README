@@ -27,8 +27,21 @@ word:
     block
 
 expression:
-    addexpr
+    intexpr
     stringexpr
+
+intexpr:
+    blockexpr
+    addexpr
+    addexpr op blockexpr
+
+blockexpr:
+    parenexpr
+    block
+
+parenexpr:
+    parenatom
+    parenatom op intexpr
 
 addexpr:
     mulexpr
@@ -61,11 +74,15 @@ cmdlist:
     cmdlin
     cmdlin 'newline' cmdlist
 
-mulop:
-    '*' '/' '%'
+op:
+    addop
+    mulop
 
 addop:
     '+' '-'
+
+mulop:
+    '*' '/' '%'
 
 stringexpr:
     '"' text '"'

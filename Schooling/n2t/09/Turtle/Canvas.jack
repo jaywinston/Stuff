@@ -5,7 +5,7 @@ class Canvas {
     field int repeat;
     field Symbol PS1, PS2, ps;
     field String TKN_DLMS, EXP_DLMS;
-    field String ADDS, BLANKS, EQS, MULS;
+    field String ADDS, BLANKS, EQS, MULS, RBLOCKS;
     field String CL_DLMS;
     field String fName;
     field TextBox tb;
@@ -61,6 +61,7 @@ class Canvas {
         let EXP_DLMS = "+-*/%";
         let BLANKS = " ";
         let EQS = "=";
+        let RBLOCKS = "({";
         let CL_DLMS = String.new(5);
         do CL_DLMS.appendChar(32);
         do CL_DLMS.appendChar(34);
@@ -243,10 +244,6 @@ class Canvas {
         var String t;
         var Symbol arg, argv;
 
-        if (s = null) {
-            return null;
-        }
-
         if ( (s.length()=0) | (s.length()=i) ) {
             return null;
         }
@@ -264,23 +261,27 @@ class Canvas {
         var String t;
         var Symbol argv;
 
+        if (s.charAt(i) = 61) {
+            do Error.send("no name in assignment");  // ## DB ##
+            do Error.set(1);
+            return null;
+        }
+
         let t = String.new(s.length());
         let i = Str.tkn(s, t, EQS, i);
         let argv = Symbol.new(null, CMD, ASSGN);
-        do argv.append(evalName(t, 0));
+        do argv.append(Symbol.new(t, null, null)); //evalName(t, 0));
         do t.dispose();
         do argv.append(evalWord(s, i+1));
 
         return argv;
     }
 
+/*
     method Symbol evalName(String s, int i) {
         return null;
     }
-
-    method Symbol evalArgList(String s, int i) {
-        return null;
-    }
+*/
 
     method Symbol evalWord(String s, int i) {
         //var int i;
@@ -291,130 +292,69 @@ class Canvas {
             return null;
         }
 
-        if (s.charAt(0) = 34) {
-            return evalString(s);
+        let i = Str.lskip(s, 32, i);
+
+        if (s.charAt(i) = 123) {
+            return evalBlock(s, i);
         }
 
-        return evalExpression(s);
+        return evalExpression(s, i);
     }
 
-    method Symbol evalString(String s) {
-        do s.eraseLastChar();
-        do Str.shift(s, 1);
-        return Symbol.new(null, STR, Str.dup(s));
+    method Symbol evalBlock(String s, int i) {
+        return null;
     }
 
-    method Symbol evalExpression(String s) {
+    method Symbol evalExpression(String s, int i) {
 
-        if (Str.index(s, EXP_DLMS, 0) = s.length()) {
-            return evalAtom(s);
+        if (s.charAt(i) = 34) {
+            return Symbol.new(null, STR, evalStringExpr(s, i));
         }
 
-        return Symbol.new(null, INT, evalInt(s, 0));
+        return Symbol.new(null, INT, evalIntExpr(s, i));
     }
 
-    method int evalAtom(String s) {
-        var char c;
-        var Symbol p;
-
-        if (s = null) {
-            do Error.set(1);  // null atom
-            return 0;
-        }
-
-        if (s.length() = 0) {
-            do Error.set(1);  // empty atom
-            return 0;
-        }
-
-        let c = s.charAt(0);
-
-        if ( (c>47) & (c<58) ) {
-            if (Str.isInt(s)) {
-                return Symbol.new(null, INT, String.intValue(s));
-            }
-            do Error.set(1);  // malformed int
-            return 0;
-        }
-
-        let p = symtab.lookup(s);
-
-        if (p = null) {
-            return Symbol.new(s, NULL, NULL);
-        }
-
-        if ( (p.type()=STR) | (p.type()=CMDLIN) ) {
-            return Symbol.new(s, p.type(), Str.dup(p.value()));
-        }
-
-        return Symbol.new(s, p.type(), p.value());
-    }
-
-    method int evalInt(String s, int i) {
-        var char op;
-        var int n, len;
+    method String evalStringExpr(String s, int i) {
         var String t;
 
-        let len = s.length();
-
-        let t = String.new(len);
-
-        if (s.charAt(i) = 40) {
-            let i = Str.block(s, t, 40, 41, i+1);
-            if (i > len) {
-                do Error.set(1);  // unbalanced parens
-                return i;
-            }
-            let n = evalInt(t, 0);
-        } else {
-            let i = Str.tkn(s, t, EXP_DLMS, i);
-            let n = intExpr(t);
-        }
-
-        do t.dispose();
-
-        if (i = len) {
-            return n;
-        }
-
-        if ( (i+1) = len ) {
-            do Error.set(1);  // operator at EOS
-            return i;
-        }
-
-        let op = s.charAt(i);
-            
-        if ( (s.charAt(i+1)=40) | ((op=43) | (op=45)) ) {  // '(' '+' '-'
-            return operate(n, evalInt(s, i+1), op);
-        }
-
-        let t = String.new(len);
-        let i = Str.tkn(s, t, EXP_DLMS, i+1);
-        let n = operate(n, intExpr(t), op);
-
-        do t.dispose();
-
-        if (i = len) {
-            return n;
-        }
-
-        return operate(n, evalInt(s, i+1), s.charAt(i));
+        let t = String.new(s.length());
+        do Str.block(s, t, null, 34, i+1);
+        return t;
     }
 
-    method int intExpr(String s) {
+    method int evalIntExpr(String s, int i) {
         var int n;
-        var Symbol p;
+        var String t;
 
-        let p = evalAtom(s);
+        let t = String.new(s.length());
 
-        if (~(p.type() = INT)) {
-            do Error.set(1);  // not an int
+        let i = Str.tkn(s, t, RBLOCKS, i);
+
+        if (t.length() = 0) {
+            do t.dispose();
+            return evalBlockExpr(s, i);
         }
 
-        let n = p.value();
-        do p.dispose();
+        if (i < s.length()) {
+            do t.eraseLastChar();  /* kill op */
+            let n = operate(evalAddExpr(t, 0),
+                            evalBlockExpr(s, i),
+                            s.charAt(i-1));  /* op */
+        } else {
+            let n = evalAddExpr(t, 0);
+        }
+
+        do t.dispose();
 
         return n;
+    }
+
+    method int evalBlockExpr(String s, int i) {
+        return 0;
+    }
+
+    method int evalAddExpr(String s, int i) {
+        return 0;
     }
 
     method int operate(int m, int n, char op) {
@@ -423,8 +363,13 @@ class Canvas {
         if (op = 42) { return m * n; }
         if (op = 47) { return m / n; }
         if (op = 37) { return lib.mod(m, n); }
-        do Error.set(1);  // unrecognized operator
+        do Error.send("unrecognized operator");  // ## DB ##
+        do Error.set(1);
         return 0;
+    }
+
+    method Symbol evalArgList(String s, int i) {
+        return null;
     }
 
     method void doAssign(Symbol arg) {
