@@ -1,5 +1,6 @@
 class Console {
 
+    field int STR;
     field Terminal term;
     field Canvas canvas;
 
@@ -14,10 +15,11 @@ class Console {
         do Output.printString(banner);
         do banner.dispose();
 
+        let STR = Const.STR();
         let term = Terminal.new(2, 1, 20, 30);
         let canvas = Canvas.new(2, 32, 20, 31, ">", "|");
 
-        do try(canvas.exec(nulls));
+        do try(null);
         do nulls.dispose();
 
         return this;
@@ -30,11 +32,37 @@ class Console {
         return;
     }
 
-    method void try(Symbol s) {
+    method void try(Symbol retVal) {
+
         while (Error.isSet()) {
             do term.echo(Error.message());
         }
-        do term.print(s.value());
+
+        if (~(retVal = null)) {
+            do echo(retVal);
+        }
+
+        do term.print(canvas.ready(retVal));
+
+        return;
+    }
+
+    method void echo(Symbol sym) {
+        if (sym.type() = STR) {
+            do term.echo(sym.value());
+        } else {
+            do echoInt(sym);
+        }
+        return;
+    }
+
+    method void echoInt(Symbol sym) {
+        var String s;
+
+        let s = String.new(5);
+        do s.setInt(sym.value());
+        do term.echo(s);
+        do s.dispose();
         return;
     }
 

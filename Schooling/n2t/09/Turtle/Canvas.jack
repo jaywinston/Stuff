@@ -3,7 +3,7 @@ class Canvas {
     field int bottom, left, right, top;
     field int braces;
     field int repeat;
-    field Symbol PS1, PS2, ps;
+    field String PS1, PS2, ps;
     field String TKN_DLMS, EXP_DLMS;
     field String ADDS, BLANKS, EQS, MULS, RBLOCKS;
     field String CL_DLMS;
@@ -53,10 +53,9 @@ class Canvas {
         let braces = 0;
         let repeat = 1;
         let fName = null;
-        let PS1 = Symbol.new(null, STR, ps1);
-        let PS2 = Symbol.new(null, STR, ps2);
+        let PS1 = ps1;
+        let PS2 = ps2;
         let ps = PS1;
-        let tb = TextBox.new(i, j, h, w);
         let TKN_DLMS = " =";
         let EXP_DLMS = "+-*/%";
         let BLANKS = " ";
@@ -70,6 +69,8 @@ class Canvas {
         do CL_DLMS.appendChar(123);
         let ADDS = "+-";
         let MULS = "*/%";
+
+        let tb = TextBox.new(i, j, h, w);
         let t = newTurtle();
 
         return this;
@@ -146,31 +147,38 @@ class Canvas {
                            90);
     }
 
+    method Symbol ready(Symbol p) {
+        if (~(p = null)) {
+            do Canvas.clearSym(p);
+        }
+        return ps;
+    }
+
     /* execute a command line */
     method Symbol exec(String s) {
         var int cmd;
         var Symbol argv;
 
         if (s = null) {
-            return ps;
+            return null;
         }
 
         if (s.length() = 0) {
-            return ps;
+            return null;
         }
 
         let argv = eval(s, 0);
 
         if (argv = null) {
-            //do Error.send("null argv"); // ## DB ##
+            //do Error.send("null argv"); // ##DB##
             //do Error.set(1);  // null argv
-            return ps;
+            return null;
         }
 
         if (argv.type() = NULL) {
-            do Error.send("unrecognized token"); // ## DB ##
+            do Error.send("unrecognized token"); // ##DB##
             do Error.set(1);  // unrecognized token
-            return ps;
+            return null;
         }
 
         if (argv.type() = CMD) {
@@ -201,7 +209,7 @@ class Canvas {
 
         do Canvas.clearSym(argv);
 
-        return ps;
+        return null;
     }
 
     method void call(Symbol argv) {
@@ -262,7 +270,7 @@ class Canvas {
         var Symbol argv;
 
         if (s.charAt(i) = 61) {
-            do Error.send("no name in assignment");  // ## DB ##
+            do Error.send("no name in assignment");  // ##DB##
             do Error.set(1);
             return null;
         }
@@ -328,8 +336,8 @@ class Canvas {
         var String t;
 
         let t = String.new(s.length());
-        let i = Str.block(s, t, null, 34, i+1);
-        /* todo: error check */
+        let i = Str.quotes(s, t, i);
+        /* todo: error not EOS check */
         let i = -2;
         while (i < t.length()) {
             let i = Str.index(t, "%", i+2);
@@ -443,13 +451,23 @@ class Canvas {
         if (op = 42) { return m * n; }
         if (op = 47) { return m / n; }
         if (op = 37) { return lib.mod(m, n); }
-        do Error.send("unrecognized operator");  // ## DB ##
+        do Error.send("unrecognized operator");  // ##DB##
         do Error.set(1);
         return 0;
     }
 
     method Symbol evalArgList(String s, int i) {
-        return null;
+        var String t;
+        var Symbol argv;
+
+        let t = String.new(s.length());
+        let i = Str.lskip(s, 32, i);
+        let i = Str.tkn(s, t, CL_DLMS, i);
+        let argv = evalWord(t, 0);
+        if (i < s.length()) {
+            do argv.append(evalArgList(s, i+1));
+        }
+        return argv;
     }
 
     method void doAssign(Symbol arg) {
