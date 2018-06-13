@@ -242,7 +242,6 @@ class Canvas {
         var char c;
         var int j;
         var String t;
-        var Symbol arg, argv;
 
         if ( (s.length()=0) | (s.length()=i) ) {
             return null;
@@ -273,7 +272,7 @@ class Canvas {
         let argv = Symbol.new(null, CMD, ASSGN);
         do argv.append(Symbol.new(t, null, null)); //evalName(t, 0));
         do t.dispose();
-        do argv.append(evalWord(s, i+1));
+        do argv.append(evalArgList(s, i+1));  // arglist for error check later
 
         return argv;
     }
