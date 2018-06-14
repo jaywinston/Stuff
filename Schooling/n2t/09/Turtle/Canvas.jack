@@ -5,7 +5,7 @@ class Canvas {
     field int repeat;
     field String PS1, PS2, ps;
     field String TKN_DLMS, EXP_DLMS;
-    field String ADDS, BLANKS, EQS, MULS, RBLOCKS, EQOPS, LOGOPS;
+    field String ADDS, BLANKS, EQS, MULS, RBLOCKS, EQOPS, LOGOPS, PERCENTS;
     field String CL_DLMS;
     field String fName;
     field TextBox tb;
@@ -61,6 +61,7 @@ class Canvas {
         let BLANKS = " ";
         let EQS = "=";
         let RBLOCKS = "({";
+        let PERCENTS = "%";
         let LOGOPS = "&|";
         let EQOPS = "=!<>";
         let CL_DLMS = String.new(5);
@@ -258,20 +259,21 @@ class Canvas {
         let i = Str.lskip(s, 32, i);
         let j = Str.index(s, CL_DLMS, i);
 
-        if (j < s.length()) {
+        if ( (j+1) < s.length()) {
             if (s.charAt(j) = 61) {
-                    if (j = 0) {
-                        do Error.send("equal at index 0");  // ##DB##
-                        do Error.set(1);
-                        return null;
-                    }
-                    if ( ~( (s.charAt(j-1)=60)
-                         | ((s.charAt(j+1)=61)
-                         | (s.charAt(j-1)=62))) ) {
-                        return evalAssgn(s, i);
-                    }
+                if (j = 0) {
+                    do Error.send("equal at index 0");  // ##DB##
+                    do Error.set(1);
+                    return null;
+                }
+                if ( ~( ((s.charAt(j-1)=33)
+                      |  (s.charAt(j-1)=60))
+                      | ((s.charAt(j+1)=61)
+                      |  (s.charAt(j-1)=62)) ) ) {
+                    return evalAssgn(s, i);
+                }
             }
-        }
+        } /* todo: cldlm at EOS */
 
         return evalArgList(s, i);
     }
@@ -289,19 +291,49 @@ class Canvas {
         let t = String.new(s.length());
         let i = Str.tkn(s, t, EQS, i);
         let argv = Symbol.new(null, CMD, ASSGN);
-        do argv.append(evalName(t, 0));
+        do argv.append(evalName(t));
         do t.dispose();
         do argv.append(evalArgList(s, i+1));  // arglist for error check later
 
         return argv;
     }
 
-    method Symbol evalName(String s, int i) {
+    method Symbol evalName(String s) {
         /* todo: this */
         return Symbol.new(s, null, null);
     }
 
-    method Symbol evalWord(String s, int i) {
+    method Symbol evalArgList(String s, int i) {
+        var String t;
+        var Symbol argv;
+
+        let t = String.new(s.length());
+        let i = Str.lskip(s, 32, i);
+
+        if (i = s.length()) {
+            return null;
+        }
+
+        if (s.charAt(i) = 34) {
+            let i = Str.quotes(s, t, i);
+        } else { if (s.charAt(i) = 123) {
+            let i = Str.block(s, t, 123, 125, i);
+        } else {
+            let i = Str.tkn(s, t, BLANKS, i);
+        }}
+
+        let argv = evalWord(t);
+        do t.dispose();
+
+        if (i < s.length()) {
+            do argv.append(evalArgList(s, i+1));
+        }
+
+        return argv;
+    }
+
+    method Symbol evalWord(String s) {
+        var int i;
         var String t;
         var Symbol argv;
 
@@ -309,50 +341,51 @@ class Canvas {
             return null;
         }
 
-        let i = Str.lskip(s, 32, i);
+        //let i = Str.lskip(s, 32, 0);
 
-        if (s.charAt(i) = 123) {
+        if (s.charAt(0) = 123) {
             return evalBlock(s, i);
         }
 
-        return evalExpression(s, i);
+        return evalExpression(s);
     }
 
     method Symbol evalBlock(String s, int i) {
         return null;
     }
 
-    method Symbol evalExpression(String s, int i) {
+    method Symbol evalExpression(String s) {
         var char c;
 
-        let c = s.charAt(i);
+        let c = s.charAt(0);
 
         if (c = 34) {
-            return Symbol.new(null, STR, evalStringExpr(s, i));
+            return Symbol.new(null, STR, evalStringExpr(s));
         }
 
         if ( (((c|32)>96) & ((c|32)<123))
-                & (Str.index(s, EXP_DLMS, i)=s.length()) ) {
+                & (Str.index(s, EXP_DLMS, 0)=s.length()) ) {
             return evalSymbolExpr(s);
         }
 
-        return Symbol.new(null, INT, evalIntExpr(s, i));
+        return Symbol.new(null, INT, evalIntExpr(s, 0));
     }
 
-    method String evalStringExpr(String s, int i) {
+    method String evalStringExpr(String s) {
         do s.eraseLastChar();
         do Str.shift(s, 1, 0);
-        return format(s, i);
+        return Str.dup(format(s));
     }
 
-    method String format(String s, int i) {
+    method String format(String s) {
+        var int i;
 
         let i = -2;
 
         while (i < s.length()) {
 
-            let i = Str.index(s, "%", i+2);
-                
+            let i = Str.index(s, PERCENTS, i+2);
+
             if ((i+1) < s.length()) {
                 if (s.charAt(i+1) = 81) {
                     do s.setCharAt(i, 34);
@@ -392,19 +425,35 @@ class Canvas {
         var String t;
 
         let t = String.new(s.length());
-
         let i = Str.tkn(s, t, RBLOCKS, i);
 
         if (t.length() = 0) {
-            do t.dispose();
-            return evalBlockExpr(s, i);
-        }
-
-        let n = evalLogicExpr(t, 0);
-
-        if (i < s.length()) {
-            do t.eraseLastChar();  /* kill op */
-            let n = operate(n, evalBlockExpr(s, i), s.charAt(i-1));
+            if (s.charAt(i) = 40) {
+                let i = Str.block(s, t, 40, 41, i);
+                if (i > s.length()) {
+                    do t.dispose();
+                    do Error.send("unclosed parnetheses");  // ##DB##
+                    do Error.set(1);
+                    return 0;
+                }
+            } else { if (s.charAt(i) = 123) {
+                let i = Str.block(s, t, 123, 125, i);
+                if (i > s.length()) {
+                    /* todo: build block */
+                }
+            }}
+            let n = evalBlockExpr(t);
+            if (i < s.length()) {
+                let n = operate(n, evalIntExpr(s, i+1), s.charAt(i));
+            }
+        } else {
+            if (i < s.length()) {
+                do t.eraseLastChar();  /* kill op */
+                let n = operate(evalLogicExpr(t, 0), evalIntExpr(s, i),
+                                s.charAt(i-1));
+            } else {
+                let n = evalLogicExpr(t, 0);
+            }
         }
 
         do t.dispose();
@@ -412,19 +461,16 @@ class Canvas {
         return n;
     }
 
-    method int evalBlockExpr(String s, int i) {
+    method int evalBlockExpr(String s) {
         var int n;
         var String t;
 
-        if (s.charAt(i) = 40) {
-            let t = String.new(s.length());
-            let i = Str.block(s, t, 40, 41, i+1);
-            let n = evalIntExpr(t, 0);
-            if (i < s.length()) {
-                let n = operate(n, evalIntExpr(s, i+1), s.charAt(i));
-            }
+        if (s.charAt(0) = 40) {
+            do s.eraseLastChar();
+            do Str.shift(s, 1, 0);
+            return evalIntExpr(s, 0);
         }
-        do t.dispose();
+
         return n;
     }
 
@@ -482,7 +528,7 @@ class Canvas {
 
         let t = String.new(s.length());
         let i = Str.tkn(s, t, MULS, i);
-        let n = evalAtom(t);
+        let n = evalTerm(t);
         if (i < s.length()) {
             let n = operate(n, evalMulExpr(s, i+1), s.charAt(i));
         }
@@ -490,7 +536,7 @@ class Canvas {
         return n;
     }
 
-    method int evalAtom(String s) {
+    method int evalTerm(String s) {
         var Symbol p;
 
         if ( (s.charAt(0)>47) & (s.charAt(0)<58) ) {
@@ -523,46 +569,16 @@ class Canvas {
         if (op =  47) { return m / n; }
         if (op =  37) { return lib.mod(m, n); }
 
-        if (op = 261) { return  m = n; }
-        if (op = 233) { return ~(m=n); }
-        if (op =  60) { return  m < n; }
-        if (op =  62) { return  m > n; }
+        if (op = 261) { return   m = n;  }
+        if (op = 233) { return ~(m = n); }
+        if (op =  60) { return   m < n;  }
+        if (op =  62) { return   m > n;  }
         if (op = 260) { return  (m=n) | (m<n); }
         if (op = 262) { return  (m=n) | (m>n); }
 
         do Error.send("unrecognized operator");  // ##DB##
         do Error.set(1);
         return 0;
-    }
-
-    method Symbol evalArgList(String s, int i) {
-        var String t;
-        var Symbol argv;
-
-        let t = String.new(s.length());
-        let i = Str.lskip(s, 32, i);
-
-        if (i = s.length()) {
-            return null;
-        }
-
-        if (s.charAt(i) = 34) {
-            let i = Str.quotes(s, t, i);
-        } else { if (s.charAt(i) = 123) {
-            let i = Str.block(s, t, 123, 125, i);
-        } else {
-            let i = Str.tkn(s, t, BLANKS, i);
-        }}
-
-        let argv = evalWord(t, 0);
-
-        if (i < s.length()) {
-            do argv.append(evalArgList(s, i));
-        }
-
-        do t.dispose();
-
-        return argv;
     }
 
     method void doAssign(Symbol arg) {
@@ -585,7 +601,7 @@ class Canvas {
             return;
         }
 
-        if  (p.type()=STR) {
+        if (p.type() = STR) {
             do symtab.install(arg.name(), p.type(), Str.dup(p.value()));
         } else {
             do symtab.install(arg.name(), p.type(), p.value());

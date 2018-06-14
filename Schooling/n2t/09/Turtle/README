@@ -44,12 +44,13 @@ formatseq:
     '%' formatspec
 
 formatspec:
-    'p' 'q'
+    'N' 'P' 'Q'
 
 intexpr:
     blockexpr
-    addexpr
-    addexpr op blockexpr
+    logicexpr
+    logicexpr op intexpr 
+    blockexpr op intexpr 
 
 blockexpr:
     block

@@ -1,6 +1,6 @@
 class Console {
 
-    field int STR;
+    field int STR, SYM;
     field Terminal term;
     field Canvas canvas;
 
@@ -16,6 +16,7 @@ class Console {
         do banner.dispose();
 
         let STR = Const.STR();
+        let SYM = Const.SYM();
         let term = Terminal.new(2, 1, 20, 30);
         let canvas = Canvas.new(2, 32, 20, 31, ">", "|");
 
@@ -48,10 +49,15 @@ class Console {
     }
 
     method void echo(Symbol sym) {
-        if (sym.type() = STR) {
-            do term.echo(sym.value());
-        } else {
-            do echoInt(sym);
+        while (~(sym = null)) {
+            if (sym.type() = STR) {
+                do term.echo(sym.value());
+            } else { if (sym.type() = SYM) {
+                do echo(sym.value());
+            } else {
+                do echoInt(sym);
+            }}
+            let sym = sym.next();
         }
         return;
     }
