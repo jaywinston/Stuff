@@ -97,13 +97,16 @@ class Str {
         return s;
     }
 
-    function String cat(String s, String t) {
-        var String new;
+    function int cat(String s, String t) {
+        var int i;
 
-        let new = String.new(s.length() + t.length());
-        do Str.cpy(s, new);
-        do Str.cpy(t, new);
-        return new;
+        let i = 0;
+        while (i < t.length()) {
+            do s.appendChar(t.charAt(i));
+            let i = i + 1;
+        }
+
+        return i + s.length();
     }
 
     function void truncate(String s) {
