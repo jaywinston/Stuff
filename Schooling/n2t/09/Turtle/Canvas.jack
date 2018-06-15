@@ -97,24 +97,6 @@ class Canvas {
         let TURNRIGHT = Const.TURNRIGHT();
         let QUIT      = Const.QUIT();
 
-        do installKW("{",         CMD, BLOCK);
-        do installKW("CLEAR",     CMD, CLEAR);
-        do installKW("FORWARD",   CMD, FORWARD);
-        do installKW("FUNCTION",  CMD, FUNCTION);
-        do installKW("PENDOWN",   CMD, PENDOWN);
-        do installKW("PENUP",     CMD, PENUP);
-        do installKW("PRINT",     CMD, PRINT);
-        do installKW("REPEAT",    CMD, REPEAT);
-        do installKW("TURNLEFT",  CMD, TURNLEFT);
-        do installKW("TURNRIGHT", CMD, TURNRIGHT);
-        do installKW("QUIT",      CMD, QUIT);
-
-        return;
-    }
-
-    method void installKW(String name, int type, int val) {
-        do symtab.install(name, type, val);
-        do name.dispose();
         return;
     }
 
@@ -254,9 +236,9 @@ class Canvas {
         }
 
         if (p.type() = STR) {
-            do symtab.install(arg.name(), p.type(), Str.dup(p.value()));
+            do Eval.install(arg.name(), p.type(), Str.dup(p.value()));
         } else {
-            do symtab.install(arg.name(), p.type(), p.value());
+            do Eval.install(arg.name(), p.type(), p.value());
         }
 
         return;

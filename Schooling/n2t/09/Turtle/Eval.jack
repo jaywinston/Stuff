@@ -26,6 +26,24 @@ class Eval {
         let ADDS = "+-";
         let MULS = "*/%";
         let symtab = HashTable.new();
+        do Eval.installKW("{",         CMD, Const.BLOCK());
+        do Eval.installKW("CLEAR",     CMD, Const.CLEAR());
+        do Eval.installKW("FORWARD",   CMD, Const.FORWARD());
+        do Eval.installKW("FUNCTION",  CMD, Const.FUNCTION());
+        do Eval.installKW("PENDOWN",   CMD, Const.PENDOWN());
+        do Eval.installKW("PENUP",     CMD, Const.PENUP());
+        do Eval.installKW("PRINT",     CMD, Const.PRINT());
+        do Eval.installKW("REPEAT",    CMD, Const.REPEAT());
+        do Eval.installKW("TURNLEFT",  CMD, Const.TURNLEFT());
+        do Eval.installKW("TURNRIGHT", CMD, Const.TURNRIGHT());
+        do Eval.installKW("QUIT",      CMD, Const.QUIT());
+
+        return;
+    }
+
+    function void installKW(String name, int type, int val) {
+        do symtab.install(name, type, val);
+        do name.dispose();
         return;
     }
 
@@ -363,4 +381,8 @@ class Eval {
         return 0;
     }
 
+    function void install(String name, int type, int value) {
+        do symtab.install(name, type, value);
+        return;
+    }
 }
