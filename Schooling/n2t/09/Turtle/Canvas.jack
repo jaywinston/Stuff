@@ -585,6 +585,7 @@ class Canvas {
         var Symbol p;
 
         if (arg = null) {
+            do Error.send("no name in assignment");  // ##DB##
             do Error.set(1);  // no symbol name
             return;
         }
@@ -592,11 +593,13 @@ class Canvas {
         let p = arg.next();
 
         if (p = null) {
+            do Error.send("no value in assignment");  // ##DB##
             do Error.set(1);  // no value to assign
             return;
         }
 
         if (~(p.next() = null)) {
+            do Error.send("unexpected token in assignment");  // ##DB##
             do Error.set(1);  // unexpected token
             return;
         }

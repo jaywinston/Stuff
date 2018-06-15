@@ -60,7 +60,7 @@ class Symbol {
 
     method void append(Symbol o) {
         if (~(o = null)) {
-            do o.setNext(end.next());
+            do o.append(end.next());
             do end.setNext(o);
             let end = o;
         }
