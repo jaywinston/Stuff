@@ -6,6 +6,7 @@ class Main {
         do Const.init();
         do lib.init();
         do Str.init();
+        do Eval.init();
         do Error.init(Main.errTab(), 2);
         do Vector.init();
 
