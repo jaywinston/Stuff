@@ -27,7 +27,8 @@ word:
 
 expression:
     stringexpr
-    intexpr
+    name
+    logicexpr
 
 stringexpr:
     '"' text '"'
@@ -46,20 +47,13 @@ formatseq:
 formatspec:
     'N' 'P' 'Q'
 
-intexpr:
-    blockexpr
-    logicexpr
-    logicexpr op intexpr 
-    blockexpr op intexpr 
+logicexpr:
+    equality
+    equality logop logicexpr
 
-blockexpr:
-    block
-    block op intexpr
-    parenexpr
-
-parenexpr:
-    parenatom
-    parenatom op intexpr
+equalityexpr:
+    addexpr
+    addexpr eqop equality
 
 addexpr:
     mulexpr
@@ -83,7 +77,7 @@ intchar:
     [[:digit:]]
 
 parenatom:
-    '(' addexpr ')
+    '(' logicexpr ')
 
 block:
     '{' cmdlist '}
@@ -92,9 +86,11 @@ cmdlist:
     cmdlin
     cmdlin 'newline' cmdlist
 
-op:
-    addop
-    mulop
+logop:
+    '&' '|'
+
+eqop:
+    '==' '!=' '<' '>' '<=' '>='
 
 addop:
     '+' '-'

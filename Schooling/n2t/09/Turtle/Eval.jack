@@ -2,7 +2,8 @@ class Eval {
 
     static int CMD, ASSGN, INT, STR;
     static String TKN_DLMS, EXP_DLMS;
-    static String ADDS, BLANKS, EQS, MULS, RBLOCKS, EQOPS, LOGOPS, PERCENTS;
+    static String ADDOPS, BLANKS, EQS, MULOPS, RBLOCKS, EQOPS, LOGOPS, PERCENTS;
+    static String ADDBLKS, MULBLKS, EQBLKS, LOGBLKS;
     static String CL_DLMS;
     static HashTable symtab;
 
@@ -19,12 +20,16 @@ class Eval {
         let PERCENTS = "%";
         let LOGOPS = "&|";
         let EQOPS = "=!<>";
+        let ADDOPS = "+-";
+        let MULOPS = "*/%";
+        let LOGBLKS = "&|({";
+        let EQBLKS = "=!<>({";
+        let ADDBLKS = "+-({";
+        let MULBLKS = "*/%({";
         let CL_DLMS = String.new(5);
         do CL_DLMS.appendChar(34);
         do Str.cat(CL_DLMS, TKN_DLMS);
         do Str.cat(CL_DLMS, RBLOCKS);
-        let ADDS = "+-";
-        let MULS = "*/%";
         let symtab = HashTable.new();
         do Eval.installKW("{",         CMD, Const.BLOCK());
         do Eval.installKW("CLEAR",     CMD, Const.CLEAR());
@@ -47,6 +52,7 @@ class Eval {
         return;
     }
 
+//do DB.db(s);
     function Symbol eval(String s) {
         var char c;
         var int i, j;
@@ -70,15 +76,15 @@ class Eval {
                       |  (s.charAt(j-1)=60))
                       | ((s.charAt(j+1)=61)
                       |  (s.charAt(j-1)=62)) ) ) {
-                    return Eval.evalAssgn(s, i);
+                    return Eval.Assgn(s, i);
                 }
             }
         } /* todo: cldlm at EOS */
 
-        return Eval.evalArgList(s, i);
+        return Eval.ArgList(s, i);
     }
 
-    function Symbol evalAssgn(String s, int i) {
+    function Symbol Assgn(String s, int i) {
         var String t;
         var Symbol argv;
 
@@ -91,19 +97,19 @@ class Eval {
         let t = String.new(s.length());
         let i = Str.tkn(s, t, EQS, i);
         let argv = Symbol.new(null, CMD, ASSGN);
-        do argv.append(Eval.evalName(t));
+        do argv.append(Eval.Name(t));
         do t.dispose();
-        do argv.append(Eval.evalArgList(s, i+1));  // arglist for error check
+        do argv.append(Eval.ArgList(s, i+1));  // arglist for error check
 
         return argv;
     }
 
-    function Symbol evalName(String s) {
+    function Symbol Name(String s) {
         /* todo: this */
         return Symbol.new(s, null, null);
     }
 
-    function Symbol evalArgList(String s, int i) {
+    function Symbol ArgList(String s, int i) {
         var String t;
         var Symbol argv;
 
@@ -122,17 +128,17 @@ class Eval {
             let i = Str.tkn(s, t, BLANKS, i);
         }}
 
-        let argv = Eval.evalWord(t);
+        let argv = Eval.Word(t);
         do t.dispose();
 
         if (i < s.length()) {
-            do argv.append(Eval.evalArgList(s, i+1));
+            do argv.append(Eval.ArgList(s, i+1));
         }
 
         return argv;
     }
 
-    function Symbol evalWord(String s) {
+    function Symbol Word(String s) {
         var int i;
         var String t;
         var Symbol argv;
@@ -141,37 +147,35 @@ class Eval {
             return null;
         }
 
-        //let i = Str.lskip(s, 32, 0);
-
         if (s.charAt(0) = 123) {
-            return Eval.evalBlock(s, i);
+            return Eval.Block(s, i);
         }
 
-        return Eval.evalExpression(s);
+        return Eval.Expression(s);
     }
 
-    function Symbol evalBlock(String s, int i) {
+    function Symbol Block(String s, int i) {
         return null;
     }
 
-    function Symbol evalExpression(String s) {
+    function Symbol Expression(String s) {
         var char c;
 
         let c = s.charAt(0);
 
         if (c = 34) {
-            return Symbol.new(null, STR, Eval.evalStringExpr(s));
+            return Symbol.new(null, STR, Eval.StringExpr(s));
         }
 
         if ( (((c|32)>96) & ((c|32)<123))
                 & (Str.index(s, EXP_DLMS, 0)=s.length()) ) {
-            return Eval.evalSymbolExpr(s);
+            return Eval.SymbolExpr(s);
         }
 
-        return Symbol.new(null, INT, Eval.evalIntExpr(s, 0));
+        return Symbol.new(null, INT, Eval.LogicExpr(s, 0));
     }
 
-    function String evalStringExpr(String s) {
+    function String StringExpr(String s) {
         do s.eraseLastChar();
         do Str.shift(s, 1, 0);
         return Str.dup(Eval.format(s));
@@ -208,7 +212,7 @@ class Eval {
         return s;
     }
 
-    function Symbol evalSymbolExpr(String s) {
+    function Symbol SymbolExpr(String s) {
         var Symbol p;
 
         let p = symtab.lookup(s);
@@ -220,130 +224,104 @@ class Eval {
         return Symbol.new(null, p.type(), p.value());
     }
 
-    function int evalIntExpr(String s, int i) {
-        var int n;
-        var String t;
+    function int intTkn(String s, String t, String list, int i) {
 
-        let t = String.new(s.length());
-        let i = Str.tkn(s, t, RBLOCKS, i);
+        let i = Str.tkn(s, t, list, i);
 
-        if (t.length() = 0) {
+        if (i < s.length()) {
             if (s.charAt(i) = 40) {
                 let i = Str.block(s, t, 40, 41, i);
-                if (i > s.length()) {
-                    do t.dispose();
-                    do Error.send("unclosed parnetheses");  // ##DB##
-                    do Error.set(1);
-                    return 0;
+                if (i < s.length()) {
+                    let i = Eval.intTkn(s, t, list, i);
                 }
             } else { if (s.charAt(i) = 123) {
                 let i = Str.block(s, t, 123, 125, i);
-                if (i > s.length()) {
-                    /* todo: build block */
+                if (i < s.length()) {
+                    let i = Eval.intTkn(s, t, list, i);
                 }
             }}
-            let n = Eval.evalBlockExpr(t);
-            if (i < s.length()) {
-                let n = Eval.operate(n, Eval.evalIntExpr(s, i+1), s.charAt(i));
-            }
-        } else {
-            if (i < s.length()) {
-                do t.eraseLastChar();  /* kill op */
-                let n = Eval.operate(Eval.evalLogicExpr(t, 0), Eval.evalIntExpr(s, i),
-                                s.charAt(i-1));
-            } else {
-                let n = Eval.evalLogicExpr(t, 0);
-            }
         }
 
-        do t.dispose();
-
-        return n;
+        return i;
     }
 
-    function int evalBlockExpr(String s) {
-        var int n;
-        var String t;
-
-        if (s.charAt(0) = 40) {
-            do s.eraseLastChar();
-            do Str.shift(s, 1, 0);
-            return Eval.evalIntExpr(s, 0);
-        }
-
-        return n;
-    }
-
-    function int evalLogicExpr(String s, int i) {
+    function int LogicExpr(String s, int i) {
         var int n;
         var String t;
 
         let t = String.new(s.length());
-        let i = Str.tkn(s, t, LOGOPS, i);
-        let n = Eval.evalEqualityExpr(t, 0);
+        let i = Eval.intTkn(s, t, LOGBLKS, i);
+        let n = Eval.EqualityExpr(t, 0);
         if (i < s.length()) {
-            let n = Eval.operate(n, Eval.evalLogicExpr(s, i+1), s.charAt(i));
+            let n = Eval.operate(n, Eval.LogicExpr(s, i+1), s.charAt(i));
         }
         do t.dispose();
         return n;
     }
 
-    function int evalEqualityExpr(String s, int i) {
+    function int EqualityExpr(String s, int i) {
         var char op;
         var int n;
         var String t;
 
         let t = String.new(s.length());
-        let i = Str.tkn(s, t, EQOPS, i);
-        let n = Eval.evalAddExpr(t, 0);
+        let i = Eval.intTkn(s, t, EQBLKS, i);
+        let n = Eval.AddExpr(t, 0);
         if (i < s.length()) {
             let op = s.charAt(i);
             if (s.charAt(i+1) = 61) {
                 let i = i + 1;
                 let op = 200 + op;
             }
-            let n = Eval.operate(n, Eval.evalEqualityExpr(s, i+1), op);
+            let n = Eval.operate(n, Eval.EqualityExpr(s, i+1), op);
         }
         do t.dispose();
         return n;
     }
 
-    function int evalAddExpr(String s, int i) {
+    function int AddExpr(String s, int i) {
         var int n;
         var String t;
 
         let t = String.new(s.length());
-        let i = Str.tkn(s, t, ADDS, i);
-        let n = Eval.evalMulExpr(t, 0);
+        let i = Eval.intTkn(s, t, ADDBLKS, i);
+        let n = Eval.MulExpr(t, 0);
         if (i < s.length()) {
-            let n = Eval.operate(n, Eval.evalAddExpr(s, i+1), s.charAt(i));
+            let n = Eval.operate(n, Eval.AddExpr(s, i+1), s.charAt(i));
         }
         do t.dispose();
         return n;
     }
 
-    function int evalMulExpr(String s, int i) {
+    function int MulExpr(String s, int i) {
         var int n;
         var String t;
 
         let t = String.new(s.length());
-        let i = Str.tkn(s, t, MULS, i);
-        let n = Eval.evalTerm(t);
+        let i = Eval.intTkn(s, t, MULBLKS, i);
+        let n = Eval.Term(t);
         if (i < s.length()) {
-            let n = Eval.operate(n, Eval.evalMulExpr(s, i+1), s.charAt(i));
+            let n = Eval.operate(n, Eval.MulExpr(s, i+1), s.charAt(i));
         }
         do t.dispose();
         return n;
     }
 
-    function int evalTerm(String s) {
+    function int Term(String s) {
+        var char c;
         var Symbol p;
 
-        if ( (s.charAt(0)>47) & (s.charAt(0)<58) ) {
+        let c = s.charAt(0);
+
+        if ( (c>47) & (c<58) ) {
             return s.intValue();
         }
 
-        let p = Eval.evalSymbolExpr(s);
+        if ( (c=40) | (c=123) ) {
+            return Eval.blockExpr(s);
+        }
+
+        let p = Eval.SymbolExpr(s);
 
         if (Error.isSet()) {
             return 0;
@@ -356,6 +334,17 @@ class Eval {
         }
 
         return p.value();
+    }
+
+    /* stub */
+    function int blockExpr(String s) {
+        if (s.charAt(0) = 40) {
+            do s.eraseLastChar();
+            do Str.shift(s, 1, 0);
+            return Eval.LogicExpr(s, 0);
+        }
+
+        return 0;
     }
 
     function int operate(int m, int n, char op) {
