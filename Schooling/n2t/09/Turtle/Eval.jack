@@ -52,7 +52,6 @@ class Eval {
         return;
     }
 
-//do DB.db(s);
     function Symbol eval(String s) {
         var char c;
         var int i, j;
@@ -67,16 +66,13 @@ class Eval {
 
         if ( (j+1) < s.length()) {
             if (s.charAt(j) = 61) {
-                if (j = 0) {
-                    do Error.send("equal at index 0");  // ##DB##
-                    do Error.set(1);
-                    return null;
-                }
                 if ( ~( ((s.charAt(j-1)=33)
                       |  (s.charAt(j-1)=60))
                       | ((s.charAt(j+1)=61)
                       |  (s.charAt(j-1)=62)) ) ) {
-                    return Eval.Assgn(s, i);
+                    do Eval.assign(s, i);
+                    return null;
+                    //return Eval.assign(s, i);
                 }
             }
         } /* todo: cldlm at EOS */
@@ -84,29 +80,43 @@ class Eval {
         return Eval.ArgList(s, i);
     }
 
-    function Symbol Assgn(String s, int i) {
-        var String t;
-        var Symbol argv;
+    function Symbol assign(String s, int i) {
+        var String name;
+        var Symbol value;
 
         if (s.charAt(i) = 61) {
             do Error.send("no name in assignment");  // ##DB##
-            do Error.set(1);
+            do Error.set(1);  // no name in assignment
             return null;
         }
 
-        let t = String.new(s.length());
-        let i = Str.tkn(s, t, EQS, i);
-        let argv = Symbol.new(null, CMD, ASSGN);
-        do argv.append(Eval.Name(t));
-        do t.dispose();
-        do argv.append(Eval.ArgList(s, i+1));  // arglist for error check
+        let name = String.new(s.length());
+        let i = Str.tkn(s, name, EQS, i);
 
-        return argv;
+        if (Eval.invalidName(name)) {
+            do Error.send("invalid name");  // ##DB##
+            do Error.set(1);  // invalid name
+            return null;
+        }
+
+        let value = Eval.ArgList(s, i+1);
+
+        if (~(value.next() = null)) {
+            do Error.send("multiple values in assignment");  // ##DB##
+            do Error.set(1);  // multiple values in assignment
+            return null;
+        }
+
+        do symtab.install(name, value.type(), value.value());
+        do name.dispose();
+        do Canvas.clearSym(value);
+
+        return null;
     }
 
-    function Symbol Name(String s) {
-        /* todo: this */
-        return Symbol.new(s, null, null);
+    function boolean invalidName(String s) {
+        return ((s.charAt(0)>47) & (s.charAt(0)<58))
+                | (Str.index(s, EXP_DLMS, 0) < s.length());
     }
 
     function Symbol ArgList(String s, int i) {
@@ -251,6 +261,12 @@ class Eval {
 
         let t = String.new(s.length());
         let i = Eval.intTkn(s, t, LOGBLKS, i);
+        if ( (i+1) = s.length() ) {
+            do Error.send("expected expression");  // ##DB##
+            do Error.set(1);  //  expected expression
+            do t.dispose();
+            return 0;
+        }
         let n = Eval.EqualityExpr(t, 0);
         if (i < s.length()) {
             let n = Eval.operate(n, Eval.LogicExpr(s, i+1), s.charAt(i));
@@ -266,6 +282,12 @@ class Eval {
 
         let t = String.new(s.length());
         let i = Eval.intTkn(s, t, EQBLKS, i);
+        if ( (i+1) = s.length() ) {
+            do Error.send("expected expression");  // ##DB##
+            do Error.set(1);  //  expected expression
+            do t.dispose();
+            return 0;
+        }
         let n = Eval.AddExpr(t, 0);
         if (i < s.length()) {
             let op = s.charAt(i);
@@ -285,6 +307,12 @@ class Eval {
 
         let t = String.new(s.length());
         let i = Eval.intTkn(s, t, ADDBLKS, i);
+        if ( (i+1) = s.length() ) {
+            do Error.send("expected expression");  // ##DB##
+            do Error.set(1);  //  expected expression
+            do t.dispose();
+            return 0;
+        }
         let n = Eval.MulExpr(t, 0);
         if (i < s.length()) {
             let n = Eval.operate(n, Eval.AddExpr(s, i+1), s.charAt(i));
@@ -299,6 +327,12 @@ class Eval {
 
         let t = String.new(s.length());
         let i = Eval.intTkn(s, t, MULBLKS, i);
+        if ( (i+1) = s.length() ) {
+            do Error.send("expected expression");  // ##DB##
+            do Error.set(1);  //  expected expression
+            do t.dispose();
+            return 0;
+        }
         let n = Eval.Term(t);
         if (i < s.length()) {
             let n = Eval.operate(n, Eval.MulExpr(s, i+1), s.charAt(i));
@@ -366,12 +400,8 @@ class Eval {
         if (op = 262) { return  (m=n) | (m>n); }
 
         do Error.send("unrecognized operator");  // ##DB##
-        do Error.set(1);
+        do Error.set(1);  // unrecognized operator
         return 0;
     }
 
-    function void install(String name, int type, int value) {
-        do symtab.install(name, type, value);
-        return;
-    }
 }

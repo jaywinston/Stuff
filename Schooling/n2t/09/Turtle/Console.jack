@@ -35,12 +35,15 @@ class Console {
 
     method void try(Symbol retVal) {
 
-        while (Error.isSet()) {
+        if (Error.isSet()) {
             do term.echo(Error.message());
-        }
-
-        if (~(retVal = null)) {
-            do echo(retVal);
+            if (Error.isSet()) {
+                do term.echo(Error.message());
+            }
+        } else {
+            if (~(retVal = null)) {
+                do echo(retVal);
+            }
         }
 
         do term.print(canvas.ready(retVal));

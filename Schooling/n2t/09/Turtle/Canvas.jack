@@ -136,8 +136,6 @@ class Canvas {
         let argv = Eval.eval(s);
 
         if (argv = null) {
-            //do Error.send("null argv"); // ##DB##
-            //do Error.set(1);  // null argv
             return null;
         }
 
@@ -156,9 +154,7 @@ class Canvas {
             return argv;
         }}
 
-        /*if (cmd = _ECHO)            { do echo(argv);               }
-        else {*/ if (cmd = ASSGN)     { do doAssign(argv.next());    }
-        else { if (cmd = BLOCK)     { do doBlock(argv);            }
+        if (cmd = BLOCK)            { do doBlock(argv);            }
         else { if (cmd = CLEAR)     { do doClear(argv.next());     }
         else { if (cmd = FORWARD)   { do doForward(argv.next());   }
         else { if (cmd = FUNCTION)  { do doFunction(argv.next());  }
@@ -169,9 +165,7 @@ class Canvas {
         else { if (cmd = TURNLEFT)  { do doTurnleft(argv.next());  }
         else { if (cmd = TURNRIGHT) { do doTurnright(argv.next()); }
         else { if (cmd = QUIT)      { do doQuit(argv.next());      }
-        /*else {
-            return argv;*/
-        }}}}}}}}}}}//}
+        }}}}}}}}}}
 
         do Canvas.clearSym(argv);
 
@@ -209,38 +203,6 @@ class Canvas {
             let b = b.next();
         }
         let braces = blkd;
-        return;
-    }
-
-    method void doAssign(Symbol arg) {
-        var Symbol p;
-
-        if (arg = null) {
-            do Error.send("no name in assignment");  // ##DB##
-            do Error.set(1);  // no symbol name
-            return;
-        }
-
-        let p = arg.next();
-
-        if (p = null) {
-            do Error.send("no value in assignment");  // ##DB##
-            do Error.set(1);  // no value to assign
-            return;
-        }
-
-        if (~(p.next() = null)) {
-            do Error.send("unexpected token in assignment");  // ##DB##
-            do Error.set(1);  // unexpected token
-            return;
-        }
-
-        if (p.type() = STR) {
-            do Eval.install(arg.name(), p.type(), Str.dup(p.value()));
-        } else {
-            do Eval.install(arg.name(), p.type(), p.value());
-        }
-
         return;
     }
 
