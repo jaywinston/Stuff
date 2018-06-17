@@ -1,37 +1,35 @@
 class Eval {
 
+    static boolean buildingBlock;
     static int CMD, ASSGN, INT, STR;
     static String TKN_DLMS, EXP_DLMS;
     static String ADDOPS, BLANKS, EQS, MULOPS, RBLOCKS, EQOPS, LOGOPS, PERCENTS;
-    static String ADDBLKS, MULBLKS, EQBLKS, LOGBLKS;
+    static String ADDDLMS, MULDLMS, EQDLMS, LOGDLMS;
     static String CL_DLMS;
     static HashTable symtab;
 
     function void init() {
+        let buildingBlock = false;
         let CMD = Const.CMD();
         let ASSGN = Const.ASSGN();
         let INT = Const.INT();
         let STR = Const.STR();
         let TKN_DLMS = " =";
-        let EXP_DLMS = "=!<>&|+-*/%";
+        let EXP_DLMS = "=!<>&|+-*/%(){}";
         let BLANKS = " ";
         let EQS = "=";
         let RBLOCKS = "({";
         let PERCENTS = "%";
-        let LOGOPS = "&|";
-        let EQOPS = "=!<>";
-        let ADDOPS = "+-";
-        let MULOPS = "*/%";
-        let LOGBLKS = "&|({";
-        let EQBLKS = "=!<>({";
-        let ADDBLKS = "+-({";
-        let MULBLKS = "*/%({";
-        let CL_DLMS = String.new(5);
+        let LOGDLMS = "&|(){}";
+        let EQDLMS = "=!<>(){}";
+        let ADDDLMS = "+-(){}";
+        let MULDLMS = "*/%(){}";
+        let CL_DLMS = String.new(4);
+        do CL_DLMS.appendChar(32);
         do CL_DLMS.appendChar(34);
-        do Str.cat(CL_DLMS, TKN_DLMS);
-        do Str.cat(CL_DLMS, RBLOCKS);
+        do CL_DLMS.appendChar(61);
+        do CL_DLMS.appendChar(123);
         let symtab = HashTable.new();
-        do Eval.installKW("{",         CMD, Const.BLOCK());
         do Eval.installKW("CLEAR",     CMD, Const.CLEAR());
         do Eval.installKW("FORWARD",   CMD, Const.FORWARD());
         do Eval.installKW("FUNCTION",  CMD, Const.FUNCTION());
@@ -64,7 +62,7 @@ class Eval {
         let i = Str.lskip(s, 32, 0);
         let j = Str.index(s, CL_DLMS, i);
 
-        if ( (j+1) < s.length()) {
+        if ( ((j+1)<s.length()) & (j>0) ) {
             if (s.charAt(j) = 61) {
                 if ( ~( ((s.charAt(j-1)=33)
                       |  (s.charAt(j-1)=60))
@@ -72,12 +70,17 @@ class Eval {
                       |  (s.charAt(j-1)=62)) ) ) {
                     do Eval.assign(s, i);
                     return null;
-                    //return Eval.assign(s, i);
                 }
             }
-        } /* todo: cldlm at EOS */
+        } else {
+            if (j < s.length())  {
+                do Error.send("expected name");  // ##DB##
+                do Error.set(1);  // expected name
+                return null;
+            }
+        }
 
-        return Eval.ArgList(s, i);
+        return Eval.argList(s, i);
     }
 
     function Symbol assign(String s, int i) {
@@ -85,8 +88,8 @@ class Eval {
         var Symbol value;
 
         if (s.charAt(i) = 61) {
-            do Error.send("no name in assignment");  // ##DB##
-            do Error.set(1);  // no name in assignment
+            do Error.send("expected name");  // ##DB##
+            do Error.set(1);  // expected name
             return null;
         }
 
@@ -99,7 +102,7 @@ class Eval {
             return null;
         }
 
-        let value = Eval.ArgList(s, i+1);
+        let value = Eval.argList(s, i+1);
 
         if (~(value.next() = null)) {
             do Error.send("multiple values in assignment");  // ##DB##
@@ -119,7 +122,7 @@ class Eval {
                 | (Str.index(s, EXP_DLMS, 0) < s.length());
     }
 
-    function Symbol ArgList(String s, int i) {
+    function Symbol argList(String s, int i) {
         var String t;
         var Symbol argv;
 
@@ -142,7 +145,7 @@ class Eval {
         do t.dispose();
 
         if (i < s.length()) {
-            do argv.append(Eval.ArgList(s, i+1));
+            do argv.append(Eval.argList(s, i+1));
         }
 
         return argv;
@@ -260,13 +263,22 @@ class Eval {
         var String t;
 
         let t = String.new(s.length());
-        let i = Eval.intTkn(s, t, LOGBLKS, i);
+        let i = Eval.intTkn(s, t, LOGDLMS, i);
+
         if ( (i+1) = s.length() ) {
             do Error.send("expected expression");  // ##DB##
             do Error.set(1);  //  expected expression
             do t.dispose();
             return 0;
         }
+
+        if ( (i>s.length()) & ~buildingBlock ) {
+            do Error.send("expected parentheses");  // ##DB##
+            do Error.set(1);  //  expected parentheses
+            do t.dispose();
+            return 0;
+        }
+
         let n = Eval.EqualityExpr(t, 0);
         if (i < s.length()) {
             let n = Eval.operate(n, Eval.LogicExpr(s, i+1), s.charAt(i));
@@ -281,13 +293,22 @@ class Eval {
         var String t;
 
         let t = String.new(s.length());
-        let i = Eval.intTkn(s, t, EQBLKS, i);
+        let i = Eval.intTkn(s, t, EQDLMS, i);
+
         if ( (i+1) = s.length() ) {
             do Error.send("expected expression");  // ##DB##
             do Error.set(1);  //  expected expression
             do t.dispose();
             return 0;
         }
+
+        if ( (i>s.length()) & ~buildingBlock ) {
+            do Error.send("expected parentheses");  // ##DB##
+            do Error.set(1);  //  expected parentheses
+            do t.dispose();
+            return 0;
+        }
+
         let n = Eval.AddExpr(t, 0);
         if (i < s.length()) {
             let op = s.charAt(i);
@@ -306,13 +327,22 @@ class Eval {
         var String t;
 
         let t = String.new(s.length());
-        let i = Eval.intTkn(s, t, ADDBLKS, i);
+        let i = Eval.intTkn(s, t, ADDDLMS, i);
+
         if ( (i+1) = s.length() ) {
             do Error.send("expected expression");  // ##DB##
             do Error.set(1);  //  expected expression
             do t.dispose();
             return 0;
         }
+
+        if ( (i>s.length()) & ~buildingBlock ) {
+            do Error.send("expected parentheses");  // ##DB##
+            do Error.set(1);  //  expected parentheses
+            do t.dispose();
+            return 0;
+        }
+
         let n = Eval.MulExpr(t, 0);
         if (i < s.length()) {
             let n = Eval.operate(n, Eval.AddExpr(s, i+1), s.charAt(i));
@@ -326,14 +356,23 @@ class Eval {
         var String t;
 
         let t = String.new(s.length());
-        let i = Eval.intTkn(s, t, MULBLKS, i);
+        let i = Eval.intTkn(s, t, MULDLMS, i);
+
         if ( (i+1) = s.length() ) {
             do Error.send("expected expression");  // ##DB##
             do Error.set(1);  //  expected expression
             do t.dispose();
             return 0;
         }
-        let n = Eval.Term(t);
+
+        if ( (i>s.length()) & ~buildingBlock ) {
+            do Error.send("expected parentheses");  // ##DB##
+            do Error.set(1);  //  expected parentheses
+            do t.dispose();
+            return 0;
+        }
+
+        let n = Eval.term(t);
         if (i < s.length()) {
             let n = Eval.operate(n, Eval.MulExpr(s, i+1), s.charAt(i));
         }
@@ -341,7 +380,7 @@ class Eval {
         return n;
     }
 
-    function int Term(String s) {
+    function int term(String s) {
         var char c;
         var Symbol p;
 
@@ -362,8 +401,8 @@ class Eval {
         }
 
         if (~(p.type() = INT)) {
-            do Error.send("non integer symbol in int expr");  // ##DB##
-            do Error.set(1);
+            do Error.send("wrong type; expected integer");  // ##DB##
+            do Error.set(1);  // wring type; expected integer
             return 0;
         }
 
