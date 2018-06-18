@@ -1,7 +1,8 @@
 class Eval {
 
     static boolean buildingBlock;
-    static int CMD, ASSGN, INT, STR;
+    static int CMD, ASSGN, INT, STR, TERM;
+    static Array INTOPS;
     static String TKN_DLMS, EXP_DLMS;
     static String ADDOPS, BLANKS, EQS, MULOPS, RBLOCKS, EQOPS, LOGOPS, PERCENTS;
     static String ADDDLMS, MULDLMS, EQDLMS, LOGDLMS;
@@ -20,6 +21,12 @@ class Eval {
         let EQS = "=";
         let RBLOCKS = "({";
         let PERCENTS = "%";
+        let INTOPS = Array.new(4);
+        let INTOPS[0] = "&|(){}";
+        let INTOPS[1] = "=!<>(){}";
+        let INTOPS[2] = "+-(){}";
+        let INTOPS[3] = "*/%(){}";
+        let TERM = 4;
         let LOGDLMS = "&|(){}";
         let EQDLMS = "=!<>(){}";
         let ADDDLMS = "+-(){}";
@@ -185,7 +192,8 @@ class Eval {
             return Eval.SymbolExpr(s);
         }
 
-        return Symbol.new(null, INT, Eval.LogicExpr(s, 0));
+        //return Symbol.new(null, INT, Eval.LogicExpr(s, 0));
+        return Symbol.new(null, INT, Eval.intExpr(s, 0, 0));
     }
 
     function String StringExpr(String s) {
@@ -258,42 +266,13 @@ class Eval {
         return i;
     }
 
-    function int LogicExpr(String s, int i) {
-        var int n;
-        var String t;
-
-        let t = String.new(s.length());
-        let i = Eval.intTkn(s, t, LOGDLMS, i);
-
-        if ( (i+1) = s.length() ) {
-            do Error.send("expected expression");  // ##DB##
-            do Error.set(1);  //  expected expression
-            do t.dispose();
-            return 0;
-        }
-
-        if ( (i>s.length()) & ~buildingBlock ) {
-            do Error.send("expected parentheses");  // ##DB##
-            do Error.set(1);  //  expected parentheses
-            do t.dispose();
-            return 0;
-        }
-
-        let n = Eval.EqualityExpr(t, 0);
-        if (i < s.length()) {
-            let n = Eval.operate(n, Eval.LogicExpr(s, i+1), s.charAt(i));
-        }
-        do t.dispose();
-        return n;
-    }
-
-    function int EqualityExpr(String s, int i) {
+    function int intExpr(String s, int i, int depth) {
         var char op;
         var int n;
         var String t;
 
         let t = String.new(s.length());
-        let i = Eval.intTkn(s, t, EQDLMS, i);
+        let i = Eval.intTkn(s, t, INTOPS[depth], i);
 
         if ( (i+1) = s.length() ) {
             do Error.send("expected expression");  // ##DB##
@@ -309,74 +288,26 @@ class Eval {
             return 0;
         }
 
-        let n = Eval.AddExpr(t, 0);
+        if ( (depth+1) = TERM ) {
+            let n = Eval.term(t);
+        } else {
+            let n = Eval.intExpr(t, 0, depth+1);
+        }
+
         if (i < s.length()) {
+
             let op = s.charAt(i);
+
             if (s.charAt(i+1) = 61) {
                 let i = i + 1;
                 let op = 200 + op;
             }
-            let n = Eval.operate(n, Eval.EqualityExpr(s, i+1), op);
+
+            let n = Eval.operate(n, Eval.intExpr(s, i+1, depth), op);
         }
+
         do t.dispose();
-        return n;
-    }
 
-    function int AddExpr(String s, int i) {
-        var int n;
-        var String t;
-
-        let t = String.new(s.length());
-        let i = Eval.intTkn(s, t, ADDDLMS, i);
-
-        if ( (i+1) = s.length() ) {
-            do Error.send("expected expression");  // ##DB##
-            do Error.set(1);  //  expected expression
-            do t.dispose();
-            return 0;
-        }
-
-        if ( (i>s.length()) & ~buildingBlock ) {
-            do Error.send("expected parentheses");  // ##DB##
-            do Error.set(1);  //  expected parentheses
-            do t.dispose();
-            return 0;
-        }
-
-        let n = Eval.MulExpr(t, 0);
-        if (i < s.length()) {
-            let n = Eval.operate(n, Eval.AddExpr(s, i+1), s.charAt(i));
-        }
-        do t.dispose();
-        return n;
-    }
-
-    function int MulExpr(String s, int i) {
-        var int n;
-        var String t;
-
-        let t = String.new(s.length());
-        let i = Eval.intTkn(s, t, MULDLMS, i);
-
-        if ( (i+1) = s.length() ) {
-            do Error.send("expected expression");  // ##DB##
-            do Error.set(1);  //  expected expression
-            do t.dispose();
-            return 0;
-        }
-
-        if ( (i>s.length()) & ~buildingBlock ) {
-            do Error.send("expected parentheses");  // ##DB##
-            do Error.set(1);  //  expected parentheses
-            do t.dispose();
-            return 0;
-        }
-
-        let n = Eval.term(t);
-        if (i < s.length()) {
-            let n = Eval.operate(n, Eval.MulExpr(s, i+1), s.charAt(i));
-        }
-        do t.dispose();
         return n;
     }
 
@@ -414,13 +345,19 @@ class Eval {
         if (s.charAt(0) = 40) {
             do s.eraseLastChar();
             do Str.shift(s, 1, 0);
-            return Eval.LogicExpr(s, 0);
+            return Eval.intExpr(s, 0, 0);
         }
 
         return 0;
     }
 
     function int operate(int m, int n, char op) {
+
+        if ( ((op=47) | (op=37)) & (n=0) ) {
+            do Error.send("division by zero");  // ##DB##
+            do Error.set(1);  // division by zero
+            return 0;
+        }
 
         if (op =  38) { return m & n; }
         if (op = 124) { return m | n; }

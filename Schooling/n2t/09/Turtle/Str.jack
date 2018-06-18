@@ -203,6 +203,19 @@ class Str {
         return i;
     }
 
+    function int cIndex(String s, char c, int i) {
+        var int j;
+
+        while (i < s.length()) {
+            if (c = list.charAt(j)) {
+                return i;
+            }
+            let i = i + 1;
+        }
+
+        return i;
+    }
+
     function int tkn(String s, String t, String list, int i) {
         var int j;
 
