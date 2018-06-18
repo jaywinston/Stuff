@@ -207,7 +207,7 @@ class Str {
         var int j;
 
         while (i < s.length()) {
-            if (c = list.charAt(j)) {
+            if (c = s.charAt(j)) {
                 return i;
             }
             let i = i + 1;
