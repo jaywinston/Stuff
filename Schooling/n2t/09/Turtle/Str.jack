@@ -204,15 +204,12 @@ class Str {
     }
 
     function int cIndex(String s, char c, int i) {
-        var int j;
-
         while (i < s.length()) {
-            if (c = s.charAt(j)) {
+            if (c = s.charAt(i)) {
                 return i;
             }
             let i = i + 1;
         }
-
         return i;
     }
 

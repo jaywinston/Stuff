@@ -22,10 +22,10 @@ class Eval {
         let RBLOCKS = "({";
         let PERCENTS = "%";
         let INTOPS = Array.new(4);
-        let INTOPS[0] = "&|(){}";
-        let INTOPS[1] = "=!<>(){}";
-        let INTOPS[2] = "+-(){}";
-        let INTOPS[3] = "*/%(){}";
+        let INTOPS[0] = "&|)}{(";
+        let INTOPS[1] = "=!<>)}({";
+        let INTOPS[2] = "+-)}({";
+        let INTOPS[3] = "*/%)}({";
         let TERM = 4;
         let LOGDLMS = "&|(){}";
         let EQDLMS = "=!<>(){}";
@@ -267,19 +267,33 @@ class Eval {
     }
 
     function int intExpr(String s, int i, int depth) {
+        var boolean neg, not;
         var char op;
         var int n;
-        var String t;
+        var String t, ops;
 
-        let t = String.new(s.length());
-        let i = Eval.intTkn(s, t, INTOPS[depth], i);
-
-        if ( (i+1) = s.length() ) {
+        if (s.length() = 0) {
             do Error.send("expected expression");  // ##DB##
             do Error.set(1);  //  expected expression
-            do t.dispose();
             return 0;
         }
+
+        let ops = INTOPS[depth];
+
+        if (s.charAt(i) = 45) {
+            let neg = true;
+            let i = i + 1;
+        } else { if (s.charAt(i) = 126) {
+            let not = true;
+            let i = i + 1;
+        } else { if (Str.cIndex(ops, s.charAt(i), i) < (ops.length()-2) ) {
+            do Error.send("expected expression");  // ##DB##
+            do Error.set(1);  //  expected expression
+            return 0;
+        }}}
+
+        let t = String.new(s.length());
+        let i = Eval.intTkn(s, t, ops, i);
 
         if ( (i>s.length()) & ~buildingBlock ) {
             do Error.send("expected parentheses");  // ##DB##
@@ -293,6 +307,9 @@ class Eval {
         } else {
             let n = Eval.intExpr(t, 0, depth+1);
         }
+
+        if (neg) { let n = -n; }
+        if (not) { let n = ~n; }
 
         if (i < s.length()) {
 
