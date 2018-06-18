@@ -192,7 +192,6 @@ class Eval {
             return Eval.SymbolExpr(s);
         }
 
-        //return Symbol.new(null, INT, Eval.LogicExpr(s, 0));
         return Symbol.new(null, INT, Eval.intExpr(s, 0, 0));
     }
 
@@ -247,6 +246,11 @@ class Eval {
 
     function int intTkn(String s, String t, String list, int i) {
 
+        if (s.charAt(i) = 45) {
+            do t.appendChar(45);
+            let i = i + 1;
+        }
+
         let i = Str.tkn(s, t, list, i);
 
         if (i < s.length()) {
@@ -272,6 +276,9 @@ class Eval {
         var int n;
         var String t, ops;
 
+        let neg = false;
+        let not = false;
+
         if (s.length() = 0) {
             do Error.send("expected expression");  // ##DB##
             do Error.set(1);  //  expected expression
@@ -280,17 +287,21 @@ class Eval {
 
         let ops = INTOPS[depth];
 
-        if (s.charAt(i) = 45) {
-            let neg = true;
+        while (s.charAt(i) = 45) {
+            let neg = ~neg;
             let i = i + 1;
-        } else { if (s.charAt(i) = 126) {
-            let not = true;
+        }
+
+        while (s.charAt(i) = 126) {
+            let not = ~not;
             let i = i + 1;
-        } else { if (Str.cIndex(ops, s.charAt(i), i) < (ops.length()-2) ) {
+        }
+
+        if (Str.cIndex(ops, s.charAt(i), i) < (ops.length()-2) ) {
             do Error.send("expected expression");  // ##DB##
-            do Error.set(1);  //  expected expression
+            do Error.set(1);  // expected expression
             return 0;
-        }}}
+        }
 
         let t = String.new(s.length());
         let i = Eval.intTkn(s, t, ops, i);

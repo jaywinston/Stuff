@@ -6,6 +6,7 @@ class DB {
         do Output.moveCursor(0,0);
         do Output.printString(s);
         while (Keyboard.keyPressed()=0) {}
+        do Memory.poke(24576, 0);
         return;
     }
 }
