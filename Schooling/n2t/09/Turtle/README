@@ -5,7 +5,7 @@ cmdline:
     arglist
 
 assgn:
-    name '=' word
+    name '=' expression
 
 name:
     namstart
@@ -21,13 +21,9 @@ namend:
 namchar:
     (?![ ={}()"+*/%-])[[:graph:]]
 
-word:
-    expression
-    block
-
 expression:
-    stringexpr
     name
+    stringexpr
     logicexpr
 
 stringexpr:
@@ -45,38 +41,38 @@ formatseq:
     '%' formatspec
 
 formatspec:
-    'N' 'P' 'Q'
+    [NPQ]
 
 logicexpr:
-    equality
-    equality logop logicexpr
+    equalityexpr
+    equalityexpr logop logicexpr
 
 equalityexpr:
     addexpr
-    addexpr eqop equality
+    addexpr eqop equalityexpr
 
 addexpr:
     mulexpr
     mulexpr addop addexpr
 
 mulexpr:
-    atom
-    atom mulop mulexpr
+    term
+    term mulop mulexpr
 
-atom:
+term:
     name
-    intatom
-    parenatom
+    intterm
+    parenterm
     block
 
-intatom:
+intterm:
     intchar
-    intchar intatom
+    intchar intterm
 
 intchar:
     [[:digit:]]
 
-parenatom:
+parenterm:
     '(' logicexpr ')
 
 block:
@@ -84,25 +80,25 @@ block:
 
 cmdlist:
     cmdlin
-    cmdlin 'newline' cmdlist
+    cmdlin '\n' cmdlist
 
 logop:
-    '&' '|'
+    [&|]
 
 eqop:
-    '==' '!=' '<' '>' '<=' '>='
+    (==|!=|<|>|<=|>=)
 
 addop:
-    '+' '-'
+    [+-]
 
 mulop:
-    '*' '/' '%'
+    [*/%]
 
 arglist:
     word
     word space arglist
 
 space:
-    'blank'
-    'blank' space
+    ' '
+    ' ' space
 
