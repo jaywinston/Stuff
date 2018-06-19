@@ -1,58 +1,57 @@
 class Eval {
 
     static boolean buildingBlock;
-    static int CMD, ASSGN, INT, STR, TERM;
+    static int CMD, INT, STR;
+    static int TERM;
     static Array INTOPS;
-    static String TKN_DLMS, EXP_DLMS;
-    static String ADDOPS, BLANKS, EQS, MULOPS, RBLOCKS, EQOPS, LOGOPS, PERCENTS;
-    static String ADDDLMS, MULDLMS, EQDLMS, LOGDLMS;
-    static String CL_DLMS;
+    static String CL_DLMS, EXP_DLMS;
+    static String BLANKS, EQS, PERCENTS;
     static HashTable symtab;
 
     function void init() {
         let buildingBlock = false;
+
         let CMD = Const.CMD();
-        let ASSGN = Const.ASSGN();
         let INT = Const.INT();
         let STR = Const.STR();
-        let TKN_DLMS = " =";
+
+        let TERM = 4;
+
         let EXP_DLMS = "=!<>&|+-*/%(){}";
         let BLANKS = " ";
         let EQS = "=";
-        let RBLOCKS = "({";
         let PERCENTS = "%";
-        let INTOPS = Array.new(4);
-        let INTOPS[0] = "&|)}{(";
-        let INTOPS[1] = "=!<>)}({";
-        let INTOPS[2] = "+-)}({";
-        let INTOPS[3] = "*/%)}({";
-        let TERM = 4;
-        let LOGDLMS = "&|(){}";
-        let EQDLMS = "=!<>(){}";
-        let ADDDLMS = "+-(){}";
-        let MULDLMS = "*/%(){}";
+
         let CL_DLMS = String.new(4);
-        do CL_DLMS.appendChar(32);
-        do CL_DLMS.appendChar(34);
-        do CL_DLMS.appendChar(61);
-        do CL_DLMS.appendChar(123);
+        do CL_DLMS.appendChar(32);   // ' '
+        do CL_DLMS.appendChar(34);   // '"'
+        do CL_DLMS.appendChar(61);   // '='
+        do CL_DLMS.appendChar(123);  // '{'
+
+        let INTOPS = Array.new(4);
+        let INTOPS[0] = "&|(){}";
+        let INTOPS[1] = "=!<>(){}";
+        let INTOPS[2] = "+-(){}";
+        let INTOPS[3] = "*/%(){}";
+
         let symtab = HashTable.new();
-        do Eval.installKW("CLEAR",     CMD, Const.CLEAR());
-        do Eval.installKW("FORWARD",   CMD, Const.FORWARD());
-        do Eval.installKW("FUNCTION",  CMD, Const.FUNCTION());
-        do Eval.installKW("PENDOWN",   CMD, Const.PENDOWN());
-        do Eval.installKW("PENUP",     CMD, Const.PENUP());
-        do Eval.installKW("PRINT",     CMD, Const.PRINT());
-        do Eval.installKW("REPEAT",    CMD, Const.REPEAT());
-        do Eval.installKW("TURNLEFT",  CMD, Const.TURNLEFT());
-        do Eval.installKW("TURNRIGHT", CMD, Const.TURNRIGHT());
-        do Eval.installKW("QUIT",      CMD, Const.QUIT());
+
+        do Eval.installKW("CLEAR",     Const.CLEAR());
+        do Eval.installKW("FORWARD",   Const.FORWARD());
+        do Eval.installKW("FUNCTION",  Const.FUNCTION());
+        do Eval.installKW("PENDOWN",   Const.PENDOWN());
+        do Eval.installKW("PENUP",     Const.PENUP());
+        do Eval.installKW("PRINT",     Const.PRINT());
+        do Eval.installKW("REPEAT",    Const.REPEAT());
+        do Eval.installKW("TURNLEFT",  Const.TURNLEFT());
+        do Eval.installKW("TURNRIGHT", Const.TURNRIGHT());
+        do Eval.installKW("QUIT",      Const.QUIT());
 
         return;
     }
 
-    function void installKW(String name, int type, int val) {
-        do symtab.install(name, type, val);
+    function void installKW(String name, int val) {
+        do symtab.install(name, CMD, val);
         do name.dispose();
         return;
     }
@@ -79,25 +78,19 @@ class Eval {
                     return null;
                 }
             }
-        } else {
-            if (j < s.length())  {
-                do Error.send("expected name");  // ##DB##
-                do Error.set(1);  // expected name
-                return null;
-            }
         }
 
         return Eval.argList(s, i);
     }
 
-    function Symbol assign(String s, int i) {
+    function void assign(String s, int i) {
         var String name;
         var Symbol value;
 
         if (s.charAt(i) = 61) {
             do Error.send("expected name");  // ##DB##
             do Error.set(1);  // expected name
-            return null;
+            return;
         }
 
         let name = String.new(s.length());
@@ -106,7 +99,7 @@ class Eval {
         if (Eval.invalidName(name)) {
             do Error.send("invalid name");  // ##DB##
             do Error.set(1);  // invalid name
-            return null;
+            return;
         }
 
         let value = Eval.argList(s, i+1);
@@ -114,7 +107,7 @@ class Eval {
         if (Error.isSet()) {
             do name.dispose();
             do Canvas.clearSym(value);
-            return null;
+            return;
         }
 
         if (~(value.next() = null)) {
@@ -122,14 +115,14 @@ class Eval {
             do Error.set(1);  // multiple values in assignment
             do name.dispose();
             do Canvas.clearSym(value);
-            return null;
+            return;
         }
 
         do symtab.install(name, value.type(), value.value());
         do name.dispose();
         do Canvas.clearSym(value);
 
-        return null;
+        return;
     }
 
     function boolean invalidName(String s) {
@@ -141,12 +134,13 @@ class Eval {
         var String t;
         var Symbol argv;
 
-        let t = String.new(s.length());
         let i = Str.lskip(s, 32, i);
 
         if (i = s.length()) {
             return null;
         }
+
+        let t = String.new(s.length());
 
         if (s.charAt(i) = 34) {
             let i = Str.quotes(s, t, i);
@@ -157,6 +151,7 @@ class Eval {
         }}
 
         let argv = Eval.expression(t);
+
         do t.dispose();
 
         if (Error.isSet()) {
@@ -203,11 +198,11 @@ class Eval {
     function String format(String s) {
         var int i;
 
-        let i = -2;
+        let i = 0;
 
         while (i < s.length()) {
 
-            let i = Str.index(s, PERCENTS, i+2);
+            let i = Str.index(s, PERCENTS, i);
 
             if ((i+1) < s.length()) {
                 if (s.charAt(i+1) = 81) {
@@ -223,7 +218,8 @@ class Eval {
                     return null;
                 }}}
 
-                do Str.shift(s, 1, i+1);
+                let i = i + 1;
+                do Str.shift(s, 1, i);
 
             }  // todo: error no fspec
         }
@@ -385,6 +381,8 @@ class Eval {
 
     /* stub */
     function int blockExpr(String s) {
+        var Symbol p;
+
         if (s.charAt(0) = 40) {
             do s.eraseLastChar();
             do Str.shift(s, 1, 0);
