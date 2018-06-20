@@ -1,6 +1,6 @@
 class Eval {
 
-    static boolean buildingBlock;
+    static boolean storing;
     static int CMD, INT, STR;
     static int TERM;
     static Array INTOPS;
@@ -9,7 +9,7 @@ class Eval {
     static HashTable symtab;
 
     function void init() {
-        let buildingBlock = false;
+        let storing = false;
 
         let CMD = Const.CMD();
         let INT = Const.INT();
@@ -295,7 +295,7 @@ class Eval {
             return 0;
         }
 
-        if ( (i>s.length()) & ~buildingBlock ) {
+        if ( (i>s.length()) & ~storing ) {
             do Error.send("expected parentheses");  // ##DB##
             do Error.set(1);  //  expected parentheses
             do t.dispose();

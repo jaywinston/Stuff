@@ -1,73 +1,37 @@
 class Const {
 
-    static int
-        /* types */
-        _null,
-        blk,
-        cmd,
-        cmdlin,
-        func,
-        _int,
-        str,
-        sym,
-
-        /* commands */
-        assgn,
-        block,
-        clear,
-        forward,
-        _function,
-        pendown,
-        penup,
-        print,
-        repeat,
-        turnleft,
-        turnright,
-        quit;
+    static Array errtab;
 
     function void init() {
-        let _null     = 0;
-        let blk       = 1;
-        let cmd       = 2;
-        let cmdlin    = 3;
-        let func      = 4;
-        let _int      = 5;
-        let str       = 6;
-        let sym       = 7;
-        let assgn     = 8;
-        let block     = 9;
-        let clear     = 10;
-        let forward   = 11;
-        let _function = 12;
-        let pendown   = 13;
-        let penup     = 14;
-        let print     = 15;
-        let repeat    = 16;
-        let turnleft  = 17;
-        let turnright = 18;
-        let quit      = 19;
+
+        let errtab = Array.new(2);
+        let errtab[0] = null;
+        let errtab[1] = "error";
+
         return;
     }
 
-    function int NULL      () { return _null;     }
-    function int BLK       () { return blk;       }
-    function int CMD       () { return cmd;       }
-    function int CMDLIN    () { return cmdlin;    }
-    function int FUNC      () { return func;      }
-    function int INT       () { return _int;      }
-    function int STR       () { return str;       }
-    function int SYM       () { return sym;       }
-    function int ASSGN     () { return assgn;     }
-    function int BLOCK     () { return block;     }
-    function int CLEAR     () { return clear;     }
-    function int FORWARD   () { return forward;   }
-    function int FUNCTION  () { return _function; }
-    function int PENDOWN   () { return pendown;   }
-    function int PENUP     () { return penup;     }
-    function int PRINT     () { return print;     }
-    function int REPEAT    () { return repeat;    }
-    function int TURNLEFT  () { return turnleft;  }
-    function int TURNRIGHT () { return turnright; }
-    function int QUIT      () { return quit;      }
+    function int NULL      () { return  0; }
+    function int BLK       () { return  1; }
+    function int CMD       () { return  2; }
+    function int CMDLIN    () { return  3; }
+    function int FUNC      () { return  4; }
+    function int INT       () { return  5; }
+    function int STR       () { return  6; }
+    function int SYM       () { return  7; }
+    function int ASSGN     () { return  8; }
+    function int BLOCK     () { return  9; }
+    function int CLEAR     () { return 10; }
+    function int FORWARD   () { return 11; }
+    function int FUNCTION  () { return 12; }
+    function int PENDOWN   () { return 13; }
+    function int PENUP     () { return 14; }
+    function int PRINT     () { return 15; }
+    function int REPEAT    () { return 16; }
+    function int TURNLEFT  () { return 17; }
+    function int TURNRIGHT () { return 18; }
+    function int QUIT      () { return 19; }
+
+    function Array errTab  () { return errtab; }
 
 }
