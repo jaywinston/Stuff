@@ -4,7 +4,7 @@ class Str {
     static String _nulls;
 
     function void init() {
-        let _maxlen = 50;
+        let _maxlen = 128;
         let _nulls = "";
         return;
     }
@@ -35,10 +35,10 @@ class Str {
     }
 
     /* todo: 2nd arg array */
-    function String format(String f, int arg) {
+    function String format(String f, Array arg) {
         var boolean continue;
         var char c;
-        var int i, j, fLen, tLen;
+        var int a, i, j, fLen, tLen;
         var String s, t;
 
         let fLen = f.length();
@@ -50,6 +50,7 @@ class Str {
         let s = String.new(_maxlen);
         let t = null;
 
+        let a = 0;
         let i = 0;
         while (i < fLen) {
             let c = f.charAt(i);
@@ -66,9 +67,9 @@ class Str {
                 if (c = 100) {
                     let t = String.new(6);
                     let tLen = t.length();
-                    do t.setInt(arg);
+                    do t.setInt(arg[a]);
                 } else { if (c = 115) {
-                    let t = arg;
+                    let t = arg[a];
                     let tLen = t.length();
                 } else { if (c = 37) {
                     if (i < _maxlen) {
@@ -80,13 +81,17 @@ class Str {
                     }
                 }}}}
                 if (~(t = null)) {
+/*
                     let j = 0;
                     while (j < tLen) {
                         do s.appendChar(t.charAt(j));
                         let j = j + 1;
                     }
+*/
+                    do Str.cat(s, t);
                     do t.dispose();
                     let t = null;
+                    let a = a + 1;
                 }
             } else {
                 do s.appendChar(c);
@@ -217,7 +222,11 @@ class Str {
         var int j;
 
         let j = i;
-        let i = Str.index(s, list, i);
+        if (list = null) {
+            let i = s.length();
+        } else {
+            let i = Str.index(s, list, i);
+        }
         while (j < i) {
             do t.appendChar(s.charAt(j));
             let j = j + 1;

@@ -7,7 +7,6 @@ class Canvas {
     field String fName;
     field TextBox tb;
     field Turtle t;
-    field HashTable symtab;
     field Symbol block, blocks, cmdp, cmds;
 
     static int
@@ -36,8 +35,6 @@ class Canvas {
 
     constructor Canvas new(int i, int j, int h, int w,
                            String ps1, String ps2) {
-
-        let symtab = HashTable.new();
 
         do initKWs();
 
@@ -114,9 +111,7 @@ class Canvas {
     }
 
     method Symbol ready(Symbol p) {
-        if (~(p = null)) {
-            do Canvas.clearSym(p);
-        }
+        do Canvas.clearSym(p);
         return ps;
     }
 
@@ -135,6 +130,11 @@ class Canvas {
 
         let argv = Eval.eval(s);
 
+        if (Error.isSet()) {
+            do Canvas.clearSym(argv);
+            return null;
+        }
+
         if (argv = null) {
             return null;
         }
@@ -142,6 +142,7 @@ class Canvas {
         if (argv.type() = NULL) {
             do Error.send("unrecognized token"); // ##DB##
             do Error.set(1);  // unrecognized token
+            do Canvas.clearSym(argv);
             return null;
         }
 
@@ -174,21 +175,27 @@ class Canvas {
 
     method void call(Symbol argv) {
         var int n, type;
-        var String arg, intfs;
+        var Array farg;
+        var String arg, name, prefs;
         var Symbol p;
 
-        let intfs = "$%d";
+        let farg = Array.new(1);
+        let prefs = "$%d";
         let n = 1;
         let p = argv.next();
         while (~(p = null)) {
-            do symtab.install(Str.format(intfs, n), p.type(), p.value());
+            let farg[0] = n;
+            let name = Str.format(prefs, farg);
+            do symtab.install(name, p.type(), p.value());
+            do name.dispose();
             let n = n + 1;
             let p = p.next();
         }
 
         do execBlock(argv.value());
 
-        do intfs.dispose();
+        do farg.dispose();
+        do prefs.dispose();
 
         return;
     }
