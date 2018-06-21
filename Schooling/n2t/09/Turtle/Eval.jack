@@ -4,7 +4,7 @@ class Eval {
     static int CMD, INT, STR;
     static int TERM;
     static Array INTOPS;
-    static String CL_DLMS, EXP_DLMS;
+    static String ASSGNDLMS, /*ARGLISTDLMS,*/ EXP_DLMS;
     static String BLANKS, EQS, PERCENTS;
     static HashTable symtab;
 
@@ -22,11 +22,17 @@ class Eval {
         let EQS = "=";
         let PERCENTS = "%";
 
-        let CL_DLMS = String.new(4);
-        do CL_DLMS.appendChar(32);   // ' '
-        do CL_DLMS.appendChar(34);   // '"'
-        do CL_DLMS.appendChar(61);   // '='
-        do CL_DLMS.appendChar(123);  // '{'
+/*
+        let ARGLISTDLMS = String.new(3);
+        do ARGLISTDLMS.appendChar(32);   // ' '
+        do ARGLISTDLMS.appendChar(34);   // '"'
+        do ARGLISTDLMS.appendChar(123);  // '{'
+*/
+
+        let ASSGNDLMS = String.new(3);
+        do ASSGNDLMS.appendChar(61);   // '='
+        do ASSGNDLMS.appendChar(34);   // '"'
+        do ASSGNDLMS.appendChar(123);  // '{'
 
         let INTOPS = Array.new(4);
         let INTOPS[0] = "&|(){}";
@@ -65,20 +71,7 @@ class Eval {
             return null;
         }
 
-        let i = Str.lskip(s, 32, 0);
-        let j = Str.index(s, CL_DLMS, i);
-
-        if ( ((j+1)<s.length()) & (j>0) ) {
-            if (s.charAt(j) = 61) {
-                if ( ~( ((s.charAt(j-1)=33)
-                      |  (s.charAt(j-1)=60))
-                      | ((s.charAt(j+1)=61)
-                      |  (s.charAt(j-1)=62)) ) ) {
-                    do Eval.assign(s, i);
-                    return null;
-                }
-            }
-        }
+        /* build block here */
 
         return Eval.argList(s, i);
     }
@@ -118,7 +111,11 @@ class Eval {
             return;
         }
 
-        do symtab.install(name, value.type(), value.value());
+        if (value.type() = STR) {
+            do symtab.install(name, value.type(), Str.dup(value.value()));
+        } else {
+            do symtab.install(name, value.type(), value.value());
+        }
         do name.dispose();
         do Canvas.clearSym(value);
 
@@ -131,8 +128,13 @@ class Eval {
     }
 
     function Symbol argList(String s, int i) {
+        var int j;
         var String t;
         var Symbol argv;
+
+        if (i > s.length()) {
+            return null;
+        }
 
         let i = Str.lskip(s, 32, i);
 
@@ -144,11 +146,32 @@ class Eval {
 
         if (s.charAt(i) = 34) {
             let i = Str.quotes(s, t, i);
+            if (i > s.length()) {
+                do Error.send("unclosed quote");  // ##DB##
+                do Error.set(1);  // unclosed quote
+                do t.dispose();
+                return null;
+            }
         } else { if (s.charAt(i) = 123) {
             let i = Str.block(s, t, 123, 125, i);
         } else {
             let i = Str.tkn(s, t, BLANKS, i);
         }}
+
+        let j = Str.index(t, ASSGNDLMS, 0);
+
+        if ( ((j+1)<t.length()) & (j>0) ) {
+            if (t.charAt(j) = 61) {
+                if ( ~( ((t.charAt(j-1)=33)
+                      |  (t.charAt(j-1)=60))
+                      | ((t.charAt(j+1)=61)
+                      |  (t.charAt(j-1)=62)) ) ) {
+                    do Eval.assign(t, 0);
+                    do t.dispose();
+                    return Eval.argList(s, i);
+                }
+            }
+        }
 
         let argv = Eval.expression(t);
 
@@ -159,9 +182,7 @@ class Eval {
             return null;
         }
 
-        if (i < s.length()) {
-            do argv.append(Eval.argList(s, i+1));
-        }
+        do argv.append(Eval.argList(s, i));
 
         return argv;
     }
@@ -181,8 +202,7 @@ class Eval {
             return Symbol.new(null, STR, Eval.StringExpr(s));
         }
 
-        if ( (((c|32)>96) & ((c|32)<123))
-                & (Str.index(s, EXP_DLMS, 0)=s.length()) ) {
+        if ( ~((c>47) & (c<58) ) & (Str.index(s, EXP_DLMS, 0) = s.length()) ) {
             return Eval.SymbolExpr(s);
         }
 
