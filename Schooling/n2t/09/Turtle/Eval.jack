@@ -1,38 +1,35 @@
 class Eval {
 
     static boolean storing;
-    static int CMD, INT, STR;
+    static int CMD, CMDLIN, INT, STR;
     static int TERM;
     static Array INTOPS;
-    static String ASSGNDLMS, /*ARGLISTDLMS,*/ EXP_DLMS;
-    static String BLANKS, EQS, PERCENTS;
+    static String ASSGNDLMS, EXPDLMS;
+    static String BLANKS, EQS, LBRACES, PERCENTS;
+    static Symbol exprst;
     static HashTable symtab;
 
     function void init() {
+
         let storing = false;
 
         let CMD = Const.CMD();
+        let CMDLIN = Const.CMDLIN();
         let INT = Const.INT();
         let STR = Const.STR();
 
         let TERM = 4;
 
-        let EXP_DLMS = "=!<>&|+-*/%(){}";
-        let BLANKS = " ";
-        let EQS = "=";
-        let PERCENTS = "%";
-
-/*
-        let ARGLISTDLMS = String.new(3);
-        do ARGLISTDLMS.appendChar(32);   // ' '
-        do ARGLISTDLMS.appendChar(34);   // '"'
-        do ARGLISTDLMS.appendChar(123);  // '{'
-*/
-
         let ASSGNDLMS = String.new(3);
         do ASSGNDLMS.appendChar(61);   // '='
         do ASSGNDLMS.appendChar(34);   // '"'
         do ASSGNDLMS.appendChar(123);  // '{'
+
+        let EXPDLMS = "=!<>&|+-*/%(){}";
+        let BLANKS = " ";
+        let EQS = "=";
+        let LBRACES = "{";
+        let PERCENTS = "%";
 
         let INTOPS = Array.new(4);
         let INTOPS[0] = "&|(){}";
@@ -71,60 +68,21 @@ class Eval {
             return null;
         }
 
-        /* build block here */
-
-        return Eval.argList(s, i);
-    }
-
-    function void assign(String s, int i) {
-        var String name;
-        var Symbol value;
-
-        if (s.charAt(i) = 61) {
-            do Error.send("expected name");  // ##DB##
-            do Error.set(1);  // expected name
-            return;
+        if (storing) {
+            do block.append(null, CMDLIN, Str.dup(s));
+            return null;
         }
 
-        let name = String.new(s.length());
-        let i = Str.tkn(s, name, EQS, i);
+        let t = String.new(Str.MAXLEN());
 
-        if (Eval.invalidName(name)) {
-            do Error.send("invalid name");  // ##DB##
-            do Error.set(1);  // invalid name
-            return;
+        let i = Str.tkn(s, t, LBRACES, 0);
+
+        if (i = s.length()) {
+            do t.dispose();
+            return Eval.argList(s, 0);
         }
 
-        let value = Eval.argList(s, i+1);
-
-        if (Error.isSet()) {
-            do name.dispose();
-            do Canvas.clearSym(value);
-            return;
-        }
-
-        if (~(value.next() = null)) {
-            do Error.send("multiple values in assignment");  // ##DB##
-            do Error.set(1);  // multiple values in assignment
-            do name.dispose();
-            do Canvas.clearSym(value);
-            return;
-        }
-
-        if (value.type() = STR) {
-            do symtab.install(name, value.type(), Str.dup(value.value()));
-        } else {
-            do symtab.install(name, value.type(), value.value());
-        }
-        do name.dispose();
-        do Canvas.clearSym(value);
-
-        return;
-    }
-
-    function boolean invalidName(String s) {
-        return ((s.charAt(0)>47) & (s.charAt(0)<58))
-                | (Str.index(s, EXP_DLMS, 0) < s.length());
+        return Symbol.new(null, STR, "Bang!");  // TEMPORARY!
     }
 
     function Symbol argList(String s, int i) {
@@ -187,6 +145,62 @@ class Eval {
         return argv;
     }
 
+    function int argTkn(String s, String t, int i) {
+
+        let i = Str.tkn(s, t, ASSGNDLMS, i);
+
+        if (i < s.length()) {
+            if (s.charAt(i) = 34) {
+                let i = Str.quotes(s, t, i);
+            } else { if (s.charAt(i) = 61) {
+                if ( ((i>0)   & ((s.charAt(i-1)=33)
+                              | ((s.charAt(i-1)=60)
+                              |  (s.charAt(i-1)=62))))
+                        | (((i+1)<s.length()) & (s.charAt(i+1)=61)) ) {
+                    let i = Str.tkn(s, t, BLANKS, i);
+                } else {
+                    let i = Eval.argTkn(s, t, i);
+                }
+            }}
+        }
+
+
+        return i;
+    }
+
+    function void assign(String s, int i) {
+        var String name;
+        var Symbol value;
+
+        if (s.charAt(i) = 61) {
+            do Error.send("expected name");  // ##DB##
+            do Error.set(1);  // expected name
+            return;
+        }
+
+        let name = String.new(s.length());
+        let i = Str.tkn(s, name, EQS, i);
+
+        let value = Eval.argList(s, i+1);
+
+        if (Error.isSet()) {
+            do name.dispose();
+            do Canvas.clearSym(value);
+            return;
+        }
+
+        if (value.type() = STR) {
+            do symtab.install(name, value.type(), Str.dup(value.value()));
+        } else {
+            do symtab.install(name, value.type(), value.value());
+        }
+
+        do name.dispose();
+        do Canvas.clearSym(value);
+
+        return;
+    }
+
 /*
     function Symbol Block(String s, int i) {
         return null;
@@ -202,7 +216,7 @@ class Eval {
             return Symbol.new(null, STR, Eval.StringExpr(s));
         }
 
-        if ( ~((c>47) & (c<58) ) & (Str.index(s, EXP_DLMS, 0) = s.length()) ) {
+        if ( ~((c>47) & (c<58) ) & (Str.index(s, EXPDLMS, 0) = s.length()) ) {
             return Eval.SymbolExpr(s);
         }
 

@@ -222,11 +222,13 @@ class Str {
         var int j;
 
         let j = i;
+
         if (list = null) {
             let i = s.length();
         } else {
             let i = Str.index(s, list, i);
         }
+
         while (j < i) {
             do t.appendChar(s.charAt(j));
             let j = j + 1;
