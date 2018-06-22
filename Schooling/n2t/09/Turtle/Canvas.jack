@@ -33,6 +33,7 @@ class Canvas {
         QUIT,
         _ECHO;
 
+
     function void init(int i, int j, int h, int w, String ps1, String ps2) {
 
         do Canvas.initKWs();
@@ -56,6 +57,7 @@ class Canvas {
         return;
     }
 
+
     function void dispose() {
         do PS1.dispose();
         do PS2.dispose();
@@ -65,6 +67,7 @@ class Canvas {
         do tb.dispose();
         return;
     }
+
 
     /* intialize key words and internal symbols */
     function void initKWs() {
@@ -95,6 +98,7 @@ class Canvas {
         return;
     }
 
+
     function void clear() {
         do t.dispose();
         do tb.clear();
@@ -102,16 +106,26 @@ class Canvas {
         return;
     }
 
+
     function Turtle newTurtle() {
         return Turtle.new(((2*left) + (right-left)) * 4,
                            ((2*bottom) + (top-bottom)) * 5,
                            90);
     }
 
+
+    /* prepare to execute next command line */
     function Symbol ready(Symbol p) {
+
         do Canvas.clearSym(p);
-        return ps;
+
+        if (Eval.isStoring()) {
+            return PS2;
+        }
+
+        return PS1;
     }
+
 
     /* execute a command line */
     function Symbol exec(String s) {
@@ -171,6 +185,7 @@ class Canvas {
         return null;
     }
 
+
     function void call(Symbol argv) {
         var int n, type;
         var Array farg;
@@ -198,6 +213,7 @@ class Canvas {
         return;
     }
 
+
     function void execBlock(Symbol b) {
         var int blkd;
 
@@ -210,6 +226,7 @@ class Canvas {
         let braces = blkd;
         return;
     }
+
 
     function void doBlock(Symbol arg) {
         if (arg = null) {
@@ -236,15 +253,18 @@ class Canvas {
         return;
     }
 
+
     function void doClear(Symbol arg) {
         do Canvas.clear();
         return;
     }
 
+
     function void doForward(Symbol arg) {
         do t.forward(arg.value());
         return;
     }
+
 
     function void doFunction(Symbol arg) {
 
@@ -263,34 +283,41 @@ class Canvas {
         return;
     }
 
+
     function void doPendown(Symbol arg) {
         do t.pendown();
         return;
     }
+
 
     function void doPenup(Symbol arg) {
         do t.penup();
         return;
     }
 
+
     function void doPrint(Symbol arg) {
         return;
     }
+
 
     function void doRepeat(Symbol arg) {
         let repeat = arg.value();
         return;
     }
 
+
     function void doTurnleft(Symbol arg) {
         do t.turnleft(arg.value());
         return;
     }
 
+
     function void doTurnright(Symbol arg) {
         do t.turnright(arg.value());
         return;
     }
+
 
     function void doQuit(Symbol arg) {
         do Sys.halt();
@@ -317,6 +344,7 @@ class Canvas {
     }
 */
 
+
     function void pushBlock(Symbol blk) {
         var Symbol top;
 
@@ -325,6 +353,7 @@ class Canvas {
         let blocks = top;
         return;
     }
+
 
     function Symbol popBlock() {
         var Symbol blk, top;
@@ -336,6 +365,7 @@ class Canvas {
         return blk;
     }
 
+
     function void pushCmd(Symbol cmd) {
         var Symbol top;
 
@@ -344,6 +374,7 @@ class Canvas {
         let cmds = top;
         return;
     }
+
 
     function Symbol popCmd() {
         var Symbol cmd, top;
@@ -354,6 +385,7 @@ class Canvas {
         do top.dispose();
         return cmd;
     }
+
 
     function void clearSym(Symbol sym) {
         var int type;

@@ -6,7 +6,7 @@ class Eval {
     static Array INTOPS;
     static String WORDDLMS, EXPDLMS;
     static String BLANKS, EQS, LBRACES, PERCENTS;
-    static Symbol stack;
+    static Symbol block, stack;
     static HashTable symtab;
 
     function void init() {
@@ -20,9 +20,10 @@ class Eval {
 
         let TERM = 4;
 
-        let WORDDLMS = String.new(3);
-        do WORDDLMS.appendChar(61);   // '='
+        let WORDDLMS = String.new(4);
+        do WORDDLMS.appendChar(32);   // ' '
         do WORDDLMS.appendChar(34);   // '"'
+        do WORDDLMS.appendChar(61);   // '='
         do WORDDLMS.appendChar(123);  // '{'
 
         let EXPDLMS = "=!<>&|+-*/%(){}";
@@ -71,7 +72,7 @@ class Eval {
         }
 
         if (storing) {
-            do block.append(null, CMDLIN, Str.dup(s));
+            do block.append(Symbol.new(null, CMDLIN, Str.dup(s)));
             return null;
         }
 
@@ -82,6 +83,10 @@ class Eval {
         var String t;
         var Symbol argv;
 
+        if (i > s.length()) {
+            return null;
+        }
+
         let i = Str.lskip(s, 32, i);
 
         if (i = s.length()) {
@@ -90,6 +95,11 @@ class Eval {
 
         let t = String.new(s.length());
         let i = Eval.argTkn(s, t, i);
+
+        if (Error.isSet()) {
+            do t.dispose();
+            return null;
+        }
 
         if (Eval.isAssign(t)) {
             do Eval.assign(t);
@@ -118,6 +128,10 @@ class Eval {
         if (i < s.length()) {
             if (s.charAt(i) = 34) {
                 let i = Str.quotes(s, t, i);
+                if (i > s.length()) {
+                    do Error.send("unclosed quote");  // ##DB##
+                    do Error.set(1);  // unclosed quote
+                }
             } else { if (s.charAt(i) = 123) {
                 let i = Str.block(s, t, 123, 125, i);
             } else { if (s.charAt(i) = 61) {
@@ -142,11 +156,11 @@ class Eval {
             if (s.charAt(i) = 61) {
                 if ( (i+1) < s.length() ) { if (s.charAt(i+1) = 61) {
                     return false;
-                }} else { if (i > 0) { if (
-                           (s.charAt(i-1) = 33)
-                        | ((s.charAt(i-1) = 60)
-                        |  (s.charAt(i-1) = 62))
-                        ) {
+                }} else { if (i > 0) {
+                        if (  (s.charAt(i-1) = 33)
+                           | ((s.charAt(i-1) = 60)
+                           |  (s.charAt(i-1) = 62))
+                           ) {
                     return false;
                 }}}
                 return true;
@@ -190,12 +204,6 @@ class Eval {
         return;
     }
 
-/*
-    function Symbol Block(String s, int i) {
-        return null;
-    }
-*/
-
     function Symbol expression(String s) {
         var char c;
 
@@ -212,6 +220,7 @@ class Eval {
         return Symbol.new(null, INT, Eval.intExpr(s, 0, 0));
     }
 
+    /* todo: use Str.format(), no destruct, symbol param */
     function String StringExpr(String s) {
         do s.eraseLastChar();
         do Str.shift(s, 1, 0);
@@ -262,29 +271,6 @@ class Eval {
         return Symbol.new(null, p.type(), p.value());
     }
 
-    function int intTkn(String s, String t, String list, int i) {
-
-        let i = Str.tkn(s, t, list, i);
-
-        if (i < s.length()) {
-            if (s.charAt(i) = 40) {
-                let i = Str.block(s, t, 40, 41, i);
-                if (i < s.length()) {
-                    let i = Eval.intTkn(s, t, list, i);
-                }
-            } else { if (s.charAt(i) = 123) {
-                let i = Str.block(s, t, 123, 125, i);
-                if (i < s.length()) {
-                    let i = Eval.intTkn(s, t, list, i);
-                } else { if (i > s.length()) {
-                    /* todo: eval block */
-                }}
-            }}
-        }
-
-        return i;
-    }
-
     function int intExpr(String s, int i, int depth) {
         var char op;
         var int n;
@@ -314,13 +300,6 @@ class Eval {
         if (t.length() = 0) {
             do Error.send("unexpected operator");  // ##DB##
             do Error.set(1);  // unexpected operator
-            do t.dispose();
-            return 0;
-        }
-
-        if ( (i>s.length()) & ~storing ) {
-            do Error.send("expected parentheses");  // ##DB##
-            do Error.set(1);  //  expected parentheses
             do t.dispose();
             return 0;
         }
@@ -373,6 +352,42 @@ class Eval {
         return p.value();
     }
 
+    function int intTkn(String s, String t, String list, int i) {
+
+        let i = Str.tkn(s, t, list, i);
+
+        if (i < s.length()) {
+            if (s.charAt(i) = 40) {
+                let i = Str.block(s, t, 40, 41, i);
+                if (i < s.length()) {
+                    let i = Eval.intTkn(s, t, list, i);
+                }
+            } else { if (s.charAt(i) = 123) {
+                let i = Str.block(s, t, 123, 125, i);
+                if (i < s.length()) {
+                    let i = Eval.intTkn(s, t, list, i);
+                } else { if (i > s.length()) {
+                    /* todo: eval block */
+                }}
+            }}
+        }
+
+        return i;
+    }
+
+    /* stub */
+    function int blockExpr(String s) {
+        var Symbol p;
+
+        if (s.charAt(0) = 40) {
+            do s.eraseLastChar();
+            do Str.shift(s, 1, 0);
+            return Eval.intExpr(s, 0, 0);
+        }
+
+        return 0;
+    }
+
     function int operate(int m, int n, char op) {
 
         if ( ((op=47) | (op=37)) & (n=0) ) {
@@ -402,17 +417,8 @@ class Eval {
         return 0;
     }
 
-    /* stub */
-    function int blockExpr(String s) {
-        var Symbol p;
-
-        if (s.charAt(0) = 40) {
-            do s.eraseLastChar();
-            do Str.shift(s, 1, 0);
-            return Eval.intExpr(s, 0, 0);
-        }
-
-        return 0;
+    function boolean isStoring() {
+        return storing;
     }
 
 }
