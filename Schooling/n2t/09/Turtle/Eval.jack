@@ -1,6 +1,7 @@
 class Eval {
 
     static boolean storing;
+    static int state, REPEXPECTEXPR, IFEXPECTEPXR, EXPECTCMDLIN, STORING;
     static int CMD, CMDLIN, INT, STR;
     static int TERM;
     static Array INTOPS;
@@ -12,6 +13,11 @@ class Eval {
     function void init() {
 
         let storing = false;
+        let state         = 0;
+        let REPEXPECTEXPR = 1;
+        let IFEXPECTEPXR  = 2;
+        let EXPECTCMDLIN  = 3;
+        let STORING       = 4;
 
         let CMD = Const.CMD();
         let CMDLIN = Const.CMDLIN();
@@ -71,12 +77,16 @@ class Eval {
             return null;
         }
 
-        if (storing) {
-            do block.append(Symbol.new(null, CMDLIN, Str.dup(s)));
+        if (state = STORING) {
+            do Eval.store(s, i);
             return null;
         }
 
         return Eval.argList(s, 0);
+    }
+
+    function void store(String s, int i) {
+        return;
     }
 
     function Symbol argList(String s, int i) {
