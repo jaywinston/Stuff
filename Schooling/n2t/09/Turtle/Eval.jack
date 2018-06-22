@@ -4,9 +4,9 @@ class Eval {
     static int CMD, CMDLIN, INT, STR;
     static int TERM;
     static Array INTOPS;
-    static String ASSGNDLMS, EXPDLMS;
+    static String WORDDLMS, EXPDLMS;
     static String BLANKS, EQS, LBRACES, PERCENTS;
-    static Symbol exprst;
+    static Symbol stack;
     static HashTable symtab;
 
     function void init() {
@@ -20,10 +20,10 @@ class Eval {
 
         let TERM = 4;
 
-        let ASSGNDLMS = String.new(3);
-        do ASSGNDLMS.appendChar(61);   // '='
-        do ASSGNDLMS.appendChar(34);   // '"'
-        do ASSGNDLMS.appendChar(123);  // '{'
+        let WORDDLMS = String.new(3);
+        do WORDDLMS.appendChar(61);   // '='
+        do WORDDLMS.appendChar(34);   // '"'
+        do WORDDLMS.appendChar(123);  // '{'
 
         let EXPDLMS = "=!<>&|+-*/%(){}";
         let BLANKS = " ";
@@ -50,6 +50,8 @@ class Eval {
         do Eval.installKW("TURNRIGHT", Const.TURNRIGHT());
         do Eval.installKW("QUIT",      Const.QUIT());
 
+        let stack = null;
+
         return;
     }
 
@@ -73,26 +75,12 @@ class Eval {
             return null;
         }
 
-        let t = String.new(Str.MAXLEN());
-
-        let i = Str.tkn(s, t, LBRACES, 0);
-
-        if (i = s.length()) {
-            do t.dispose();
-            return Eval.argList(s, 0);
-        }
-
-        return Symbol.new(null, STR, "Bang!");  // TEMPORARY!
+        return Eval.argList(s, 0);
     }
 
     function Symbol argList(String s, int i) {
-        var int j;
         var String t;
         var Symbol argv;
-
-        if (i > s.length()) {
-            return null;
-        }
 
         let i = Str.lskip(s, 32, i);
 
@@ -101,34 +89,12 @@ class Eval {
         }
 
         let t = String.new(s.length());
+        let i = Eval.argTkn(s, t, i);
 
-        if (s.charAt(i) = 34) {
-            let i = Str.quotes(s, t, i);
-            if (i > s.length()) {
-                do Error.send("unclosed quote");  // ##DB##
-                do Error.set(1);  // unclosed quote
-                do t.dispose();
-                return null;
-            }
-        } else { if (s.charAt(i) = 123) {
-            let i = Str.block(s, t, 123, 125, i);
-        } else {
-            let i = Str.tkn(s, t, BLANKS, i);
-        }}
-
-        let j = Str.index(t, ASSGNDLMS, 0);
-
-        if ( ((j+1)<t.length()) & (j>0) ) {
-            if (t.charAt(j) = 61) {
-                if ( ~( ((t.charAt(j-1)=33)
-                      |  (t.charAt(j-1)=60))
-                      | ((t.charAt(j+1)=61)
-                      |  (t.charAt(j-1)=62)) ) ) {
-                    do Eval.assign(t, 0);
-                    do t.dispose();
-                    return Eval.argList(s, i);
-                }
-            }
+        if (Eval.isAssign(t)) {
+            do Eval.assign(t);
+            do t.dispose();
+            return Eval.argList(s, i);
         }
 
         let argv = Eval.expression(t);
@@ -147,28 +113,51 @@ class Eval {
 
     function int argTkn(String s, String t, int i) {
 
-        let i = Str.tkn(s, t, ASSGNDLMS, i);
+        let i = Str.tkn(s, t, WORDDLMS, i);
 
         if (i < s.length()) {
             if (s.charAt(i) = 34) {
                 let i = Str.quotes(s, t, i);
+            } else { if (s.charAt(i) = 123) {
+                let i = Str.block(s, t, 123, 125, i);
             } else { if (s.charAt(i) = 61) {
-                if ( ((i>0)   & ((s.charAt(i-1)=33)
-                              | ((s.charAt(i-1)=60)
-                              |  (s.charAt(i-1)=62))))
-                        | (((i+1)<s.length()) & (s.charAt(i+1)=61)) ) {
-                    let i = Str.tkn(s, t, BLANKS, i);
-                } else {
-                    let i = Eval.argTkn(s, t, i);
-                }
-            }}
+                do t.appendChar(61);
+                let i = Eval.argTkn(s, t, i+1);
+            }}}
         }
 
+        if (i < s.length()) { if (~(s.charAt(i) = 32)) {
+            let i = Eval.argTkn(s, t, i);
+        }}
 
         return i;
     }
 
-    function void assign(String s, int i) {
+    function boolean isAssign(String s) {
+        var int i;
+
+        let i = Str.index(s, WORDDLMS, 0);
+
+        if (i < s.length()) {
+            if (s.charAt(i) = 61) {
+                if ( (i+1) < s.length() ) { if (s.charAt(i+1) = 61) {
+                    return false;
+                }} else { if (i > 0) { if (
+                           (s.charAt(i-1) = 33)
+                        | ((s.charAt(i-1) = 60)
+                        |  (s.charAt(i-1) = 62))
+                        ) {
+                    return false;
+                }}}
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function void assign(String s) {
+        var int i;
         var String name;
         var Symbol value;
 
