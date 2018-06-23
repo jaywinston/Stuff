@@ -1,7 +1,8 @@
 class Eval {
 
     static boolean storing;
-    static int state, REPEXPECTEXPR, IFEXPECTEPXR, EXPECTCMDLIN, STORING;
+    static int state, ININTBLOCK, REPEXPECTEXPR, IFEXPECTEPXR, EXPECTCMDLIN,
+                STORING;
     static int CMD, CMDLIN, INT, STR;
     static int TERM;
     static Array INTOPS;
@@ -18,6 +19,7 @@ class Eval {
         let IFEXPECTEPXR  = 2;
         let EXPECTCMDLIN  = 3;
         let STORING       = 4;
+        let ININTBLOCK    = 5;
 
         let CMD = Const.CMD();
         let CMDLIN = Const.CMDLIN();
@@ -126,7 +128,7 @@ class Eval {
             return null;
         }
 
-        do argv.append(Eval.argList(s, i));
+        do argv.append(Eval.argList(s, i+1));
 
         return argv;
     }
@@ -181,20 +183,17 @@ class Eval {
     }
 
     function void assign(String s) {
-        var int i;
         var String name;
         var Symbol value;
 
-        if (s.charAt(i) = 61) {
+        if (s.charAt(0) = 61) {
             do Error.send("expected name");  // ##DB##
             do Error.set(1);  // expected name
             return;
         }
 
         let name = String.new(s.length());
-        let i = Str.tkn(s, name, EQS, i);
-
-        let value = Eval.argList(s, i+1);
+        let value = Eval.argList(s, Str.tkn(s, name, EQS, 0)+1);
 
         if (Error.isSet()) {
             do name.dispose();
@@ -373,11 +372,16 @@ class Eval {
                     let i = Eval.intTkn(s, t, list, i);
                 }
             } else { if (s.charAt(i) = 123) {
+                do Eval.push(t);
+                let t = String.new(s.length());
                 let i = Str.block(s, t, 123, 125, i);
                 if (i < s.length()) {
+                    do Str.cat(stack.value(), t);
+                    do t.dispose();
+                    let t = Eval.pop()
                     let i = Eval.intTkn(s, t, list, i);
                 } else { if (i > s.length()) {
-                    /* todo: eval block */
+                    let storing = true;
                 }}
             }}
         }
@@ -429,6 +433,28 @@ class Eval {
 
     function boolean isStoring() {
         return storing;
+    }
+
+    function void push(int val) {
+        var Symbol sym;
+
+        let sym = Symbol.new(null, null, val);
+        do sym.append(stack);
+        let stack = sym;
+
+        return;
+    }
+
+    function int pop() {
+        var int val;
+        var Symbol sym;
+
+        let sym = stack;
+        let stack = stack.next();
+        let val = sym.value();
+        do sym.dispose();
+
+        return val;
     }
 
 }
