@@ -3,7 +3,7 @@ class Eval {
     static boolean storing;
     static int state, ININTBLOCK, REPEXPECTEXPR, IFEXPECTEPXR, EXPECTCMDLIN,
                 STORING;
-    static int CMD, CMDLIN, INT, STR;
+    static int ASSGN, CMD, CMDLIN, INT, STR;
     static int TERM;
     static Array INTOPS;
     static String WORDDLMS, EXPDLMS;
@@ -21,6 +21,7 @@ class Eval {
         let STORING       = 4;
         let ININTBLOCK    = 5;
 
+        let ASSGN = Const.ASSGN();
         let CMD = Const.CMD();
         let CMDLIN = Const.CMDLIN();
         let INT = Const.INT();
@@ -114,14 +115,12 @@ class Eval {
         }
 
         if (Eval.isAssign(t)) {
-            do Eval.assign(t);
+            let argv = Symbol.new(null, CMD, ASSGN);
+            do argv.append(Symbol.new(null, CMDLIN, t));
+        } else {
+            let argv = Eval.expression(t);
             do t.dispose();
-            return Eval.argList(s, i);
         }
-
-        let argv = Eval.expression(t);
-
-        do t.dispose();
 
         if (Error.isSet()) {
             do Canvas.clearSym(argv);

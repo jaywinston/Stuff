@@ -174,9 +174,14 @@ class Canvas {
     function void execute(Symbol argv) {
         var int cmd;
 
+        if (argv = null) {
+            return;
+        }
+
         let cmd = argv.value();
 
-        if (cmd = BLOCK)            { do Canvas.doBlock(argv);            }
+        if (cmd = ASSGN)            { do Canvas.doAssign(argv.next());    }
+        else { if (cmd = BLOCK)     { do Canvas.doBlock(argv);            }
         else { if (cmd = CLEAR)     { do Canvas.doClear(argv.next());     }
         else { if (cmd = FORWARD)   { do Canvas.doForward(argv.next());   }
         else { if (cmd = FUNCTION)  { do Canvas.doFunction(argv.next());  }
@@ -187,7 +192,7 @@ class Canvas {
         else { if (cmd = TURNLEFT)  { do Canvas.doTurnleft(argv.next());  }
         else { if (cmd = TURNRIGHT) { do Canvas.doTurnright(argv.next()); }
         else { if (cmd = QUIT)      { do Canvas.doQuit(argv.next());      }
-        }}}}}}}}}}
+        }}}}}}}}}}}
 
         return;
     }
@@ -230,6 +235,13 @@ class Canvas {
             let b = b.next();
         }
         let braces = blkd;
+        return;
+    }
+
+
+    function void doAssign(Symbol arg) {
+        do Eval.assign(arg.value());
+        do Canvas.execute(arg.next());
         return;
     }
 
