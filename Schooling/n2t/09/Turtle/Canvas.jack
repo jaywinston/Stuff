@@ -159,13 +159,22 @@ class Canvas {
         }
 
         if (argv.type() = CMD) {
-            let cmd = argv.value();
+            do Canvas.execute(argv);
         } else { if (argv.type() = FUNC) {
             do Canvas.call(argv);
-            let cmd = NULL;
         } else {
             return argv;
         }}
+
+        do Canvas.clearSym(argv);
+
+        return null;
+    }
+
+    function void execute(Symbol argv) {
+        var int cmd;
+
+        let cmd = argv.value();
 
         if (cmd = BLOCK)            { do Canvas.doBlock(argv);            }
         else { if (cmd = CLEAR)     { do Canvas.doClear(argv.next());     }
@@ -180,25 +189,22 @@ class Canvas {
         else { if (cmd = QUIT)      { do Canvas.doQuit(argv.next());      }
         }}}}}}}}}}
 
-        do Canvas.clearSym(argv);
-
-        return null;
+        return;
     }
-
 
     function void call(Symbol argv) {
         var int n, type;
         var Array farg;
-        var String arg, name, prefs;
+        var String arg, name, fpres;
         var Symbol p;
 
         let farg = Array.new(1);
-        let prefs = "$%d";
+        let fpres = "$%d";
         let n = 1;
         let p = argv.next();
         while (~(p = null)) {
             let farg[0] = n;
-            let name = Str.format(prefs, farg);
+            let name = Str.format(fpres, farg);
             do symtab.install(name, p.type(), p.value());
             do name.dispose();
             let n = n + 1;
@@ -208,7 +214,7 @@ class Canvas {
         do Canvas.execBlock(argv.value());
 
         do farg.dispose();
-        do prefs.dispose();
+        do fpres.dispose();
 
         return;
     }
