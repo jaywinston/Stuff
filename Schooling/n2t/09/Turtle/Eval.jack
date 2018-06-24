@@ -79,15 +79,15 @@ class Eval {
             return null;
         }
 
-        if (state = STORING) {
-            do Eval.store(s, i);
+        if (storing) {
+            do Eval.store(s);
             return null;
         }
 
         return Eval.argList(s, 0);
     }
 
-    function void store(String s, int i) {
+    function void store(String s) {
         return;
     }
 
@@ -222,8 +222,12 @@ class Eval {
             return Symbol.new(null, STR, Eval.StringExpr(s));
         }
 
+        if (c = 123) {
+            return Eval.blockExpr(s);
+        }
+
         if ( ~((c>47) & (c<58)) & (Str.index(s, EXPDLMS, 0) = s.length()) ) {
-            return Eval.SymbolExpr(s);
+            return Eval.symbolExpr(s);
         }
 
         return Symbol.new(null, INT, Eval.intExpr(s, 0, 0));
@@ -268,7 +272,11 @@ class Eval {
         return s;
     }
 
-    function Symbol SymbolExpr(String s) {
+    function Symbol blockExpr(String s) {
+        return null;
+    }
+
+    function Symbol symbolExpr(String s) {
         var Symbol p;
 
         let p = symtab.lookup(s);
@@ -353,15 +361,46 @@ class Eval {
             return s.intValue();
         }
 
-        if ( (c=40) | (c=123) ) {
-            return Eval.blockExpr(s);
+        if (c = 40) {
+            return Eval.parenTerm(s);
         }
 
-        let p = Eval.SymbolExpr(s);
+        if (c = 123) {
+            return Eval.blockTerm(s);
+        }
 
         if (Error.isSet()) {
             return 0;
         }
+
+        return Eval.symbolTerm(s);
+
+    }
+
+    function int parenTerm(String s) {
+
+        do s.eraseLastChar();
+        do Str.shift(s, 1, 0);
+
+        return Eval.intExpr(s, 0, 0);
+    }
+
+    function int blockTerm(String s) {
+
+        if ( (Str.count(s, 123) - Str.count(s, 125)) > 0 ) {
+            let storing = true;
+            while (storing) {
+                do Eval.eval(Console.read());
+            }
+        }
+
+        return 0;
+    }
+
+    function int symbolTerm(String s) {
+        var Symbol p;
+
+        let p = symtab.lookup(s);
 
         if (~(p.type() = INT)) {
             do Error.send("wrong type; expected integer");  // ##DB##
@@ -405,19 +444,6 @@ class Eval {
         }
 
         return i;
-    }
-
-    /* stub */
-    function int blockExpr(String s) {
-        var Symbol p;
-
-        if (s.charAt(0) = 40) {
-            do s.eraseLastChar();
-            do Str.shift(s, 1, 0);
-            return Eval.intExpr(s, 0, 0);
-        }
-
-        return 0;
     }
 
     function int operate(int m, int n, char op) {

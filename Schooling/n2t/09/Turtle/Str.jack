@@ -335,4 +335,18 @@ class Str {
         return;
     }
        
+    function int count(String s, char c) {
+        var int i, n;
+
+        let n = 0;
+        let i = 0;
+        while (i < s.length()) {
+            if (s.charAt(i) = c) {
+                let n = n + 1;
+            }
+            let i = i + 1;
+        }
+
+        return n;
+    }
 }

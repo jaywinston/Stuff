@@ -10,10 +10,9 @@ class Main {
         do Error.init(Const.errTab(), 2);
         do Eval.init();
         do Canvas.init(2, 32, 20, 31, ">", "|");
+        do Console.init();
 
-        let console = Console.new();
-
-        do console.run();
+        do Console.run();
 
         do Canvas.dispose();
         do Parser.dispose();

@@ -1,10 +1,10 @@
 class Console {
 
-    field int INT, STR, SYM;
-    field Terminal term;
-    field Canvas canvas;
+    static int INT, STR, SYM;
+    static Terminal term;
+    static Canvas canvas;
 
-    constructor Console new() {
+    function void init() {
         var String banner, nulls;
 
         let banner = "                       Turtle 0.01";
@@ -19,19 +19,19 @@ class Console {
         let SYM = Const.SYM();
         let term = Terminal.new(2, 1, 20, 30);
 
-        do try(null);
+        do Console.try(null);
 
-        return this;
+        return;
     }
 
-    method void run() {
+    function void run() {
         while (true) {
-            do try(Canvas.exec(term.read()));
+            do Console.try(Canvas.exec(term.read()));
         }
         return;
     }
 
-    method void try(Symbol retVal) {
+    function void try(Symbol retVal) {
 
         if (Error.isSet()) {
             do term.echo(Error.message());
@@ -40,7 +40,7 @@ class Console {
             }
         } else {
             if (~(retVal = null)) {
-                do echo(retVal);
+                do Console.echo(retVal);
             }
         }
 
@@ -49,29 +49,32 @@ class Console {
         return;
     }
 
-    method void echo(Symbol sym) {
+    function void echo(Symbol sym) {
         while (~(sym = null)) {
             if (sym.type() = STR) {
                 do term.echo(sym.value());
             } else { if (sym.type() = SYM) {
-                do echo(sym.value());
+                do Console.echo(sym.value());
             } else { if (sym.type() = INT) {
-                do echoInt(sym);
+                do Console.echoInt(sym);
             }}}
             let sym = sym.next();
         }
         return;
     }
 
-    method void echoInt(Symbol sym) {
+    function void echoInt(Symbol sym) {
         var String s;
 
-        let s = String.new(5);
+        let s = String.new(6);
         do s.setInt(sym.value());
         do term.echo(s);
         do s.dispose();
         return;
     }
 
+    function String read() {
+        return term.read();
+    }
 }
 
