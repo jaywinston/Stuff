@@ -8,7 +8,6 @@ class Console {
         var String banner, nulls;
 
         let banner = "                       Turtle 0.01";
-        let nulls = "";
 
         do Screen.drawLine(0, 13, 509, 13);
         do Output.moveCursor(0, 0);
@@ -21,7 +20,6 @@ class Console {
         let term = Terminal.new(2, 1, 20, 30);
 
         do try(null);
-        do nulls.dispose();
 
         return this;
     }

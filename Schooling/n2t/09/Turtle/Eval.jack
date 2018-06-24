@@ -222,7 +222,7 @@ class Eval {
             return Symbol.new(null, STR, Eval.StringExpr(s));
         }
 
-        if ( ~((c>47) & (c<58) ) & (Str.index(s, EXPDLMS, 0) = s.length()) ) {
+        if ( ~((c>47) & (c<58)) & (Str.index(s, EXPDLMS, 0) = s.length()) ) {
             return Eval.SymbolExpr(s);
         }
 
@@ -272,11 +272,13 @@ class Eval {
         var Symbol p;
 
         let p = symtab.lookup(s);
+
         if (p = null) {
             do Error.send("undefined symbol");  // ##DB##
             do Error.set(1);
             return null;
         }
+
         return Symbol.new(null, p.type(), p.value());
     }
 
@@ -306,11 +308,20 @@ class Eval {
         let t = String.new(s.length());
         let i = Eval.intTkn(s, t, INTOPS[depth], i);
 
+        if (Error.isSet()) {
+            do t.dispose();
+            return 0;
+        }
+
         if (t.length() = 0) {
             do Error.send("unexpected operator");  // ##DB##
             do Error.set(1);  // unexpected operator
             do t.dispose();
             return 0;
+        }
+
+        if (i > s.length()) {
+            /* in block */
         }
 
         let n = Eval.intExpr(t, 0, depth+1);
@@ -368,21 +379,28 @@ class Eval {
         if (i < s.length()) {
             if (s.charAt(i) = 40) {
                 let i = Str.block(s, t, 40, 41, i);
+                if (i > s.length()) {
+                    do Error.send("unclosed parentheses");  // ##DB##
+                    do Error.set(1);  // unclosed parentheses
+                    return i;
+                }
                 if (i < s.length()) {
                     let i = Eval.intTkn(s, t, list, i);
                 }
             } else { if (s.charAt(i) = 123) {
-                do Eval.push(t);
-                let t = String.new(s.length());
+                //do Eval.push(t);
+                //let t = String.new(s.length());
                 let i = Str.block(s, t, 123, 125, i);
+/*
                 if (i < s.length()) {
                     do Str.cat(stack.value(), t);
                     do t.dispose();
-                    let t = Eval.pop()
+                    let t = Eval.pop();
                     let i = Eval.intTkn(s, t, list, i);
                 } else { if (i > s.length()) {
                     let storing = true;
                 }}
+*/
             }}
         }
 
