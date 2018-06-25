@@ -1,6 +1,7 @@
 class Console {
 
     static int INT, STR, SYM;
+    static String PS1;
     static Terminal term;
     static Canvas canvas;
 
@@ -17,6 +18,7 @@ class Console {
         let INT = Const.INT();
         let STR = Const.STR();
         let SYM = Const.SYM();
+        let PS1 = ">";
         let term = Terminal.new(2, 1, 20, 30);
 
         do Console.try(null);
@@ -26,7 +28,7 @@ class Console {
 
     function void run() {
         while (true) {
-            do Console.try(Canvas.exec(term.read()));
+            do Console.try(Canvas.exec(term.read(PS1)));
         }
         return;
     }
@@ -44,7 +46,7 @@ class Console {
             }
         }
 
-        do term.print(Canvas.ready(retVal));
+       do /*term.print(*/Canvas.ready(retVal); //);
 
         return;
     }
@@ -73,8 +75,8 @@ class Console {
         return;
     }
 
-    function String read() {
-        return term.read();
+    function String read(String ps) {
+        return term.read(ps);
     }
 }
 

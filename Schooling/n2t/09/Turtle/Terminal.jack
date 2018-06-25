@@ -35,13 +35,14 @@ class Terminal {
         return;
     }
 
-    method String read() {
+    method String read(String ps) {
         var char c;
         var int recall;
         var String s;
 
-        let s = linbuf[bp];
+        do tb.puts(ps);
 
+        let s = linbuf[bp];
         do s.dispose();
         let linbuf[bp] = String.new(Str.MAXLEN());
         let s = linbuf[bp];

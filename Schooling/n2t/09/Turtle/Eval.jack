@@ -6,6 +6,7 @@ class Eval {
     static int ASSGN, CMD, CMDLIN, INT, STR;
     static int TERM;
     static Array INTOPS;
+    static String PS2;
     static String WORDDLMS, EXPDLMS;
     static String BLANKS, EQS, LBRACES, PERCENTS;
     static Symbol block, stack;
@@ -34,6 +35,8 @@ class Eval {
         do WORDDLMS.appendChar(34);   // '"'
         do WORDDLMS.appendChar(61);   // '='
         do WORDDLMS.appendChar(123);  // '{'
+
+        let PS2 = "|";
 
         let EXPDLMS = "=!<>&|+-*/%(){}";
         let BLANKS = " ";
@@ -272,7 +275,34 @@ class Eval {
     }
 
     function Symbol blockExpr(String s) {
-        return null;
+        var int braces;
+        var Symbol p;
+
+        let braces = Str.count(s, 123) - Str.count(s, 125);
+
+        if (braces < 0) {
+            do Error.send("unexpected right brace");  // ##DB##
+            do Error.set(1); // unexpected right brace
+            return null;
+        }
+
+        do Str.shift(s, 1, 0);
+
+        if (braces = 0) {
+            do s.eraseLastChar();
+            return Canvas.exec(s);
+        }
+
+        let p = Canvas.exec(s);
+
+        while (braces > 0) {
+            do Canvas.clearSym(p);
+            let s = Console.read(PS2);
+            let p = Canvas.exec(s);
+            let braces = braces + (Str.count(s, 123) - Str.count(s, 125));
+        }
+
+        return p;
     }
 
     function Symbol symbolExpr(String s) {
@@ -304,6 +334,10 @@ class Eval {
             return Eval.term(s);
         }
 
+        if (Error.isSet()) {
+            return 0;
+        }
+
         if (s.charAt(i) = 45) {
             return -Eval.intExpr(s, i+1, depth);
         }
@@ -325,10 +359,6 @@ class Eval {
             do Error.set(1);  // unexpected operator
             do t.dispose();
             return 0;
-        }
-
-        if (i > s.length()) {
-            /* in block */
         }
 
         let n = Eval.intExpr(t, 0, depth+1);
@@ -385,15 +415,21 @@ class Eval {
     }
 
     function int blockTerm(String s) {
+        var int n;
+        var Symbol p;
 
-        if ( (Str.count(s, 123) - Str.count(s, 125)) > 0 ) {
-            let storing = true;
-            while (storing) {
-                do Eval.eval(Console.read());
-            }
+        let p = Eval.blockExpr(s);
+
+        if (~(p.type() = INT)) {
+            do Error.send("wrong type; expected integer");  // ##DB##
+            do Error.set(1);  // wrong type; expected integer
         }
 
-        return 0;
+        let n = p.value();
+
+        do Canvas.clearSym(p);
+
+        return n;
     }
 
     function int symbolTerm(String s) {
