@@ -56,6 +56,7 @@ class Eval {
         do Eval.installKW("CLEAR",     Const.CLEAR());
         do Eval.installKW("FORWARD",   Const.FORWARD());
         do Eval.installKW("FUNCTION",  Const.FUNCTION());
+        do Eval.installKW("IF",        Const.IF());
         do Eval.installKW("PENDOWN",   Const.PENDOWN());
         do Eval.installKW("PENUP",     Const.PENUP());
         do Eval.installKW("PRINT",     Const.PRINT());
@@ -234,7 +235,7 @@ class Eval {
             return Eval.symbolExpr(s);
         }
 
-        return Symbol.new(null, INT, Eval.intExpr(s, 0, 0));
+        return Symbol.new(s, INT, Eval.intExpr(s, 0, 0));
     }
 
 

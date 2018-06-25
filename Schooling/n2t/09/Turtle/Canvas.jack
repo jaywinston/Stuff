@@ -24,6 +24,7 @@ class Canvas {
         CLEAR,
         FORWARD,
         FUNCTION,
+        IF,
         PENDOWN,
         PENUP,
         PRINT,
@@ -87,6 +88,7 @@ class Canvas {
         let CLEAR     = Const.CLEAR();
         let FORWARD   = Const.FORWARD();
         let FUNCTION  = Const.FUNCTION();
+        let IF        = Const.IF();
         let PENDOWN   = Const.PENDOWN();
         let PENUP     = Const.PENUP();
         let PRINT     = Const.PRINT();
@@ -185,6 +187,7 @@ class Canvas {
         else { if (cmd = CLEAR)     { return Canvas.doClear(argv.next());     }
         else { if (cmd = FORWARD)   { return Canvas.doForward(argv.next());   }
         else { if (cmd = FUNCTION)  { return Canvas.doFunction(argv.next());  }
+        else { if (cmd = IF)        { return Canvas.doIf(argv.next());        }
         else { if (cmd = PENDOWN)   { return Canvas.doPendown(argv.next());   }
         else { if (cmd = PENUP)     { return Canvas.doPenup(argv.next());     }
         else { if (cmd = PRINT)     { return Canvas.doPrint(argv.next());     }
@@ -192,7 +195,7 @@ class Canvas {
         else { if (cmd = TURNLEFT)  { return Canvas.doTurnleft(argv.next());  }
         else { if (cmd = TURNRIGHT) { return Canvas.doTurnright(argv.next()); }
         else { if (cmd = QUIT)      { return Canvas.doQuit(argv.next());      }
-        }}}}}}}}}}}
+        }}}}}}}}}}}}
 
         return null;
     }
@@ -280,6 +283,15 @@ class Canvas {
         return;
     }
 
+
+    function Symbol doIf(Symbol arg) {
+
+        if (~(arg.value() = 0)) {
+            return Canvas.execute(arg.next());
+        }
+
+        return null;
+    }
 
     function void doPendown(Symbol arg) {
         do t.pendown();

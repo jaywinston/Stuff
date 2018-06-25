@@ -24,6 +24,7 @@ class Const {
     function int CLEAR     () { return 10; }
     function int FORWARD   () { return 11; }
     function int FUNCTION  () { return 12; }
+    function int IF        () { return 18; }
     function int PENDOWN   () { return 13; }
     function int PENUP     () { return 14; }
     function int PRINT     () { return 15; }
