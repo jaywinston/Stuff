@@ -3,7 +3,7 @@ class Eval {
     static boolean storing;
     static int state, ININTBLOCK, REPEXPECTEXPR, IFEXPECTEPXR, EXPECTCMDLIN,
                 STORING;
-    static int ASSGN, CMD, CMDLIN, INT, STR;
+    static int ASSGN, BLOCK, CMD, CMDLIN, INT, STR;
     static int TERM;
     static Array INTOPS;
     static String PS2;
@@ -23,6 +23,7 @@ class Eval {
         let ININTBLOCK    = 5;
 
         let ASSGN = Const.ASSGN();
+        let BLOCK = Const.BLOCK();
         let CMD = Const.CMD();
         let CMDLIN = Const.CMDLIN();
         let INT = Const.INT();
@@ -215,6 +216,7 @@ class Eval {
         return;
     }
 
+
     function Symbol expression(String s) {
         var char c;
 
@@ -235,12 +237,14 @@ class Eval {
         return Symbol.new(null, INT, Eval.intExpr(s, 0, 0));
     }
 
+
     /* todo: use Str.format(), no destruct, symbol param */
     function String StringExpr(String s) {
         do s.eraseLastChar();
         do Str.shift(s, 1, 0);
         return Str.dup(Eval.format(s));
     }
+
 
     function String format(String s) {
         var int i;
@@ -274,35 +278,49 @@ class Eval {
         return s;
     }
 
+
+/*
+    function Symbol blockExpr(String s) {
+        var Symbol b, p;
+
+        let b = Eval.getBlock(s);
+        let p = Canvas.execBlock(b.next());
+        do Canvas.clearSym(b);
+
+        return p;
+    }
+*/
+
+
+
+    //function Symbol getBlock(String s) {
     function Symbol blockExpr(String s) {
         var int braces;
-        var Symbol p;
+        var Symbol block;
 
+        let block = Symbol.new(null, CMD, BLOCK);
         let braces = Str.count(s, 123) - Str.count(s, 125);
 
+        let s = Str.dup(s);
+        do Str.shift(s, 1, 0);
+
+        while (braces > 0) {
+            do block.append(Symbol.new(null, CMDLIN, s));
+            let s = Str.dup(Console.read(PS2));
+            let braces = braces + (Str.count(s, 123) - Str.count(s, 125));
+        }
+
         if (braces < 0) {
+            do Canvas.clearSym(block);
             do Error.send("unexpected right brace");  // ##DB##
             do Error.set(1); // unexpected right brace
             return null;
         }
 
-        do Str.shift(s, 1, 0);
+        do s.eraseLastChar();
+        do block.append(Symbol.new(null, CMDLIN, s));
 
-        if (braces = 0) {
-            do s.eraseLastChar();
-            return Canvas.exec(s);
-        }
-
-        let p = Canvas.exec(s);
-
-        while (braces > 0) {
-            do Canvas.clearSym(p);
-            let s = Console.read(PS2);
-            let p = Canvas.exec(s);
-            let braces = braces + (Str.count(s, 123) - Str.count(s, 125));
-        }
-
-        return p;
+        return block;
     }
 
     function Symbol symbolExpr(String s) {
@@ -416,9 +434,11 @@ class Eval {
 
     function int blockTerm(String s) {
         var int n;
-        var Symbol p;
+        var Symbol b, p;
 
-        let p = Eval.blockExpr(s);
+        let b = Eval.blockExpr(s);
+        let p = Canvas.execBlock(b.next());
+        do Canvas.clearSym(b);
 
         if (~(p.type() = INT)) {
             do Error.send("wrong type; expected integer");  // ##DB##
