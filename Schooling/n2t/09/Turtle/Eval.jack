@@ -3,7 +3,7 @@ class Eval {
     static boolean storing;
     static int state, ININTBLOCK, REPEXPECTEXPR, IFEXPECTEPXR, EXPECTCMDLIN,
                 STORING;
-    static int ASSGN, BLOCK, CMD, CMDLIN, INT, STR;
+    static int ASSGN, BLOCK, CMD, CMDLIN, INT, STR, SYM;
     static int TERM;
     static Array INTOPS;
     static String PS2;
@@ -28,6 +28,7 @@ class Eval {
         let CMDLIN = Const.CMDLIN();
         let INT = Const.INT();
         let STR = Const.STR();
+        let SYM = Const.SYM();
 
         let TERM = 4;
 
@@ -330,12 +331,10 @@ class Eval {
         let p = symtab.lookup(s);
 
         if (p = null) {
-            do Error.send("undefined symbol");  // ##DB##
-            do Error.set(1);
-            return null;
+            return Symbol.new(s, SYM, null);
         }
 
-        return Symbol.new(null, p.type(), p.value());
+        return Symbol.new(s, p.type(), p.value());
     }
 
     function int intExpr(String s, int i, int depth) {
@@ -531,30 +530,14 @@ class Eval {
         return 0;
     }
 
-    function boolean isStoring() {
-        return storing;
-    }
-
-    function void push(int val) {
-        var Symbol sym;
-
-        let sym = Symbol.new(null, null, val);
-        do sym.append(stack);
-        let stack = sym;
-
+    function void install(String name, int type, int value) {
+        do symtab.install(name, type, value);
         return;
     }
 
-    function int pop() {
-        var int val;
-        var Symbol sym;
 
-        let sym = stack;
-        let stack = stack.next();
-        let val = sym.value();
-        do sym.dispose();
-
-        return val;
+    function boolean isStoring() {
+        return storing;
     }
 
 }

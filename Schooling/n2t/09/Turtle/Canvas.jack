@@ -219,8 +219,7 @@ class Canvas {
             let p = p.next();
         }
 
-        do Canvas.clearSym(Canvas.execBlock(argv.value()));
-            do Canvas.clearSym(block);
+        do Canvas.clearSym(Canvas.execute(argv.value()));
 
         do farg.dispose();
         do fpres.dispose();
@@ -278,7 +277,7 @@ class Canvas {
             //return;
         }
 
-        let fName = Str.dup(arg.name());
+        do Eval.install(arg.name(), FUNC, Canvas.dupSym(arg.next()));
 
         return;
     }
@@ -418,6 +417,39 @@ class Canvas {
         }
 
         return;
+    }
+
+    function Symbol dupSym(Symbol sym) {
+        var int type;
+        var Symbol p;
+
+        let p = Symbol.new(null, null, null);
+
+        while (~(sym = null)) {
+
+            let type = sym.type();
+
+            if ( (type=STR) | (type=CMDLIN) ) {
+                do p.append(Symbol.new(sym.name(),
+                                       sym.type(),
+                                       Str.dup(sym.value())));
+            } else { if (type = BLK) {
+                do p.append(Symbol.new(sym.name(),
+                                       sym.type(),
+                                       Canvas.dupSym(sym.value())));
+            } else {
+                do p.append(Symbol.new(sym.name(), sym.type(), sym.value()));
+            }}
+
+            let sym = sym.next();
+        }
+
+        let sym = p;
+        let p = p.next();
+        do sym.setNext(null);
+        do Canvas.clearSym(sym);
+
+        return p;
     }
 
 }
