@@ -132,7 +132,7 @@ class Canvas {
     /* execute a command line */
     function Symbol exec(String s) {
         var int cmd;
-        var Symbol argv, p;
+        var Symbol argv, retval;
 
         if (s = null) {
             return null;
@@ -160,17 +160,15 @@ class Canvas {
             return null;
         }
 
-        if (argv.type() = CMD) {
-            let p = Canvas.execute(argv);
-        } else { if (argv.type() = FUNC) {
-            let p = Canvas.call(argv);
+        if (argv.type() = FUNC) {
+            let retval = Canvas.call(argv);
         } else {
-            return argv;
-        }}
+            let retval = Canvas.execute(argv);
+        }
 
         do Canvas.clearSym(argv);
 
-        return p;
+        return retval;
     }
 
     function Symbol execute(Symbol argv) {
@@ -178,6 +176,10 @@ class Canvas {
 
         if (argv = null) {
             return null;
+        }
+
+        if (~(argv.type() = CMD)) {
+            return Canvas.dupSym(argv);
         }
 
         let cmd = argv.value();
@@ -200,7 +202,7 @@ class Canvas {
         return null;
     }
 
-    function void call(Symbol argv) {
+    function Symbol call(Symbol argv) {
         var int n, type;
         var Array farg;
         var String arg, name, fpres;
@@ -219,12 +221,12 @@ class Canvas {
             let p = p.next();
         }
 
-        do Canvas.clearSym(Canvas.execute(argv.value()));
+        let p = Canvas.execute(argv.value());
 
         do farg.dispose();
         do fpres.dispose();
 
-        return;
+        return p;
     }
 
 
@@ -243,7 +245,6 @@ class Canvas {
 
     function void doAssign(Symbol arg) {
         do Eval.assign(arg.value());
-        do Canvas.execute(arg.next());
         return;
     }
 
@@ -260,7 +261,13 @@ class Canvas {
 
 
     function void doForward(Symbol arg) {
+
+        if (arg.type() = CMD) {
+            let arg = t.forward(Canvas.execBlock(arg));
+        }
+
         do t.forward(arg.value());
+
         return;
     }
 

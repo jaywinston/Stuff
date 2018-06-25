@@ -40,7 +40,7 @@ class Eval {
 
         let PS2 = "|";
 
-        let EXPDLMS = "=!<>&|+-*/%(){}";
+        let EXPDLMS = "=!<>&|+-*/%";
         let BLANKS = " ";
         let EQS = "=";
         let LBRACES = "{";
@@ -228,12 +228,13 @@ class Eval {
             return Symbol.new(null, STR, Eval.StringExpr(s));
         }
 
-        if (c = 123) {
-            return Eval.blockExpr(s);
+        if ( (Str.index(s, EXPDLMS, 0) = s.length()) & ~((c>47) & (c<58)) ) {
+            return Eval.symbolExpr(s);
         }
 
-        if ( ~((c>47) & (c<58)) & (Str.index(s, EXPDLMS, 0) = s.length()) ) {
-            return Eval.symbolExpr(s);
+        /* todo: fix this, it precludes intexpr start with block */
+        if ( (c=123)  ) {
+            return Eval.blockExpr(s);
         }
 
         return Symbol.new(s, INT, Eval.intExpr(s, 0, 0));
@@ -281,21 +282,6 @@ class Eval {
     }
 
 
-/*
-    function Symbol blockExpr(String s) {
-        var Symbol b, p;
-
-        let b = Eval.getBlock(s);
-        let p = Canvas.execBlock(b.next());
-        do Canvas.clearSym(b);
-
-        return p;
-    }
-*/
-
-
-
-    //function Symbol getBlock(String s) {
     function Symbol blockExpr(String s) {
         var int braces;
         var Symbol block;
@@ -313,9 +299,9 @@ class Eval {
         }
 
         if (braces < 0) {
-            do Canvas.clearSym(block);
             do Error.send("unexpected right brace");  // ##DB##
             do Error.set(1); // unexpected right brace
+            do Canvas.clearSym(block);
             return null;
         }
 
