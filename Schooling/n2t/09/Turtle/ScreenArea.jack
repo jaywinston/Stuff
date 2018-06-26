@@ -6,43 +6,24 @@ class ScreenArea {
 
     /** w and h are in pixels. */
     constructor ScreenArea new(int w, int h) {
-//        var int i;
 
         let width = (w/16) + 1;
         let height = h;
         let aLen = (width*height) * 2;
         let orig = 16384;
         let words = Array.new(aLen);
-//        let i = 0;
-//        while (i < aLen) {
-//            let words[i] = Word.new(0, 0);
-//            let i = i + 1;
-//        }
 
         return this;
     }
 
     method void dispose() {
-/*
-        var int i;
-        var Word w;
 
-        let i = 0;
-        while (i < aLen) {
-            let w = words[i];
-            do w.dispose();
-            let i = i + 1;
-        }
-*/
         do words.dispose();
         do Memory.deAlloc(this);
 
         return;
     }
 
-//    method void clear() {
-//        return;
-//    }
 
     /** copy aLen words, starting from (x, y) */
     method int copy(int x, int y) {

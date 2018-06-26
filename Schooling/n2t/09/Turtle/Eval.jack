@@ -260,21 +260,24 @@ class Eval {
         var int i, n;
         var int braces;
         var String t;
-        var Symbol block,p;
+        var Symbol block;
 
-        let block = Symbol.new(null, CMD, BLOCK);
-        let braces = Str.count(s, 123) - Str.count(s, 125);
+        let block = Symbol.new(null, BLOCK, null);
+        //let braces = Str.count(s, 123) - Str.count(s, 125);
         let t = String.new(s.length());
-        let i = Eval.blockTkn(s, t, braces);
+        let i = Eval.blockTkn(s, t, 0);
         do Str.shift(t, 1, 0);
 
-        while (braces > 0) {
-            do block.append(Symbol.new(null, CMDLIN, t));
+        while (i = s.length()) {
+            do block.append(Symbol.new(null, CMDLIN, Eval.eval(t)));
             let s = Console.read(PS2);
             let t = String.new(s.length());
-            let i = Eval.blockTkn(s, t, braces);
-            let braces = braces + (Str.count(s, 123) - Str.count(s, 125));
+            let i = Eval.blockTkn(s, t, 0);
+            //let braces = braces + (Str.count(s, 123) - Str.count(s, 125));
         }
+
+/*
+        let i = i + 1;
 
         if (braces < 0) {
             do Error.send("unexpected right brace");  // ##DB##
@@ -282,12 +285,13 @@ class Eval {
             do Canvas.clearSym(block);
             return null;
         }
+*/
 
-        do block.append(Symbol.new(null, CMDLIN, t));
-
-        do Str.rstrip(s, 32);
+        do block.append(Symbol.new(null, CMDLIN, Eval.eval(t)));
 
 /*
+        do Str.rstrip(s, 32);
+
         if (i < s.length()) {
             let t = String.new(s.length() + 6);
             do t.setIntValue(Eval.blockTerm(block));
@@ -297,23 +301,18 @@ class Eval {
         }
 */
 
+        do block.setValue(block.next());
+        do block.setNext(null);
+
         return block;
     }
 
 
-    function int blockTkn(String s, String t, int braces) {
-        var int i;
+    function int blockTkn(String s, String t, int i) {
 
-        let i = 0;
         while (i < s.length()) {
-            if (s.charAt(i) = 123) {
-                let braces = braces + 1;
-            }
             if (s.charAt(i) = 125) {
-                let braces = braces - 1;
-            }
-            if (braces = 0) {
-                return i + 1;
+                return i;
             }
             do t.appendChar(s.charAt(i));
             let i = i + 1;
@@ -457,10 +456,17 @@ class Eval {
         return n;
     }
 
+
     function int symbolTerm(String s) {
         var Symbol p;
 
         let p = symtab.lookup(s);
+
+        if (p = null) {
+            do Error.send("undefined symbol");  // ##DB##
+            do Error.set(1);  // undefined symbol
+            return 0;
+        }
 
         if (~(p.type() = INT)) {
             do Error.send("wrong type; expected integer");  // ##DB##

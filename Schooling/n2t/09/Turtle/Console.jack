@@ -8,12 +8,13 @@ class Console {
     function void init() {
         var String banner, nulls;
 
-        let banner = "                       Turtle 0.01";
-
-        do Screen.drawLine(0, 13, 509, 13);
-        do Output.moveCursor(0, 0);
+        //let banner = "                       Turtle 0.01";
+        //do Output.moveCursor(0, 0);
+        let banner = "Turtle 0.01";
+        do Output.moveCursor(0, 23);
         do Output.printString(banner);
         do banner.dispose();
+        do Screen.drawLine(0, 13, 509, 13);
 
         let INT = Const.INT();
         let STR = Const.STR();

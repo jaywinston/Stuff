@@ -178,6 +178,10 @@ class Canvas {
             return null;
         }
 
+        if (argv.type() = BLOCK) {
+            return Canvas.execute(argv.value());
+        }
+
         if (~(argv.type() = CMD)) {
             return Canvas.dupSym(argv);
         }
@@ -238,7 +242,7 @@ class Canvas {
                 return p;
             }
             do Canvas.clearSym(p);
-            let p = Canvas.exec(b.value());
+            let p = Canvas.execute(b.value());
             let b = b.next();
         }
 

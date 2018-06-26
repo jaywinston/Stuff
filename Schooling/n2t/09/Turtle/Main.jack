@@ -1,7 +1,7 @@
 class Main {
 
     function void main() {
-        var Console console;
+var int i,j,col;
 
         do Const.init();
         do lib.init();
@@ -14,9 +14,9 @@ class Main {
 
         do Console.run();
 
-        do Canvas.dispose();
-        do Parser.dispose();
-        do Error.dispose();
+        //do Canvas.dispose();
+        //do Parser.dispose();
+        //do Error.dispose();
 
         return;
     }
