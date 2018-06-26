@@ -285,16 +285,17 @@ class Eval {
 
         do block.append(Symbol.new(null, CMDLIN, t));
 
+        do Str.rstrip(s, 32);
+
+/*
         if (i < s.length()) {
-            if (Eval.isOp(s.charAt(i))) {
-                let t = String.new(s.length() + 6);
-                do t.setIntValue(Eval.blockTerm(block));
-                do Canvas.clearSym(block);
-                return n;
-            } else {
-                do block.append(Eval.argList(s, i));
-            }
+            let t = String.new(s.length() + 6);
+            do t.setIntValue(Eval.blockTerm(block));
+            do Str.tkn(s, t, null, i);
+            do Canvas.clearSym(block);
+            return Eval.argList(s, 0);
         }
+*/
 
         return block;
     }
