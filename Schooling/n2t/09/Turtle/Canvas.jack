@@ -234,6 +234,9 @@ class Canvas {
         var Symbol p;
 
         while (~(b = null)) {
+            if (~(b.type() = CMDLIN)) {
+                return p;
+            }
             do Canvas.clearSym(p);
             let p = Canvas.exec(b.value());
             let b = b.next();
