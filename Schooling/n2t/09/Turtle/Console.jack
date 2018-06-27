@@ -6,10 +6,8 @@ class Console {
     static Canvas canvas;
 
     function void init() {
-        var String banner, nulls;
+        var String banner;
 
-        //let banner = "                       Turtle 0.01";
-        //do Output.moveCursor(0, 0);
         let banner = "Turtle 0.01";
         do Output.moveCursor(0, 23);
         do Output.printString(banner);
@@ -22,7 +20,7 @@ class Console {
         let PS1 = ">";
         let term = Terminal.new(2, 1, 20, 30);
 
-        do Console.try(null);
+        do Console.run();
 
         return;
     }
@@ -42,12 +40,10 @@ class Console {
                 do term.echo(Error.message());
             }
         } else {
-            if (~(retVal = null)) {
-                do Console.echo(retVal);
-            }
+            do Console.echo(retVal);
         }
 
-       do /*term.print(*/Canvas.ready(retVal); //);
+       do Canvas.ready(retVal);
 
         return;
     }

@@ -119,7 +119,7 @@ class Canvas {
     /* prepare to execute next command line */
     function Symbol ready(Symbol p) {
 
-        do Canvas.clearSym(p);
+        do lib.clearSym(p);
 
         if (Eval.isStoring()) {
             return PS2;
@@ -145,7 +145,7 @@ class Canvas {
         let argv = Eval.eval(s);
 
         if (Error.isSet()) {
-            do Canvas.clearSym(argv);
+            do lib.clearSym(argv);
             return null;
         }
 
@@ -156,7 +156,7 @@ class Canvas {
         if (argv.type() = NULL) {
             do Error.send("unrecognized token"); // ##DB##
             do Error.set(1);  // unrecognized token
-            do Canvas.clearSym(argv);
+            do lib.clearSym(argv);
             return null;
         }
 
@@ -165,8 +165,6 @@ class Canvas {
         } else {
             let retval = Canvas.execute(argv);
         }
-
-        do Canvas.clearSym(argv);
 
         return retval;
     }
@@ -178,13 +176,9 @@ class Canvas {
             return null;
         }
 
-        if (argv.type() = BLOCK) {
-            return Canvas.execute(argv.value());
-        }
-
-        if (~(argv.type() = CMD)) {
-            return Canvas.dupSym(argv);
-        }
+        if (argv.type() = BLOCK)  { return Canvas.execute(argv.value()); }
+        if (argv.type() = CMDLIN) { return Canvas.execute(argv.value()); }
+        if (~(argv.type() = CMD)) { return lib.dupSym(argv);             }
 
         let cmd = argv.value();
 
@@ -202,6 +196,8 @@ class Canvas {
         else { if (cmd = TURNRIGHT) { return Canvas.doTurnright(argv.next()); }
         else { if (cmd = QUIT)      { return Canvas.doQuit(argv.next());      }
         }}}}}}}}}}}}
+
+        do lib.clearSym(argv);
 
         return null;
     }
@@ -241,7 +237,7 @@ class Canvas {
             if (~(b.type() = CMDLIN)) {
                 return p;
             }
-            do Canvas.clearSym(p);
+            do lib.clearSym(p);
             let p = Canvas.execute(b.value());
             let b = b.next();
         }
@@ -270,7 +266,7 @@ class Canvas {
     function void doForward(Symbol arg) {
 
         if (arg.type() = CMD) {
-            let arg = t.forward(Canvas.execBlock(arg));
+            let arg = Canvas.execBlock(arg);
         }
 
         do t.forward(arg.value());
@@ -291,7 +287,7 @@ class Canvas {
             //return;
         }
 
-        do Eval.install(arg.name(), FUNC, Canvas.dupSym(arg.next()));
+        do Eval.install(arg.name(), FUNC, lib.dupSym(arg.next()));
 
         return;
     }
@@ -344,126 +340,6 @@ class Canvas {
     function void doQuit(Symbol arg) {
         do Sys.halt();
         return;
-    }
-
-/*
-    function void echo(Symbol sym) {
-        if (sym.type() = STR) {
-            do Error.send(sym.value());
-        } else {
-            do echoInt(sym);
-        }
-        return;
-    }
-
-    function void echoInt(Symbol sym) {
-        var String s;
-
-        let s = String.new(5);
-        do s.setInt(sym.value());
-        do Error.send(s);
-        return;
-    }
-*/
-
-
-    function void pushBlock(Symbol blk) {
-        var Symbol top;
-
-        let top = Symbol.new(null, SYM, blk);
-        do top.append(blocks);
-        let blocks = top;
-        return;
-    }
-
-
-    function Symbol popBlock() {
-        var Symbol blk, top;
-
-        let top = blocks;
-        let blocks = blocks.next();
-        let blk = top.value();
-        do top.dispose();
-        return blk;
-    }
-
-
-    function void pushCmd(Symbol cmd) {
-        var Symbol top;
-
-        let top = Symbol.new(null, SYM, cmd);
-        do top.append(cmds);
-        let cmds = top;
-        return;
-    }
-
-
-    function Symbol popCmd() {
-        var Symbol cmd, top;
-
-        let top = cmds;
-        let cmds = cmds.next();
-        let cmd = top.value();
-        do top.dispose();
-        return cmd;
-    }
-
-
-    function void clearSym(Symbol sym) {
-        var int type;
-        var String s;
-        var Symbol p;
-
-        while (~(sym = null)) {
-            let p = sym;
-            let sym = sym.next();
-
-            let type = p.type();
-            if ( (type=STR) | (type=CMDLIN) ) {
-                let s = p.value();
-                if (~(s = null)) {
-                    do s.dispose();
-                }
-            } else { if (type = BLK) {
-                do Canvas.clearSym(p.value());
-            }}
-            do p.dispose();
-        }
-
-        return;
-    }
-
-    function Symbol dupSym(Symbol sym) {
-        var int type;
-        var Symbol p;
-
-        let p = Symbol.new(null, null, null);
-
-        while (~(sym = null)) {
-
-            let type = sym.type();
-
-            if ( (type=STR) | (type=CMDLIN) ) {
-                do p.append(Symbol.new(sym.name(),
-                                       sym.type(),
-                                       Str.dup(sym.value())));
-            } else { if (type = BLK) {
-                do p.append(Symbol.new(sym.name(),
-                                       sym.type(),
-                                       Canvas.dupSym(sym.value())));
-            } else {
-                do p.append(Symbol.new(sym.name(), sym.type(), sym.value()));
-            }}
-
-            let sym = sym.next();
-        }
-
-        let sym = p;
-        let p = p.next();
-        do sym.setNext(null);
-        do Canvas.clearSym(sym);
-
-        return p;
     }
 
 }

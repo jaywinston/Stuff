@@ -97,7 +97,7 @@ class Eval {
 
         if (Eval.isAssign(t)) {
             let argv = Symbol.new(null, CMD, ASSGN);
-            do argv.append(Symbol.new(null, CMDLIN, t));
+            do argv.append(Symbol.new(null, STR, t));  // todo: fix type
         } else {
             let argv = Eval.expression(t);
             do t.dispose();
@@ -106,7 +106,7 @@ class Eval {
         do argv.append(Eval.argList(s, i+1));
 
         if (Error.isSet()) {
-            do Canvas.clearSym(argv);
+            do lib.clearSym(argv);
             return null;
         }
 
@@ -177,7 +177,7 @@ class Eval {
 
         if (Error.isSet()) {
             do name.dispose();
-            do Canvas.clearSym(value);
+            do lib.clearSym(value);
             return;
         }
 
@@ -188,7 +188,7 @@ class Eval {
         }
 
         do name.dispose();
-        do Canvas.clearSym(value);
+        do lib.clearSym(value);
 
         return;
     }
@@ -258,22 +258,19 @@ class Eval {
 
     function Symbol blockExpr(String s) {
         var int i, n;
-        var int braces;
         var String t;
         var Symbol block;
 
         let block = Symbol.new(null, BLOCK, null);
-        //let braces = Str.count(s, 123) - Str.count(s, 125);
         let t = String.new(s.length());
-        let i = Eval.blockTkn(s, t, 0);
-        do Str.shift(t, 1, 0);
+        let i = Eval.blockTkn(s, t, 1);
 
         while (i = s.length()) {
             do block.append(Symbol.new(null, CMDLIN, Eval.eval(t)));
+            do t.dispose();
             let s = Console.read(PS2);
             let t = String.new(s.length());
             let i = Eval.blockTkn(s, t, 0);
-            //let braces = braces + (Str.count(s, 123) - Str.count(s, 125));
         }
 
 /*
@@ -282,7 +279,7 @@ class Eval {
         if (braces < 0) {
             do Error.send("unexpected right brace");  // ##DB##
             do Error.set(1); // unexpected right brace
-            do Canvas.clearSym(block);
+            do lib.clearSym(block);
             return null;
         }
 */
@@ -296,7 +293,7 @@ class Eval {
             let t = String.new(s.length() + 6);
             do t.setIntValue(Eval.blockTerm(block));
             do Str.tkn(s, t, null, i);
-            do Canvas.clearSym(block);
+            do lib.clearSym(block);
             return Eval.argList(s, 0);
         }
 */
@@ -438,11 +435,10 @@ class Eval {
 
     function int blockTerm(Symbol b) {
         var int n;
-        var Symbol b, p;
+        var Symbol p;
 
-        //let b = Eval.blockExpr(s);
         let p = Canvas.execBlock(b.next());
-        do Canvas.clearSym(b);
+        do lib.clearSym(b);
 
         if (~(p.type() = INT)) {
             do Error.send("wrong type; expected integer");  // ##DB##
@@ -451,7 +447,7 @@ class Eval {
 
         let n = p.value();
 
-        do Canvas.clearSym(p);
+        do lib.clearSym(p);
 
         return n;
     }
