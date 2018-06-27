@@ -149,19 +149,19 @@ class Canvas {
 
         let cmd = argv.value();
 
-        if (cmd = ASSGN)            { return Canvas.doAssign(argv.next());    }
-        else { if (cmd = BLOCK)     { return Canvas.doBlock(argv);            }
-        else { if (cmd = CLEAR)     { return Canvas.doClear(argv.next());     }
-        else { if (cmd = FORWARD)   { return Canvas.doForward(argv.next());   }
-        else { if (cmd = FUNCTION)  { return Canvas.doFunction(argv.next());  }
-        else { if (cmd = IF)        { return Canvas.doIf(argv.next());        }
-        else { if (cmd = PENDOWN)   { return Canvas.doPendown(argv.next());   }
-        else { if (cmd = PENUP)     { return Canvas.doPenup(argv.next());     }
-        else { if (cmd = PRINT)     { return Canvas.doPrint(argv.next());     }
-        else { if (cmd = REPEAT)    { return Canvas.doRepeat(argv.next());    }
-        else { if (cmd = TURNLEFT)  { return Canvas.doTurnleft(argv.next());  }
-        else { if (cmd = TURNRIGHT) { return Canvas.doTurnright(argv.next()); }
-        else { if (cmd = QUIT)      { return Canvas.doQuit(argv.next());      }
+        if (cmd = ASSGN)            { do Canvas.doAssign(argv.next());    }
+        else { if (cmd = BLOCK)     { do Canvas.doBlock(argv);            }
+        else { if (cmd = CLEAR)     { do Canvas.doClear(argv.next());     }
+        else { if (cmd = FORWARD)   { do Canvas.doForward(argv.next());   }
+        else { if (cmd = FUNCTION)  { do Canvas.doFunction(argv.next());  }
+        else { if (cmd = IF)        { do Canvas.doIf(argv.next());        }
+        else { if (cmd = PENDOWN)   { do Canvas.doPendown(argv.next());   }
+        else { if (cmd = PENUP)     { do Canvas.doPenup(argv.next());     }
+        else { if (cmd = PRINT)     { do Canvas.doPrint(argv.next());     }
+        else { if (cmd = REPEAT)    { do Canvas.doRepeat(argv.next());    }
+        else { if (cmd = TURNLEFT)  { do Canvas.doTurnleft(argv.next());  }
+        else { if (cmd = TURNRIGHT) { do Canvas.doTurnright(argv.next()); }
+        else { if (cmd = QUIT)      { do Canvas.doQuit(argv.next());      }
         }}}}}}}}}}}}
 
         do lib.clearSym(argv);
@@ -249,24 +249,19 @@ class Canvas {
             return;
         }
 
-        if (~(arg.type() = SYM)) {
-            //do Error.set(1);  // no function name
-            //return;
-        }
-
         do Eval.install(arg.name(), FUNC, arg.next());
 
         return;
     }
 
 
-    function Symbol doIf(Symbol arg) {
+    function void doIf(Symbol arg) {
 
         if (~(arg.value() = 0)) {
-            return Canvas.execute(arg.next());
+            do lib.clearSym(Canvas.execute(arg.next()));
         }
 
-        return null;
+        return;
     }
 
     function void doPendown(Symbol arg) {

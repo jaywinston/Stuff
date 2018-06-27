@@ -173,7 +173,7 @@ class Eval {
         }
 
         let name = String.new(s.length());
-        let value = Eval.argList(s, Str.tkn(s, name, EQS, 0)+1);
+        let value = Eval.evalArgs(Eval.argList(s, Str.tkn(s, name, EQS, 0)+1));
 
         if (Error.isSet()) {
             do name.dispose();
@@ -193,6 +193,10 @@ class Eval {
         return;
     }
 
+
+    function Symbol evalArgs(Symbol arg) {
+        return arg;
+    }
 
     function Symbol expression(String s) {
         var char c;

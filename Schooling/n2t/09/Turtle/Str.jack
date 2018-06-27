@@ -34,7 +34,6 @@ class Str {
         return true;
     }
 
-    /* todo: 2nd arg array */
     function String format(String f, Array arg) {
         var boolean continue;
         var char c;
