@@ -7,7 +7,6 @@ class Canvas {
     static String fName;
     static TextBox tb;
     static Turtle t;
-    static Symbol block, blocks, cmdp, cmds;
 
     static int
         NULL,
@@ -43,29 +42,10 @@ class Canvas {
         let left = j;
         let bottom = i + h;
         let right = j + w;
-        let block = null;
-        let blocks = null;
-        let braces = 0;
-        let repeat = 1;
-        let fName = null;
-        let PS1 = ps1;
-        let PS2 = ps2;
-        let ps = PS1;
 
         let tb = TextBox.new(i, j, h, w);
         let t = Canvas.newTurtle();
 
-        return;
-    }
-
-
-    function void dispose() {
-        do PS1.dispose();
-        do PS2.dispose();
-        do TKN_DLMS.dispose();
-        do EXP_DLMS.dispose();
-        do t.dispose();
-        do tb.dispose();
         return;
     }
 
@@ -116,19 +96,6 @@ class Canvas {
     }
 
 
-    /* prepare to execute next command line */
-    function Symbol ready(Symbol p) {
-
-        do lib.clearSym(p);
-
-        if (Eval.isStoring()) {
-            return PS2;
-        }
-
-        return PS1;
-    }
-
-
     /* execute a command line */
     function Symbol exec(String s) {
         var int cmd;
@@ -176,7 +143,7 @@ class Canvas {
             return null;
         }
 
-        if (argv.type() = BLOCK)  { return Canvas.execute(argv.value()); }
+        if (argv.type() = BLOCK)  { return Canvas.execBlock(argv.value()); }
         if (argv.type() = CMDLIN) { return Canvas.execute(argv.value()); }
         if (~(argv.type() = CMD)) { return lib.dupSym(argv);             }
 
@@ -215,7 +182,7 @@ class Canvas {
         while (~(p = null)) {
             let farg[0] = n;
             let name = Str.format(fpres, farg);
-            do symtab.install(name, p.type(), p.value());
+            do Eval.install(name, p.type(), p.value());
             do name.dispose();
             let n = n + 1;
             let p = p.next();
@@ -287,7 +254,7 @@ class Canvas {
             //return;
         }
 
-        do Eval.install(arg.name(), FUNC, lib.dupSym(arg.next()));
+        do Eval.install(arg.name(), FUNC, arg.next());
 
         return;
     }
@@ -339,6 +306,30 @@ class Canvas {
 
     function void doQuit(Symbol arg) {
         do Sys.halt();
+        return;
+    }
+
+    function void echo(Symbol sym) {
+        while (~(sym = null)) {
+            if (sym.type() = STR) {
+                do Terminal.echo(sym.value());
+            } else { if (sym.type() = SYM) {
+                do Console.echo(sym.value());
+            } else { if (sym.type() = INT) {
+                do Console.echoInt(sym);
+            }}}
+            let sym = sym.next();
+        }
+        return;
+    }
+
+    function void echoInt(Symbol sym) {
+        var String s;
+
+        let s = String.new(6);
+        do s.setInt(sym.value());
+        do Terminal.echo(s);
+        do s.dispose();
         return;
     }
 

@@ -43,8 +43,6 @@ class Console {
             do Console.echo(retVal);
         }
 
-       do Canvas.ready(retVal);
-
         return;
     }
 

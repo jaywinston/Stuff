@@ -17,15 +17,6 @@ class lib {
         return n - (q*d);
     }
 
-/*
-    function int MAXLEN() {
-        return maxlen;
-    }
-
-    function String NULLS() {
-        return nulls;
-    }
-*/
 
     function void clearSym(Symbol sym) {
         var int type;
@@ -33,19 +24,22 @@ class lib {
         var Symbol p;
 
         while (~(sym = null)) {
-            let p = sym;
-            let sym = sym.next();
 
-            let type = p.type();
+            let p = sym.next();
+
+            let type = sym.type();
             if ( (type=STR) | (type=CMDLIN) ) {
-                let s = p.value();
+                let s = sym.value();
                 if (~(s = null)) {
                     do s.dispose();
                 }
             } else { if (type = BLK) {
-                do lib.clearSym(p.value());
+                do lib.clearSym(sym.value());
             }}
-            do p.dispose();
+
+            do sym.dispose();
+
+            let sym = p;
         }
 
         return;
