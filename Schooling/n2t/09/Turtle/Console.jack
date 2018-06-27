@@ -12,13 +12,13 @@ class Console {
         do Output.moveCursor(0, 23);
         do Output.printString(banner);
         do banner.dispose();
+        do Screen.setColor(true);
         do Screen.drawLine(0, 13, 509, 13);
 
         let INT = Const.INT();
         let STR = Const.STR();
         let SYM = Const.SYM();
         let PS1 = ">";
-        let term = Terminal.new(2, 1, 20, 30);
 
         do Console.run();
 
@@ -27,7 +27,7 @@ class Console {
 
     function void run() {
         while (true) {
-            do Console.try(Canvas.exec(term.read(PS1)));
+            do Console.try(Canvas.exec(Terminal.read(PS1)));
         }
         return;
     }
@@ -35,9 +35,9 @@ class Console {
     function void try(Symbol retVal) {
 
         if (Error.isSet()) {
-            do term.echo(Error.message());
+            do Terminal.echo(Error.message());
             if (Error.isSet()) {
-                do term.echo(Error.message());
+                do Terminal.echo(Error.message());
             }
         } else {
             do Console.echo(retVal);
@@ -51,7 +51,7 @@ class Console {
     function void echo(Symbol sym) {
         while (~(sym = null)) {
             if (sym.type() = STR) {
-                do term.echo(sym.value());
+                do Terminal.echo(sym.value());
             } else { if (sym.type() = SYM) {
                 do Console.echo(sym.value());
             } else { if (sym.type() = INT) {
@@ -67,13 +67,13 @@ class Console {
 
         let s = String.new(6);
         do s.setInt(sym.value());
-        do term.echo(s);
+        do Terminal.echo(s);
         do s.dispose();
         return;
     }
 
     function String read(String ps) {
-        return term.read(ps);
+        return Terminal.read(ps);
     }
 }
 

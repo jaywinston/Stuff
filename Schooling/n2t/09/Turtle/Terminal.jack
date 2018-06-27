@@ -1,11 +1,11 @@
 class Terminal {
 
-    field int BUFSIZ;
-    field int bp;
-    field Array linbuf;
-    field TextBox tb;
+    static int BUFSIZ;
+    static int bp;
+    static Array linbuf;
+    static TextBox tb;
 
-    constructor Terminal new(int i, int j, int h, int w) {
+    function void init(int i, int j, int h, int w) {
 
         let BUFSIZ = 23;
         let linbuf = Array.new(BUFSIZ);
@@ -16,10 +16,10 @@ class Terminal {
         }
         let bp = 0;
         let tb = TextBox.new(i, j, h, w);
-        return this;
+        return;
     }
 
-    method void dispose() {
+    function void dispose() {
         var int i;
         var String s;
 
@@ -31,11 +31,10 @@ class Terminal {
         }
         do linbuf.dispose();
         do tb.dispose();
-        do Memory.dealloc(this);
         return;
     }
 
-    method String read(String ps) {
+    function String read(String ps) {
         var char c;
         var int recall;
         var String s;
@@ -84,12 +83,12 @@ class Terminal {
         return s;
     }
 
-    method void print(String s) {
+    function void print(String s) {
         do tb.puts(s);
         return;
     }
 
-    method void echo(String s) {
+    function void echo(String s) {
         do tb.prints(s);
         return;
     }
