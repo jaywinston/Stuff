@@ -106,7 +106,7 @@ class Eval {
         do argv.append(Eval.argList(s, i+1));
 
         if (Error.isSet()) {
-            do lib.clearSym(argv);
+            do Lib.clearSym(argv);
             return null;
         }
 
@@ -177,7 +177,7 @@ class Eval {
 
         if (Error.isSet()) {
             do name.dispose();
-            do lib.clearSym(value);
+            do Lib.clearSym(value);
             return;
         }
 
@@ -188,7 +188,7 @@ class Eval {
         }
 
         do name.dispose();
-        do lib.clearSym(value);
+        do Lib.clearSym(value);
 
         return;
     }
@@ -265,16 +265,18 @@ class Eval {
         var String t;
         var Symbol block;
 
-        let block = Symbol.new(null, BLOCK, null);
         let t = String.new(s.length());
         let i = Eval.blockTkn(s, t, 1);
+        let block = Symbol.new(null, CMDLIN, Eval.eval(t));
 
         while (i = s.length()) {
-            do block.append(Symbol.new(null, CMDLIN, Eval.eval(t)));
             do t.dispose();
             let s = Console.read(PS2);
             let t = String.new(s.length());
             let i = Eval.blockTkn(s, t, 0);
+            if (t.length() > 0) {
+                do block.append(Symbol.new(null, CMDLIN, Eval.eval(t)));
+            }
         }
 
 /*
@@ -283,29 +285,23 @@ class Eval {
         if (braces < 0) {
             do Error.send("unexpected right brace");  // ##DB##
             do Error.set(1); // unexpected right brace
-            do lib.clearSym(block);
+            do Lib.clearSym(block);
             return null;
         }
-*/
 
-        do block.append(Symbol.new(null, CMDLIN, Eval.eval(t)));
-
-/*
         do Str.rstrip(s, 32);
 
         if (i < s.length()) {
             let t = String.new(s.length() + 6);
             do t.setIntValue(Eval.blockTerm(block));
             do Str.tkn(s, t, null, i);
-            do lib.clearSym(block);
+            do Lib.clearSym(block);
             return Eval.argList(s, 0);
         }
+
 */
-
-        do block.setValue(block.next());
-        do block.setNext(null);
-
-        return block;
+        
+        return Symbol.new(null, BLOCK, block);
     }
 
 
@@ -442,7 +438,7 @@ class Eval {
         var Symbol p;
 
         let p = Canvas.execBlock(b.next());
-        do lib.clearSym(b);
+        do Lib.clearSym(b);
 
         if (~(p.type() = INT)) {
             do Error.send("wrong type; expected integer");  // ##DB##
@@ -451,7 +447,7 @@ class Eval {
 
         let n = p.value();
 
-        do lib.clearSym(p);
+        do Lib.clearSym(p);
 
         return n;
     }
@@ -527,7 +523,7 @@ class Eval {
         if (op =  45) { return m - n; }
         if (op =  42) { return m * n; }
         if (op =  47) { return m / n; }
-        if (op =  37) { return lib.mod(m, n); }
+        if (op =  37) { return Lib.mod(m, n); }
 
         if (op = 261) { return   m = n;  }
         if (op = 233) { return ~(m = n); }

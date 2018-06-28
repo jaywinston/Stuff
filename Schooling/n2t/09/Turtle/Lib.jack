@@ -1,4 +1,4 @@
-class lib {
+class Lib {
 
     static int CMDLIN, STR, BLK;
 
@@ -34,7 +34,7 @@ class lib {
                     do s.dispose();
                 }
             } else { if (type = BLK) {
-                do lib.clearSym(sym.value());
+                do Lib.clearSym(sym.value());
             }}
 
             do sym.dispose();
@@ -62,7 +62,7 @@ class lib {
             } else { if (type = BLK) {
                 do p.append(Symbol.new(sym.name(),
                                        sym.type(),
-                                       lib.dupSym(sym.value())));
+                                       Lib.dupSym(sym.value())));
             } else {
                 do p.append(Symbol.new(sym.name(), sym.type(), sym.value()));
             }}
@@ -73,7 +73,7 @@ class lib {
         let sym = p;
         let p = p.next();
         do sym.setNext(null);
-        do lib.clearSym(sym);
+        do Lib.clearSym(sym);
 
         return p;
     }

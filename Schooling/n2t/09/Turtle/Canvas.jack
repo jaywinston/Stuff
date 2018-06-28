@@ -112,7 +112,7 @@ class Canvas {
         let argv = Eval.eval(s);
 
         if (Error.isSet()) {
-            do lib.clearSym(argv);
+            do Lib.clearSym(argv);
             return null;
         }
 
@@ -123,7 +123,7 @@ class Canvas {
         if (argv.type() = NULL) {
             do Error.send("unrecognized token"); // ##DB##
             do Error.set(1);  // unrecognized token
-            do lib.clearSym(argv);
+            do Lib.clearSym(argv);
             return null;
         }
 
@@ -145,7 +145,7 @@ class Canvas {
 
         if (argv.type() = BLOCK)  { return Canvas.execBlock(argv.value()); }
         if (argv.type() = CMDLIN) { return Canvas.execute(argv.value()); }
-        if (~(argv.type() = CMD)) { return lib.dupSym(argv);             }
+        if (~(argv.type() = CMD)) { return Lib.dupSym(argv);             }
 
         let cmd = argv.value();
 
@@ -164,7 +164,7 @@ class Canvas {
         else { if (cmd = QUIT)      { do Canvas.doQuit(argv.next());      }
         }}}}}}}}}}}}
 
-        do lib.clearSym(argv);
+        do Lib.clearSym(argv);
 
         return null;
     }
@@ -197,19 +197,28 @@ class Canvas {
     }
 
 
+/*
     function Symbol execBlock(Symbol b) {
         var Symbol p;
 
         while (~(b = null)) {
-            if (~(b.type() = CMDLIN)) {
-                return p;
-            }
-            do lib.clearSym(p);
+            do Lib.clearSym(p);
             let p = Canvas.execute(b.value());
             let b = b.next();
         }
 
         return p;
+    }
+*/
+
+    function Symbol execBlock(Symbol b) {
+
+        while (~(b.next() = null)) {
+            do Lib.clearSym(Canvas.execute(b.value()));
+            let b = b.next();
+        }
+
+        return Canvas.execute(b.value());
     }
 
 
@@ -232,7 +241,7 @@ class Canvas {
 
     function void doForward(Symbol arg) {
 
-        if (arg.type() = CMD) {
+        if (arg.type() = BLOCK) {
             let arg = Canvas.execBlock(arg);
         }
 
@@ -258,7 +267,7 @@ class Canvas {
     function void doIf(Symbol arg) {
 
         if (~(arg.value() = 0)) {
-            do lib.clearSym(Canvas.execute(arg.next()));
+            do Lib.clearSym(Canvas.execute(arg.next()));
         }
 
         return;

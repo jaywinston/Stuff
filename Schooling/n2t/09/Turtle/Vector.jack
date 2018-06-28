@@ -63,13 +63,13 @@ let trigv[90] = 100;
 /**
  * These functions provide access to trigonometric values multiplied by 100.
  * The idea is to use the value and then divide by 100.  This is close enough
- * for my needs here.  The user must call lib.init() before use.
+ * for my needs here.  The user must call Lib.init() before use.
  */
     function int sin(int a) {
         var boolean neg;
 
         if (Math.abs(a) > 360) {
-            let a = lib.mod(a, 360);
+            let a = Lib.mod(a, 360);
         }
 
         if (a < 0) {
@@ -79,11 +79,11 @@ let trigv[90] = 100;
         let neg = a > 180;
 
         if (neg) {
-            let a = lib.mod(a, 180);
+            let a = Lib.mod(a, 180);
         }
 
         if (a > 90) {
-            let a = 90 - (lib.mod(a-1, 90)+1);
+            let a = 90 - (Lib.mod(a-1, 90)+1);
         }
 
         if (neg) {

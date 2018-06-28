@@ -3,7 +3,7 @@ class Main {
     function void main() {
 
         do Const.init();
-        do lib.init();
+        do Lib.init();
         do Str.init();
         do Vector.init();
         do Error.init(Const.errTab(), 2);
