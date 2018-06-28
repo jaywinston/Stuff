@@ -317,6 +317,22 @@ class Canvas {
         return;
     }
 
+
+    function void try(Symbol retVal) {
+
+        if (Error.isSet()) {
+            do Terminal.echo(Error.message());
+            if (Error.isSet()) {
+                do Terminal.echo(Error.message());
+            }
+        } else {
+            do Canvas.echo(retVal);
+        }
+
+        return;
+    }
+
+
     function void echo(Symbol sym) {
         while (~(sym = null)) {
             if (sym.type() = STR) {
@@ -330,6 +346,7 @@ class Canvas {
         }
         return;
     }
+
 
     function void echoInt(Symbol sym) {
         var String s;
