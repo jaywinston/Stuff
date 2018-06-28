@@ -27,7 +27,8 @@ class Console {
 
     function void run() {
         while (true) {
-            do Console.try(Canvas.exec(Terminal.read(PS1)));
+            //do Console.try(Canvas.exec(Terminal.read(PS1)));
+            do Console.try(Canvas.exec(Eval.next()));
         }
         return;
     }

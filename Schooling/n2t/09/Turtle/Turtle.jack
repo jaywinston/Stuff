@@ -1,13 +1,28 @@
 class Turtle {
 
+    static boolean RUNNING;
     static int TLEN;
+    static int top, left, bottom, right;
+
+    field boolean _pendown;
     field int direction, _x, _y;
     field Vector v;
     field ScreenArea sa;
-    field boolean _pendown;
 
-    constructor Turtle new(int x, int y, int d) {
+    function void init() {
+        let RUNNING = false;
+        return;
+    }
+
+
+    constructor Turtle new(int x, int y, int d, int t, int l, int b, int r) {
         let TLEN = 10;
+        if (~RUNNING) {
+            let top = t;
+            let left = l;
+            let bottom = b;
+            let right = r;
+        }
         let _x = x;
         let _y = y;
         let direction = setDirection(d);
@@ -15,6 +30,7 @@ class Turtle {
         let sa = ScreenArea.new(TLEN*2, TLEN);
         let _pendown = false;
         do show();
+        let RUNNING = true;
         return this;
     }
 

@@ -3,7 +3,6 @@ class Canvas {
     static int bottom, left, right, top;
     static int braces;
     static int repeat;
-    static String PS1, PS2, ps;
     static String fName;
     static TextBox tb;
     static Turtle t;
@@ -34,17 +33,17 @@ class Canvas {
         _ECHO;
 
 
-    function void init(int i, int j, int h, int w, String ps1, String ps2) {
+    function void init(int i, int j, int h, int w) {
 
         do Canvas.initKWs();
+        let tb = TextBox.new(i, j, h, w);
 
         let top = i;
         let left = j;
         let bottom = i + h;
         let right = j + w;
 
-        let tb = TextBox.new(i, j, h, w);
-        let t = Canvas.newTurtle();
+        do Canvas.getTurtle();
 
         return;
     }
@@ -84,20 +83,22 @@ class Canvas {
     function void clear() {
         do t.dispose();
         do tb.clear();
-        let t = Canvas.newTurtle();
+        do Canvas.getTurtle();
         return;
     }
 
 
-    function Turtle newTurtle() {
-        return Turtle.new(((2*left) + (right-left)) * 4,
-                           ((2*bottom) + (top-bottom)) * 5,
-                           90);
+    function void getTurtle() {
+        let t = Turtle.new(((2*left) + (right-left)) * 4,
+                          ((2*bottom) + (top-bottom)) * 5,
+                          90, top, left, bottom, right);
+        return;
     }
 
 
     /* execute a command line */
-    function Symbol exec(String s) {
+    //function Symbol exec(String s) {
+    function Symbol exec(Symbol s) {
         var int cmd;
         var Symbol argv, retval;
 
@@ -105,11 +106,14 @@ class Canvas {
             return null;
         }
 
+/*
         if (s.length() = 0) {
             return null;
         }
+*/
 
-        let argv = Eval.eval(s);
+        //let argv = Eval.eval(s);
+        let argv = s;
 
         if (Error.isSet()) {
             do Lib.clearSym(argv);
@@ -128,12 +132,12 @@ class Canvas {
         }
 
         if (argv.type() = FUNC) {
-            let retval = Canvas.call(argv);
-        } else {
-            let retval = Canvas.execute(argv);
-        }
-
-        return retval;
+            return Canvas.call(argv);
+            //let retval = Canvas.call(argv);
+        } //else {
+            return Canvas.execute(argv);
+            //let retval = Canvas.execute(argv);
+        //}
     }
 
     function Symbol execute(Symbol argv) {

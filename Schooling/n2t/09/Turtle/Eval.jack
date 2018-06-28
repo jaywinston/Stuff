@@ -4,10 +4,11 @@ class Eval {
     static int ASSGN, BLOCK, CMD, CMDLIN, INT, STR, SYM;
     static int TERM;
     static Array INTOPS;
-    static String PS2;
+    static String PS1, PS2;
     static String WORDDLMS, EXPDLMS;
     static String BLANKS, EQS, LBRACES, PERCENTS;
     static HashTable symtab;
+
 
     function void init() {
 
@@ -27,6 +28,7 @@ class Eval {
         do WORDDLMS.appendChar(61);   // '='
         do WORDDLMS.appendChar(123);  // '{'
 
+        let PS1 = ">";
         let PS2 = "|";
 
         let EXPDLMS = "=!<>&|+-*/%";
@@ -58,22 +60,28 @@ class Eval {
         return;
     }
 
+
     function void installKW(String name, int val) {
         do symtab.install(name, CMD, val);
         do name.dispose();
         return;
     }
 
-    function Symbol eval(String s) {
 
-        if (s.length() = 0) {
-            return null;
-        }
-
-        return Eval.argList(s, 0);
+    function Symbol next() {
+        return Eval.eval(Terminal.read(PS1), 0);
     }
 
-    function Symbol argList(String s, int i) {
+
+/*
+    function Symbol eval(String s) {
+        return Eval.argList(s, 0);
+    }
+*/
+
+
+    //function Symbol argList(String s, int i) {
+    function Symbol eval(String s, int i) {
         var String t;
         var Symbol argv;
 
@@ -103,7 +111,8 @@ class Eval {
             do t.dispose();
         }
 
-        do argv.append(Eval.argList(s, i+1));
+        do argv.append(Eval.eval(s, i+1));
+        //do argv.append(Eval.argList(s, i+1));
 
         if (Error.isSet()) {
             do Lib.clearSym(argv);
@@ -173,7 +182,8 @@ class Eval {
         }
 
         let name = String.new(s.length());
-        let value = Eval.evalArgs(Eval.argList(s, Str.tkn(s, name, EQS, 0)+1));
+        let value = Eval.evalArgs(Eval.eval(s, Str.tkn(s, name, EQS, 0)+1));
+        //let value=Eval.evalArgs(Eval.argList(s, Str.tkn(s, name, EQS, 0)+1));
 
         if (Error.isSet()) {
             do name.dispose();
@@ -267,15 +277,15 @@ class Eval {
 
         let t = String.new(s.length());
         let i = Eval.blockTkn(s, t, 1);
-        let block = Symbol.new(null, CMDLIN, Eval.eval(t));
+        let block = Symbol.new(null, CMDLIN, Eval.eval(t, 0));
 
         while (i = s.length()) {
             do t.dispose();
-            let s = Console.read(PS2);
+            let s = Terminal.read(PS2);
             let t = String.new(s.length());
             let i = Eval.blockTkn(s, t, 0);
             if (t.length() > 0) {
-                do block.append(Symbol.new(null, CMDLIN, Eval.eval(t)));
+                do block.append(Symbol.new(null, CMDLIN, Eval.eval(t, 0)));
             }
         }
 

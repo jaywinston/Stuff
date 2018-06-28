@@ -8,8 +8,9 @@ class Main {
         do Vector.init();
         do Error.init(Const.errTab(), 2);
         do Eval.init();
-        do Canvas.init(2, 32, 20, 31, ">", "|");
+        do Canvas.init(2, 32, 20, 31);
         do Terminal.init(2, 1, 20, 30);
+        do Turtle.init();
         do Console.init();
 
         //do Canvas.dispose();
