@@ -23,6 +23,7 @@ class Const {
     function int ASSGN     () { return  9; }
     function int BLOCK     () { return 10; }
     function int CLEAR     () { return 11; }
+    function int ELSE      () { return 22; }
     function int FORWARD   () { return 12; }
     function int FUNCTION  () { return 13; }
     function int IF        () { return 14; }

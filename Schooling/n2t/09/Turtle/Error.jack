@@ -64,7 +64,9 @@ class Error {
         var String t;
 
         let t = ERRTAB[0];
-        do t.dispose();
+        if (~(t = null)) {
+            do t.dispose();
+        }
         let ERRTAB[0] = s;
         let e = 0;
         return;

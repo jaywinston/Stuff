@@ -1,6 +1,5 @@
 class Eval {
 
-    static boolean storing;
     static int ASSGN, BLOCK, CMD, CMDLIN, END, INT, STR, SYM;
     static int TERM;
     static Array INTOPS;
@@ -32,7 +31,7 @@ class Eval {
         let PS1 = ">";
         let PS2 = "|";
 
-        let EXPDLMS = "=!<>&|+-*/%";
+        let EXPDLMS = "=~!<>&|+-*/%";
         let BLANKS = " ";
         let EQS = "=";
         let LBRACES = "{";
@@ -46,18 +45,19 @@ class Eval {
 
         let symtab = HashTable.new();
 
-        do Eval.installKW("=",          0);  //Const.CLEAR());
-        do Eval.installKW("CLEAR",      1);  //Const.CLEAR());
-        do Eval.installKW("FORWARD",    2);  //Const.FORWARD());
-        do Eval.installKW("FUNCTION",   3);  //Const.FUNCTION());
-        do Eval.installKW("IF",         4);  //Const.IF());
-        do Eval.installKW("PENDOWN",    5);  //Const.PENDOWN());
-        do Eval.installKW("PENUP",      6);  //Const.PENUP());
-        do Eval.installKW("PRINT",      7);  //Const.PRINT());
-        do Eval.installKW("REPEAT",     8);  //Const.REPEAT());
-        do Eval.installKW("TURNLEFT",   9);  //Const.TURNLEFT());
-        do Eval.installKW("TURNRIGHT", 10);  //Const.TURNRIGHT());
-        do Eval.installKW("QUIT",      11);  //Const.QUIT());
+        //do Eval.installKW("=",       Const.ASSGN());
+        do Eval.installKW("CLEAR",     Const.CLEAR());
+        do Eval.installKW("ELSE",      Const.ELSE());
+        do Eval.installKW("FORWARD",   Const.FORWARD());
+        do Eval.installKW("FUNCTION",  Const.FUNCTION());
+        do Eval.installKW("IF",        Const.IF());
+        do Eval.installKW("PENDOWN",   Const.PENDOWN());
+        do Eval.installKW("PENUP",     Const.PENUP());
+        do Eval.installKW("PRINT",     Const.PRINT());
+        do Eval.installKW("REPEAT",    Const.REPEAT());
+        do Eval.installKW("TURNLEFT",  Const.TURNLEFT());
+        do Eval.installKW("TURNRIGHT", Const.TURNRIGHT());
+        do Eval.installKW("QUIT",      Const.QUIT());
 
         return;
     }
@@ -75,14 +75,6 @@ class Eval {
     }
 
 
-/*
-    function Symbol eval(String s) {
-        return Eval.argList(s, 0);
-    }
-*/
-
-
-    //function Symbol argList(String s, int i) {
     function Symbol eval(String s, int i) {
         var String t;
         var Symbol argv;
@@ -107,14 +99,13 @@ class Eval {
 
         if (Eval.isAssign(t)) {
             let argv = Symbol.new(null, CMD, ASSGN);
-            do argv.append(Symbol.new(null, STR, t));  // todo: fix type
+            do argv.append(Symbol.new(null, STR, t));  // todo: fix type?
         } else {
             let argv = Eval.expression(t);
             do t.dispose();
         }
 
         do argv.append(Eval.eval(s, i+1));
-        //do argv.append(Eval.argList(s, i+1));
 
         if (Error.isSet()) {
             do Lib.clearSym(argv);
@@ -185,7 +176,6 @@ class Eval {
 
         let name = String.new(s.length());
         let value = Eval.evalArgs(Eval.eval(s, Str.tkn(s, name, EQS, 0)+1));
-        //let value=Eval.evalArgs(Eval.argList(s, Str.tkn(s, name, EQS, 0)+1));
 
         if (Error.isSet()) {
             do name.dispose();
@@ -206,9 +196,11 @@ class Eval {
     }
 
 
+    /* stub */
     function Symbol evalArgs(Symbol arg) {
         return arg;
     }
+
 
     function Symbol expression(String s) {
         var char c;
@@ -340,7 +332,7 @@ class Eval {
     }
 
 
-    function Symbol block2int(Symbol block, String s, int i) {
+    function Symbol blockToInt(Symbol block, String s, int i) {
         var String t;
 
         let t = String.new(s.length() + 6);
@@ -388,17 +380,11 @@ class Eval {
             return Eval.term(s);
         }
 
+/*
         if (Error.isSet()) {
             return 0;
         }
-
-        if (s.charAt(i) = 45) {
-            return -Eval.intExpr(s, i+1, depth);
-        }
-
-        if (s.charAt(i) = 126) {
-            return ~Eval.intExpr(s, i+1, depth);
-        }
+*/
 
         let t = String.new(s.length());
         let i = Eval.intTkn(s, t, INTOPS[depth], i);
@@ -437,6 +423,16 @@ class Eval {
     function int term(String s) {
         var char c;
         var Symbol p;
+
+        if (s.charAt(0) = 45) {
+            do Str.shift(s, 1, 0);
+            return -Eval.term(s);
+        }
+
+        if (s.charAt(0) = 126) {
+            do Str.shift(s, 1, 0);
+            return ~Eval.term(s);
+        }
 
         let c = s.charAt(0);
 
@@ -510,6 +506,11 @@ class Eval {
 
     function int intTkn(String s, String t, String list, int i) {
 
+        while ((s.charAt(i)=45) | (s.charAt(i)=126)) {
+            do t.appendChar(s.charAt(i));
+            let i = i + 1;
+        }
+
         let i = Str.tkn(s, t, list, i);
 
         if (i < s.length()) {
@@ -575,11 +576,6 @@ class Eval {
     function void install(String name, int type, int value) {
         do symtab.install(name, type, value);
         return;
-    }
-
-
-    function boolean isStoring() {
-        return storing;
     }
 
 }

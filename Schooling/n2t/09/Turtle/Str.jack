@@ -287,20 +287,15 @@ class Str {
         return i + 1;  // EOS while scanning for quote
     }
 
-    function void shift(String s, int off, int whence) {
-        var int i, sLen;
+    function void shift(String s, int off, int i) {
 
-        let sLen = s.length();
-
-        if ( (sLen=0) | (sLen<off) ) {
+        if ( (s.length()=0) | (s.length()<off) ) {
             return;
         }
 
-        let i = whence;
-        while (i < sLen) {
-            if ( (i+off) < sLen ) {
-                do s.setCharAt(i, s.charAt(i+off));
-            }
+        let i = i + off;
+        while (i < s.length()) {
+            do s.setCharAt(i-off, s.charAt(i));
             let i = i + 1;
         }
 
