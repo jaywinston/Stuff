@@ -472,7 +472,7 @@ class Eval {
         var int n;
         var Symbol p;
 
-        let p = Canvas.execBlock(b.next());
+        let p = Exec.execBlock(b.next());
         do Lib.clearSym(b);
 
         if (~(p.type() = INT)) {

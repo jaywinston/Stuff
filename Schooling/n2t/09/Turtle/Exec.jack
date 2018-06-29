@@ -1,4 +1,4 @@
-class Canvas {
+class Exec {
 
     static int bottom, left, right, top;
     static int braces;
@@ -35,7 +35,7 @@ class Canvas {
 
     function void init(int i, int j, int h, int w) {
 
-        do Canvas.initKWs();
+        do Exec.initKWs();
         let tb = TextBox.new(i, j, h, w);
 
         let top = i;
@@ -43,7 +43,7 @@ class Canvas {
         let bottom = i + h;
         let right = j + w;
 
-        do Canvas.getTurtle();
+        do Exec.getTurtle();
 
         return;
     }
@@ -83,7 +83,7 @@ class Canvas {
     function void clear() {
         do t.dispose();
         do tb.clear();
-        do Canvas.getTurtle();
+        do Exec.getTurtle();
         return;
     }
 
@@ -132,11 +132,11 @@ class Canvas {
         }
 
         if (argv.type() = FUNC) {
-            return Canvas.call(argv);
-            //let retval = Canvas.call(argv);
+            return Exec.call(argv);
+            //let retval = Exec.call(argv);
         } //else {
-            return Canvas.execute(argv);
-            //let retval = Canvas.execute(argv);
+            return Exec.execute(argv);
+            //let retval = Exec.execute(argv);
         //}
     }
 
@@ -147,25 +147,25 @@ class Canvas {
             return null;
         }
 
-        if (argv.type() = BLOCK)  { return Canvas.execBlock(argv.value()); }
-        if (argv.type() = CMDLIN) { return Canvas.execute(argv.value()); }
+        if (argv.type() = BLOCK)  { return Exec.execBlock(argv.value()); }
+        if (argv.type() = CMDLIN) { return Exec.execute(argv.value()); }
         if (~(argv.type() = CMD)) { return Lib.dupSym(argv);             }
 
         let cmd = argv.value();
 
-        if (cmd = ASSGN)            { do Canvas.doAssign(argv.next());    }
-        else { if (cmd = BLOCK)     { do Canvas.doBlock(argv);            }
-        else { if (cmd = CLEAR)     { do Canvas.doClear(argv.next());     }
-        else { if (cmd = FORWARD)   { do Canvas.doForward(argv.next());   }
-        else { if (cmd = FUNCTION)  { do Canvas.doFunction(argv.next());  }
-        else { if (cmd = IF)        { do Canvas.doIf(argv.next());        }
-        else { if (cmd = PENDOWN)   { do Canvas.doPendown(argv.next());   }
-        else { if (cmd = PENUP)     { do Canvas.doPenup(argv.next());     }
-        else { if (cmd = PRINT)     { do Canvas.doPrint(argv.next());     }
-        else { if (cmd = REPEAT)    { do Canvas.doRepeat(argv.next());    }
-        else { if (cmd = TURNLEFT)  { do Canvas.doTurnleft(argv.next());  }
-        else { if (cmd = TURNRIGHT) { do Canvas.doTurnright(argv.next()); }
-        else { if (cmd = QUIT)      { do Canvas.doQuit(argv.next());      }
+        if (cmd = ASSGN)            { do Exec.doAssign(argv.next());    }
+        else { if (cmd = BLOCK)     { do Exec.doBlock(argv);            }
+        else { if (cmd = CLEAR)     { do Exec.doClear(argv.next());     }
+        else { if (cmd = FORWARD)   { do Exec.doForward(argv.next());   }
+        else { if (cmd = FUNCTION)  { do Exec.doFunction(argv.next());  }
+        else { if (cmd = IF)        { do Exec.doIf(argv.next());        }
+        else { if (cmd = PENDOWN)   { do Exec.doPendown(argv.next());   }
+        else { if (cmd = PENUP)     { do Exec.doPenup(argv.next());     }
+        else { if (cmd = PRINT)     { do Exec.doPrint(argv.next());     }
+        else { if (cmd = REPEAT)    { do Exec.doRepeat(argv.next());    }
+        else { if (cmd = TURNLEFT)  { do Exec.doTurnleft(argv.next());  }
+        else { if (cmd = TURNRIGHT) { do Exec.doTurnright(argv.next()); }
+        else { if (cmd = QUIT)      { do Exec.doQuit(argv.next());      }
         }}}}}}}}}}}}
 
         do Lib.clearSym(argv);
@@ -192,7 +192,7 @@ class Canvas {
             let p = p.next();
         }
 
-        let p = Canvas.execute(argv.value());
+        let p = Exec.execute(argv.value());
 
         do farg.dispose();
         do fpres.dispose();
@@ -207,7 +207,7 @@ class Canvas {
 
         while (~(b = null)) {
             do Lib.clearSym(p);
-            let p = Canvas.execute(b.value());
+            let p = Exec.execute(b.value());
             let b = b.next();
         }
 
@@ -218,11 +218,11 @@ class Canvas {
     function Symbol execBlock(Symbol b) {
 
         while (~(b.next() = null)) {
-            do Lib.clearSym(Canvas.execute(b.value()));
+            do Lib.clearSym(Exec.execute(b.value()));
             let b = b.next();
         }
 
-        return Canvas.execute(b.value());
+        return Exec.execute(b.value());
     }
 
 
@@ -233,12 +233,12 @@ class Canvas {
 
 
     function Symbol doBlock(Symbol arg) {
-        return Canvas.execBlock(arg.next());
+        return Exec.execBlock(arg.next());
     }
 
 
     function void doClear(Symbol arg) {
-        do Canvas.clear();
+        do Exec.clear();
         return;
     }
 
@@ -246,7 +246,7 @@ class Canvas {
     function void doForward(Symbol arg) {
 
         if (arg.type() = BLOCK) {
-            let arg = Canvas.execBlock(arg);
+            let arg = Exec.execBlock(arg);
         }
 
         do t.forward(arg.value());
@@ -271,7 +271,7 @@ class Canvas {
     function void doIf(Symbol arg) {
 
         if (~(arg.value() = 0)) {
-            do Lib.clearSym(Canvas.execute(arg.next()));
+            do Lib.clearSym(Exec.execute(arg.next()));
         }
 
         return;
@@ -326,7 +326,7 @@ class Canvas {
                 do Terminal.echo(Error.message());
             }
         } else {
-            do Canvas.echo(retVal);
+            do Exec.echo(retVal);
         }
 
         return;
@@ -338,9 +338,9 @@ class Canvas {
             if (sym.type() = STR) {
                 do Terminal.echo(sym.value());
             } else { if (sym.type() = SYM) {
-                do Canvas.echo(sym.value());
+                do Exec.echo(sym.value());
             } else { if (sym.type() = INT) {
-                do Canvas.echoInt(sym);
+                do Exec.echoInt(sym);
             }}}
             let sym = sym.next();
         }

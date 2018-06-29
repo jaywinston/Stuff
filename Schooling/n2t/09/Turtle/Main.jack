@@ -16,14 +16,14 @@ class Main {
         do Vector.init();
         do Error.init(Const.ERRTAB(), 2);
         do Eval.init();
-        do Canvas.init(2, 32, 20, 31);
+        do Exec.init(2, 32, 20, 31);
         do Terminal.init(2, 1, 20, 30);
         do Turtle.init();
         //do Console.init();
 
         do Main.run();
 
-        //do Canvas.dispose();
+        //do Exec.dispose();
         //do Parser.dispose();
         //do Error.dispose();
 
@@ -33,7 +33,7 @@ class Main {
 
     function void run() {
         while (true) {
-            do Canvas.try(Canvas.exec(Eval.next()));
+            do Exec.try(Exec.exec(Eval.next()));
         }
         return;
     }
