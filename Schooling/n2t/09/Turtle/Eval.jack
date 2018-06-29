@@ -380,23 +380,10 @@ class Eval {
             return Eval.term(s);
         }
 
-/*
-        if (Error.isSet()) {
-            return 0;
-        }
-*/
-
         let t = String.new(s.length());
-        let i = Eval.intTkn(s, t, INTOPS[depth], i);
+        let i = Eval.intTkn(s, t, INTOPS[depth], i);  // sets Error
 
         if (Error.isSet()) {
-            do t.dispose();
-            return 0;
-        }
-
-        if (t.length() = 0) {
-            do Error.send("unexpected operator");  // ##DB##
-            do Error.set(1);  // unexpected operator
             do t.dispose();
             return 0;
         }
@@ -513,6 +500,18 @@ class Eval {
 
         let i = Str.tkn(s, t, list, i);
 
+        if (t.length() = 0) {
+            do Error.send("unexpected operator");  // ##DB##
+            do Error.set(1);  // unexpected operator
+            return i;
+        }
+
+        if ( (s.charAt(i-1)=45) | (s.charAt(i-1)=126) ) {
+            do Error.send("unexpected operator");  // ##DB##
+            do Error.set(1);  // unexpected operator
+            return i;
+        }
+
         if (i < s.length()) {
             if (s.charAt(i) = 40) {
                 let i = Str.block(s, t, 40, 41, i);
@@ -525,19 +524,7 @@ class Eval {
                     let i = Eval.intTkn(s, t, list, i);
                 }
             } else { if (s.charAt(i) = 123) {
-                //do Eval.push(t);
-                //let t = String.new(s.length());
                 let i = Str.block(s, t, 123, 125, i);
-/*
-                if (i < s.length()) {
-                    do Str.cat(stack.value(), t);
-                    do t.dispose();
-                    let t = Eval.pop();
-                    let i = Eval.intTkn(s, t, list, i);
-                } else { if (i > s.length()) {
-                    let storing = true;
-                }}
-*/
             }}
         }
 
