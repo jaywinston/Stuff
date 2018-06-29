@@ -1,7 +1,7 @@
 class Eval {
 
     static boolean storing;
-    static int ASSGN, BLOCK, CMD, CMDLIN, INT, STR, SYM;
+    static int ASSGN, BLOCK, CMD, CMDLIN, END, INT, STR, SYM;
     static int TERM;
     static Array INTOPS;
     static String PS1, PS2;
@@ -16,6 +16,7 @@ class Eval {
         let BLOCK = Const.BLOCK();
         let CMD = Const.CMD();
         let CMDLIN = Const.CMDLIN();
+        let END = Const.END();
         let INT = Const.INT();
         let STR = Const.STR();
         let SYM = Const.SYM();
@@ -45,17 +46,18 @@ class Eval {
 
         let symtab = HashTable.new();
 
-        do Eval.installKW("CLEAR",     Const.CLEAR());
-        do Eval.installKW("FORWARD",   Const.FORWARD());
-        do Eval.installKW("FUNCTION",  Const.FUNCTION());
-        do Eval.installKW("IF",        Const.IF());
-        do Eval.installKW("PENDOWN",   Const.PENDOWN());
-        do Eval.installKW("PENUP",     Const.PENUP());
-        do Eval.installKW("PRINT",     Const.PRINT());
-        do Eval.installKW("REPEAT",    Const.REPEAT());
-        do Eval.installKW("TURNLEFT",  Const.TURNLEFT());
-        do Eval.installKW("TURNRIGHT", Const.TURNRIGHT());
-        do Eval.installKW("QUIT",      Const.QUIT());
+        do Eval.installKW("=",          0);  //Const.CLEAR());
+        do Eval.installKW("CLEAR",      1);  //Const.CLEAR());
+        do Eval.installKW("FORWARD",    2);  //Const.FORWARD());
+        do Eval.installKW("FUNCTION",   3);  //Const.FUNCTION());
+        do Eval.installKW("IF",         4);  //Const.IF());
+        do Eval.installKW("PENDOWN",    5);  //Const.PENDOWN());
+        do Eval.installKW("PENUP",      6);  //Const.PENUP());
+        do Eval.installKW("PRINT",      7);  //Const.PRINT());
+        do Eval.installKW("REPEAT",     8);  //Const.REPEAT());
+        do Eval.installKW("TURNLEFT",   9);  //Const.TURNLEFT());
+        do Eval.installKW("TURNRIGHT", 10);  //Const.TURNRIGHT());
+        do Eval.installKW("QUIT",      11);  //Const.QUIT());
 
         return;
     }
@@ -273,43 +275,30 @@ class Eval {
     function Symbol blockExpr(String s) {
         var int i, n;
         var String t;
-        var Symbol block;
+        var Symbol block, end;
 
         let t = String.new(s.length());
         let i = Eval.blockTkn(s, t, 1);
         let block = Symbol.new(null, CMDLIN, Eval.eval(t, 0));
+        do t.dispose();
 
         while (i = s.length()) {
-            do t.dispose();
             let s = Terminal.read(PS2);
             let t = String.new(s.length());
             let i = Eval.blockTkn(s, t, 0);
             if (t.length() > 0) {
                 do block.append(Symbol.new(null, CMDLIN, Eval.eval(t, 0)));
             }
+            do t.dispose();
         }
 
-/*
         let i = i + 1;
-
-        if (braces < 0) {
-            do Error.send("unexpected right brace");  // ##DB##
-            do Error.set(1); // unexpected right brace
-            do Lib.clearSym(block);
-            return null;
-        }
 
         do Str.rstrip(s, 32);
 
         if (i < s.length()) {
-            let t = String.new(s.length() + 6);
-            do t.setIntValue(Eval.blockTerm(block));
-            do Str.tkn(s, t, null, i);
-            do Lib.clearSym(block);
-            return Eval.argList(s, 0);
+            let end = Eval.blockEnd(Str.count(s, 125) - 1);
         }
-
-*/
         
         return Symbol.new(null, BLOCK, block);
     }
@@ -326,6 +315,42 @@ class Eval {
         }
 
         return i;
+    }
+
+
+    function Symbol endBlock() {
+        return null;
+    }
+
+
+    function Symbol blockEnd(int n) {
+        var Symbol end;
+
+        if (n = 0) {
+            return null;
+        }
+
+        let end = Symbol.new(null, END, null);
+        while (n > 1) {
+            do end.append(Symbol.new(null, END, null));
+            let n = n - 1;
+        }
+
+        return end;
+    }
+
+
+    function Symbol block2int(Symbol block, String s, int i) {
+        var String t;
+
+        let t = String.new(s.length() + 6);
+        do t.setIntValue(Eval.blockTerm(block));
+        do Lib.clearSym(block);
+        do Str.tkn(s, t, null, i);
+        let block = Eval.eval(t, 0);
+        do t.dispose();
+
+        return block;
     }
 
 

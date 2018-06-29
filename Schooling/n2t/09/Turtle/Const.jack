@@ -1,14 +1,13 @@
 class Const {
 
-    static Array errtab;
-
-    function void init() {
+    function Array ERRTAB() {
+        var Array errtab;
 
         let errtab = Array.new(2);
         let errtab[0] = null;
         let errtab[1] = "error";
 
-        return;
+        return errtab;
     }
 
     function int NULL      () { return  0; }
@@ -16,23 +15,23 @@ class Const {
     function int CMD       () { return  2; }
     function int CMDLIN    () { return  3; }
     function int FUNC      () { return  4; }
-    function int INT       () { return  5; }
-    function int STR       () { return  6; }
-    function int SYM       () { return  7; }
-    function int ASSGN     () { return  8; }
-    function int BLOCK     () { return  9; }
-    function int CLEAR     () { return 10; }
-    function int FORWARD   () { return 11; }
-    function int FUNCTION  () { return 12; }
-    function int IF        () { return 18; }
-    function int PENDOWN   () { return 13; }
-    function int PENUP     () { return 14; }
-    function int PRINT     () { return 15; }
-    function int REPEAT    () { return 16; }
-    function int TURNLEFT  () { return 17; }
-    function int TURNRIGHT () { return 18; }
-    function int QUIT      () { return 19; }
+    function int END       () { return  5; }
+    function int INT       () { return  6; }
+    function int STR       () { return  7; }
+    function int SYM       () { return  8; }
 
-    function Array errTab  () { return errtab; }
+    function int ASSGN     () { return  9; }
+    function int BLOCK     () { return 10; }
+    function int CLEAR     () { return 11; }
+    function int FORWARD   () { return 12; }
+    function int FUNCTION  () { return 13; }
+    function int IF        () { return 14; }
+    function int PENDOWN   () { return 15; }
+    function int PENUP     () { return 16; }
+    function int PRINT     () { return 17; }
+    function int REPEAT    () { return 18; }
+    function int TURNLEFT  () { return 19; }
+    function int TURNRIGHT () { return 20; }
+    function int QUIT      () { return 21; }
 
 }

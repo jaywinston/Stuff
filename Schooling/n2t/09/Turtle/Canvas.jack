@@ -338,9 +338,9 @@ class Canvas {
             if (sym.type() = STR) {
                 do Terminal.echo(sym.value());
             } else { if (sym.type() = SYM) {
-                do Console.echo(sym.value());
+                do Canvas.echo(sym.value());
             } else { if (sym.type() = INT) {
-                do Console.echoInt(sym);
+                do Canvas.echoInt(sym);
             }}}
             let sym = sym.next();
         }
