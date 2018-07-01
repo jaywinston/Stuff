@@ -15,11 +15,10 @@ class Main {
         do Str.init();
         do Vector.init();
         do Error.init(Const.ERRTAB(), 2);
+        do Turtle.init();
         do Eval.init();
         do Exec.init(2, 32, 20, 31);
         do Terminal.init(2, 1, 20, 30);
-        do Turtle.init();
-        //do Console.init();
 
         do Main.run();
 

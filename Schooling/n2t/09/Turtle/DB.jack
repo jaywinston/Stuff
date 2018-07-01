@@ -15,8 +15,10 @@ class DB {
 
         let i = 2048;
         while (i < 16384) {
-            do Output.printInt(Memory.peek(i+1));
-            do Output.printChar(32);
+            if (~Memory.peek(i)) {
+                do Output.printInt(Memory.peek(i+1));
+                do Output.printChar(32);
+            }
             let i = Memory.peek(i+1);
         }
 

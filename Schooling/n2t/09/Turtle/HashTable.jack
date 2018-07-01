@@ -6,7 +6,7 @@ class HashTable {
     constructor HashTable new() {
         var int i;
 
-        let HASHSIZ = 50;
+        let HASHSIZ = 16;
         let table = Array.new(HASHSIZ);
         let i = 0;
         while (i < HASHSIZ) {
@@ -37,15 +37,15 @@ class HashTable {
     }
 
     method void install(String name, int type, int val) {
-        var int nhash;
+        var int hashval;
         var Symbol p;
 
         let p = lookup(name);
         if (p = null) {
-            let p = Symbol.new(Str.dup(name), type, val);
-            let nhash = HashTable.hash(name);
-            do p.setNext(table[nhash]);
-            let table[nhash] = p;
+            let p = Symbol.new(name, type, val);
+            let hashval = HashTable.hash(name);
+            do p.setNext(table[hashval]);
+            let table[hashval] = p;
         } else {
             do p.setType(type);
             do p.setValue(val);

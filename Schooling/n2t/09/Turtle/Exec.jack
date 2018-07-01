@@ -97,7 +97,7 @@ class Exec {
 
 
     /* execute a command line */
-    //function Symbol exec(String s) {
+    //function Symbol exec(String s) {  todo: CLEAN ME UP
     function Symbol exec(Symbol s) {
         var int cmd;
         var Symbol argv, retval;
@@ -106,11 +106,11 @@ class Exec {
             return null;
         }
 
+        let argv = s;
 /*
         if (s.length() = 0) {
             return null;
         }
-*/
 
         //let argv = Eval.eval(s);
         let argv = s;
@@ -123,6 +123,7 @@ class Exec {
         if (argv = null) {
             return null;
         }
+*/
 
         if (argv.type() = NULL) {
             do Error.send("unrecognized token"); // ##DB##
@@ -133,11 +134,9 @@ class Exec {
 
         if (argv.type() = FUNC) {
             return Exec.call(argv);
-            //let retval = Exec.call(argv);
-        } //else {
-            return Exec.execute(argv);
-            //let retval = Exec.execute(argv);
-        //}
+        }
+
+        return Exec.execute(argv);
     }
 
     function Symbol execute(Symbol argv) {
@@ -148,8 +147,11 @@ class Exec {
         }
 
         if (argv.type() = BLOCK)  { return Exec.execBlock(argv.value()); }
-        if (argv.type() = CMDLIN) { return Exec.execute(argv.value()); }
-        if (~(argv.type() = CMD)) { return Lib.dupSym(argv);             }
+        if (argv.type() = CMDLIN) { do Exec.execute(argv.value());       }
+
+        if (~(argv.type() = CMD)) {
+            return argv;
+        }
 
         let cmd = argv.value();
 
@@ -178,7 +180,7 @@ class Exec {
     function Symbol call(Symbol argv) {
         var int n, type;
         var Array farg;
-        var String arg, name, fpres;
+        var String arg, fpres;
         var Symbol p;
 
         let farg = Array.new(1);
@@ -187,9 +189,9 @@ class Exec {
         let p = argv.next();
         while (~(p = null)) {
             let farg[0] = n;
-            let name = Str.format(fpres, farg);
-            do Eval.install(name, p.type(), p.value());
-            do name.dispose();
+            let arg = Str.format(fpres, farg);
+            do Eval.install(arg, p.type(), p.value());
+            do arg.dispose();
             let n = n + 1;
             let p = p.next();
         }
@@ -202,20 +204,6 @@ class Exec {
         return p;
     }
 
-
-/*
-    function Symbol execBlock(Symbol b) {
-        var Symbol p;
-
-        while (~(b = null)) {
-            do Lib.clearSym(p);
-            let p = Exec.execute(b.value());
-            let b = b.next();
-        }
-
-        return p;
-    }
-*/
 
     function Symbol execBlock(Symbol b) {
 
@@ -320,7 +308,7 @@ class Exec {
     }
 
 
-    function void try(Symbol retVal) {
+    function void try(Symbol retval) {
 
         if (Error.isSet()) {
             do Terminal.echo(Error.message());
@@ -328,8 +316,10 @@ class Exec {
                 do Terminal.echo(Error.message());
             }
         } else {
-            do Exec.echo(retVal);
+            do Exec.echo(retval);
         }
+
+        do Lib.clearSym(retval);
 
         return;
     }

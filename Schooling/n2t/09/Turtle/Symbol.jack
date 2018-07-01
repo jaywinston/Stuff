@@ -67,11 +67,13 @@ class Symbol {
         return;
     }
 
+/*
     function Symbol dup(Symbol o) {
         if (o = null) {
             return null;
         }
         return Symbol.new(o.name(), o.type(), o.value());
     }
+*/
 
 }

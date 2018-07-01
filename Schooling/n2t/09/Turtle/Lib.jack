@@ -1,12 +1,12 @@
 class Lib {
 
-    static int CMDLIN, STR, BLK;
+    static int CMDLIN, STR, BLOCK;
 
     function void init() {
 
         let CMDLIN = Const.CMDLIN();
         let STR = Const.STR();
-        let BLK = Const.BLOCK();
+        let BLOCK = Const.BLOCK();
         return;
     }
 
@@ -21,25 +21,25 @@ class Lib {
     function void clearSym(Symbol sym) {
         var int type;
         var String s;
-        var Symbol p;
+        var Symbol next;
 
         while (~(sym = null)) {
 
-            let p = sym.next();
+            let next = sym.next();
 
             let type = sym.type();
-            if ( (type=STR) | (type=CMDLIN) ) {
+            if (type = STR) {
                 let s = sym.value();
                 if (~(s = null)) {
                     do s.dispose();
                 }
-            } else { if (type = BLK) {
+            } else { if ( (type=BLOCK) | (type=CMDLIN) ) {
                 do Lib.clearSym(sym.value());
             }}
 
             do sym.dispose();
 
-            let sym = p;
+            let sym = next;
         }
 
         return;
@@ -59,7 +59,7 @@ class Lib {
                 do p.append(Symbol.new(sym.name(),
                                        sym.type(),
                                        Str.dup(sym.value())));
-            } else { if (type = BLK) {
+            } else { if (type = BLOCK) {
                 do p.append(Symbol.new(sym.name(),
                                        sym.type(),
                                        Lib.dupSym(sym.value())));
