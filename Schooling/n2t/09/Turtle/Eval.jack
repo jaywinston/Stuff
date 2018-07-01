@@ -210,7 +210,7 @@ class Eval {
         let c = s.charAt(0);
 
         if (c = 34) {
-            return Symbol.new(null, STR, Eval.StringExpr(s));
+            return Symbol.new(s, STR, Eval.StringExpr(s));
         }
 
         if (c = 123) {
@@ -294,11 +294,11 @@ class Eval {
                     do block.append(end.next());
                     do end.dispose();
                     /* todo: endBlock; handle if continue expr */
-                    return Symbol.new(null, BLOCK, block);
+                    return Symbol.new(null, BLOCK, block);  // mem leak: t
                 }}
                 do block.append(Symbol.new(t, CMDLIN, end));
             }
-            do t.dispose();  // mem leak
+            do t.dispose();
         }
 
         let i = i + 1;
@@ -345,10 +345,9 @@ class Eval {
         let t = String.new(s.length());
 
         let i = Eval.blockTkn(s, t, i);
-do DB.db(t);
 
         if (t.length() > 0) {
-            let name = t;
+            let name = Str.dup(t);
         } else {
             let name = null;
         }

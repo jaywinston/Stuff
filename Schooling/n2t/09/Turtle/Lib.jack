@@ -1,12 +1,13 @@
 class Lib {
 
-    static int CMDLIN, STR, BLOCK;
+    static int CMDLIN, STR, BLOCK, FUNC;
 
     function void init() {
 
         let CMDLIN = Const.CMDLIN();
         let STR = Const.STR();
         let BLOCK = Const.BLOCK();
+        let FUNC = Const.FUNC();
         return;
     }
 
@@ -55,11 +56,13 @@ class Lib {
 
             let type = sym.type();
 
-            if ( (type=STR) | (type=CMDLIN) ) {
+            if (type = STR) {
                 do p.append(Symbol.new(sym.name(),
                                        sym.type(),
                                        Str.dup(sym.value())));
-            } else { if (type = BLOCK) {
+            } else { if ( (type=BLOCK)
+                        |((type=CMDLIN) 
+                        | (type=FUNC)) ) {
                 do p.append(Symbol.new(sym.name(),
                                        sym.type(),
                                        Lib.dupSym(sym.value())));

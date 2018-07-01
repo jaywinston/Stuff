@@ -10,9 +10,7 @@ class Main {
         do Screen.setColor(true);
         do Screen.drawLine(0, 13, 509, 13);
 
-        //do Const.init();
         do Lib.init();
-        do Str.init();
         do Vector.init();
         do Error.init(Const.ERRTAB(), 2);
         do Turtle.init();
@@ -32,7 +30,7 @@ class Main {
 
     function void run() {
         while (true) {
-            do Exec.try(Exec.exec(Eval.next()));
+            do Exec.try(Eval.next());
         }
         return;
     }

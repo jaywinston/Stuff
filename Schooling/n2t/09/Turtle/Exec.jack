@@ -1,9 +1,6 @@
 class Exec {
 
     static int bottom, left, right, top;
-    static int braces;
-    static int repeat;
-    static String fName;
     static TextBox tb;
     static Turtle t;
 
@@ -196,7 +193,7 @@ class Exec {
             let p = p.next();
         }
 
-        let p = Exec.execute(argv.value());
+        let p = Exec.execute(Lib.dupSym(argv.value()));
 
         do farg.dispose();
         do fpres.dispose();
@@ -206,6 +203,15 @@ class Exec {
 
 
     function Symbol execBlock(Symbol b) {
+        var Symbol p;
+
+        let p = Exec.doBlock(b);
+        do Lib.clearSym(b);
+        return p;
+    }
+
+
+    function Symbol doBlock(Symbol b) {
 
         while (~(b.next() = null)) {
             do Lib.clearSym(Exec.execute(b.value()));
@@ -216,24 +222,19 @@ class Exec {
     }
 
 
-    function void doAssign(Symbol arg) {
+    function Symbol doAssign(Symbol arg) {
         do Eval.assign(arg.value());
-        return;
+        return arg.next();
     }
 
 
-    function Symbol doBlock(Symbol arg) {
-        return Exec.execBlock(arg.next());
-    }
-
-
-    function void doClear(Symbol arg) {
+    function Symbol doClear(Symbol arg) {
         do Exec.clear();
-        return;
+        return arg.next();
     }
 
 
-    function void doForward(Symbol arg) {
+    function Symbol doForward(Symbol arg) {
 
         if (arg.type() = BLOCK) {
             let arg = Exec.execBlock(arg);
@@ -241,64 +242,94 @@ class Exec {
 
         do t.forward(arg.value());
 
-        return;
+        return arg.next();
     }
 
 
-    function void doFunction(Symbol arg) {
+    function Symbol doFunction(Symbol arg) {
 
         if (arg = null) {
             do Error.set(1);  // no function name
-            return;
+            return arg.next();
         }
 
         do Eval.install(arg.name(), FUNC, arg.next());
 
-        return;
+        return arg.next();
     }
 
 
-    function void doIf(Symbol arg) {
+    function Symbol doIf(Symbol arg) {
 
         if (~(arg.value() = 0)) {
             do Lib.clearSym(Exec.execute(arg.next()));
         }
 
-        return;
+        return arg.next();
     }
 
-    function void doPendown(Symbol arg) {
+    function Symbol doPendown(Symbol arg) {
         do t.pendown();
-        return;
+        return arg;
     }
 
 
-    function void doPenup(Symbol arg) {
+    function Symbol doPenup(Symbol arg) {
         do t.penup();
-        return;
+        return arg;
     }
 
 
-    function void doPrint(Symbol arg) {
-        return;
+    function Symbol doPrint(Symbol arg) {
+        return arg.next();
     }
 
 
-    function void doRepeat(Symbol arg) {
-        let repeat = arg.value();
-        return;
+    function Symbol doRepeat(Symbol arg) {
+        var int i;
+
+        if ( (arg.type()=CMD) & (arg.value()=IF) ) {
+            return Exec.doRepeatIf(arg.next());
+        }
+
+        let i = arg.value();
+        while (i > 0) {
+            do Exec.try(arg.next());
+            let i = i - 1;
+        }
+
+        let arg = arg.next();
+
+        return arg.next();
     }
 
 
-    function void doTurnleft(Symbol arg) {
+    function Symbol doRepeatIf(Symbol arg) {
+        var int condition;
+        var Symbol p;
+
+        let condition = arg.value();
+        while (~(condition = 0)) {
+            do Exec.try(Lib.dupSym(arg.next()));
+            let p = Eval.eval(arg.name(), 0);
+do Output.printInt(p.type());
+            let condition = p.value();
+            do Lib.clearSym(p);
+        }
+
+        return arg.next();
+    }
+
+
+    function Symbol doTurnleft(Symbol arg) {
         do t.turnleft(arg.value());
-        return;
+        return arg.next();
     }
 
 
-    function void doTurnright(Symbol arg) {
+    function Symbol doTurnright(Symbol arg) {
         do t.turnright(arg.value());
-        return;
+        return arg.next();
     }
 
 
@@ -308,7 +339,10 @@ class Exec {
     }
 
 
-    function void try(Symbol retval) {
+    function void try(Symbol argv) {
+        var Symbol retval;
+
+        let retval = Exec.exec(argv);
 
         if (Error.isSet()) {
             do Terminal.echo(Error.message());

@@ -1,3 +1,6 @@
+/**
+ *  Depends on Str.jack 
+ */
 class Symbol {
 
     field int _type, _value;
@@ -6,7 +9,11 @@ class Symbol {
     field Symbol end;
 
     constructor Symbol new(String name, int type, int value) {
-        let _name = Str.dup(name);
+        if (name = null) {
+            let _name = null;
+        } else {
+            let _name = Str.dup(name);
+        }
         let _type = type;
         let _value = value;
         let _next = null;

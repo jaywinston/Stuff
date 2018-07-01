@@ -1,21 +1,8 @@
 class Str {
 
-    static int _maxlen;
-    //static String _nulls;
-
-    function void init() {
-        let _maxlen = 128;
-        //let _nulls = "";
-        return;
-    }
-
     function int MAXLEN() {
-        return _maxlen;
+        return 64;
     }
-
-    //function String NULLS() {
-        //return _nulls;
-    //}
 
     function boolean isInt(String s) {
         var char c;
@@ -46,7 +33,7 @@ class Str {
             return Str.dup(f);
         }
 
-        let s = String.new(_maxlen);
+        let s = String.new(Str.MAXLEN());
         let t = null;
 
         let a = 0;
@@ -71,11 +58,11 @@ class Str {
                     let t = arg[a];
                     let tLen = t.length();
                 } else { if (c = 37) {
-                    if (i < _maxlen) {
+                    if (i < Str.MAXLEN()) {
                         do s.appendChar(c);
                     }
                 } else { if (c = 110) {
-                    if (i < _maxlen) {
+                    if (i < Str.MAXLEN()) {
                         do s.appendChar(128);
                     }
                 }}}}
@@ -167,10 +154,6 @@ class Str {
     function String dup(String s) {
         var int i, len;
         var String t;
-
-        if (s = null) {
-            return null;
-        }
 
         let len = s.length();
         let t = String.new(len);
