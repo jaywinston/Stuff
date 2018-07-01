@@ -347,7 +347,7 @@ class Eval {
         let i = Eval.blockTkn(s, t, i);
 
         if (t.length() > 0) {
-            let name = Str.dup(t);
+            let name = t;
         } else {
             let name = null;
         }
@@ -395,6 +395,7 @@ class Eval {
         return Symbol.new(s, p.type(), p.value());
     }
 
+
     function int intExpr(String s, int i, int depth) {
         var char op;
         var int n;
@@ -436,6 +437,7 @@ class Eval {
 
         return n;
     }
+
 
     function int term(String s) {
         var char c;

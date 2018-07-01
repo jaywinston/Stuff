@@ -312,7 +312,6 @@ class Exec {
         while (~(condition = 0)) {
             do Exec.try(Lib.dupSym(arg.next()));
             let p = Eval.eval(arg.name(), 0);
-do Output.printInt(p.type());
             let condition = p.value();
             do Lib.clearSym(p);
         }
