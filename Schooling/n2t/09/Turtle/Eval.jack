@@ -45,6 +45,8 @@ class Eval {
 
         let symtab = HashTable.new();
 
+        do Eval.installKW("MV",128);  // ##DB##
+
         do Eval.installKW("=",         Const.ASSGN());
         do Eval.installKW("CLEAR",     Const.CLEAR());
         do Eval.installKW("ELSE",      Const.ELSE());
@@ -343,6 +345,7 @@ class Eval {
         let t = String.new(s.length());
 
         let i = Eval.blockTkn(s, t, i);
+do DB.db(t);
 
         if (t.length() > 0) {
             let name = t;

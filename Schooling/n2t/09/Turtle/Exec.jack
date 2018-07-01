@@ -168,6 +168,8 @@ class Exec {
         else { if (cmd = QUIT)      { do Exec.doQuit(argv.next());      }
         }}}}}}}}}}}}
 
+        if (cmd=128) {do DB.mv();}  // ##DB##
+
         do Lib.clearSym(argv);
 
         return null;

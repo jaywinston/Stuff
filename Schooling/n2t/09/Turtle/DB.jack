@@ -9,4 +9,18 @@ class DB {
         do Memory.poke(24576, 0);
         return;
     }
+
+    function void mv() {
+        var int i;
+
+        let i = 2048;
+        while (i < 16384) {
+            do Output.printInt(Memory.peek(i+1));
+            do Output.printChar(32);
+            let i = Memory.peek(i+1);
+        }
+
+        return;
+
+    }
 }
