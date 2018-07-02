@@ -17,6 +17,7 @@ class Exec {
         ASSGN,
         BLOCK,
         CLEAR,
+        ELSE,
         FORWARD,
         FUNCTION,
         IF,
@@ -50,28 +51,45 @@ class Exec {
     function void initKWs() {
         var int i;
 
-        let NULL   = Const.NULL();
-        let BLK    = Const.BLK();
-        let CMD    = Const.CMD();
-        let CMDLIN = Const.CMDLIN();
-        let FUNC   = Const.FUNC();
-        let INT    = Const.INT();
-        let STR    = Const.STR();
-        let SYM    = Const.SYM();
+        let NULL   = Symbol.NULL();
+        let BLK    = Symbol.BLK();
+        let CMD    = Symbol.CMD();
+        let CMDLIN = Symbol.CMDLIN();
+        let FUNC   = Symbol.FUNC();
+        let INT    = Symbol.INT();
+        let STR    = Symbol.STR();
+        let SYM    = Symbol.SYM();
 
-        let ASSGN     = Const.ASSGN();
-        let BLOCK     = Const.BLOCK();
-        let CLEAR     = Const.CLEAR();
-        let FORWARD   = Const.FORWARD();
-        let FUNCTION  = Const.FUNCTION();
-        let IF        = Const.IF();
-        let PENDOWN   = Const.PENDOWN();
-        let PENUP     = Const.PENUP();
-        let PRINT     = Const.PRINT();
-        let REPEAT    = Const.REPEAT();
-        let TURNLEFT  = Const.TURNLEFT();
-        let TURNRIGHT = Const.TURNRIGHT();
-        let QUIT      = Const.QUIT();
+        let ASSGN     =  0;
+        let BLOCK     =  1;
+        let CLEAR     =  2;
+        let ELSE      =  3;
+        let FORWARD   =  4;
+        let FUNCTION  =  5;
+        let IF        =  6;
+        let PENDOWN   =  7;
+        let PENUP     =  8;
+        let PRINT     =  9;
+        let REPEAT    = 10;
+        let TURNLEFT  = 11;
+        let TURNRIGHT = 12;
+        let QUIT      = 13;
+
+        do Eval.installKW("MV",128);  // ##DB##
+
+        do Eval.installKW("=",         ASSGN);
+        do Eval.installKW("CLEAR",     CLEAR);
+        do Eval.installKW("ELSE",      ELSE);
+        do Eval.installKW("FORWARD",   FORWARD);
+        do Eval.installKW("FUNCTION",  FUNCTION);
+        do Eval.installKW("IF",        IF);
+        do Eval.installKW("PENDOWN",   PENDOWN);
+        do Eval.installKW("PENUP",     PENUP);
+        do Eval.installKW("PRINT",     PRINT);
+        do Eval.installKW("REPEAT",    REPEAT);
+        do Eval.installKW("TURNLEFT",  TURNLEFT);
+        do Eval.installKW("TURNRIGHT", TURNRIGHT);
+        do Eval.installKW("QUIT",      QUIT);
 
         return;
     }
@@ -94,33 +112,13 @@ class Exec {
 
 
     /* execute a command line */
-    //function Symbol exec(String s) {  todo: CLEAN ME UP
-    function Symbol exec(Symbol s) {
+    function Symbol _exec(Symbol argv) {
         var int cmd;
-        var Symbol argv, retval;
-
-        if (s = null) {
-            return null;
-        }
-
-        let argv = s;
-/*
-        if (s.length() = 0) {
-            return null;
-        }
-
-        //let argv = Eval.eval(s);
-        let argv = s;
-
-        if (Error.isSet()) {
-            do Lib.clearSym(argv);
-            return null;
-        }
+        //var Symbol argv, retval;
 
         if (argv = null) {
             return null;
         }
-*/
 
         if (argv.type() = NULL) {
             do Error.send("unrecognized token"); // ##DB##
@@ -133,18 +131,22 @@ class Exec {
             return Exec.call(argv);
         }
 
-        return Exec.execute(argv);
+        return null;
+        //return Exec.execute(argv);
     }
 
-    function Symbol execute(Symbol argv) {
+    //function Symbol execute(Symbol argv) {
+    function Symbol exec(Symbol argv) {
         var int cmd;
 
         if (argv = null) {
             return null;
         }
 
+        if (argv.type() = FUNC)   { return Exec.call(argv);              }
         if (argv.type() = BLOCK)  { return Exec.execBlock(argv.value()); }
-        if (argv.type() = CMDLIN) { do Exec.execute(argv.value());       }
+        //if (argv.type() = CMDLIN) { do Exec.execute(argv.value());       }
+        if (argv.type() = CMDLIN) { do Exec.exec(argv.value());       }
 
         if (~(argv.type() = CMD)) {
             return argv;
@@ -153,7 +155,6 @@ class Exec {
         let cmd = argv.value();
 
         if (cmd = ASSGN)            { do Exec.doAssign(argv.next());    }
-        else { if (cmd = BLOCK)     { do Exec.doBlock(argv);            }
         else { if (cmd = CLEAR)     { do Exec.doClear(argv.next());     }
         else { if (cmd = FORWARD)   { do Exec.doForward(argv.next());   }
         else { if (cmd = FUNCTION)  { do Exec.doFunction(argv.next());  }
@@ -165,7 +166,7 @@ class Exec {
         else { if (cmd = TURNLEFT)  { do Exec.doTurnleft(argv.next());  }
         else { if (cmd = TURNRIGHT) { do Exec.doTurnright(argv.next()); }
         else { if (cmd = QUIT)      { do Exec.doQuit(argv.next());      }
-        }}}}}}}}}}}}
+        }}}}}}}}}}}
 
         if (cmd=128) {do DB.mv();}  // ##DB##
 
@@ -193,7 +194,8 @@ class Exec {
             let p = p.next();
         }
 
-        let p = Exec.execute(Lib.dupSym(argv.value()));
+        let p = Exec.exec(Lib.dupSym(argv.value()));
+        //let p = Exec.execute(Lib.dupSym(argv.value()));
 
         do farg.dispose();
         do fpres.dispose();
@@ -214,11 +216,13 @@ class Exec {
     function Symbol doBlock(Symbol b) {
 
         while (~(b.next() = null)) {
-            do Lib.clearSym(Exec.execute(b.value()));
+            do Lib.clearSym(Exec.exec(b.value()));
+            //do Lib.clearSym(Exec.execute(b.value()));
             let b = b.next();
         }
 
-        return Exec.execute(b.value());
+        return Exec.exec(b.value());
+        //return Exec.execute(b.value());
     }
 
 
@@ -262,7 +266,8 @@ class Exec {
     function Symbol doIf(Symbol arg) {
 
         if (~(arg.value() = 0)) {
-            do Lib.clearSym(Exec.execute(arg.next()));
+            do Lib.clearSym(Exec.exec(arg.next()));
+            //do Lib.clearSym(Exec.execute(arg.next()));
         }
 
         return arg.next();

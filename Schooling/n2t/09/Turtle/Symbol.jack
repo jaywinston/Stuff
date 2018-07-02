@@ -83,4 +83,14 @@ class Symbol {
     }
 */
 
+    function int NULL      () { return  0; }
+    function int BLK       () { return  1; }
+    function int CMD       () { return  2; }
+    function int CMDLIN    () { return  3; }
+    function int FUNC      () { return  4; }
+    function int END       () { return  5; }
+    function int INT       () { return  6; }
+    function int STR       () { return  7; }
+    function int SYM       () { return  8; }
+
 }

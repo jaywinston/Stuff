@@ -1,6 +1,6 @@
 class Eval {
 
-    static int ASSGN, BLOCK, CMD, CMDLIN, END, INT, STR, SYM;
+    static int BLOCK, CMD, CMDLIN, END, INT, STR, SYM;
     static int TERM;
     static Array INTOPS;
     static String PS1, PS2;
@@ -11,7 +11,6 @@ class Eval {
 
     function void init() {
 
-        let ASSGN = Const.ASSGN();
         let BLOCK = Const.BLOCK();
         let CMD = Const.CMD();
         let CMDLIN = Const.CMDLIN();
@@ -38,28 +37,16 @@ class Eval {
         let PERCENTS = "%";
 
         let INTOPS = Array.new(4);
-        let INTOPS[0] = "&|(){}";
-        let INTOPS[1] = "=!<>(){}";
-        let INTOPS[2] = "+-(){}";
-        let INTOPS[3] = "*/%(){}";
+        let INTOPS[0] = "&|({";
+        let INTOPS[1] = "=!<>({";
+        let INTOPS[2] = "+-({";
+        let INTOPS[3] = "*/%({";
+        //let INTOPS[0] = "&|(){}";
+        //let INTOPS[1] = "=!<>(){}";
+        //let INTOPS[2] = "+-(){}";
+        //let INTOPS[3] = "*/%(){}";
 
         let symtab = HashTable.new();
-
-        do Eval.installKW("MV",128);  // ##DB##
-
-        do Eval.installKW("=",         Const.ASSGN());
-        do Eval.installKW("CLEAR",     Const.CLEAR());
-        do Eval.installKW("ELSE",      Const.ELSE());
-        do Eval.installKW("FORWARD",   Const.FORWARD());
-        do Eval.installKW("FUNCTION",  Const.FUNCTION());
-        do Eval.installKW("IF",        Const.IF());
-        do Eval.installKW("PENDOWN",   Const.PENDOWN());
-        do Eval.installKW("PENUP",     Const.PENUP());
-        do Eval.installKW("PRINT",     Const.PRINT());
-        do Eval.installKW("REPEAT",    Const.REPEAT());
-        do Eval.installKW("TURNLEFT",  Const.TURNLEFT());
-        do Eval.installKW("TURNRIGHT", Const.TURNRIGHT());
-        do Eval.installKW("QUIT",      Const.QUIT());
 
         return;
     }
