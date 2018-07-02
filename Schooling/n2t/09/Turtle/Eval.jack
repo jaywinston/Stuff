@@ -266,7 +266,6 @@ class Eval {
     }
 
 
-    /* all wrong, collect closing }'s into t */
     function Symbol blockExpr(String s) {
         var int i, n;
         var String t;
@@ -274,29 +273,15 @@ class Eval {
 
         let t = String.new(s.length());
         let i = Eval.blockTkn(s, t, 1);
-        let end = Eval.eval(t, 0);
+do DB.db(t);
+        let block = Symbol.new(null, CMDLIN, Eval.eval(t, 0));
         do t.dispose();
-        if (~(end = null)) { if (end.type() = END) {
-            let block = end.next();
-            do end.dispose();
-            /* todo: endBlock; handle if continue expr */
-            return Symbol.new(null, BLOCK, block);
-        }}
-        let block = Symbol.new(null, CMDLIN, end);
 
         while (i = s.length()) {
             let s = Terminal.read(PS2);
             let t = String.new(s.length());
             let i = Eval.blockTkn(s, t, 0);
             if (t.length() > 0) {
-                let end = Eval.eval(t, 0);
-                if (~(end = null)) { if (end.type() = END) {
-                    do block.append(end.next());
-                    do end.dispose();
-                    /* todo: endBlock; handle if continue expr */
-                    return Symbol.new(null, BLOCK, block);  // mem leak: t
-                }}
-                do block.append(Symbol.new(t, CMDLIN, end));
             }
             do t.dispose();
         }
@@ -316,6 +301,23 @@ class Eval {
 
 
     function int blockTkn(String s, String t, int i) {
+        var boolean continue;
+
+        if (~(i < s.length())) {
+            return i;
+        }
+
+        let continue = ~(s.charAt(i) = 123);
+
+        while ( (i<s.length()) & continue ) {
+            do t.appendChar(s.charAt(i));
+            let i = i + 1;
+            if (i < s.length()) {
+                let continue = ~(s.charAt(i) = 123);
+            }
+        }
+
+        let i = Str.block(s, t, 123, 125, i);
 
         while (i < s.length()) {
             if (s.charAt(i) = 125) {
@@ -325,7 +327,7 @@ class Eval {
             let i = i + 1;
         }
 
-        return i;
+        return Eval.blockTkn(s, t, i);
     }
 
 
@@ -443,17 +445,17 @@ class Eval {
         var char c;
         var Symbol p;
 
-        if (s.charAt(0) = 45) {
+        let c = s.charAt(0);
+
+        if (c = 45) {
             do Str.shift(s, 1, 0);
             return -Eval.term(s);
         }
 
-        if (s.charAt(0) = 126) {
+        if (c = 126) {
             do Str.shift(s, 1, 0);
             return ~Eval.term(s);
         }
-
-        let c = s.charAt(0);
 
         if ( (c>47) & (c<58) ) {
             return s.intValue();
@@ -487,7 +489,7 @@ class Eval {
         var int n;
         var Symbol p;
 
-        let p = Exec.execBlock(b.next());
+        let p = Exec.execBlock(b.value());
         do Lib.clearSym(b);
 
         if (~(p.type() = INT)) {
