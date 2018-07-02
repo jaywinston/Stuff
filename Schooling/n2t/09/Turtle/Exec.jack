@@ -6,7 +6,6 @@ class Exec {
 
     static int
         NULL,
-        BLK,
         CMD,
         CMDLIN,
         FUNC,
@@ -14,7 +13,7 @@ class Exec {
         STR,
         SYM,
 
-        ASSGN,
+        ASSIGN,
         BLOCK,
         CLEAR,
         ELSE,
@@ -27,8 +26,7 @@ class Exec {
         REPEAT,
         TURNLEFT,
         TURNRIGHT,
-        QUIT,
-        _ECHO;
+        QUIT;
 
 
     function void init(int i, int j, int h, int w) {
@@ -52,7 +50,7 @@ class Exec {
         var int i;
 
         let NULL   = Symbol.NULL();
-        let BLK    = Symbol.BLK();
+        let BLOCK  = Symbol.BLOCK();
         let CMD    = Symbol.CMD();
         let CMDLIN = Symbol.CMDLIN();
         let FUNC   = Symbol.FUNC();
@@ -60,8 +58,7 @@ class Exec {
         let STR    = Symbol.STR();
         let SYM    = Symbol.SYM();
 
-        let ASSGN     =  0;
-        let BLOCK     =  1;
+        let ASSIGN    =  0;
         let CLEAR     =  2;
         let ELSE      =  3;
         let FORWARD   =  4;
@@ -77,7 +74,7 @@ class Exec {
 
         do Eval.installKW("MV",128);  // ##DB##
 
-        do Eval.installKW("=",         ASSGN);
+        do Eval.installKW("=",         ASSIGN);
         do Eval.installKW("CLEAR",     CLEAR);
         do Eval.installKW("ELSE",      ELSE);
         do Eval.installKW("FORWARD",   FORWARD);
@@ -111,31 +108,25 @@ class Exec {
     }
 
 
-    /* execute a command line */
-    function Symbol _exec(Symbol argv) {
-        var int cmd;
-        //var Symbol argv, retval;
+    function void try(Symbol argv) {
+        var Symbol retval;
 
-        if (argv = null) {
-            return null;
+        let retval = Exec.exec(argv);
+
+        if (Error.isSet()) {
+            while (Error.isSet()) {
+                do Terminal.echo(Error.message());
+            }
+        } else {
+            do Exec.echo(retval);
         }
 
-        if (argv.type() = NULL) {
-            do Error.send("unrecognized token"); // ##DB##
-            do Error.set(1);  // unrecognized token
-            do Lib.clearSym(argv);
-            return null;
-        }
+        do Lib.clearSym(retval);
 
-        if (argv.type() = FUNC) {
-            return Exec.call(argv);
-        }
-
-        return null;
-        //return Exec.execute(argv);
+        return;
     }
 
-    //function Symbol execute(Symbol argv) {
+
     function Symbol exec(Symbol argv) {
         var int cmd;
 
@@ -145,8 +136,7 @@ class Exec {
 
         if (argv.type() = FUNC)   { return Exec.call(argv);              }
         if (argv.type() = BLOCK)  { return Exec.execBlock(argv.value()); }
-        //if (argv.type() = CMDLIN) { do Exec.execute(argv.value());       }
-        if (argv.type() = CMDLIN) { do Exec.exec(argv.value());       }
+        if (argv.type() = CMDLIN) { return Exec.exec(argv.value());      }
 
         if (~(argv.type() = CMD)) {
             return argv;
@@ -154,7 +144,7 @@ class Exec {
 
         let cmd = argv.value();
 
-        if (cmd = ASSGN)            { do Exec.doAssign(argv.next());    }
+        if (cmd = ASSIGN)           { do Exec.doAssign(argv.next());    }
         else { if (cmd = CLEAR)     { do Exec.doClear(argv.next());     }
         else { if (cmd = FORWARD)   { do Exec.doForward(argv.next());   }
         else { if (cmd = FUNCTION)  { do Exec.doFunction(argv.next());  }
@@ -170,13 +160,13 @@ class Exec {
 
         if (cmd=128) {do DB.mv();}  // ##DB##
 
-        do Lib.clearSym(argv);
+        do Symbol.clear(argv);
 
         return null;
     }
 
     function Symbol call(Symbol argv) {
-        var int n, type;
+        var int n;
         var Array farg;
         var String arg, fpres;
         var Symbol p;
@@ -194,11 +184,12 @@ class Exec {
             let p = p.next();
         }
 
-        let p = Exec.exec(Lib.dupSym(argv.value()));
-        //let p = Exec.execute(Lib.dupSym(argv.value()));
-
         do farg.dispose();
         do fpres.dispose();
+
+        let p = Exec.exec(argv.value());
+
+        do Symbol.clear(argv);
 
         return p;
     }
@@ -217,28 +208,26 @@ class Exec {
 
         while (~(b.next() = null)) {
             do Lib.clearSym(Exec.exec(b.value()));
-            //do Lib.clearSym(Exec.execute(b.value()));
             let b = b.next();
         }
 
         return Exec.exec(b.value());
-        //return Exec.execute(b.value());
     }
 
 
-    function Symbol doAssign(Symbol arg) {
+    function void doAssign(Symbol arg) {
         do Eval.assign(arg.value());
-        return arg.next();
+        return;
     }
 
 
-    function Symbol doClear(Symbol arg) {
+    function void doClear(Symbol arg) {
         do Exec.clear();
-        return arg.next();
+        return;
     }
 
 
-    function Symbol doForward(Symbol arg) {
+    function void doForward(Symbol arg) {
 
         if (arg.type() = BLOCK) {
             let arg = Exec.execBlock(arg);
@@ -246,56 +235,58 @@ class Exec {
 
         do t.forward(arg.value());
 
-        return arg.next();
+        return;
     }
 
 
-    function Symbol doFunction(Symbol arg) {
+    function void doFunction(Symbol arg) {
 
         if (arg = null) {
             do Error.set(1);  // no function name
-            return arg.next();
+            return;
         }
 
         do Eval.install(arg.name(), FUNC, arg.next());
 
-        return arg.next();
+        return;
     }
 
 
-    function Symbol doIf(Symbol arg) {
+    function void doIf(Symbol arg) {
 
         if (~(arg.value() = 0)) {
-            do Lib.clearSym(Exec.exec(arg.next()));
+            do Exec.try(arg.next());
             //do Lib.clearSym(Exec.execute(arg.next()));
         }
 
-        return arg.next();
+        return;
     }
 
-    function Symbol doPendown(Symbol arg) {
+    function void doPendown(Symbol arg) {
         do t.pendown();
-        return arg;
+        return;
     }
 
 
-    function Symbol doPenup(Symbol arg) {
+    function void doPenup(Symbol arg) {
         do t.penup();
-        return arg;
+        return;
     }
 
 
-    function Symbol doPrint(Symbol arg) {
-        return arg.next();
+    function void doPrint(Symbol arg) {
+        return;
     }
 
 
-    function Symbol doRepeat(Symbol arg) {
+    function void doRepeat(Symbol arg) {
         var int i;
 
         if ( (arg.type()=CMD) & (arg.value()=IF) ) {
-            return Exec.doRepeatIf(arg.next());
+            return;
         }
+
+        /* todo: type check */
 
         let i = arg.value();
         while (i > 0) {
@@ -305,11 +296,11 @@ class Exec {
 
         let arg = arg.next();
 
-        return arg.next();
+        return;
     }
 
 
-    function Symbol doRepeatIf(Symbol arg) {
+    function void doRepeatIf(Symbol arg) {
         var int condition;
         var Symbol p;
 
@@ -321,19 +312,19 @@ class Exec {
             do Lib.clearSym(p);
         }
 
-        return arg.next();
+        return;
     }
 
 
-    function Symbol doTurnleft(Symbol arg) {
+    function void doTurnleft(Symbol arg) {
         do t.turnleft(arg.value());
-        return arg.next();
+        return;
     }
 
 
-    function Symbol doTurnright(Symbol arg) {
+    function void doTurnright(Symbol arg) {
         do t.turnright(arg.value());
-        return arg.next();
+        return;
     }
 
 
@@ -343,32 +334,12 @@ class Exec {
     }
 
 
-    function void try(Symbol argv) {
-        var Symbol retval;
-
-        let retval = Exec.exec(argv);
-
-        if (Error.isSet()) {
-            do Terminal.echo(Error.message());
-            if (Error.isSet()) {
-                do Terminal.echo(Error.message());
-            }
-        } else {
-            do Exec.echo(retval);
-        }
-
-        do Lib.clearSym(retval);
-
-        return;
-    }
-
-
     function void echo(Symbol sym) {
         while (~(sym = null)) {
             if (sym.type() = STR) {
                 do Terminal.echo(sym.value());
             } else { if (sym.type() = SYM) {
-                do Exec.echo(sym.value());
+                //do Exec.echo(sym.value());
             } else { if (sym.type() = INT) {
                 do Exec.echoInt(sym);
             }}}
@@ -385,6 +356,7 @@ class Exec {
         do s.setInt(sym.value());
         do Terminal.echo(s);
         do s.dispose();
+
         return;
     }
 

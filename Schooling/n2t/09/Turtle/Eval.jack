@@ -1,6 +1,6 @@
 class Eval {
 
-    static int BLOCK, CMD, CMDLIN, END, INT, STR, SYM;
+    static int BLOCK, CMD, CMDLIN, END, FUNC, INT, STR, SYM;
     static int TERM;
     static Array INTOPS;
     static String PS1, PS2;
@@ -11,13 +11,14 @@ class Eval {
 
     function void init() {
 
-        let BLOCK = Const.BLOCK();
-        let CMD = Const.CMD();
-        let CMDLIN = Const.CMDLIN();
-        let END = Const.END();
-        let INT = Const.INT();
-        let STR = Const.STR();
-        let SYM = Const.SYM();
+        let BLOCK = Symbol.BLOCK();
+        let CMD = Symbol.CMD();
+        let CMDLIN = Symbol.CMDLIN();
+        let END = Symbol.END();
+        let FUNC = Symbol.FUNC();
+        let INT = Symbol.INT();
+        let STR = Symbol.STR();
+        let SYM = Symbol.SYM();
 
         let TERM = 4;
 
@@ -381,7 +382,13 @@ do DB.db(t);
             return Symbol.new(s, SYM, null);
         }
 
-        return Symbol.new(s, p.type(), p.value());
+        if (p.type() = STR) {
+            return Symbol.new(s, p.type(), Str.dup(p.value()));
+        } else { if (p.type() = FUNC) {
+            return Symbol.new(s, p.type(), Symbol.dup(p.value()));
+        } else {
+            return Symbol.new(s, p.type(), p.value());
+        }}
     }
 
 

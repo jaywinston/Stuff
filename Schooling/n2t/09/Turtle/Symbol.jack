@@ -74,17 +74,72 @@ class Symbol {
         return;
     }
 
-/*
-    function Symbol dup(Symbol o) {
-        if (o = null) {
-            return null;
+    function void clear(Symbol sym) {
+        var int type;
+        var String s;
+        var Symbol next;
+
+        while (~(sym = null)) {
+
+            let next = sym.next();
+
+            let type = sym.type();
+            if (type = Symbol.STR()) {
+                let s = sym.value();
+                if (~(s = null)) {
+                    do s.dispose();
+                }
+            } else { if ( ((type=Symbol.BLOCK()) | (type=Symbol.CMDLIN()))
+                         | (type=Symbol.FUNC()) ) {
+                do Symbol.clear(sym.value());
+            }}
+
+            do sym.dispose();
+
+            let sym = next;
         }
-        return Symbol.new(o.name(), o.type(), o.value());
+
+        return;
     }
-*/
+
+    function Symbol dup(Symbol sym) {
+        var int type;
+        var Symbol p;
+
+        let p = Symbol.new(null, null, null);
+
+        while (~(sym = null)) {
+
+            let type = sym.type();
+
+            if (type = Symbol.STR()) {
+                do p.append(Symbol.new(sym.name(),
+                                       sym.type(),
+                                       Str.dup(sym.value())));
+            } else { if ( (type=Symbol.BLOCK())
+                        |((type=Symbol.CMDLIN()) 
+                        | (type=Symbol.FUNC())) ) {
+                do p.append(Symbol.new(sym.name(),
+                                       sym.type(),
+                                       Symbol.dup(sym.value())));
+            } else {
+                do p.append(Symbol.new(sym.name(), sym.type(), sym.value()));
+            }}
+
+            let sym = sym.next();
+        }
+
+        let sym = p;
+        let p = p.next();
+        do sym.setNext(null);
+        do Symbol.clear(sym);
+
+        return p;
+    }
+
 
     function int NULL      () { return  0; }
-    function int BLK       () { return  1; }
+    function int BLOCK     () { return  1; }
     function int CMD       () { return  2; }
     function int CMDLIN    () { return  3; }
     function int FUNC      () { return  4; }
