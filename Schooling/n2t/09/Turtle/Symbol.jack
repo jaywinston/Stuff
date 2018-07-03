@@ -102,37 +102,36 @@ class Symbol {
         return;
     }
 
-    function Symbol copy(Symbol sym) {
+    function Symbol clone(Symbol sym) {
         var int type;
-        var Symbol p;
 
-        let p = Symbol.new(null, null, null);
+        let type = sym.type();
 
-        while (~(sym = null)) {
-
-            let type = sym.type();
-
-            if (type = Symbol.STR()) {
-                do p.append(Symbol.new(sym.name(),
-                                       sym.type(),
-                                       Str.dup(sym.value())));
-            } else { if ( (type=Symbol.BLOCK())
-                        |((type=Symbol.CMDLIN()) 
-                        | (type=Symbol.FUNC())) ) {
-                do p.append(Symbol.new(sym.name(),
-                                       sym.type(),
-                                       Symbol.copy(sym.value())));
-            } else {
-                do p.append(Symbol.new(sym.name(), sym.type(), sym.value()));
-            }}
-
-            let sym = sym.next();
+        if (type = Symbol.STR()) {
+            return Symbol.new(sym.name(), sym.type(), Str.dup(sym.value()));
         }
 
-        let sym = p;
-        let p = p.next();
-        do sym.setNext(null);
-        do Symbol.clear(sym);
+        if (       (type=Symbol.BLOCK())
+                | ((type=Symbol.CMDLIN()) 
+                |  (type=Symbol.FUNC())) ) {
+            return Symbol.new(sym.name(), sym.type(),
+                              Symbol.copy(sym.value()));
+        }
+
+        return Symbol.new(sym.name(), sym.type(), sym.value());
+    }
+
+
+    function Symbol copy(Symbol sym) {
+        var Symbol p;
+
+        let p = Symbol.clone(sym);
+
+        let sym = sym.next();
+        while (~(sym = null)) {
+            do p.append(Symbol.clone(sym));
+            let sym = sym.next();
+        }
 
         return p;
     }

@@ -375,15 +375,13 @@ class Eval {
     function Symbol symbolExpr(String s) {
         var Symbol p;
 
-        let p = Symbol.copy(symtab.lookup(s));
+        let p = symtab.lookup(s);
 
         if (p = null) {
             return Symbol.new(s, SYM, null);
         }
 
-        do Symbol.clear(p.next());
-
-        return p;
+        return Symbol.clone(p);
     }
 
 
