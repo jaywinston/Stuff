@@ -98,7 +98,7 @@ class Eval {
         do argv.append(Eval.eval(s, i+1));
 
         if (Error.isSet()) {
-            do Lib.clearSym(argv);
+            do Symbol.clear(argv);
             return null;
         }
 
@@ -261,7 +261,6 @@ class Eval {
 
         let t = String.new(s.length());
         let i = Eval.blockTkn(s, t, 1);
-do DB.db(t);
         let block = Symbol.new(null, CMDLIN, Eval.eval(t, 0));
         do t.dispose();
 
@@ -376,19 +375,15 @@ do DB.db(t);
     function Symbol symbolExpr(String s) {
         var Symbol p;
 
-        let p = symtab.lookup(s);
+        let p = Symbol.copy(symtab.lookup(s));
 
         if (p = null) {
             return Symbol.new(s, SYM, null);
         }
 
-        if (p.type() = STR) {
-            return Symbol.new(s, p.type(), Str.dup(p.value()));
-        } else { if (p.type() = FUNC) {
-            return Symbol.new(s, p.type(), Symbol.dup(p.value()));
-        } else {
-            return Symbol.new(s, p.type(), p.value());
-        }}
+        do Symbol.clear(p.next());
+
+        return p;
     }
 
 

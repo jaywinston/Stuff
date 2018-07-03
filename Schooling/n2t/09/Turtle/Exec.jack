@@ -246,7 +246,7 @@ class Exec {
             return;
         }
 
-        do Eval.install(arg.name(), FUNC, arg.next());
+        do Eval.install(arg.name(), FUNC, Symbol.copy(arg.next()));
 
         return;
     }

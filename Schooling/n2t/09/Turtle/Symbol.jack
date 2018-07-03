@@ -102,7 +102,7 @@ class Symbol {
         return;
     }
 
-    function Symbol dup(Symbol sym) {
+    function Symbol copy(Symbol sym) {
         var int type;
         var Symbol p;
 
@@ -121,7 +121,7 @@ class Symbol {
                         | (type=Symbol.FUNC())) ) {
                 do p.append(Symbol.new(sym.name(),
                                        sym.type(),
-                                       Symbol.dup(sym.value())));
+                                       Symbol.copy(sym.value())));
             } else {
                 do p.append(Symbol.new(sym.name(), sym.type(), sym.value()));
             }}

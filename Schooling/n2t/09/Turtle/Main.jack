@@ -12,7 +12,6 @@ class Main {
 
         do Lib.init();
         do Vector.init();
-        do HashTable.init();
         do Error.init(Const.ERRTAB(), 2);
         do Turtle.init();
         do Eval.init();

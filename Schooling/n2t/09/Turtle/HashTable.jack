@@ -3,15 +3,11 @@ class HashTable {
     static int HASHSIZ;
     field Array table;
 
-    function void init() {
-        let HASHSIZ = 16;
-        return;
-    }
-
 
     constructor HashTable new() {
         var int i;
 
+        let HASHSIZ = 16;
         let table = Array.new(HASHSIZ);
         let i = 0;
         while (i < HASHSIZ) {
