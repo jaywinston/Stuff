@@ -255,10 +255,7 @@ class Eval {
         var String t;
         var Symbol block, end;
 
-        let t = String.new(s.length());
-        let i = Eval.blockTkn(s, t, 1);
-        let block = Symbol.new(null, CMDLIN, Eval.eval(t, 0));
-        do t.dispose();
+        let block = Eval.blockLine(s);
 
         while (i = s.length()) {
             let s = Terminal.read(PS2);
@@ -285,8 +282,12 @@ class Eval {
 
     function int blockTkn(String s, String t, int i) {
 
-        if (i = s.length()) {
+        if (~(i < s.length())) {
             return i;
+        }
+
+        if (s.charAt(i) = 123) {
+            let i = i + 1;
         }
 
         let i = Str.tkn(s, t, BRACES, i);
@@ -301,6 +302,25 @@ class Eval {
         }
 
         return Eval.blockTkn(s, t, i);
+    }
+
+
+    function Symbol blockLine(String s) {
+        var int i;
+        var String t;
+        var Symbol line;
+
+        let t = String.new(s.length());
+        let i = Eval.blockTkn(s, t, 0);
+        let line = Symbol.new(null, 0, t);
+
+        while (i < s.length()) {
+            let t = String.new(s.length());
+            let i = Eval.blockTkn(s, t, i);
+            do line.append(Symbol.new(null, 0, t));
+        }
+
+        return line;
     }
 
 
