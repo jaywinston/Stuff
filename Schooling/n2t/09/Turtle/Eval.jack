@@ -294,7 +294,7 @@ class Eval {
 
         if (i < s.length()) {
             if (s.charAt(i) = 125) {
-                return i + 1;
+                return i;
             }
             if (s.charAt(i) = 123) {
                 let i = Str.block(s, t, 123, 125, i);
@@ -312,12 +312,12 @@ class Eval {
 
         let t = String.new(s.length());
         let i = Eval.blockTkn(s, t, 0);
-        let line = Symbol.new(null, 0, t);
+        let line = Symbol.new(null, END, t);
 
         while (i < s.length()) {
             let t = String.new(s.length());
             let i = Eval.blockTkn(s, t, i);
-            do line.append(Symbol.new(null, 0, t));
+            do line.append(Symbol.new(null, END, t));
         }
 
         return line;
