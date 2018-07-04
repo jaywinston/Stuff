@@ -252,31 +252,54 @@ class Eval {
 
     function Symbol blockExpr(String s) {
         var int i, n;
-        var String t;
-        var Symbol block, end;
+        var Symbol block, end, line;
 
-        let block = Eval.blockLine(s);
+        let line = Eval.blockLine(s, 1);
+        let end = Eval.eval(line.value(), 0);
+        if (end.type() = END) {
+            do end.append(Symbol.new(null, CMDLIN, Eval.eval(end.value(), 0)));
+            let block = end.next();
+            do end.dispose();
+            return Symbol.new(null, END, block);
+        }
+        let block = Symbol.new(null, CMDLIN, end);
 
-        while (i = s.length()) {
-            let s = Terminal.read(PS2);
-            let t = String.new(s.length());
-            let i = Eval.blockTkn(s, t, 0);
-            if (t.length() > 0) {
-            }
-            do t.dispose();
+        while (~(line.type() = END)) {
+            let line = Eval.blockLine(Terminal.read(PS2), 0);
+            let end = Eval.eval(line.value(), 0);
+            do block.append(Symbol.new(null,
+                            CMDLIN,
+                            Eval.eval(end.value(), 0)));
         }
 
-        let i = i + 1;
+        do end.append(block);
+        let block = end.next();
+        do end.dispose();
 
-        do Str.rstrip(s, 32);
+        return Symbol.new(null, BLOCK, block);
+    }
+
+
+    function Symbol blockLine(String s, int i) {
+        var String t;
+        var Symbol line;
+
+        let t = String.new(s.length());
+        let i = Eval.blockTkn(s, t, 1);
 
         if (i < s.length()) {
-            let end = Eval.blockEnd(s, i);
-            do end.append(block);
-            return end;
+            let line = Symbol.new(null, END, t);
+        } else {
+            let line = Symbol.new(null, STR, t);
         }
-        
-        return Symbol.new(null, BLOCK, block);
+
+        while (i < s.length()) {
+            let t = String.new(s.length());
+            let i = Eval.blockTkn(s, t, i+1);
+            do line.append(Symbol.new(null, END, t));
+        }
+
+        return line;
     }
 
 
@@ -286,41 +309,20 @@ class Eval {
             return i;
         }
 
-        if (s.charAt(i) = 123) {
-            let i = i + 1;
-        }
-
-        let i = Str.tkn(s, t, BRACES, i);
-
-        if (i < s.length()) {
-            if (s.charAt(i) = 125) {
-                return i;
-            }
-            if (s.charAt(i) = 123) {
-                let i = Str.block(s, t, 123, 125, i);
-            }
-        }
-
-        return Eval.blockTkn(s, t, i);
-    }
-
-
-    function Symbol blockLine(String s) {
-        var int i;
-        var String t;
-        var Symbol line;
-
-        let t = String.new(s.length());
-        let i = Eval.blockTkn(s, t, 0);
-        let line = Symbol.new(null, END, t);
-
         while (i < s.length()) {
-            let t = String.new(s.length());
-            let i = Eval.blockTkn(s, t, i);
-            do line.append(Symbol.new(null, END, t));
+            let i = Str.tkn(s, t, BRACES, i);
+
+            if (i < s.length()) {
+                if (s.charAt(i) = 125) {
+                    return i;
+                }
+                if (s.charAt(i) = 123) {
+                    let i = Str.block(s, t, 123, 125, i);
+                }
+            }
         }
 
-        return line;
+        return i;
     }
 
 

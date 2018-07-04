@@ -22,10 +22,20 @@ class Symbol {
     }
 
     method void dispose() {
+
         if (~(_name = null)) {
             do _name.dispose();
         }
+
+        if (_type = Symbol.STR()) {
+            do _value.dispose();
+        } else { if ( ((_type=Symbol.BLOCK()) | (_type=Symbol.CMDLIN()))
+                     | (_type=Symbol.FUNC()) ) {
+            do Symbol.clear(_value);
+        }}
+
         do Memory.deAlloc(this);
+
         return;
     }
 
@@ -75,7 +85,7 @@ class Symbol {
     }
 
     function void clear(Symbol sym) {
-        var int type;
+        //var int type;
         var String s;
         var Symbol next;
 
@@ -83,6 +93,7 @@ class Symbol {
 
             let next = sym.next();
 
+/*
             let type = sym.type();
             if (type = Symbol.STR()) {
                 let s = sym.value();
@@ -93,6 +104,7 @@ class Symbol {
                          | (type=Symbol.FUNC()) ) {
                 do Symbol.clear(sym.value());
             }}
+*/
 
             do sym.dispose();
 
