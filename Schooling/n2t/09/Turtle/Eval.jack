@@ -259,8 +259,9 @@ class Eval {
         if (end.type() = END) {
             do end.append(Symbol.new(null, CMDLIN, Eval.eval(end.value(), 0)));
             let block = end.next();
+            do line.setType(STR);  do line.dispose();
             do end.dispose();
-            return Symbol.new(null, END, block);
+            return Symbol.new(null, BLOCK, block);
         }
         let block = Symbol.new(null, CMDLIN, end);
 
