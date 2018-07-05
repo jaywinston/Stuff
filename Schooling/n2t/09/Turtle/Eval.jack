@@ -257,27 +257,47 @@ class Eval {
         let line = Eval.blockLine(s, 1);
         let end = Eval.eval(line.value(), 0);
         if (end.type() = END) {
-            do end.append(Symbol.new(null, CMDLIN, Eval.eval(end.value(), 0)));
-            let block = end.next();
-            do line.setType(STR);  do line.dispose();
-            do end.dispose();
-            return Symbol.new(null, BLOCK, block);
+            do line.dispose();
+            // something with superblock and return
         }
         let block = Symbol.new(null, CMDLIN, end);
 
         while (~(line.type() = END)) {
+            do line.dispose();
             let line = Eval.blockLine(Terminal.read(PS2), 0);
             let end = Eval.eval(line.value(), 0);
             do block.append(Symbol.new(null,
                             CMDLIN,
                             Eval.eval(end.value(), 0)));
         }
+        do line.dispose();
 
-        do end.append(block);
+        do end.append(Symbol.new(null, BLOCK, block));
         let block = end.next();
         do end.dispose();
 
-        return Symbol.new(null, BLOCK, block);
+        return block;
+    }
+
+
+    function Symbol superBlock(/* ? */) {
+        var String s;
+
+        let s = end.value();
+        if (s.length() > 0) {
+            let s = Eval.blockToStr(/* ? */null);
+            do Str.cat(s, end.value());
+            // eval s here
+        }
+        return null;
+    }
+
+
+    function String blockToStr(Symbol block) {
+        var int n;
+        var String s;
+
+        return s;
     }
 
 

@@ -27,7 +27,7 @@ class Symbol {
             do _name.dispose();
         }
 
-        if (_type = Symbol.STR()) {
+        if ( (_type=Symbol.STR()) | (_type=Symbol.END()) ) {
             do _value.dispose();
         } else { if ( ((_type=Symbol.BLOCK()) | (_type=Symbol.CMDLIN()))
                      | (_type=Symbol.FUNC()) ) {
