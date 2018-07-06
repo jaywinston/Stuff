@@ -264,6 +264,7 @@ class Eval {
             return block;
         }
         if (end.type() = END) {
+            /* not sure */
             do line.dispose();
             return Eval.toSuperBlock(end);  // destroys end
         }
@@ -283,6 +284,16 @@ class Eval {
         do line.append(Symbol.new(null, BLOCK, block));
         let block = line.next();
         do line.dispose();
+        if (block.type() = EXPR) {
+            let end = block;
+            while (~(end.next() = null)) {
+                let end = end.next();
+            }
+            let s = Eval.blockToStr(end);
+            do Str.cat(s, block.value());
+            let block = Eval.eval(s, 0);
+            do s.dispose();
+        }
 
         return block;
     }
@@ -328,6 +339,29 @@ class Eval {
     }
 
 
+    function int blockTkn(String s, String t, int i) {
+
+        if (~(i < s.length())) {
+            return i;
+        }
+
+        while (i < s.length()) {
+            let i = Str.tkn(s, t, BRACES, i);
+
+            if (i < s.length()) {
+                if (s.charAt(i) = 125) {
+                    return i;
+                }
+                if (s.charAt(i) = 123) {
+                    let i = Str.block(s, t, 123, 125, i);
+                }
+            }
+        }
+
+        return i;
+    }
+
+
     function Symbol toSuperBlock(Symbol end) {
         var String s;
         var Symbol block, super;
@@ -345,6 +379,7 @@ class Eval {
 
         do super.setNext(Symbol.new(null, BLOCK, block));
 
+        /* if this block is an expression term, evaluate it */
         let s = end.value();
 
         if (s.length() > 0) {
@@ -367,39 +402,17 @@ class Eval {
 
         let expr = Exec.execBlock(block);
 
+        let s = String.new(Str.MAXLEN());
+
         if (expr.type() = STR) {
-            let s = Str.dup(expr.value());
+            do Str.cat(s, expr.value());
         } else {
-            let s = String.new(6);
             do s.setIntValue(expr.value());
         }
 
         do expr.dispose();
 
         return s;
-    }
-
-
-    function int blockTkn(String s, String t, int i) {
-
-        if (~(i < s.length())) {
-            return i;
-        }
-
-        while (i < s.length()) {
-            let i = Str.tkn(s, t, BRACES, i);
-
-            if (i < s.length()) {
-                if (s.charAt(i) = 125) {
-                    return i;
-                }
-                if (s.charAt(i) = 123) {
-                    let i = Str.block(s, t, 123, 125, i);
-                }
-            }
-        }
-
-        return i;
     }
 
 
