@@ -206,6 +206,10 @@ class Exec {
 
     function Symbol doBlock(Symbol b) {
 
+        if (b = null) {
+            return null;
+        }
+
         while (~(b.next() = null)) {
             do Symbol.clear(Exec.exec(b.value()));
             let b = b.next();

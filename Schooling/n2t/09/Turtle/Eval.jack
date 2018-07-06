@@ -258,8 +258,7 @@ class Eval {
         let line = Eval.blockLine(s, 1);
         let end = Eval.eval(line.value(), 0);
         if (end = null) {
-            do line.append(Symbol.new(null, BLOCK,
-                                      Symbol.new(null, CMDLIN, null)));
+            do line.append(Symbol.new(null, BLOCK, null));
             let block = line.next();
             do line.dispose();
             return block;
@@ -304,26 +303,25 @@ class Eval {
             let line = Symbol.new(null, STR, t);
         }
 
-        if ( (i+1) = s.length() ) {
-            return line;
-        }
+        if ( (i+1) < s.length() ) {
 
-        /* If this block is in an expression,
-           append the rest of the expression. */
-        let t = String.new(s.length());
-        let i = Eval.blockTkn(s, t, i+1);
-
-        if (i < s.length()) {
-            do line.append(Symbol.new(null, END, t));
-        } else {
-            do line.append(Symbol.new(null, EXPR, t));
-        }
-
-        /* append any ends of super blocks */
-        while ( (i+1) < s.length() ) {
+            /* If this block is in an expression,
+               append the rest of the expression. */
             let t = String.new(s.length());
             let i = Eval.blockTkn(s, t, i+1);
-            do line.append(Symbol.new(null, END, t));
+
+            if (i < s.length()) {
+                do line.append(Symbol.new(null, END, t));
+            } else {
+                do line.append(Symbol.new(null, EXPR, t));
+            }
+
+            /* append any ends of super blocks */
+            while ( (i+1) < s.length() ) {
+                let t = String.new(s.length());
+                let i = Eval.blockTkn(s, t, i+1);
+                do line.append(Symbol.new(null, END, t));
+            }
         }
 
         return line;
@@ -341,7 +339,7 @@ class Eval {
         }
 
         let super = end;
-        while (~(super.next() = block)) {  // the last node holds the block
+        while (~(super.next() = block)) {
             let super = super.next();
         }
 
@@ -352,12 +350,11 @@ class Eval {
         if (s.length() > 0) {
             let s = Eval.blockToStr(block);
             do Str.cat(s, end.value());
+            do end.append(Eval.eval(s, 0));
+            do s.dispose();
+            let block = end.next();
             do end.dispose();
-            do block.dispose();
-            let block = Eval.eval(s, 0);
         }
-
-        do s.dispose();
 
         return block;
     }
