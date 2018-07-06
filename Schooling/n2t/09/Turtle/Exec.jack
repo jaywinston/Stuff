@@ -121,7 +121,7 @@ class Exec {
             do Exec.echo(retval);
         }
 
-        do Lib.clearSym(retval);
+        do Symbol.clear(retval);
 
         return;
     }
@@ -199,7 +199,7 @@ class Exec {
         var Symbol p;
 
         let p = Exec.doBlock(b);
-        do Lib.clearSym(b);
+        do Symbol.clear(b);
         return p;
     }
 
@@ -207,7 +207,7 @@ class Exec {
     function Symbol doBlock(Symbol b) {
 
         while (~(b.next() = null)) {
-            do Lib.clearSym(Exec.exec(b.value()));
+            do Symbol.clear(Exec.exec(b.value()));
             let b = b.next();
         }
 
@@ -256,7 +256,7 @@ class Exec {
 
         if (~(arg.value() = 0)) {
             do Exec.try(arg.next());
-            //do Lib.clearSym(Exec.execute(arg.next()));
+            //do Symbol.clear(Exec.execute(arg.next()));
         }
 
         return;
@@ -309,7 +309,7 @@ class Exec {
             do Exec.try(Lib.dupSym(arg.next()));
             let p = Eval.eval(arg.name(), 0);
             let condition = p.value();
-            do Lib.clearSym(p);
+            do Symbol.clear(p);
         }
 
         return;

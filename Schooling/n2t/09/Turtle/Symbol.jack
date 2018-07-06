@@ -19,6 +19,7 @@ class Symbol {
     }
 
     method void dispose() {
+        var String s;
 
         if (~(_name = null)) {
             do _name.dispose();
@@ -27,10 +28,11 @@ class Symbol {
         if (       (_type=Symbol.STR())
                 | ((_type=Symbol.END())
                 |  (_type=Symbol.EXPR())) ) {
-            do _value.dispose();
-        } else { if ( ((_type=Symbol.BLOCK())
-                     | (_type=Symbol.CMDLIN()))
-                     | (_type=Symbol.FUNC()) ) {
+            let s = _value;
+            do s.dispose();
+        } else { if (   (_type=Symbol.BLOCK())
+                     | ((_type=Symbol.CMDLIN())
+                     |  (_type=Symbol.FUNC())) ) {
             do Symbol.clear(_value);
         }}
 
@@ -89,7 +91,6 @@ class Symbol {
     }
 
     function void clear(Symbol sym) {
-        var String s;
         var Symbol next;
 
         while (~(sym = null)) {
@@ -142,9 +143,9 @@ class Symbol {
     function int CMDLIN    () { return  3; }
     function int FUNC      () { return  4; }
     function int END       () { return  5; }
-    function int EXPR      () { return  9; }
-    function int INT       () { return  6; }
-    function int STR       () { return  7; }
-    function int SYM       () { return  8; }
+    function int EXPR      () { return  6; }
+    function int INT       () { return  7; }
+    function int STR       () { return  8; }
+    function int SYM       () { return  9; }
 
 }

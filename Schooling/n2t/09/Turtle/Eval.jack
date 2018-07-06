@@ -166,7 +166,7 @@ class Eval {
 
         if (Error.isSet()) {
             do name.dispose();
-            do Lib.clearSym(value);
+            do Symbol.clear(value);
             return;
         }
 
@@ -177,7 +177,7 @@ class Eval {
         }
 
         do name.dispose();
-        do Lib.clearSym(value);
+        do Symbol.clear(value);
 
         return;
     }
@@ -257,12 +257,20 @@ class Eval {
 
         let line = Eval.blockLine(s, 1);
         let end = Eval.eval(line.value(), 0);
+        if (end = null) {
+            do line.append(Symbol.new(null, BLOCK,
+                                      Symbol.new(null, CMDLIN, null)));
+            let block = line.next();
+            do line.dispose();
+            return block;
+        }
         if (end.type() = END) {
             do line.dispose();
-            return Eval.toSuperBlock(end);
+            return Eval.toSuperBlock(end);  // destroys end
         }
         let block = Symbol.new(null, CMDLIN, end);
 
+/*
         while (~(line.type() = END)) {
             do line.dispose();
             let line = Eval.blockLine(Terminal.read(PS2), 0);
@@ -271,46 +279,20 @@ class Eval {
                             CMDLIN,
                             Eval.eval(end.value(), 0)));
         }
+*/
+
+        do line.append(Symbol.new(null, BLOCK, block));
+        let block = line.next();
         do line.dispose();
 
-        do end.append(Symbol.new(null, BLOCK, block));
-        let block = end.next();
-        do end.dispose();
-
         return block;
-    }
-
-
-    function Symbol toSuperBlock(Symbol block) {
-        var String s;
-
-        let s = end.value();
-
-        if (s.length() > 0) {
-            let s = Eval.blockToStr(block);
-            do Str.cat(s, end.value());
-        }
-
-        return Eval.eval(s);
-    }
-
-
-    function String blockToStr(Symbol block) {
-        var int n;
-        var String s;
-        var Symbol expr;
-
-        let expr = Exec.execBlock(block);
-        // get type, make string
-
-        return s;
     }
 
 
     /* return a list of strings representing block endings */
     function Symbol blockLine(String s, int i) {
         var String t;
-        var Symbol line;
+        var Symbol line,p;
 
         /* look for end of block */
         let t = String.new(s.length());
@@ -322,10 +304,14 @@ class Eval {
             let line = Symbol.new(null, STR, t);
         }
 
+        if ( (i+1) = s.length() ) {
+            return line;
+        }
+
         /* If this block is in an expression,
            append the rest of the expression. */
         let t = String.new(s.length());
-        let i = Eval.blockTkn(s, t, 1);
+        let i = Eval.blockTkn(s, t, i+1);
 
         if (i < s.length()) {
             do line.append(Symbol.new(null, END, t));
@@ -341,6 +327,59 @@ class Eval {
         }
 
         return line;
+    }
+
+
+    function Symbol toSuperBlock(Symbol end) {
+        var String s;
+        var Symbol block, super;
+
+        /* make block a sub-block of the super-block */
+        let block = end;
+        while (~(block.next() = null)) {  // the last node holds the block
+            let block = block.next();
+        }
+
+        let super = end;
+        while (~(super.next() = block)) {  // the last node holds the block
+            let super = super.next();
+        }
+
+        do super.setNext(Symbol.new(null, BLOCK, block));
+
+        let s = end.value();
+
+        if (s.length() > 0) {
+            let s = Eval.blockToStr(block);
+            do Str.cat(s, end.value());
+            do end.dispose();
+            do block.dispose();
+            let block = Eval.eval(s, 0);
+        }
+
+        do s.dispose();
+
+        return block;
+    }
+
+
+    function String blockToStr(Symbol block) {
+        var int n;
+        var String s;
+        var Symbol expr;
+
+        let expr = Exec.execBlock(block);
+
+        if (expr.type() = STR) {
+            let s = Str.dup(expr.value());
+        } else {
+            let s = String.new(6);
+            do s.setIntValue(expr.value());
+        }
+
+        do expr.dispose();
+
+        return s;
     }
 
 
@@ -405,7 +444,7 @@ class Eval {
 
         let t = String.new(s.length() + 6);
         do t.setIntValue(Eval.blockTerm(block));
-        do Lib.clearSym(block);
+        do Symbol.clear(block);
         do Str.tkn(s, t, null, i);
         let block = Eval.eval(t, 0);
         do t.dispose();
@@ -526,7 +565,7 @@ class Eval {
         var Symbol p;
 
         let p = Exec.execBlock(b.value());
-        do Lib.clearSym(b);
+        do Symbol.clear(b);
 
         if (~(p.type() = INT)) {
             do Error.send("wrong type; expected integer");  // ##DB##
@@ -535,7 +574,7 @@ class Eval {
 
         let n = p.value();
 
-        do Lib.clearSym(p);
+        do Symbol.clear(p);
 
         return n;
     }
