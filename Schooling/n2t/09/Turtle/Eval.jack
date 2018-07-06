@@ -1,6 +1,6 @@
 class Eval {
 
-    static int BLOCK, CMD, CMDLIN, END, FUNC, INT, STR, SYM;
+    static int BLOCK, CMD, CMDLIN, END, EXPR, FUNC, INT, STR, SYM;
     static int TERM;
     static Array INTOPS;
     static String PS1, PS2;
@@ -15,6 +15,7 @@ class Eval {
         let CMD = Symbol.CMD();
         let CMDLIN = Symbol.CMDLIN();
         let END = Symbol.END();
+        let EXPR = Symbol.EXPR();
         let FUNC = Symbol.FUNC();
         let INT = Symbol.INT();
         let STR = Symbol.STR();
@@ -258,7 +259,7 @@ class Eval {
         let end = Eval.eval(line.value(), 0);
         if (end.type() = END) {
             do line.dispose();
-            // something with superblock and return
+            return Eval.toSuperBlock(end);
         }
         let block = Symbol.new(null, CMDLIN, end);
 
@@ -280,31 +281,38 @@ class Eval {
     }
 
 
-    function Symbol superBlock(/* ? */) {
+    function Symbol toSuperBlock(Symbol block) {
         var String s;
 
         let s = end.value();
+
         if (s.length() > 0) {
-            let s = Eval.blockToStr(/* ? */null);
+            let s = Eval.blockToStr(block);
             do Str.cat(s, end.value());
-            // eval s here
         }
-        return null;
+
+        return Eval.eval(s);
     }
 
 
     function String blockToStr(Symbol block) {
         var int n;
         var String s;
+        var Symbol expr;
+
+        let expr = Exec.execBlock(block);
+        // get type, make string
 
         return s;
     }
 
 
+    /* return a list of strings representing block endings */
     function Symbol blockLine(String s, int i) {
         var String t;
         var Symbol line;
 
+        /* look for end of block */
         let t = String.new(s.length());
         let i = Eval.blockTkn(s, t, 1);
 
@@ -314,7 +322,19 @@ class Eval {
             let line = Symbol.new(null, STR, t);
         }
 
-        while (i < s.length()) {
+        /* If this block is in an expression,
+           append the rest of the expression. */
+        let t = String.new(s.length());
+        let i = Eval.blockTkn(s, t, 1);
+
+        if (i < s.length()) {
+            do line.append(Symbol.new(null, END, t));
+        } else {
+            do line.append(Symbol.new(null, EXPR, t));
+        }
+
+        /* append any ends of super blocks */
+        while ( (i+1) < s.length() ) {
             let t = String.new(s.length());
             let i = Eval.blockTkn(s, t, i+1);
             do line.append(Symbol.new(null, END, t));

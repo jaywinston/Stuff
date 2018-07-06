@@ -1,12 +1,10 @@
-/**
- *  Depends on Str.jack 
- */
+/* Depends on Str.jack */
+
 class Symbol {
 
     field int _type, _value;
     field String _name;
     field Symbol _next;
-    field Symbol end;
 
     constructor Symbol new(String name, int type, int value) {
         if (name = null) {
@@ -17,7 +15,6 @@ class Symbol {
         let _type = type;
         let _value = value;
         let _next = null;
-        let end = this;
         return this;
     }
 
@@ -27,9 +24,12 @@ class Symbol {
             do _name.dispose();
         }
 
-        if ( (_type=Symbol.STR()) | (_type=Symbol.END()) ) {
+        if (       (_type=Symbol.STR())
+                | ((_type=Symbol.END())
+                |  (_type=Symbol.EXPR())) ) {
             do _value.dispose();
-        } else { if ( ((_type=Symbol.BLOCK()) | (_type=Symbol.CMDLIN()))
+        } else { if ( ((_type=Symbol.BLOCK())
+                     | (_type=Symbol.CMDLIN()))
                      | (_type=Symbol.FUNC()) ) {
             do Symbol.clear(_value);
         }}
@@ -76,38 +76,25 @@ class Symbol {
     }
 
     method void append(Symbol o) {
-        if (~(o = null)) {
-            do o.append(end.next());
-            do end.setNext(o);
-            let end = o;
+        var Symbol p;
+
+        let p = this;
+        while (~(p.next() = null)) {
+            let p = p.next();
         }
+
+        do p.setNext(o);
+
         return;
     }
 
     function void clear(Symbol sym) {
-        //var int type;
         var String s;
         var Symbol next;
 
         while (~(sym = null)) {
-
             let next = sym.next();
-
-/*
-            let type = sym.type();
-            if (type = Symbol.STR()) {
-                let s = sym.value();
-                if (~(s = null)) {
-                    do s.dispose();
-                }
-            } else { if ( ((type=Symbol.BLOCK()) | (type=Symbol.CMDLIN()))
-                         | (type=Symbol.FUNC()) ) {
-                do Symbol.clear(sym.value());
-            }}
-*/
-
             do sym.dispose();
-
             let sym = next;
         }
 
@@ -155,6 +142,7 @@ class Symbol {
     function int CMDLIN    () { return  3; }
     function int FUNC      () { return  4; }
     function int END       () { return  5; }
+    function int EXPR      () { return  9; }
     function int INT       () { return  6; }
     function int STR       () { return  7; }
     function int SYM       () { return  8; }
