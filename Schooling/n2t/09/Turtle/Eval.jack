@@ -257,28 +257,22 @@ class Eval {
 
         let line = Eval.blockLine(s, 1);
         let end = Eval.eval(line.value(), 0);
-        if (end = null) {
-            do line.append(Symbol.new(null, BLOCK, null));
-            let block = line.next();
-            do line.dispose();
-            return block;
-        }
-        if (end.type() = END) {
-            /* not sure */
-            do line.dispose();
+
+        if (~(end = null)) { if (end.type() = END) {
+            do line.dispose();  // end is prepended with line.next
             return Eval.toSuperBlock(end);  // destroys end
-        }
+        }}
+
         let block = Symbol.new(null, CMDLIN, end);
 
-/*
         while (~(line.type() = END)) {
             do line.dispose();
             let line = Eval.blockLine(Terminal.read(PS2), 0);
             let end = Eval.eval(line.value(), 0);
-            do block.append(Symbol.new(null,
-                            CMDLIN,
-                            Eval.eval(end.value(), 0)));
+            /* check for super */
+            do block.append(Symbol.new(null, CMDLIN, end));
         }
+/*
 */
 
         do line.append(Symbol.new(null, BLOCK, block));
@@ -291,8 +285,16 @@ class Eval {
             }
             let s = Eval.blockToStr(end);
             do Str.cat(s, block.value());
-            let block = Eval.eval(s, 0);
+            let line = block;
+            while (~(line.next() = end)) {
+                let line = line.next();
+            }
+            do end.dispose();
+            do line.setNext(Eval.eval(s, 0));
             do s.dispose();
+            let end = block;
+            let block = block.next();
+            do end.dispose();
         }
 
         return block;
@@ -306,7 +308,7 @@ class Eval {
 
         /* look for end of block */
         let t = String.new(s.length());
-        let i = Eval.blockTkn(s, t, 1);
+        let i = Eval.blockTkn(s, t, i);
 
         if (i < s.length()) {
             let line = Symbol.new(null, END, t);
@@ -407,7 +409,7 @@ class Eval {
         if (expr.type() = STR) {
             do Str.cat(s, expr.value());
         } else {
-            do s.setIntValue(expr.value());
+            do s.setInt(expr.value());
         }
 
         do expr.dispose();
@@ -453,7 +455,7 @@ class Eval {
         var String t;
 
         let t = String.new(s.length() + 6);
-        do t.setIntValue(Eval.blockTerm(block));
+        do t.setInt(Eval.blockTerm(block));
         do Symbol.clear(block);
         do Str.tkn(s, t, null, i);
         let block = Eval.eval(t, 0);
@@ -479,7 +481,7 @@ class Eval {
             return Symbol.new(s, SYM, null);
         }
 
-        return Symbol.clone(p);
+        return Symbol.copy1(p);
     }
 
 
