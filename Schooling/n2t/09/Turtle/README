@@ -22,9 +22,10 @@ namchar:
     (?![ ={}()"+*/%-])[[:graph:]]
 
 expression:
-    name
     stringexpr
-    logicexpr
+    blockexpr
+    symbolexpr
+    intexpr
 
 stringexpr:
     '"' text '"'
@@ -34,7 +35,7 @@ text:
     textchar text
 
 textchar:
-    (?![%"])[[:graph:]]
+    (?![\n%"])[[:graph:]]
     formatseq
 
 formatseq:
@@ -42,6 +43,9 @@ formatseq:
 
 formatspec:
     [NPQ]
+
+intexpr:
+    logicexpr
 
 logicexpr:
     equalityexpr
@@ -73,7 +77,7 @@ intchar:
     [[:digit:]]
 
 parenterm:
-    '(' logicexpr ')
+    '(' intexpr ')
 
 block:
     '{' cmdlist '}
