@@ -105,6 +105,10 @@ class Symbol {
     function Symbol copy1(Symbol sym) {
         var int type;
 
+        if (sym = null) {
+            return null;
+        }
+
         let type = sym.type();
 
         if (type = Symbol.STR()) {
@@ -123,17 +127,21 @@ class Symbol {
 
 
     function Symbol copy(Symbol sym) {
-        var Symbol p;
+        var Symbol new;
 
-        let p = Symbol.copy1(sym);
+        if (sym = null) {
+            return null;
+        }
+
+        let new = Symbol.copy1(sym);
 
         let sym = sym.next();
         while (~(sym = null)) {
-            do p.append(Symbol.copy1(sym));
+            do new.append(Symbol.copy1(sym));
             let sym = sym.next();
         }
 
-        return p;
+        return new;
     }
 
 

@@ -253,12 +253,13 @@ class Eval {
 
     function Symbol blockExpr(String s) {
         var int i, n;
-        var Symbol block, end, line;
+        var Symbol block, end, line,p;
 
         let line = Eval.blockLine(s, 1);
         let end = Eval.eval(line.value(), 0);
 
         if (~(end = null)) { if (end.type() = END) {
+//let p = block;while(p>0){do Output.printInt(p.type());let p=p.value();}do Output.printChar(32);
             do line.dispose();  // end is prepended with line.next
             return Eval.toSuperBlock(end);  // destroys end
         }}
@@ -270,7 +271,9 @@ class Eval {
             let line = Eval.blockLine(Terminal.read(PS2), 0);
             let end = Eval.eval(line.value(), 0);
             /* check for super */
-            do block.append(Symbol.new(null, CMDLIN, end));
+            if (~(end = null)) {
+                do block.append(Symbol.new(null, CMDLIN, end));
+            }
         }
 /*
 */
@@ -389,9 +392,10 @@ class Eval {
             do Str.cat(s, end.value());
             do end.append(Eval.eval(s, 0));
             do s.dispose();
-            let block = end.next();
-            do end.dispose();
         }
+
+        let block = end.next();
+        do end.dispose();
 
         return block;
     }
