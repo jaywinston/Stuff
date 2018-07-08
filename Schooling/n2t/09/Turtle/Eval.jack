@@ -259,7 +259,6 @@ class Eval {
         let end = Eval.eval(line.value(), 0);
 
         if (~(end = null)) { if (end.type() = END) {
-//let p = block;while(p>0){do Output.printInt(p.type());let p=p.value();}do Output.printChar(32);
             do line.dispose();  // end is prepended with line.next
             return Eval.toSuperBlock(end);  // destroys end
         }}
@@ -270,13 +269,10 @@ class Eval {
             do line.dispose();
             let line = Eval.blockLine(Terminal.read(PS2), 0);
             let end = Eval.eval(line.value(), 0);
-            /* check for super */
             if (~(end = null)) {
                 do block.append(Symbol.new(null, CMDLIN, end));
             }
         }
-/*
-*/
 
         do line.append(Symbol.new(null, BLOCK, block));
         let block = line.next();
@@ -422,39 +418,6 @@ class Eval {
     }
 
 
-    function Symbol endBlock() {
-        return null;
-    }
-
-
-    function Symbol blockEnd(String s, int i) {
-        var String t, name;
-        var Symbol end;
-
-        if (i = s.length()) {
-            return null;
-        }
-
-        let t = String.new(s.length());
-
-        let i = Eval.blockTkn(s, t, i);
-
-        if (t.length() > 0) {
-            let name = t;
-        } else {
-            let name = null;
-        }
-
-        let end = Symbol.new(name, END, null);
-
-        do t.dispose();
-
-        do end.append(Eval.blockEnd(s, i+1));
-
-        return end;
-    }
-
-
     function Symbol blockToInt(Symbol block, String s, int i) {
         var String t;
 
@@ -466,13 +429,6 @@ class Eval {
         do t.dispose();
 
         return block;
-    }
-
-
-    function boolean isOp(char c) {
-        return ((((c=33) | (c=37)) | ((c=38) | (c=42)))
-                | (((c=43) | (c=45)) | ((c=47) | (c=60))))
-                | ((c=61) | (c=62));
     }
 
 
@@ -568,6 +524,7 @@ class Eval {
 
     }
 
+
     function int parenTerm(String s) {
 
         do s.eraseLastChar();
@@ -576,21 +533,22 @@ class Eval {
         return Eval.intExpr(s, 0, 0);
     }
 
-    function int blockTerm(Symbol b) {
+
+    function int blockTerm(Symbol block) {
         var int n;
-        var Symbol p;
+        var Symbol value;
 
-        let p = Exec.execBlock(b.value());
-        do Symbol.clear(b);
+        let value = Exec.execBlock(block.value());
+        do Symbol.clear(block);
 
-        if (~(p.type() = INT)) {
+        if (~(value.type() = INT)) {
             do Error.send("wrong type; expected integer");  // ##DB##
             do Error.set(1);  // wrong type; expected integer
         }
 
-        let n = p.value();
+        let n = value.value();
 
-        do Symbol.clear(p);
+        do Symbol.clear(value);
 
         return n;
     }
@@ -616,22 +574,41 @@ class Eval {
         return p.value();
     }
 
+
     function int intTkn(String s, String t, String list, int i) {
 
+        /* unary ops: '-' '~'; evaluated with term */
         while ((s.charAt(i)=45) | (s.charAt(i)=126)) {
             do t.appendChar(s.charAt(i));
             let i = i + 1;
         }
 
+        if (s.charAt(i) = 40) {
+            let i = Str.block(s, t, 40, 41, i);
+            if (i > s.length()) {
+                do t.dispose();
+                do Error.send("unclosed parentheses");  // ##DB##
+                do Error.set(1);  // unclosed parentheses
+                return i;
+            }
+        } else { if (s.charAt(i) = 123) {
+            let i = Str.block(s, t, 123, 125, i);
+        }}
+
         let i = Str.tkn(s, t, list, i);
 
+        /* this includes case of op at s[0] ... */
         if (t.length() = 0) {
+            do t.dispose();
             do Error.send("unexpected operator");  // ##DB##
             do Error.set(1);  // unexpected operator
             return i;
         }
 
+        /* ... which would crash here.
+           But this covers the case of op after uop, e.g. "-+". */
         if ( (s.charAt(i-1)=45) | (s.charAt(i-1)=126) ) {
+            do t.dispose();
             do Error.send("unexpected operator");  // ##DB##
             do Error.set(1);  // unexpected operator
             return i;
@@ -641,13 +618,14 @@ class Eval {
             if (s.charAt(i) = 40) {
                 let i = Str.block(s, t, 40, 41, i);
                 if (i > s.length()) {
+                    do t.dispose();
                     do Error.send("unclosed parentheses");  // ##DB##
                     do Error.set(1);  // unclosed parentheses
                     return i;
                 }
-                if (i < s.length()) {
-                    let i = Eval.intTkn(s, t, list, i);
-                }
+            if (i < s.length()) {
+                let i = Eval.intTkn(s, t, list, i);
+            }
             } else { if (s.charAt(i) = 123) {
                 let i = Str.block(s, t, 123, 125, i);
             }}
