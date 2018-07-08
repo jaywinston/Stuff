@@ -1,15 +1,5 @@
 class Lib {
 
-    static int CMDLIN, STR, BLOCK, FUNC;
-
-    function void init() {
-
-        let CMDLIN = Const.CMDLIN();
-        let STR = Const.STR();
-        let BLOCK = Const.BLOCK();
-        let FUNC = Const.FUNC();
-        return;
-    }
 
     function int mod(int n, int d) {
         var int q;
@@ -19,66 +9,14 @@ class Lib {
     }
 
 
-    function void clearSym(Symbol sym) {
-        var int type;
-        var String s;
-        var Symbol next;
+    function Array ERRTAB() {
+        var Array errtab;
 
-        while (~(sym = null)) {
+        let errtab = Array.new(2);
+        let errtab[0] = null;
+        let errtab[1] = "error";
 
-            let next = sym.next();
-
-            let type = sym.type();
-            if (type = STR) {
-                let s = sym.value();
-                if (~(s = null)) {
-                    do s.dispose();
-                }
-            } else { if ( (type=BLOCK) | (type=CMDLIN) ) {
-                do Lib.clearSym(sym.value());
-            }}
-
-            do sym.dispose();
-
-            let sym = next;
-        }
-
-        return;
-    }
-
-    function Symbol dupSym(Symbol sym) {
-        var int type;
-        var Symbol p;
-
-        let p = Symbol.new(null, null, null);
-
-        while (~(sym = null)) {
-
-            let type = sym.type();
-
-            if (type = STR) {
-                do p.append(Symbol.new(sym.name(),
-                                       sym.type(),
-                                       Str.dup(sym.value())));
-            } else { if ( (type=BLOCK)
-                        |((type=CMDLIN) 
-                        | (type=FUNC)) ) {
-                do p.append(Symbol.new(sym.name(),
-                                       sym.type(),
-                                       Lib.dupSym(sym.value())));
-            } else {
-                do p.append(Symbol.new(sym.name(), sym.type(), sym.value()));
-            }}
-
-            let sym = sym.next();
-        }
-
-        let sym = p;
-        let p = p.next();
-        do sym.setNext(null);
-        do Lib.clearSym(sym);
-
-        return p;
+        return errtab;
     }
 
 }

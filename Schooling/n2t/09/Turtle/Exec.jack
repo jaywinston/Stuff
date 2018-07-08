@@ -310,7 +310,7 @@ class Exec {
 
         let condition = arg.value();
         while (~(condition = 0)) {
-            do Exec.try(Lib.dupSym(arg.next()));
+            do Exec.try(Symbol.copy(arg.next()));
             let p = Eval.eval(arg.name(), 0);
             let condition = p.value();
             do Symbol.clear(p);

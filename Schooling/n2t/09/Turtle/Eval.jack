@@ -57,6 +57,7 @@ class Eval {
     }
 
 
+    /* read and evaluate next command line into parse tree */
     function Symbol next() {
         return Eval.eval(Terminal.read(PS1), 0);
     }
