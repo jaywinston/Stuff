@@ -23,6 +23,20 @@ class TextBox {
         return;
     }
 
+
+    method int set(int i, int j) {
+
+        if ( ((i<top) | (i>bottom)) | ((j<left) | (j>right)) ) {
+            return 1;
+        }
+
+        let row = i;
+        let col = j;
+
+        return 0;
+    }
+
+
     method void clear() {
         var int x1, y1, x2, y2;
 
@@ -157,6 +171,9 @@ class TextBox {
             }
         }
 
+        do Output.moveCursor(row, col);
+        do Output.printChar(c);
+
         if (c = 128) {
             do newline();
             return;
@@ -164,9 +181,6 @@ class TextBox {
             do backspace();
             return;
         }}
-
-        do Output.moveCursor(row, col);
-        do Output.printChar(c);
 
         let col = col + 1;
 

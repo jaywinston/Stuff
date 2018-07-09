@@ -15,7 +15,7 @@ class Main {
         do Turtle.init();
         do Eval.init();
         do Exec.init(2, 32, 20, 31);
-        do Terminal.init(2, 1, 20, 30);
+        do IOBox.init(2, 1, 20, 30);
 
         do Main.run();
 

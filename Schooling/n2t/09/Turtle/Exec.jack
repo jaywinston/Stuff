@@ -92,11 +92,9 @@ class Exec {
 
 
     function void getTurtle() {
-//        let t = Turtle.new(((2*left) + (right-left)) * 4,
-//                          ((2*bottom) + (top-bottom)) * 5,
         let t = Turtle.new(left + ((right-left)/2),
-                          (top + ((bottom-top)/2)),
-                          90, top, left, bottom, right);
+                           top + ((bottom-top)/2),
+                           90, top, left, bottom, right);
         return;
     }
 
@@ -116,7 +114,7 @@ class Exec {
 
         if (Error.isSet()) {
             while (Error.isSet()) {
-                do Terminal.echo(Error.message());
+                do IOBox.echo(Error.message());
             }
         } else {
             do Exec.echo(retval);
@@ -174,23 +172,31 @@ class Exec {
 
         let farg = Array.new(1);
         let fpres = "$%d";
-        let n = 1;
+        let n = 0;
+
         let p = argv.next();
         while (~(p = null)) {
+            let n = n + 1;
             let farg[0] = n;
             let arg = Str.format(fpres, farg);
             do Eval.install(arg, p.type(), p.value());
             do arg.dispose();
-            let n = n + 1;
             let p = p.next();
         }
 
-        do farg.dispose();
-        do fpres.dispose();
+        let p = Exec.exec(Symbol.copy(argv.value()));
 
-        let p = Exec.exec(argv.value());
+        while (n > 0) {
+            let farg[0] = n;
+            let arg = Str.format(fpres, farg);
+            do Eval.delete(arg);
+            do arg.dispose();
+            let n = n - 1;
+        }
 
         do Symbol.clear(argv);
+        do farg.dispose();
+        do fpres.dispose();
 
         return p;
     }
@@ -269,7 +275,6 @@ class Exec {
 
         if (~(arg.value() = 0)) {
             do Exec.try(arg.next());
-            //do Symbol.clear(Exec.execute(arg.next()));
         }
 
         return;
@@ -288,6 +293,19 @@ class Exec {
 
 
     function void doPrint(Symbol arg) {
+
+        do t.hide();
+
+        if (tb.set(t.y()/11, (t.x()/8)+1) = 1) {
+            do Error.send("illegal cursor coordinate");  // ##DB##
+            do Error.set(1);  // illegal cursor coordinate
+            return;
+        }
+
+        do tb.puts(arg.value());
+
+        do t.show();
+
         return;
     }
 
@@ -350,7 +368,7 @@ class Exec {
     function void echo(Symbol sym) {
         while (~(sym = null)) {
             if (sym.type() = STR) {
-                do Terminal.echo(sym.value());
+                do IOBox.echo(sym.value());
             } else { if (sym.type() = SYM) {
                 //do Exec.echo(sym.value());
             } else { if (sym.type() = INT) {
@@ -367,7 +385,7 @@ class Exec {
 
         let s = String.new(6);
         do s.setInt(sym.value());
-        do Terminal.echo(s);
+        do IOBox.echo(s);
         do s.dispose();
 
         return;

@@ -1,3 +1,4 @@
+// make 1 "won't go backwards" and 2 "target beyond boundary"
 class Error {
 
     static int e;

@@ -1,4 +1,4 @@
-class Terminal {
+class IOBox {
 
     static int BUFSIZ;
     static int bp;

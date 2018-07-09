@@ -59,7 +59,7 @@ class Eval {
 
     /* read and evaluate next command line into parse tree */
     function Symbol next() {
-        return Eval.eval(Terminal.read(PS1), 0);
+        return Eval.eval(IOBox.read(PS1), 0);
     }
 
 
@@ -268,7 +268,7 @@ class Eval {
 
         while (~(line.type() = END)) {
             do line.dispose();
-            let line = Eval.blockLine(Terminal.read(PS2), 0);
+            let line = Eval.blockLine(IOBox.read(PS2), 0);
             let end = Eval.eval(line.value(), 0);
             if (~(end = null)) {
                 do block.append(Symbol.new(null, CMDLIN, end));
@@ -664,8 +664,15 @@ class Eval {
         return 0;
     }
 
+
     function void install(String name, int type, int value) {
         do symtab.install(name, type, value);
+        return;
+    }
+
+
+    function void delete(String name) {
+        do symtab.delete(name);
         return;
     }
 
