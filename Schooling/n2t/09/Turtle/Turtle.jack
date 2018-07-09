@@ -120,12 +120,16 @@ class Turtle {
     method int forward(int l) {
         var int x, y;
 
+        if (l < 0) {
+            return 1;
+        }
+
         do v.calculate(l, direction);
         let x = _x + v.re();
         let y = _y - v.im();
 
         if ( ((x<left) | (x>right)) | ((y<top) | (y>bottom)) ) {
-            return -1;  // target beyond boundary
+            return 2;  // target beyond boundary
         }
 
         do hide();

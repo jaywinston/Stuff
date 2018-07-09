@@ -31,14 +31,13 @@ class Exec {
 
     function void init(int i, int j, int h, int w) {
 
-        do Exec.initKWs();
         let tb = TextBox.new(i, j, h, w);
+        let top = i * 11;
+        let left = j * 8;
+        let bottom = (i + h) * 11;
+        let right = (j + w) * 8;
 
-        let top = i;
-        let left = j;
-        let bottom = i + h;
-        let right = j + w;
-
+        do Exec.initKWs();
         do Exec.getTurtle();
 
         return;
@@ -92,18 +91,20 @@ class Exec {
     }
 
 
-    function void clear() {
-        do t.dispose();
-        do tb.clear();
-        do Exec.getTurtle();
+    function void getTurtle() {
+//        let t = Turtle.new(((2*left) + (right-left)) * 4,
+//                          ((2*bottom) + (top-bottom)) * 5,
+        let t = Turtle.new(left + ((right-left)/2),
+                          (top + ((bottom-top)/2)),
+                          90, top, left, bottom, right);
         return;
     }
 
 
-    function void getTurtle() {
-        let t = Turtle.new(((2*left) + (right-left)) * 4,
-                          ((2*bottom) + (top-bottom)) * 5,
-                          90, top, left, bottom, right);
+    function void clear() {
+        do t.dispose();
+        do tb.clear();
+        do Exec.getTurtle();
         return;
     }
 
@@ -237,7 +238,15 @@ class Exec {
             let arg = Exec.execBlock(arg);
         }
 
-        do t.forward(arg.value());
+        if (t.forward(arg.value()) = 1) {
+            do Error.send("won't go backwards");  // ##DB##
+            do Error.set(1);  // won't go backwards
+        }
+
+        if (t.forward(arg.value()) = 2) {
+            do Error.send("target beyond boundary");  // ##DB##
+            do Error.set(1);  // target beyond boundary
+        }
 
         return;
     }

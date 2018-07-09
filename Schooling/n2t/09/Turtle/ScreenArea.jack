@@ -10,8 +10,8 @@ class ScreenArea {
         let width = (w/16) + 1;
         let height = h;
         let aLen = (width*height) * 2;
-        let orig = 16384;
         let words = Array.new(aLen);
+        let orig = 16384;
 
         return this;
     }
