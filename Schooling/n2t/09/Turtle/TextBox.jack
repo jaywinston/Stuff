@@ -31,21 +31,25 @@ class TextBox {
         } else {
             let x1 = 0;
         }
+
         if (top > 0) {
             let y1 = (top*11) - 2;
         } else {
             let y1 = 0;
         }
+
         if (right < 64) {
             let x2 = (right*8);
         } else {
             let x2 = 510;
         }
+
         if (bottom < 23) {
             let y2 = (bottom*11) + 1;
         } else {
             let y2 = 255;
         }
+
 
         do Screen.setColor(true);
         do Screen.drawRectangle(x1, y1, x2, y2);
@@ -84,22 +88,22 @@ class TextBox {
             do scroll();
             let row = row - 1;
         }
+
         return;
     }
 
-    /* a vile concoction of noxious components and devious incantations */
     method void scroll() {
-        /* */
+        var boolean odd;
         var int w, end, off, pxRow;
         var int oddChar;
-        var boolean odd;
 
-        let w = (right-left) / 2;
         let odd = -(w & 1);
+        let w = (right-left) / 2;
         let end = 16384 + (((bottom-1)*352) + (left/2));
         let pxRow = 16384 + ((top*352) + (left/2));
 
-        while (pxRow < end) { let off = 0;
+        while (pxRow < end) {
+            let off = 0;
             while (off < w) {
                 do Memory.poke(pxRow+off, Memory.peek((pxRow+off)+352));
                 let off = off + 1;
@@ -144,8 +148,14 @@ class TextBox {
 
     method void putc(int c) {
 
-        do Output.moveCursor(row, col);
-        do Output.printChar(c);
+        if (col = right) {
+            do newline();
+            /* The vm emulator insists on an extra column to the right. */
+            if (right < 64)  {
+                do Screen.setColor(true);
+                do Screen.drawLine(right*8, top*11, right*8, bottom*11);
+            }
+        }
 
         if (c = 128) {
             do newline();
@@ -155,16 +165,10 @@ class TextBox {
             return;
         }}
 
-        let col = col + 1;
+        do Output.moveCursor(row, col);
+        do Output.printChar(c);
 
-        if (col = right) {
-            do newline();
-            /* The vm emulator insists on an extra column to the right. */
-            if (right < 64)  {
-                do Screen.setColor(true);
-                do Screen.drawLine(right*8, top*11, right*8, bottom*11);
-            }
-        }
+        let col = col + 1;
 
         return;
     }

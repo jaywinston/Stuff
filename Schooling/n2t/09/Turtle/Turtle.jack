@@ -17,12 +17,15 @@ class Turtle {
 
     constructor Turtle new(int x, int y, int d, int t, int l, int b, int r) {
         let TLEN = 10;
+        /* todo: validate boundaries */
         if (~RUNNING) {
+            let RUNNING = true;
             let top = t;
             let left = l;
             let bottom = b;
             let right = r;
         }
+        /* todo: validate coordinates */
         let _x = x;
         let _y = y;
         let direction = setDirection(d);
@@ -30,7 +33,6 @@ class Turtle {
         let sa = ScreenArea.new(TLEN*2, TLEN);
         let _pendown = false;
         do show();
-        let RUNNING = true;
         return this;
     }
 
@@ -115,14 +117,18 @@ class Turtle {
         return turn(-d);
     }
 
-    method void forward(int l) {
+    method int forward(int l) {
         var int x, y;
-
-        do hide();
 
         do v.calculate(l, direction);
         let x = _x + v.re();
         let y = _y - v.im();
+
+        if ( ((x<left) | (x>right)) | ((y<top) | (y>bottom)) ) {
+            return -1;  // target beyond boundary
+        }
+
+        do hide();
 
         if (_pendown) {
             do Screen.setColor(true);
@@ -134,7 +140,7 @@ class Turtle {
 
         do show();
 
-        return;
+        return l;
     }
 
     method void penup() {

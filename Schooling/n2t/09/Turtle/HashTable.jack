@@ -55,6 +55,37 @@ class HashTable {
         return;
     }
 
+    method void delete(String name) {
+        var int hashval;
+        var Symbol sym, prev;
+
+        let sym = lookup(name);
+
+        if (sym = null) {
+            return;
+        }
+
+        let hashval = HashTable.hash(name);
+
+        let prev = table[hashval];
+
+        if (prev = sym) {
+            let table[hashval] = sym.next();
+            do sym.dispose();
+            return;
+        }
+
+        while (~(prev.next() = sym)) {
+            let prev = prev.next();
+        }
+
+        do prev.setNext(sym.next());
+
+        do sym.dispose();
+
+        return;
+    }
+
     function int hash(String s) {
         var int h, i;
 
