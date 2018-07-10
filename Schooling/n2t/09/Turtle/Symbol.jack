@@ -145,7 +145,6 @@ class Symbol {
     }
 
 
-    function int NULL      () { return  0; }
     function int BLOCK     () { return  1; }
     function int CMD       () { return  2; }
     function int CMDLIN    () { return  3; }

@@ -57,12 +57,13 @@ class Eval {
     }
 
 
-    /* read and evaluate next command line into parse tree */
+    /* read and evaluate next command line */
     function Symbol next() {
         return Eval.eval(IOBox.read(PS1), 0);
     }
 
 
+    /* evaluate string into parse tree */
     function Symbol eval(String s, int i) {
         var String t;
         var Symbol argv;
@@ -163,7 +164,7 @@ class Eval {
         }
 
         let name = String.new(s.length());
-        let value = Eval.args(Eval.eval(s, Str.tkn(s, name, EQS, 0)+1));
+        let value = Eval.arg(Eval.eval(s, Str.tkn(s, name, EQS, 0)+1));
 
         if (Error.isSet()) {
             do name.dispose();
@@ -185,7 +186,7 @@ class Eval {
 
 
     /* stub */
-    function Symbol args(Symbol arg) {
+    function Symbol arg(Symbol arg) {
         return arg;
     }
 
@@ -254,7 +255,8 @@ class Eval {
 
     function Symbol blockExpr(String s) {
         var int i, n;
-        var Symbol block, end, line,p;
+        var String term, expr;
+        var Symbol block, end, line;
 
         let line = Eval.blockLine(s, 1);
         let end = Eval.eval(line.value(), 0);
@@ -275,23 +277,34 @@ class Eval {
             }
         }
 
+        if (block.value() = null) {
+            let end = block;
+            let block = block.next();
+            do end.dispose();
+        }
+
         do line.append(Symbol.new(null, BLOCK, block));
         let block = line.next();
         do line.dispose();
+
+        /* todo: make this a function */
         if (block.type() = EXPR) {
             let end = block;
             while (~(end.next() = null)) {
                 let end = end.next();
             }
-            let s = Eval.blockToStr(end);
-            do Str.cat(s, block.value());
+            let expr = String.new(Str.MAXLEN());
+            let term = Eval.blockToStr(end);
             let line = block;
             while (~(line.next() = end)) {
                 let line = line.next();
             }
             do end.dispose();
-            do line.setNext(Eval.eval(s, 0));
-            do s.dispose();
+            do Str.cat(expr, term);
+            do term.dispose();
+            do Str.cat(expr, block.value());
+            do line.setNext(Eval.eval(expr, 0));
+            do expr.dispose();
             let end = block;
             let block = block.next();
             do end.dispose();
@@ -365,7 +378,7 @@ class Eval {
 
 
     function Symbol toSuperBlock(Symbol end) {
-        var String s;
+        var String s, t;
         var Symbol block, super;
 
         /* make block a sub-block of the super-block */
@@ -381,11 +394,14 @@ class Eval {
 
         do super.setNext(Symbol.new(null, BLOCK, block));
 
-        /* if this block is an expression term, evaluate it */
+        /* if this block is an expression, evaluate the expression */
         let s = end.value();
 
         if (s.length() > 0) {
-            let s = Eval.blockToStr(block);
+            let s = String.new(Str.MAXLEN());
+            let t = Eval.blockToStr(block);
+            do Str.cat(s, t);
+            do t.dispose();
             do Str.cat(s, end.value());
             do end.append(Eval.eval(s, 0));
             do s.dispose();
@@ -405,11 +421,14 @@ class Eval {
 
         let expr = Exec.execBlock(block);
 
-        let s = String.new(Str.MAXLEN());
+        if (expr = null) {
+            return "";
+        }
 
         if (expr.type() = STR) {
-            do Str.cat(s, expr.value());
+            let s = Str.dup(expr.value());
         } else {
+            let s = String.new(6);
             do s.setInt(expr.value());
         }
 

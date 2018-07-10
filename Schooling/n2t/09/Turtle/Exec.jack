@@ -5,7 +5,6 @@ class Exec {
     static Turtle t;
 
     static int
-        NULL,
         CMD,
         CMDLIN,
         FUNC,
@@ -48,7 +47,6 @@ class Exec {
     function void initKWs() {
         var int i;
 
-        let NULL   = Symbol.NULL();
         let BLOCK  = Symbol.BLOCK();
         let CMD    = Symbol.CMD();
         let CMDLIN = Symbol.CMDLIN();
@@ -207,6 +205,7 @@ class Exec {
 
         let p = Exec.doBlock(b);
         do Symbol.clear(b);
+
         return p;
     }
 
@@ -239,20 +238,24 @@ class Exec {
 
 
     function void doForward(Symbol arg) {
+        var int errno;  // ##TEMP##
 
         if (arg.type() = BLOCK) {
             let arg = Exec.execBlock(arg);
         }
 
-        if (t.forward(arg.value()) = 1) {
+        let errno = t.forward(arg.value());  // ##TEMP##
+        if (errno = 1) {
             do Error.send("won't go backwards");  // ##DB##
             do Error.set(1);  // won't go backwards
         }
 
-        if (t.forward(arg.value()) = 2) {
+        if (errno = 2) {
             do Error.send("target beyond boundary");  // ##DB##
             do Error.set(1);  // target beyond boundary
         }
+
+        /* do Error.set(t.forward(arg.value())); will be this */
 
         return;
     }
@@ -261,6 +264,7 @@ class Exec {
     function void doFunction(Symbol arg) {
 
         if (arg = null) {
+            do Error.send("no function name");  // ##DB##
             do Error.set(1);  // no function name
             return;
         }
@@ -314,6 +318,7 @@ class Exec {
         var int i;
 
         if ( (arg.type()=CMD) & (arg.value()=IF) ) {
+            do Exec.doRepeatIf(arg.next());
             return;
         }
 
@@ -324,8 +329,6 @@ class Exec {
             do Exec.try(arg.next());
             let i = i - 1;
         }
-
-        let arg = arg.next();
 
         return;
     }

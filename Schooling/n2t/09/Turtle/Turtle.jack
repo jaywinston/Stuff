@@ -1,6 +1,5 @@
 class Turtle {
 
-    static boolean RUNNING;
     static int TLEN;
     static int top, left, bottom, right;
 
@@ -9,22 +8,13 @@ class Turtle {
     field Vector v;
     field ScreenArea sa;
 
-    function void init() {
-        let RUNNING = false;
-        return;
-    }
-
-
     constructor Turtle new(int x, int y, int d, int t, int l, int b, int r) {
         let TLEN = 10;
         /* todo: validate boundaries */
-        if (~RUNNING) {
-            let RUNNING = true;
-            let top = t;
-            let left = l;
-            let bottom = b;
-            let right = r;
-        }
+        let top = t;
+        let left = l;
+        let bottom = b;
+        let right = r;
         /* todo: validate coordinates */
         let _x = x;
         let _y = y;
