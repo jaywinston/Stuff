@@ -39,6 +39,7 @@ class HashTable {
 
     method void install(String name, int type, int val) {
         var int hashval;
+        var String s;
         var Symbol p;
 
         let p = lookup(name);
@@ -48,8 +49,14 @@ class HashTable {
             do p.setNext(table[hashval]);
             let table[hashval] = p;
         } else {
-            do p.setType(type);
+            if (p.type() = Symbol.FUNC()) {
+                do Symbol.clear(p.value());
+            } else { if (p.type() = Symbol.STR()) {
+                let s = p.type();
+                do s.dispose();
+            }}
             do p.setValue(val);
+            do p.setType(type);
         }
 
         return;

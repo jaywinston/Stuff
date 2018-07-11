@@ -240,9 +240,7 @@ class Exec {
     function void doForward(Symbol arg) {
         var int errno;  // ##TEMP##
 
-        if (arg.type() = BLOCK) {
-            let arg = Exec.execBlock(arg);
-        }
+        do Eval.arg(arg);
 
         let errno = t.forward(arg.value());  // ##TEMP##
         if (errno = 1) {

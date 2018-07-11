@@ -185,8 +185,38 @@ class Eval {
     }
 
 
-    /* stub */
     function Symbol arg(Symbol arg) {
+        var Symbol p;
+
+        if (arg = null) {
+            return null;
+        }
+
+        if (arg.type() = BLOCK) {
+            let p = Exec.execBlock(arg.value());
+            do Symbol.clear(arg.value());
+        } else { if (arg.type() = SYM) {
+            let p = symtab.lookup(arg.name());
+            if (p = null) {
+                do Error.send("undefined symbol");  // ##DB##
+                do Error.set(1);  // undefined symbol
+                return null;
+            }
+        } else {
+            return arg;
+        }}
+
+        if ( (p.type()=BLOCK) | (p.type()=FUNC) ) {
+            do arg.setValue(Symbol.copy(p.value()));
+        } else { if (p.type() = STR) {
+            do arg.setValue(Str.dup(p.value()));
+        } else {
+            do arg.setValue(p.value());
+        }}
+
+        do arg.setType(p.type());
+        do p.dispose();
+
         return arg;
     }
 
@@ -255,7 +285,6 @@ class Eval {
 
     function Symbol blockExpr(String s) {
         var int i, n;
-        var String term, expr;
         var Symbol block, end, line;
 
         let line = Eval.blockLine(s, 1);
@@ -287,27 +316,8 @@ class Eval {
         let block = line.next();
         do line.dispose();
 
-        /* todo: make this a function */
         if (block.type() = EXPR) {
-            let end = block;
-            while (~(end.next() = null)) {
-                let end = end.next();
-            }
-            let expr = String.new(Str.MAXLEN());
-            let term = Eval.blockToStr(end);
-            let line = block;
-            while (~(line.next() = end)) {
-                let line = line.next();
-            }
-            do end.dispose();
-            do Str.cat(expr, term);
-            do term.dispose();
-            do Str.cat(expr, block.value());
-            do line.setNext(Eval.eval(expr, 0));
-            do expr.dispose();
-            let end = block;
-            let block = block.next();
-            do end.dispose();
+            do Eval.blockToExpr(block);
         }
 
         return block;
@@ -438,19 +448,45 @@ class Eval {
     }
 
 
-    function Symbol blockToInt(Symbol block, String s, int i) {
-        var String t;
+    /* evaluate block's execution, represent value as a String,
+     * concatenate continuation of expression, overwite block
+     * with expression's evaluation
+     */
+    function Symbol blockToExpr(Symbol block) {
+        var String expr, term;
+        var Symbol p1, p2;
 
-        let t = String.new(s.length() + 6);
-        do t.setInt(Eval.blockTerm(block));
-        do Symbol.clear(block);
-        do Str.tkn(s, t, null, i);
-        let block = Eval.eval(t, 0);
-        do t.dispose();
+        /* get block */
+        let p1 = block;
+        while (~(p1.next() = null)) {
+            let p1 = p1.next();
+        }
+
+        let expr = String.new(Str.MAXLEN());
+        let term = Eval.blockToStr(p1);
+
+        /* get block's parent, dispose block */
+        let p2 = block;
+        while (~(p2.next() = p1)) {
+            let p2 = p2.next();
+        }
+        do p1.dispose();
+
+        do Str.cat(expr, term);
+        do term.dispose();
+        do Str.cat(expr, block.value());
+
+        /* overwrite block */
+        do p2.setNext(Eval.eval(expr, 0));
+
+        do expr.dispose();
+
+        let p1 = block;
+        let block = block.next();
+        do p1.dispose();
 
         return block;
     }
-
 
     function Symbol symbolExpr(String s) {
         var Symbol p;
@@ -481,7 +517,7 @@ class Eval {
         }
 
         let t = String.new(s.length());
-        let i = Eval.intTkn(s, t, INTOPS[depth], i);  // sets Error
+        let i = Eval.intTkn(s, t, INTOPS[depth], i);
 
         if (Error.isSet()) {
             do t.dispose();
@@ -533,11 +569,7 @@ class Eval {
         }
 
         if (c = 123) {
-            return Eval.blockTerm(Eval.blockExpr(s));
-        }
-
-        if (Error.isSet()) {
-            return 0;
+            return Eval.blockTerm(s);
         }
 
         return Eval.symbolTerm(s);
@@ -554,10 +586,12 @@ class Eval {
     }
 
 
-    function int blockTerm(Symbol block) {
+    function int blockTerm(String s) {
         var int n;
         var Symbol value;
+        var Symbol block;
 
+        let block = Eval.blockExpr(s);
         let value = Exec.execBlock(block.value());
         do Symbol.clear(block);
 
