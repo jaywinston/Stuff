@@ -2,7 +2,7 @@ class ScreenArea {
 
     field int aLen, height, width;
     field Array words;
-    static Array orig;
+    static Array origin;
 
     /** w and h are in pixels. */
     constructor ScreenArea new(int w, int h) {
@@ -11,7 +11,7 @@ class ScreenArea {
         let height = h;
         let aLen = (width*height) * 2;
         let words = Array.new(aLen);
-        let orig = 16384;
+        let origin = 16384;
 
         return this;
     }
@@ -39,8 +39,8 @@ class ScreenArea {
             let row = base + (h*32);
             let w = 0;
             while (w < width) {
-                let words[i] = orig + (row+w);
-                let words[i+1] = orig[row+w];
+                let words[i] = origin + (row+w);
+                let words[i+1] = origin[row+w];
                 let i = i + 2;
                 let w = w + 1;
             }

@@ -1,25 +1,10 @@
 class Str {
 
+
     function int MAXLEN() {
         return 64;
     }
 
-    function boolean isInt(String s) {
-        var char c;
-        var int i, len;
-
-        let i = 0;
-        let len = s.length();
-        while (i < len) {
-            let c = s.charAt(i);
-            if (~( (c>47) & (c<58) )) {
-                return false;
-            }
-            let i = i + 1;
-        }
-
-        return true;
-    }
 
     function String format(String f, Array arg) {
         var boolean continue;
@@ -88,6 +73,7 @@ class Str {
         return s;
     }
 
+
     function int cat(String s, String t) {
         var int i;
 
@@ -100,35 +86,6 @@ class Str {
         return i + s.length();
     }
 
-    function void truncate(String s) {
-        var int len;
-
-        let len = s.length();
-        while (len > 0) {
-            do s.eraseLastChar();
-            let len = len - 1;
-        }
-
-        return;
-    }
-
-    function void cpy(String s, String t) {
-        var int i, sLen;
-
-        let sLen = s.length();
-        if (sLen > t.length()) {
-            /* todo: abort */
-            return;
-        }
-
-        let i = 0;
-        while (i < sLen) {
-            do t.appendChar(s.charAt(i));
-            let i = i + 1;
-        }
-
-        return;
-    }
 
     function boolean eq(String s, String t) {
         var int i;
@@ -151,6 +108,7 @@ class Str {
         return true;
     }
 
+
     function String dup(String s) {
         var int i, len;
         var String t;
@@ -166,6 +124,7 @@ class Str {
 
         return t;
     }
+
 
     function int index(String s, String list, int i) {
         var char c;
@@ -190,15 +149,6 @@ class Str {
         return i;
     }
 
-    function int cIndex(String s, char c, int i) {
-        while (i < s.length()) {
-            if (c = s.charAt(i)) {
-                return i;
-            }
-            let i = i + 1;
-        }
-        return i;
-    }
 
     function int tkn(String s, String t, String list, int i) {
         var int j;
@@ -219,8 +169,8 @@ class Str {
         return i;
     }
 
-    /* collect substring of nested blocks
-     * delimited by l and r from s into t;
+
+    /* collect substring of nested blocks delimited by l and r from s into t;
      * return last used index + 1
      */
     function int block(String s, String t, char l, char r, int i) {
@@ -250,6 +200,7 @@ class Str {
         return i + 1;
     }
 
+
     function int quotes(String s, String t, int i) {
         var char c;
         var int len;
@@ -269,6 +220,7 @@ class Str {
 
         return i + 1;  // EOS while scanning for quote
     }
+
 
     function void shift(String s, int off, int i) {
 
@@ -290,7 +242,9 @@ class Str {
         return;
     }
 
+
     function int lskip(String s, char c, int i) {
+
         while (i < s.length()) {
             if (~(s.charAt(i) = c)) {
                 return i;
@@ -301,7 +255,9 @@ class Str {
         return i;
     }
 
+
     function void rstrip(String s, char c) {
+
         while (s.length() > 0) {
             if (~(s.charAt(s.length()-1) = c)) {
                 return;
@@ -312,18 +268,4 @@ class Str {
         return;
     }
        
-    function int count(String s, char c) {
-        var int i, n;
-
-        let n = 0;
-        let i = 0;
-        while (i < s.length()) {
-            if (s.charAt(i) = c) {
-                let n = n + 1;
-            }
-            let i = i + 1;
-        }
-
-        return n;
-    }
 }

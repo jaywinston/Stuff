@@ -17,11 +17,13 @@ class HashTable {
         return this;
     }
 
+
     method void dispose() {
         do table.dispose();
         do Memory.deAlloc(this);
         return;
     }
+
 
     method Symbol lookup(String s) {
         var Symbol p;
@@ -37,12 +39,14 @@ class HashTable {
         return null;
     }
 
+
     method void install(String name, int type, int val) {
         var int hashval;
         var String s;
         var Symbol p;
 
         let p = lookup(name);
+
         if (p = null) {
             let p = Symbol.new(name, type, val);
             let hashval = HashTable.hash(name);
@@ -61,6 +65,7 @@ class HashTable {
 
         return;
     }
+
 
     method void delete(String name) {
         var int hashval;
@@ -92,6 +97,7 @@ class HashTable {
 
         return;
     }
+
 
     function int hash(String s) {
         var int h, i;

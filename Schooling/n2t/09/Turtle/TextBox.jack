@@ -94,72 +94,6 @@ class TextBox {
         return;
     }
 
-    method void newline() {
-        let col = left;
-        let row = row + 1;
-
-        if (row = bottom) {
-            do scroll();
-            let row = row - 1;
-        }
-
-        return;
-    }
-
-    method void scroll() {
-        var boolean odd;
-        var int w, end, off, pxRow;
-        var int oddChar;
-
-        let odd = -(w & 1);
-        let w = (right-left) / 2;
-        let end = 16384 + (((bottom-1)*352) + (left/2));
-        let pxRow = 16384 + ((top*352) + (left/2));
-
-        while (pxRow < end) {
-            let off = 0;
-            while (off < w) {
-                do Memory.poke(pxRow+off, Memory.peek((pxRow+off)+352));
-                let off = off + 1;
-            }
-            if (odd) {
-                let oddChar = Memory.peek((pxRow+off)+352) & 255;
-                let oddChar = oddChar | (Memory.peek(pxRow+off) & -256);
-                do Memory.poke(pxRow+off, oddChar);
-            }
-            let pxRow = pxRow + 32;
-        }
-
-        do Output.moveCursor(bottom-1, left);
-
-        let w = left;  // recycle 'w'; nothing to do with it's name
-
-        while (w < right) {
-            do Output.printChar(32);
-            let w = w + 1;
-        }
-
-        do Screen.setColor(true);
-        do Screen.drawLine((left*8)-2, top*11, (left*8)-2, bottom*11);
-
-        return;
-    }
-
-    method void backspace() {
-        if ( (col=left) & (row>top) ) {
-            let col = right - 1;
-            let row = row - 1;
-            if (left > 0)  {
-                do Screen.setColor(true);
-                do Screen.drawLine((left*8)-2, top*11, (left*8)-2, bottom*11);
-            }
-        } else {
-            let col = col - 1;
-        }
-
-        return;
-    }
-
     method void putc(int c) {
 
         if (col = right) {
@@ -212,6 +146,73 @@ class TextBox {
 
         do puts(s);
         do newline();
+
+        return;
+    }
+
+    method void newline() {
+        let col = left;
+        let row = row + 1;
+
+        if (row = bottom) {
+            do scroll();
+            let row = row - 1;
+        }
+
+        return;
+    }
+
+    method void backspace() {
+
+        if ( (col=left) & (row>top) ) {
+            let col = right - 1;
+            let row = row - 1;
+            if (left > 0)  {
+                do Screen.setColor(true);
+                do Screen.drawLine((left*8)-2, top*11, (left*8)-2, bottom*11);
+            }
+        } else {
+            let col = col - 1;
+        }
+
+        return;
+    }
+
+    method void scroll() {
+        var boolean odd;
+        var int width, end, off, pxRow;
+        var int oddChar;
+
+        let width = (right-left) / 2;
+        let odd = -(width & 1);
+        let end = 16384 + (((bottom-1)*352) + (left/2));
+        let pxRow = 16384 + ((top*352) + (left/2));
+
+        while (pxRow < end) {
+            let off = 0;
+            while (off < width) {
+                do Memory.poke(pxRow+off, Memory.peek((pxRow+off)+352));
+                let off = off + 1;
+            }
+            if (odd) {
+                let oddChar = Memory.peek((pxRow+off)+352) & 255;
+                let oddChar = oddChar | (Memory.peek(pxRow+off) & -256);
+                do Memory.poke(pxRow+off, oddChar);
+            }
+            let pxRow = pxRow + 32;
+        }
+
+        do Output.moveCursor(bottom-1, left);
+
+        let width = left;  // recycle 'width'; nothing to do with it's name
+
+        while (width < right) {
+            do Output.printChar(32);
+            let width = width + 1;
+        }
+
+        do Screen.setColor(true);
+        do Screen.drawLine((left*8)-2, top*11, (left*8)-2, bottom*11);
 
         return;
     }
