@@ -63,7 +63,7 @@ class Eval {
     }
 
 
-    /* evaluate string into parse tree */
+    /* parse s from index i */
     function Symbol eval(String s, int i) {
         var String t;
         var Symbol argv;
@@ -244,7 +244,7 @@ class Eval {
             return Eval.symbolExpr(s);
         }
 
-        return Symbol.new(s, INT, 0);  // evaluated at execution
+        return Symbol.new(s, INT, 0);  // s is evaluated at execution
     }
 
 

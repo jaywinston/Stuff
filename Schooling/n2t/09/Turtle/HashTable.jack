@@ -56,7 +56,7 @@ class HashTable {
             if (p.type() = Symbol.FUNC()) {
                 do Symbol.clear(p.value());
             } else { if (p.type() = Symbol.STR()) {
-                let s = p.type();
+                let s = p.value();
                 do s.dispose();
             }}
             do p.setValue(val);
