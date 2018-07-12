@@ -192,6 +192,8 @@ class Eval {
             return null;
         }
 
+        let p = null;
+
         if (arg.type() = BLOCK) {
             let p = Exec.execBlock(arg.value());
             do Symbol.clear(arg.value());
@@ -202,20 +204,24 @@ class Eval {
                 do Error.set(1);  // undefined symbol
                 return null;
             }
+        } else { if (arg.type() = INT) {
+            do arg.setValue(Eval.intExpr(arg.name(), 0, 0));
         } else {
             return arg;
-        }}
+        }}}
 
-        if ( (p.type()=BLOCK) | (p.type()=FUNC) ) {
-            do arg.setValue(Symbol.copy(p.value()));
-        } else { if (p.type() = STR) {
-            do arg.setValue(Str.dup(p.value()));
-        } else {
-            do arg.setValue(p.value());
-        }}
+        if (~(p = null)) {
+            if ( (p.type()=BLOCK) | (p.type()=FUNC) ) {
+                do arg.setValue(Symbol.copy(p.value()));
+            } else { if (p.type() = STR) {
+                do arg.setValue(Str.dup(p.value()));
+            } else {
+                do arg.setValue(p.value());
+            }}
 
-        do arg.setType(p.type());
-        do p.dispose();
+            do arg.setType(p.type());
+            do p.dispose();
+        }
 
         return arg;
     }
@@ -238,7 +244,7 @@ class Eval {
             return Eval.symbolExpr(s);
         }
 
-        return Symbol.new(s, INT, Eval.intExpr(s, 0, 0));
+        return Symbol.new(s, INT, 0);  // evaluated at execution
     }
 
 

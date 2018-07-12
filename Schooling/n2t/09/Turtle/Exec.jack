@@ -135,6 +135,8 @@ class Exec {
         if (argv.type() = BLOCK)  { return Exec.execBlock(argv.value()); }
         if (argv.type() = CMDLIN) { return Exec.exec(argv.value());      }
 
+        do Eval.arg(argv);
+
         if (~(argv.type() = CMD)) {
             return argv;
         }
@@ -275,6 +277,7 @@ class Exec {
 
     function void doIf(Symbol arg) {
 
+        do Eval.arg(arg);
         if (~(arg.value() = 0)) {
             do Exec.try(arg.next());
         }
@@ -304,6 +307,7 @@ class Exec {
             return;
         }
 
+        do Eval.arg(arg);
         do tb.puts(arg.value());
 
         do t.show();
@@ -315,6 +319,7 @@ class Exec {
     function void doRepeat(Symbol arg) {
         var int i;
 
+        do Eval.arg(arg);
         if ( (arg.type()=CMD) & (arg.value()=IF) ) {
             do Exec.doRepeatIf(arg.next());
             return;
@@ -336,6 +341,7 @@ class Exec {
         var int condition;
         var Symbol p;
 
+        do Eval.arg(arg);
         let condition = arg.value();
         while (~(condition = 0)) {
             do Exec.try(Symbol.copy(arg.next()));
@@ -349,12 +355,14 @@ class Exec {
 
 
     function void doTurnleft(Symbol arg) {
+        do Eval.arg(arg);
         do t.turnleft(arg.value());
         return;
     }
 
 
     function void doTurnright(Symbol arg) {
+        do Eval.arg(arg);
         do t.turnright(arg.value());
         return;
     }
