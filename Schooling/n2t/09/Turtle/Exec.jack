@@ -11,6 +11,7 @@ class Exec {
         INT,
         STR,
         SYM,
+        SYMTAB,
 
         ASSIGN,
         BLOCK,
@@ -54,6 +55,7 @@ class Exec {
         let INT    = Symbol.INT();
         let STR    = Symbol.STR();
         let SYM    = Symbol.SYM();
+        let SYMTAB = Symbol.SYMTAB();
 
         let ASSIGN    =  0;
         let CLEAR     =  2;
@@ -131,11 +133,15 @@ class Exec {
             return null;
         }
 
-        if (argv.type() = FUNC)   { return Exec.call(argv);              }
+        /* FUNC was here, see line 140 */
         if (argv.type() = BLOCK)  { return Exec.execBlock(argv.value()); }
         if (argv.type() = CMDLIN) { return Exec.exec(argv.value());      }
 
         do Eval.arg(argv);
+
+        if (argv.type() = FUNC) {  // experimental July 13 2018
+            return Exec.call(argv);
+        }
 
         if (~(argv.type() = CMD)) {
             return argv;
@@ -168,7 +174,10 @@ class Exec {
         var int n;
         var Array farg;
         var String arg, fpres;
-        var Symbol p;
+        var Symbol p, func, table;
+
+        let table = argv.value();
+        let func = table.next();
 
         let farg = Array.new(1);
         let fpres = "$%d";
@@ -185,15 +194,7 @@ class Exec {
             let p = p.next();
         }
 
-        let p = Exec.exec(Symbol.copy(argv.value()));
-
-        while (n > 0) {
-            let farg[0] = n;
-            let arg = Str.format(fpres, farg);
-            do Eval.delete(arg);
-            do arg.dispose();
-            let n = n - 1;
-        }
+        let p = Exec.exec(Symbol.copy(func));
 
         do Symbol.clear(argv);
         do farg.dispose();
@@ -263,6 +264,7 @@ class Exec {
 
 
     function void doFunction(Symbol arg) {
+        var Symbol lcltab;
 
         if (arg = null) {
             do Error.send("no function name");  // ##DB##
@@ -270,7 +272,9 @@ class Exec {
             return;
         }
 
-        do Eval.install(arg.name(), FUNC, Symbol.copy(arg.next()));
+        let lcltab = Symbol.new(null, SYMTAB, HashTable.new());
+        do lcltab.append(Symbol.copy(arg.next()));
+        do Eval.install(arg.name(), FUNC, lcltab);
 
         return;
     }

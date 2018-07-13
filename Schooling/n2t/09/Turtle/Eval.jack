@@ -245,7 +245,8 @@ class Eval {
         }
 
         if ( (Str.index(s, EXPDLMS, 0) = s.length()) & ~((c>47) & (c<58)) ) {
-            return Eval.symbolExpr(s);
+            return Symbol.new(s, SYM, null);
+            //return Eval.symbolExpr(s);  experimental July 13 2018
         }
 
         return Symbol.new(s, INT, 0);  // s is evaluated at execution

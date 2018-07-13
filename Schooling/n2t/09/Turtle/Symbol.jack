@@ -154,5 +154,6 @@ class Symbol {
     function int INT       () { return  7; }
     function int STR       () { return  8; }
     function int SYM       () { return  9; }
+    function int SYMTAB    () { return  9; }
 
 }
