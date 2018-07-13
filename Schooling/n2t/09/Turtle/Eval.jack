@@ -186,25 +186,27 @@ class Eval {
 
 
     function Symbol arg(Symbol arg) {
+        var int type;
         var Symbol p;
 
         if (arg = null) {
             return null;
         }
 
+        let type = arg.type();
         let p = null;
 
-        if (arg.type() = BLOCK) {
+        if (type = BLOCK) {
             let p = Exec.execBlock(arg.value());
             do Symbol.clear(arg.value());
-        } else { if (arg.type() = SYM) {
+        } else { if (type = SYM) {
             let p = symtab.lookup(arg.name());
             if (p = null) {
                 do Error.send("undefined symbol");  // ##DB##
                 do Error.set(1);  // undefined symbol
                 return null;
             }
-        } else { if (arg.type() = INT) {
+        } else { if (type = INT) {
             do arg.setValue(Eval.intExpr(arg.name(), 0, 0));
         } else {
             return arg;
@@ -220,7 +222,9 @@ class Eval {
             }}
 
             do arg.setType(p.type());
-            do p.dispose();
+            if (type = BLOCK) {
+                do p.dispose();
+            }
         }
 
         return arg;

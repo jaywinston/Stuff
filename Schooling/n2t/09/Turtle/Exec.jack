@@ -179,6 +179,7 @@ class Exec {
             let n = n + 1;
             let farg[0] = n;
             let arg = Str.format(fpres, farg);
+            do Eval.arg(p);
             do Eval.install(arg, p.type(), p.value());
             do arg.dispose();
             let p = p.next();
