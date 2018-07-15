@@ -31,7 +31,7 @@ class Symtab {
 
 
     method Symbol lookup(String s) {
-        var Hashtablele table;
+        var HashTable table;
         var Symbol scope, sym;
 
         let scope = stack;
@@ -49,7 +49,7 @@ class Symtab {
 
 
     method void install(String name, int type, int value) {
-        var Hashtablele table;
+        var HashTable table;
 
         let table = stack.value();
         do table.install(name, type, value);

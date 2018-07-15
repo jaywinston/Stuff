@@ -6,7 +6,6 @@ class Eval {
     static String PS1, PS2;
     static String WORDDLMS, EXPDLMS;
     static String BLANKS, EQS, BRACES, PERCENTS;
-    static HashTable symtab;
 
 
     function void init() {
@@ -44,14 +43,12 @@ class Eval {
         let INTOPS[2] = "+-({";
         let INTOPS[3] = "*/%({";
 
-        let symtab = HashTable.new(15);
-
         return;
     }
 
 
     function void installKW(String name, int val) {
-        do symtab.install(name, CMD, val);
+        do Exec.install(name, CMD, val);
         do name.dispose();
         return;
     }
@@ -87,12 +84,12 @@ class Eval {
         }
 
         if (Eval.isAssign(t)) {
-            let argv = Eval.symbolExpr(EQS);
-            do argv.append(Symbol.new(null, STR, t));  // todo: fix type?
+            let argv = Eval.assign(t);
         } else {
             let argv = Eval.expression(t);
-            do t.dispose();
         }
+
+        do t.dispose();
 
         do argv.append(Eval.eval(s, i+1));
 
@@ -153,35 +150,39 @@ class Eval {
         return false;
     }
 
-    function void assign(String s) {
+    function Symbol assign(String s) {
+        var int i;
         var String name;
         var Symbol value;
 
         if (s.charAt(0) = 61) {
             do Error.send("expected name");  // ##DB##
             do Error.set(1);  // expected name
-            return;
+            return null;
         }
 
         let name = String.new(s.length());
-        let value = Eval.arg(Eval.eval(s, Str.tkn(s, name, EQS, 0)+1));
+        let i =  Str.tkn(s, name, EQS, 0);
+        let value = Symbol.new("=", CMD, null);
+        do value.append(Symbol.new(name, SYM, null));
+        do value.append(Eval.arg(Eval.eval(s, i+1)));
 
         if (Error.isSet()) {
             do name.dispose();
             do Symbol.clear(value);
-            return;
+            return null;
         }
 
         if (value.type() = STR) {
-            do symtab.install(name, value.type(), Str.dup(value.value()));
+            do Exec.install(name, value.type(), Str.dup(value.value()));
         } else {
-            do symtab.install(name, value.type(), value.value());
+            do Exec.install(name, value.type(), value.value());
         }
 
         do name.dispose();
         do Symbol.clear(value);
 
-        return;
+        return value;
     }
 
 
@@ -200,7 +201,7 @@ class Eval {
             let p = Exec.execBlock(arg.value());
             do Symbol.clear(arg.value());
         } else { if (type = SYM) {
-            let p = symtab.lookup(arg.name());
+            let p = Exec.lookup(arg.name());
             if (p = null) {
                 do Error.send("undefined symbol");  // ##DB##
                 do Error.set(1);  // undefined symbol
@@ -246,7 +247,6 @@ class Eval {
 
         if ( (Str.index(s, EXPDLMS, 0) = s.length()) & ~((c>47) & (c<58)) ) {
             return Symbol.new(s, SYM, null);
-            //return Eval.symbolExpr(s);  experimental July 13 2018
         }
 
         return Symbol.new(s, INT, 0);  // s is evaluated at execution
@@ -502,7 +502,7 @@ class Eval {
     function Symbol symbolExpr(String s) {
         var Symbol p;
 
-        let p = symtab.lookup(s);
+        let p = Exec.lookup(s);
 
         if (p = null) {
             return Symbol.new(s, SYM, null);
@@ -622,7 +622,7 @@ class Eval {
     function int symbolTerm(String s) {
         var Symbol p;
 
-        let p = symtab.lookup(s);
+        let p = Exec.lookup(s);
 
         if (p = null) {
             do Error.send("undefined symbol");  // ##DB##
@@ -730,7 +730,7 @@ class Eval {
 
 
     function void install(String name, int type, int value) {
-        do symtab.install(name, type, value);
+        do Exec.install(name, type, value);
         return;
     }
 

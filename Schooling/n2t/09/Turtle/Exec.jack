@@ -37,6 +37,7 @@ class Exec {
         let left = j * 8;
         let bottom = (i + h) * 11;
         let right = (j + w) * 8;
+        let symtab = Symtab.new(15);
 
         do Exec.initKWs();
         do Exec.getTurtle();
@@ -411,13 +412,19 @@ class Exec {
     }
 
 
+    function Symbol lookup(String s) {
+        return symtab.lookup(s);
+    }
+
+
     function void assign(Symbol argv) {
         var int type;
         var String name;
         var Symbol value;
 
-        let name = argv.value();
+        let name = argv.name();
         let value = argv.next();
+
         if (value = null) {
             let type = 0;
         } else {
