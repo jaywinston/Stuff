@@ -228,7 +228,7 @@ class Exec {
 
 
     function void doAssign(Symbol arg) {
-        do Eval.assign(arg.value());
+        do Exec.assign(arg);
         return;
     }
 
@@ -269,7 +269,7 @@ class Exec {
             return;
         }
 
-        do Eval.install(arg.name(), FUNC, Symbol.copy(arg.next()));
+        do symtab.install(arg.name(), FUNC, Symbol.copy(arg.next()));
 
         return;
     }
@@ -400,6 +400,38 @@ class Exec {
         do s.setInt(sym.value());
         do IOBox.echo(s);
         do s.dispose();
+
+        return;
+    }
+
+
+    function void install(String name, int type, int value) {
+        do symtab.install(name, type, value);
+        return;
+    }
+
+
+    function void assign(Symbol argv) {
+        var int type;
+        var String name;
+        var Symbol value;
+
+        let name = argv.value();
+        let value = argv.next();
+        if (value = null) {
+            let type = 0;
+        } else {
+            let type = value.type();
+        }
+
+        if (value.type() = STR) {
+            do symtab.install(name, type, Str.dup(value.value()));
+        } else {
+            do symtab.install(name, type, value.value());
+        }
+
+        do name.dispose();
+        do Symbol.clear(value);
 
         return;
     }
