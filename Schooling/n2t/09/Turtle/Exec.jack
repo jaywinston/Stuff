@@ -177,9 +177,6 @@ class Exec {
         var String arg, fpres;
         var Symbol p, func, table;
 
-        let table = argv.value();
-        let func = table.next();
-
         let farg = Array.new(1);
         let fpres = "$%d";
         let n = 0;
@@ -195,7 +192,7 @@ class Exec {
             let p = p.next();
         }
 
-        let p = Exec.exec(Symbol.copy(func));
+        let p = Exec.exec(Symbol.copy(argv.value()));
 
         do Symbol.clear(argv);
         do farg.dispose();
@@ -265,7 +262,6 @@ class Exec {
 
 
     function void doFunction(Symbol arg) {
-        var Symbol lcltab;
 
         if (arg = null) {
             do Error.send("no function name");  // ##DB##
@@ -273,9 +269,7 @@ class Exec {
             return;
         }
 
-        let lcltab = Symbol.new(null, HASHTAB, HashTable.new(3));
-        do lcltab.append(Symbol.copy(arg.next()));
-        do Eval.install(arg.name(), FUNC, lcltab);
+        do Eval.install(arg.name(), FUNC, Symbol.copy(arg.next()));
 
         return;
     }
