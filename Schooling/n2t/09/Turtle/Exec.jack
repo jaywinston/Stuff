@@ -1,7 +1,9 @@
 class Exec {
 
     static int bottom, left, right, top;
-    static Symtab symtab;
+    static int TERM;
+    static Array INTOPS;
+    static SymbolTable symtab;
     static TextBox tb;
     static Turtle t;
 
@@ -37,7 +39,14 @@ class Exec {
         let left = j * 8;
         let bottom = (i + h) * 11;
         let right = (j + w) * 8;
-        let symtab = Symtab.new(15);
+        let symtab = SymbolTable.new(15);
+
+        let TERM = 4;
+        let INTOPS = Array.new(4);
+        let INTOPS[0] = "&|({";
+        let INTOPS[1] = "=!<>({";
+        let INTOPS[2] = "+-({";
+        let INTOPS[3] = "*/%({";
 
         do Exec.initKWs();
         do Exec.getTurtle();
@@ -73,22 +82,29 @@ class Exec {
         let TURNRIGHT = 12;
         let QUIT      = 13;
 
-        do Eval.installKW("MV",128);  // ##DB##
+        do Exec.installKW("MV",128);  // ##DB##
 
-        do Eval.installKW("=",         ASSIGN);
-        do Eval.installKW("CLEAR",     CLEAR);
-        do Eval.installKW("ELSE",      ELSE);
-        do Eval.installKW("FORWARD",   FORWARD);
-        do Eval.installKW("FUNCTION",  FUNCTION);
-        do Eval.installKW("IF",        IF);
-        do Eval.installKW("PENDOWN",   PENDOWN);
-        do Eval.installKW("PENUP",     PENUP);
-        do Eval.installKW("PRINT",     PRINT);
-        do Eval.installKW("REPEAT",    REPEAT);
-        do Eval.installKW("TURNLEFT",  TURNLEFT);
-        do Eval.installKW("TURNRIGHT", TURNRIGHT);
-        do Eval.installKW("QUIT",      QUIT);
+        do Exec.installKW("=",         ASSIGN);
+        do Exec.installKW("CLEAR",     CLEAR);
+        do Exec.installKW("ELSE",      ELSE);
+        do Exec.installKW("FORWARD",   FORWARD);
+        do Exec.installKW("FUNCTION",  FUNCTION);
+        do Exec.installKW("IF",        IF);
+        do Exec.installKW("PENDOWN",   PENDOWN);
+        do Exec.installKW("PENUP",     PENUP);
+        do Exec.installKW("PRINT",     PRINT);
+        do Exec.installKW("REPEAT",    REPEAT);
+        do Exec.installKW("TURNLEFT",  TURNLEFT);
+        do Exec.installKW("TURNRIGHT", TURNRIGHT);
+        do Exec.installKW("QUIT",      QUIT);
 
+        return;
+    }
+
+
+    function void installKW(String name, int val) {
+        do symtab.install(name, CMD, val);
+        do name.dispose();
         return;
     }
 
@@ -135,13 +151,12 @@ class Exec {
             return null;
         }
 
-        /* FUNC was here, see line 140 */
         if (argv.type() = BLOCK)  { return Exec.execBlock(argv.value()); }
         if (argv.type() = CMDLIN) { return Exec.exec(argv.value());      }
 
-        do Eval.arg(argv);
+        do Exec.arg(argv);
 
-        if (argv.type() = FUNC) {  // experimental July 13 2018
+        if (argv.type() = FUNC) {
             return Exec.call(argv);
         }
 
@@ -175,31 +190,33 @@ class Exec {
     function Symbol call(Symbol argv) {
         var int n;
         var Array farg;
-        var String arg, fpres;
-        var Symbol p, func, table;
+        var String argname, fpres;
+        var Symbol arg, ret;
+
+        do symtab.pushScope(3);
 
         let farg = Array.new(1);
         let fpres = "$%d";
         let n = 0;
 
-        let p = argv.next();
-        while (~(p = null)) {
+        let arg = argv.next();
+        while (~(arg = null)) {
             let n = n + 1;
             let farg[0] = n;
-            let arg = Str.format(fpres, farg);
-            do Eval.arg(p);
-            do Eval.install(arg, p.type(), p.value());
-            do arg.dispose();
-            let p = p.next();
+            let argname = Str.format(fpres, farg);
+            do Exec.arg(arg);
+            do Eval.install(argname, arg.type(), arg.value());
+            do argname.dispose();
+            let arg = arg.next();
         }
 
-        let p = Exec.exec(Symbol.copy(argv.value()));
+        let ret = Exec.exec(Symbol.copy(argv.value()));
 
         do Symbol.clear(argv);
         do farg.dispose();
         do fpres.dispose();
 
-        return p;
+        return ret;
     }
 
 
@@ -243,7 +260,7 @@ class Exec {
     function void doForward(Symbol arg) {
         var int errno;  // ##TEMP##
 
-        do Eval.arg(arg);
+        do Exec.arg(arg);
 
         let errno = t.forward(arg.value());  // ##TEMP##
         if (errno = 1) {
@@ -278,7 +295,7 @@ class Exec {
 
     function void doIf(Symbol arg) {
 
-        do Eval.arg(arg);
+        do Exec.arg(arg);
 
         if (~(arg.value() = 0)) {
             do Exec.try(arg.next());
@@ -307,7 +324,7 @@ class Exec {
             return;
         }
 
-        do Eval.arg(arg);
+        do Exec.arg(arg);
 
         do t.hide();
 
@@ -322,7 +339,7 @@ class Exec {
     function void doRepeat(Symbol arg) {
         var int i;
 
-        do Eval.arg(arg);
+        do Exec.arg(arg);
 
         if ( (arg.type()=CMD) & (arg.value()=IF) ) {
             do Exec.doRepeatIf(arg.next());
@@ -345,7 +362,7 @@ class Exec {
         var int condition;
         var Symbol p;
 
-        do Eval.arg(arg);
+        do Exec.arg(arg);
 
         let condition = arg.value();
         while (~(condition = 0)) {
@@ -360,14 +377,14 @@ class Exec {
 
 
     function void doTurnleft(Symbol arg) {
-        do Eval.arg(arg);
+        do Exec.arg(arg);
         do t.turnleft(arg.value());
         return;
     }
 
 
     function void doTurnright(Symbol arg) {
-        do Eval.arg(arg);
+        do Exec.arg(arg);
         do t.turnright(arg.value());
         return;
     }
@@ -422,8 +439,7 @@ class Exec {
         var String name;
         var Symbol value;
 
-        let name = argv.name();
-        let value = argv.next();
+        let value = Exec.arg(argv.next());
 
         if (value = null) {
             let type = 0;
@@ -432,15 +448,271 @@ class Exec {
         }
 
         if (value.type() = STR) {
-            do symtab.install(name, type, Str.dup(value.value()));
+            do symtab.install(argv.name(), type, Str.dup(value.value()));
         } else {
-            do symtab.install(name, type, value.value());
+            do symtab.install(argv.name(), type, value.value());
         }
-
-        do name.dispose();
-        do Symbol.clear(value);
 
         return;
     }
+
+    function Symbol arg(Symbol arg) {
+        var int type;
+        var Symbol p;
+
+        if (arg = null) {
+            return null;
+        }
+
+        let type = arg.type();
+        let p = null;
+
+        if (type = BLOCK) {
+            let p = Exec.execBlock(arg.value());
+            do Symbol.clear(arg.value());
+        } else { if (type = SYM) {
+            let p = Exec.lookup(arg.name());
+            if (p = null) {
+                do Error.send("undefined symbol");  // ##DB##
+                do Error.set(1);  // undefined symbol
+                return null;
+            }
+        } else { if (type = INT) {
+            do arg.setValue(Exec.integer(arg.name(), 0, 0));
+        } else {
+            return arg;
+        }}}
+
+        if (~(p = null)) {
+            if ( (p.type()=BLOCK) | (p.type()=FUNC) ) {
+                do arg.setValue(Symbol.copy(p.value()));
+            } else { if (p.type() = STR) {
+                do arg.setValue(Str.dup(p.value()));
+            } else {
+                do arg.setValue(p.value());
+            }}
+
+            do arg.setType(p.type());
+            if (type = BLOCK) {
+                do p.dispose();
+            }
+        }
+
+        return arg;
+    }
+
+
+    function int integer(String s, int i, int depth) {
+        var char op;
+        var int n;
+        var String t;
+
+        if (i = s.length()) {
+            do Error.send("expected integer expression");  // ##DB##
+            do Error.set(1);  //  expected integer expression
+            return 0;
+        }
+            
+        if (depth = TERM) {
+            return Exec.term(s);
+        }
+
+        let t = String.new(s.length());
+        let i = Exec.intTkn(s, t, INTOPS[depth], i);
+
+        if (Error.isSet()) {
+            do t.dispose();
+            return 0;
+        }
+
+        let n = Exec.integer(t, 0, depth+1);
+
+        do t.dispose();
+
+        if (i < s.length()) {
+
+            let op = s.charAt(i);
+
+            if ( (i+1) < s.length() ) { if (s.charAt(i+1) = 61) {
+                let op = op + 200;
+                let i = i + 1;
+            }}
+
+            let n = Exec.operate(n, Exec.integer(s, i+1, depth), op);
+        }
+
+        return n;
+    }
+
+
+    function int term(String s) {
+        var char c;
+        var Symbol p;
+
+        let c = s.charAt(0);
+
+        if (c = 45) {
+            do Str.shift(s, 1, 0);
+            return -Exec.term(s);
+        }
+
+        if (c = 126) {
+            do Str.shift(s, 1, 0);
+            return ~Exec.term(s);
+        }
+
+        if ( (c>47) & (c<58) ) {
+            return s.intValue();
+        }
+
+        if (c = 40) {
+            return Exec.parenTerm(s);
+        }
+
+        if (c = 123) {
+            return Exec.blockTerm(s);
+        }
+
+        return Exec.symbolTerm(s);
+
+    }
+
+
+    function int parenTerm(String s) {
+
+        do s.eraseLastChar();
+        do Str.shift(s, 1, 0);
+
+        return Exec.integer(s, 0, 0);
+    }
+
+
+    function int blockTerm(String s) {
+        var int n;
+        var Symbol value;
+        var Symbol block;
+
+        let block = Eval.blockExpr(s);
+        let value = Exec.execBlock(block.value());
+        do Symbol.clear(block);
+
+        if (~(value.type() = INT)) {
+            do Error.send("wrong type; expected integer");  // ##DB##
+            do Error.set(1);  // wrong type; expected integer
+        }
+
+        let n = value.value();
+
+        do Symbol.clear(value);
+
+        return n;
+    }
+
+
+    function int symbolTerm(String s) {
+        var Symbol p;
+
+        let p = Exec.lookup(s);
+
+        if (p = null) {
+            do Error.send("undefined symbol");  // ##DB##
+            do Error.set(1);  // undefined symbol
+            return 0;
+        }
+
+        if (~(p.type() = INT)) {
+            do Error.send("wrong type; expected integer");  // ##DB##
+            do Error.set(1);  // wrong type; expected integer
+            return 0;
+        }
+
+        return p.value();
+    }
+
+
+    function int intTkn(String s, String t, String list, int i) {
+
+        /* unary ops: '-' '~'; evaluated with term */
+        while ((s.charAt(i)=45) | (s.charAt(i)=126)) {
+            do t.appendChar(s.charAt(i));
+            let i = i + 1;
+        }
+
+        if (s.charAt(i) = 40) {
+            let i = Str.block(s, t, 40, 41, i);
+            if (i > s.length()) {
+                do Error.send("unclosed parentheses");  // ##DB##
+                do Error.set(1);  // unclosed parentheses
+                return i;
+            }
+        } else { if (s.charAt(i) = 123) {
+            let i = Str.block(s, t, 123, 125, i);
+        }}
+
+        let i = Str.tkn(s, t, list, i);
+
+        /* this includes case of op at s[0] ... */
+        if (t.length() = 0) {
+            do Error.send("unexpected operator");  // ##DB##
+            do Error.set(1);  // unexpected operator
+            return i;
+        }
+
+        /* ... which would crash here.
+           But this covers the case of op after uop, e.g. "-+". */
+        if ( (s.charAt(i-1)=45) | (s.charAt(i-1)=126) ) {
+            do Error.send("unexpected operator");  // ##DB##
+            do Error.set(1);  // unexpected operator
+            return i;
+        }
+
+        if (i < s.length()) {
+            if (s.charAt(i) = 40) {
+                let i = Str.block(s, t, 40, 41, i);
+                if (i > s.length()) {
+                    do Error.send("unclosed parentheses");  // ##DB##
+                    do Error.set(1);  // unclosed parentheses
+                    return i;
+                }
+            if (i < s.length()) {
+                let i = Exec.intTkn(s, t, list, i);
+            }
+            } else { if (s.charAt(i) = 123) {
+                let i = Str.block(s, t, 123, 125, i);
+            }}
+        }
+
+        return i;
+    }
+
+    function int operate(int m, int n, char op) {
+
+        if ( ((op=47) | (op=37)) & (n=0) ) {
+            do Error.send("division by zero");  // ##DB##
+            do Error.set(1);  // division by zero
+            return 0;
+        }
+
+        if (op =  38) { return m & n; }
+        if (op = 124) { return m | n; }
+
+        if (op =  43) { return m + n; }
+        if (op =  45) { return m - n; }
+        if (op =  42) { return m * n; }
+        if (op =  47) { return m / n; }
+        if (op =  37) { return Lib.mod(m, n); }
+
+        if (op = 261) { return   m = n;  }
+        if (op = 233) { return ~(m = n); }
+        if (op =  60) { return   m < n;  }
+        if (op =  62) { return   m > n;  }
+        if (op = 260) { return  (m<n) | (m=n); }
+        if (op = 262) { return  (m>n) | (m=n); }
+
+        do Error.send("unrecognized operator");  // ##DB##
+        do Error.set(1);  // unrecognized operator
+        return 0;
+    }
+
 
 }

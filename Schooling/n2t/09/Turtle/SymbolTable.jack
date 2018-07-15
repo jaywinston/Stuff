@@ -1,15 +1,15 @@
-class Symtab {
+class SymbolTable {
 
     field Symbol stack;
 
 
-    constructor Symtab new(int hsize) {
+    constructor SymbolTable new(int hsize) {
         let stack = Symbol.new(null, Symbol.HASHTAB(), HashTable.new(hsize));
         return this;
     }
 
 
-    method void newScope(int hsize) {
+    method void pushScope(int hsize) {
         var Symbol scope;
 
         let scope = Symbol.new(null, Symbol.HASHTAB(), HashTable.new(hsize));
