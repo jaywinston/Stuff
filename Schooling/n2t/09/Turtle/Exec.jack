@@ -1,6 +1,7 @@
 class Exec {
 
     static int bottom, left, right, top;
+    static Symtab symtab;
     static TextBox tb;
     static Turtle t;
 
@@ -8,10 +9,10 @@ class Exec {
         CMD,
         CMDLIN,
         FUNC,
+        HASHTAB,
         INT,
         STR,
         SYM,
-        SYMTAB,
 
         ASSIGN,
         BLOCK,
@@ -48,14 +49,14 @@ class Exec {
     function void initKWs() {
         var int i;
 
-        let BLOCK  = Symbol.BLOCK();
-        let CMD    = Symbol.CMD();
-        let CMDLIN = Symbol.CMDLIN();
-        let FUNC   = Symbol.FUNC();
-        let INT    = Symbol.INT();
-        let STR    = Symbol.STR();
-        let SYM    = Symbol.SYM();
-        let SYMTAB = Symbol.SYMTAB();
+        let BLOCK   = Symbol.BLOCK();
+        let CMD     = Symbol.CMD();
+        let CMDLIN  = Symbol.CMDLIN();
+        let FUNC    = Symbol.FUNC();
+        let HASHTAB = Symbol.HASHTAB();
+        let INT     = Symbol.INT();
+        let STR     = Symbol.STR();
+        let SYM     = Symbol.SYM();
 
         let ASSIGN    =  0;
         let CLEAR     =  2;
@@ -272,7 +273,7 @@ class Exec {
             return;
         }
 
-        let lcltab = Symbol.new(null, SYMTAB, HashTable.new());
+        let lcltab = Symbol.new(null, HASHTAB, HashTable.new(3));
         do lcltab.append(Symbol.copy(arg.next()));
         do Eval.install(arg.name(), FUNC, lcltab);
 

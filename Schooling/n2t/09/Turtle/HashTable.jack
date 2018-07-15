@@ -1,13 +1,13 @@
 class HashTable {
 
-    static int HASHSIZ;
+    field int HASHSIZ;
     field Array table;
 
 
-    constructor HashTable new() {
+    constructor HashTable new(int hsize) {
         var int i;
 
-        let HASHSIZ = 16;
+        let HASHSIZ = hsize;
         let table = Array.new(HASHSIZ);
         let i = 0;
         while (i < HASHSIZ) {
@@ -28,7 +28,7 @@ class HashTable {
     method Symbol lookup(String s) {
         var Symbol p;
 
-        let p = table[HashTable.hash(s)];
+        let p = table[hash(s)];
         while (~(p = null)) {
             if (Str.eq(s, p.name())) {
                 return p;
@@ -49,7 +49,7 @@ class HashTable {
 
         if (p = null) {
             let p = Symbol.new(name, type, val);
-            let hashval = HashTable.hash(name);
+            let hashval = hash(name);
             do p.setNext(table[hashval]);
             let table[hashval] = p;
         } else {
@@ -77,7 +77,7 @@ class HashTable {
             return;
         }
 
-        let hashval = HashTable.hash(name);
+        let hashval = hash(name);
 
         let prev = table[hashval];
 
@@ -99,7 +99,7 @@ class HashTable {
     }
 
 
-    function int hash(String s) {
+    method int hash(String s) {
         var int h, i;
 
         let h = 0;

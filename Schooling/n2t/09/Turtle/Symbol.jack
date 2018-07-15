@@ -20,6 +20,7 @@ class Symbol {
 
     method void dispose() {
         var String s;
+        var HashTable ht;
 
         if (~(_name = null)) {
             do _name.dispose();
@@ -34,7 +35,10 @@ class Symbol {
                      | ((_type=Symbol.CMDLIN())
                      |  (_type=Symbol.FUNC())) ) {
             do Symbol.clear(_value);
-        }}
+        } else { if (_type = Symbol.HASHTAB()) {
+            let ht = _value;
+            do ht.dispose();
+        }}}
 
         do Memory.deAlloc(this);
 
@@ -154,6 +158,6 @@ class Symbol {
     function int INT       () { return  7; }
     function int STR       () { return  8; }
     function int SYM       () { return  9; }
-    function int SYMTAB    () { return  9; }
+    function int HASHTAB   () { return 10; }
 
 }

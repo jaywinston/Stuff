@@ -1,0 +1,61 @@
+class Symtab {
+
+    field Symbol stack;
+
+
+    constructor Symtab new(int hsize) {
+        let stack = Symbol.new(null, Symbol.HASHTAB(), HashTable.new(hsize));
+        return this;
+    }
+
+
+    method void newScope(int hsize) {
+        var Symbol scope;
+
+        let scope = Symbol.new(null, Symbol.HASHTAB(), HashTable.new(hsize));
+        do scope.setNext(stack);
+        let stack = scope;
+
+        return;
+    }
+
+
+    method void dropScope() {
+        var Symbol scope;
+
+        let scope = stack;
+        do scope.dispose();
+
+        return;
+    }
+
+
+    method Symbol lookup(String s) {
+        var Hashtablele table;
+        var Symbol scope, sym;
+
+        let scope = stack;
+        while (~(scope = null)) {
+            let table = scope.value();
+            let sym = table.lookup(s);
+            if (~(sym = null)) {
+                return sym;
+            }
+            let scope = scope.next();
+        }
+
+        return null;
+    }
+
+
+    method void install(String name, int type, int value) {
+        var Hashtablele table;
+
+        let table = stack.value();
+        do table.install(name, type, value);
+
+        return;
+    }
+
+
+}

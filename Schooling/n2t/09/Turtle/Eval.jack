@@ -44,7 +44,7 @@ class Eval {
         let INTOPS[2] = "+-({";
         let INTOPS[3] = "*/%({";
 
-        let symtab = HashTable.new();
+        let symtab = HashTable.new(15);
 
         return;
     }
