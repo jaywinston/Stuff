@@ -1,9 +1,11 @@
 class Lex {
 
-    static String WORDDLMS;
+    static String BRACES, WORDDLMS;
 
 
     function void init() {
+
+        let BRACES = "{}";
 
         let WORDDLMS = String.new(4);
         do WORDDLMS.appendChar(32);   // ' '
@@ -15,13 +17,13 @@ class Lex {
     }
 
 
-    /* collect substring of nested blocks delimited by l and r from s into t;
+    /* collect substring of nested brackets delimited by l and r from s into t;
      * return last used index + 1
      */
-    function int block(String s, String t, char l, char r, int i) {
+    function int brackets(String s, String t, char l, char r, int i) {
         /* i + 1 is returned because the loop breaks on the closing delim.
            Adding one to the index indicates EOS where appropriate or
-           an unclosed block as i will be greater than s.length().
+           an unclosed bracket as i will be greater than s.length().
            Or it conveniently places i on what is likely an operator. */
         var char c;
         var int blk, sLen;
@@ -79,7 +81,7 @@ class Lex {
                     do Error.set(1);  // unclosed quote
                 }
             } else { if (s.charAt(i) = 123) {
-                let i = Lex.block(s, t, 123, 125, i);
+                let i = Lex.brackets(s, t, 123, 125, i);
             } else { if (s.charAt(i) = 61) {
                 do t.appendChar(61);
                 let i = Lex.word(s, t, i+1);
@@ -103,14 +105,17 @@ class Lex {
         }
 
         if (s.charAt(i) = 40) {
-            let i = Lex.block(s, t, 40, 41, i);
+            let i = Lex.brackets(s, t, 40, 41, i);
             if (i > s.length()) {
                 do Error.send("unclosed parentheses");  // ##DB##
                 do Error.set(1);  // unclosed parentheses
                 return i;
             }
         } else { if (s.charAt(i) = 123) {
-            let i = Lex.block(s, t, 123, 125, i);
+            let i = Lex.brackets(s, t, 123, 125, i);
+            if (i > s.length()) {
+                return i;
+            }
         }}
 
         let i = Str.tkn(s, t, list, i);
@@ -131,19 +136,32 @@ class Lex {
         }
 
         if (i < s.length()) {
-            if (s.charAt(i) = 40) {
-                let i = Lex.block(s, t, 40, 41, i);
-                if (i > s.length()) {
-                    do Error.send("unclosed parentheses");  // ##DB##
-                    do Error.set(1);  // unclosed parentheses
+            if ((s.charAt(i)=40) | (s.charAt(i)=123)) {
+                return Lex.integer(s, t, list, i);
+            }
+        }
+
+        return i;
+    }
+
+
+    function int block(String s, String t, int i) {
+
+        if (~(i < s.length())) {
+            return i;
+        }
+
+        while (i < s.length()) {
+            let i = Str.tkn(s, t, BRACES, i);
+
+            if (i < s.length()) {
+                if (s.charAt(i) = 125) {
                     return i;
                 }
-            if (i < s.length()) {
-                let i = Lex.integer(s, t, list, i);
+                if (s.charAt(i) = 123) {
+                    let i = Lex.brackets(s, t, 123, 125, i);
+                }
             }
-            } else { if (s.charAt(i) = 123) {
-                let i = Lex.block(s, t, 123, 125, i);
-            }}
         }
 
         return i;

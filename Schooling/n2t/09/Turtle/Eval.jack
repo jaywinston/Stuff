@@ -5,7 +5,7 @@ class Eval {
     static Array INTOPS;
     static String PS1, PS2;
     static String ASGNDLMS, EXPDLMS;
-    static String BLANKS, EQS, BRACES, PERCENTS;
+    static String EQS, BRACES, PERCENTS;
     static SymbolTable symtab;
 
 
@@ -37,7 +37,6 @@ class Eval {
         let PS2 = "|";
 
         let EXPDLMS = "=~!<>&|+-*/%";
-        let BLANKS = " ";
         let EQS = "=";
         let BRACES = "{}";
         let PERCENTS = "%";
@@ -265,11 +264,15 @@ class Eval {
     /* return a list of strings representing block endings */
     function Symbol blockLine(String s, int i) {
         var String t;
-        var Symbol line,p;
+        var Symbol line;
+
+        if (~(i < s.length())) {
+            return null;
+        }
 
         /* look for end of block */
         let t = String.new(s.length());
-        let i = Eval.blockTkn(s, t, i);
+        let i = Lex.block(s, t, i);
 
         if (i < s.length()) {
             let line = Symbol.new(null, END, t);
@@ -279,49 +282,24 @@ class Eval {
 
         if ( (i+1) < s.length() ) {
 
-            /* If this block is in an expression,
-               append the rest of the expression. */
             let t = String.new(s.length());
-            let i = Eval.blockTkn(s, t, i+1);
-
-            if (i < s.length()) {
-                do line.append(Symbol.new(null, END, t));
-            } else {
-                do line.append(Symbol.new(null, EXPR, t));
-            }
+            let i = Lex.block(s, t, i+1);
 
             /* append any ends of super blocks */
             while ( (i+1) < s.length() ) {
                 let t = String.new(s.length());
-                let i = Eval.blockTkn(s, t, i+1);
-                do line.append(Symbol.new(null, END, t));
+                let i = Lex.block(s, t, i+1);
+                if (i < s.length()) {
+                    do line.append(Symbol.new(null, END, t));
+                } else {
+                    /* If this block is in an expression,
+                       append the rest of the expression. */
+                    do line.append(Symbol.new(null, EXPR, t));
+                }
             }
         }
 
         return line;
-    }
-
-
-    function int blockTkn(String s, String t, int i) {
-
-        if (~(i < s.length())) {
-            return i;
-        }
-
-        while (i < s.length()) {
-            let i = Str.tkn(s, t, BRACES, i);
-
-            if (i < s.length()) {
-                if (s.charAt(i) = 125) {
-                    return i;
-                }
-                if (s.charAt(i) = 123) {
-                    let i = Lex.block(s, t, 123, 125, i);
-                }
-            }
-        }
-
-        return i;
     }
 
 
@@ -347,11 +325,11 @@ class Eval {
 
         if (s.length() > 0) {
             let s = String.new(Str.MAXLEN());
-            let t = Eval.blockToStr(block);
+            let t = Eval.blockToStr(super.next());  // detroys argument
             do Str.cat(s, t);
             do t.dispose();
             do Str.cat(s, end.value());
-            do end.append(Eval.eval(s, 0));
+            do super.setNext(Eval.eval(s, 0));
             do s.dispose();
         }
 
@@ -424,18 +402,6 @@ class Eval {
         do p1.dispose();
 
         return block;
-    }
-
-    function Symbol symbolExpr(String s) {
-        var Symbol p;
-
-        let p = Exec.lookup(s);
-
-        if (p = null) {
-            return Symbol.new(s, SYM, null);
-        }
-
-        return Symbol.copy1(p);
     }
 
 
@@ -594,12 +560,19 @@ class Eval {
         var Symbol block;
 
         let block = Eval.blockExpr(s);
-        let value = Exec.execBlock(block.value());
+        let value = Exec.execBlock(block);
         do Symbol.clear(block);
 
+        if (value = null) {
+            do Error.send("invalid integer");  // ##DB##
+            do Error.set(1);  // invalid integer
+            return 0;
+        }
+
         if (~(value.type() = INT)) {
-            do Error.send("wrong type; expected integer");  // ##DB##
-            do Error.set(1);  // wrong type; expected integer
+            do Error.send("expected integer");  // ##DB##
+            do Error.set(1);  // expected integer
+            return 0;
         }
 
         let n = value.value();

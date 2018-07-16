@@ -202,6 +202,7 @@ class Exec {
         let ret = Exec.exec(Symbol.copy(argv.value()));
 
         do Symbol.clear(argv);
+        do Eval.dropScope();
         do fargs.dispose();
         do fpres.dispose();
 
@@ -209,6 +210,7 @@ class Exec {
     }
 
 
+/*
     function Symbol execBlock(Symbol b) {
         var Symbol p;
 
@@ -217,9 +219,10 @@ class Exec {
 
         return p;
     }
+*/
 
 
-    function Symbol doBlock(Symbol b) {
+    function Symbol execBlock(Symbol b) {
 
         if (b = null) {
             return null;
