@@ -77,13 +77,12 @@ class Eval {
         }
 
         if (Eval.isAssign(t)) {
-            do Eval.assign(t);
-            let argv = Eval.eval(s, i+1);
+            let argv = Symbol.new(EQS, SYM, null);
+            do argv.append(Symbol.new(null, STR, t));
         } else {
             let argv = Eval.expression(t);
+            do t.dispose();
         }
-
-        do t.dispose();
 
         do argv.append(Eval.eval(s, i+1));
 
@@ -131,7 +130,7 @@ class Eval {
         }
 
         let name = String.new(s.length());
-        let i =  Str.tkn(s, name, EQS, 0);
+        let i = Str.tkn(s, name, EQS, 0);
         let value = Eval.arg(Eval.eval(s, i+1));
 
         if (Error.isSet()) {
@@ -181,9 +180,21 @@ class Eval {
 
     /* todo: use Str.format(), no destruct, symbol param */
     function String StringExpr(String s) {
-        do s.eraseLastChar();
-        do Str.shift(s, 1, 0);
-        return Str.dup(Eval.format(s));
+        var int i, n;
+        var Array a;
+
+        let n = 0;
+        let i = 1;
+        while (~(s.charAt(i) = 34)) {
+            if (s.charAt(i) = 37) {
+                let n = n + 1;
+            }
+            let i = i + 1;
+        }
+
+        let a = Array.new(n);
+            
+        return Str.format(s, a);
     }
 
 
@@ -254,7 +265,7 @@ class Eval {
         do line.dispose();
 
         if (block.type() = EXPR) {
-            do Eval.blockToExpr(block);
+            let block = Eval.blockToExpr(block);  // destroys block
         }
 
         return block;
@@ -267,7 +278,7 @@ class Eval {
         var Symbol line;
 
         if (~(i < s.length())) {
-            return null;
+            return Symbol.new(null, STR, "");
         }
 
         /* look for end of block */
@@ -280,22 +291,14 @@ class Eval {
             let line = Symbol.new(null, STR, t);
         }
 
-        if ( (i+1) < s.length() ) {
-
+        /* append any ends of super blocks or expressions */
+        while ( (i+1) < s.length() ) {
             let t = String.new(s.length());
             let i = Lex.block(s, t, i+1);
-
-            /* append any ends of super blocks */
-            while ( (i+1) < s.length() ) {
-                let t = String.new(s.length());
-                let i = Lex.block(s, t, i+1);
-                if (i < s.length()) {
-                    do line.append(Symbol.new(null, END, t));
-                } else {
-                    /* If this block is in an expression,
-                       append the rest of the expression. */
-                    do line.append(Symbol.new(null, EXPR, t));
-                }
+            if (i < s.length()) {
+                do line.append(Symbol.new(null, END, t));
+            } else {
+                do line.append(Symbol.new(null, EXPR, t));
             }
         }
 
@@ -380,6 +383,8 @@ class Eval {
 
         let expr = String.new(Str.MAXLEN());
         let term = Eval.blockToStr(p1);
+        do Str.cat(expr, term);
+        do term.dispose();
 
         /* get block's parent, dispose block */
         let p2 = block;
@@ -388,8 +393,6 @@ class Eval {
         }
         do p1.dispose();
 
-        do Str.cat(expr, term);
-        do term.dispose();
         do Str.cat(expr, block.value());
 
         /* overwrite block */

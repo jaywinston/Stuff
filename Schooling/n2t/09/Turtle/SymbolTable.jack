@@ -24,6 +24,7 @@ class SymbolTable {
         var Symbol scope;
 
         let scope = stack;
+        let stack = scope.next();
         do scope.dispose();
 
         return;

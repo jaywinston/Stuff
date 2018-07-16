@@ -201,8 +201,8 @@ class Exec {
 
         let ret = Exec.exec(Symbol.copy(argv.value()));
 
-        do Symbol.clear(argv);
         do Eval.dropScope();
+        do Symbol.clear(argv);
         do fargs.dispose();
         do fpres.dispose();
 
@@ -238,7 +238,7 @@ class Exec {
 
 
     function void doAssign(Symbol arg) {
-        do Exec.assign(arg);
+        do Eval.assign(arg.value());
         return;
     }
 
@@ -359,7 +359,7 @@ class Exec {
         let condition = arg.value();
         while (~(condition = 0)) {
             do Exec.try(Symbol.copy(arg.next()));
-            let p = Eval.eval(arg.name(), 0);
+            let p = Eval.arg(Eval.eval(arg.name(), 0));
             let condition = p.value();
             do Symbol.clear(p);
         }
