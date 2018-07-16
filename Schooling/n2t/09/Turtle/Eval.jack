@@ -178,23 +178,76 @@ class Eval {
     }
 
 
-    /* todo: use Str.format(), no destruct, symbol param */
     function String StringExpr(String s) {
-        var int i, n;
-        var Array a;
+        var int a, i, n;
+        var Array args, reg;
+        var String f, t, arg;
+        var Symbol p;
 
+        let f = String.new(s.length());
         let n = 0;
         let i = 1;
         while (~(s.charAt(i) = 34)) {
+            do f.appendChar(s.charAt(i));
             if (s.charAt(i) = 37) {
                 let n = n + 1;
             }
             let i = i + 1;
         }
 
-        let a = Array.new(n);
+        if (n = 0) {
+            return f;
+        }
+
+        let args = Array.new(n);
+        let reg = Array.new(n);
+
+        let a = 0;
+        while (a < n) {
+            let arg = String.new(s.length());
+            let i = Lex.fArg(s, arg, i+1);
+            if (i < 0) {
+                do arg.dispose();
+                do Error.send("no argument for format specifier");  // ##DB##
+                do Error.set(1);  // no argument for format specifier
+                return null;
+            }
+            let p = Eval.fArg(arg);
+            let reg[a] = p.type();
+            let args[a] = p.value();
+            do p.dispose();
+            do arg.dispose();
+            let a = a + 1;
+        }
             
-        return Str.format(s, a);
+        let t = Str.format(f, args);
+
+        do f.dispose();
+        let a = 0;
+        while (a < n) {
+            if (reg[a] = STR) {
+                let arg = args[a];
+                do arg.dispose();
+            }
+            let a = a + 1;
+        }
+        do args.dispose();
+        do reg.dispose();
+
+        return t;
+    }
+
+
+    function Symbol fArg(String s) {
+        var Symbol p;
+
+        let p = Eval.arg(Eval.eval(s, 0));
+
+        if (p = null) {
+            return Symbol.new(null, null, null);
+        }
+
+        return p;
     }
 
 

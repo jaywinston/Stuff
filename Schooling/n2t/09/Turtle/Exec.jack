@@ -185,7 +185,7 @@ class Exec {
         do Eval.pushScope(3);
 
         let fargs = Array.new(1);
-        let fpres = "$%d";
+        let fpres = "$%D";
         let n = 0;
 
         let arg = argv.next();

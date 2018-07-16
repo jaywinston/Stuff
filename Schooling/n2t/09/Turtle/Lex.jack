@@ -1,11 +1,12 @@
 class Lex {
 
-    static String BRACES, WORDDLMS;
+    static String BRACES, COMMAS, WORDDLMS;
 
 
     function void init() {
 
         let BRACES = "{}";
+        let COMMAS = ",";
 
         let WORDDLMS = String.new(4);
         do WORDDLMS.appendChar(32);   // ' '
@@ -165,6 +166,16 @@ class Lex {
         }
 
         return i;
+    }
+
+
+    function int fArg(String s, String t, int i) {
+
+        if (~(i < s.length())) {
+            return -1;
+        }
+
+        return Str.tkn(s, t, COMMAS, i);
     }
 
 }

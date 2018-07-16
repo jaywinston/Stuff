@@ -24,6 +24,7 @@ class Str {
         let a = 0;
         let i = 0;
         while (i < fLen) {
+
             let c = f.charAt(i);
             let continue = ~(c = 37);
             let i = i + 1;
@@ -33,40 +34,41 @@ class Str {
                 let continue = ~(c = 37);
                 let i = i + 1;
             }
+
             if (i < fLen) {
+
                 let c = f.charAt(i);
-                if (c = 100) {
+
+                if (c = 68) {
                     let t = String.new(6);
-                    let tLen = t.length();
                     do t.setInt(arg[a]);
-                } else { if (c = 115) {
+                } else { if (c = 83) {
                     let t = arg[a];
-                    let tLen = t.length();
-                } else { if (c = 37) {
+                } else { if (c = 80) {
                     if (i < Str.MAXLEN()) {
-                        do s.appendChar(c);
+                        do s.appendChar(37);
                     }
-                } else { if (c = 110) {
+                } else { if (c = 81) {
+                    if (i < Str.MAXLEN()) {
+                        do s.appendChar(34);
+                    }
+                } else { if (c = 78) {
                     if (i < Str.MAXLEN()) {
                         do s.appendChar(128);
                     }
-                }}}}
+                }}}}}
+
                 if (~(t = null)) {
-/*
-                    let j = 0;
-                    while (j < tLen) {
-                        do s.appendChar(t.charAt(j));
-                        let j = j + 1;
-                    }
-*/
                     do Str.cat(s, t);
                     do t.dispose();
                     let t = null;
                     let a = a + 1;
                 }
+
             } else {
                 do s.appendChar(c);
             }
+
             let i = i + 1;
         }
 
