@@ -1,9 +1,12 @@
 class Eval {
 
     static int BLOCK, CMD, CMDLIN, END, EXPR, FUNC, INT, STR, SYM;
+    static int TERM;
+    static Array INTOPS;
     static String PS1, PS2;
     static String ASGNDLMS, EXPDLMS;
     static String BLANKS, EQS, BRACES, PERCENTS;
+    static SymbolTable symtab;
 
 
     function void init() {
@@ -18,10 +21,17 @@ class Eval {
         let STR = Symbol.STR();
         let SYM = Symbol.SYM();
 
+        let TERM = 4;
+        let INTOPS = Array.new(4);
+        let INTOPS[0] = "&|({";
+        let INTOPS[1] = "=!<>({";
+        let INTOPS[2] = "+-({";
+        let INTOPS[3] = "*/%({";
+
         let ASGNDLMS = String.new(3);
-        do ASGNDLMS.append(34);   // '"'
-        do ASGNDLMS.append(61);   // '='
-        do ASGNDLMS.append(123);  // '{'
+        do ASGNDLMS.appendChar(34);   // '"'
+        do ASGNDLMS.appendChar(61);   // '='
+        do ASGNDLMS.appendChar(123);  // '{'
 
         let PS1 = ">";
         let PS2 = "|";
@@ -31,6 +41,8 @@ class Eval {
         let EQS = "=";
         let BRACES = "{}";
         let PERCENTS = "%";
+
+        let symtab = SymbolTable.new(15);
 
         return;
     }
@@ -66,7 +78,8 @@ class Eval {
         }
 
         if (Eval.isAssign(t)) {
-            let argv = Eval.assign(t);
+            do Eval.assign(t);
+            let argv = Eval.eval(s, i+1);
         } else {
             let argv = Eval.expression(t);
         }
@@ -106,7 +119,8 @@ class Eval {
         return false;
     }
 
-    function Symbol assign(String s) {
+
+    function void assign(String s) {
         var int i;
         var String name;
         var Symbol value;
@@ -114,31 +128,34 @@ class Eval {
         if (s.charAt(0) = 61) {
             do Error.send("expected name");  // ##DB##
             do Error.set(1);  // expected name
-            return null;
+            return;
         }
 
         let name = String.new(s.length());
         let i =  Str.tkn(s, name, EQS, 0);
-        let value = Symbol.new("=", CMD, null);
-        do value.append(Symbol.new(name, SYM, null));
-        do value.append(Eval.eval(s, i+1));
+        let value = Eval.arg(Eval.eval(s, i+1));
 
         if (Error.isSet()) {
             do name.dispose();
             do Symbol.clear(value);
-            return null;
+            return;
+        }
+
+        if (value = null) {
+            do symtab.install(name, SYM, null);
+            return;
         }
 
         if (value.type() = STR) {
-            do Exec.install(name, value.type(), Str.dup(value.value()));
+            do symtab.install(name, value.type(), Str.dup(value.value()));
         } else {
-            do Exec.install(name, value.type(), value.value());
+            do symtab.install(name, value.type(), value.value());
         }
 
         do name.dispose();
         do Symbol.clear(value);
 
-        return value;
+        return;
     }
 
 
@@ -423,14 +440,225 @@ class Eval {
 
 
     function void install(String name, int type, int value) {
-        do Exec.install(name, type, value);
+        do symtab.install(name, type, value);
         return;
     }
 
 
-    function void delete(String name) {
-        do symtab.delete(name);
+    function void pushScope(int hsize) {
+        do symtab.pushScope(hsize);
         return;
     }
+
+
+    function void dropScope() {
+        do symtab.dropScope();
+        return;
+    }
+
+
+    function Symbol arg(Symbol arg) {
+        var int type;
+        var Symbol p;
+
+        if (arg = null) {
+            return null;
+        }
+
+        let type = arg.type();
+        let p = null;
+
+        if (type = BLOCK) {
+            let p = Exec.execBlock(arg.value());
+            do Symbol.clear(arg.value());
+        } else { if (type = SYM) {
+            let p = symtab.lookup(arg.name());
+            if (p = null) {
+                do Error.send("undefined symbol");  // ##DB##
+                do Error.set(1);  // undefined symbol
+                return null;
+            }
+        } else { if (type = INT) {
+            do arg.setValue(Eval.integer(arg.name(), 0, 0));
+        } else {
+            return arg;
+        }}}
+
+        if (~(p = null)) {
+            if ( (p.type()=BLOCK) | (p.type()=FUNC) ) {
+                do arg.setValue(Symbol.copy(p.value()));
+            } else { if (p.type() = STR) {
+                do arg.setValue(Str.dup(p.value()));
+            } else {
+                do arg.setValue(p.value());
+            }}
+
+            do arg.setType(p.type());
+            if (type = BLOCK) {
+                do p.dispose();
+            }
+        }
+
+        return arg;
+    }
+
+
+    function int integer(String s, int i, int depth) {
+        var char op;
+        var int n;
+        var String t;
+
+        if (i = s.length()) {
+            do Error.send("expected integer expression");  // ##DB##
+            do Error.set(1);  //  expected integer expression
+            return 0;
+        }
+            
+        if (depth = TERM) {
+            return Eval.term(s);
+        }
+
+        let t = String.new(s.length());
+        let i = Lex.integer(s, t, INTOPS[depth], i);
+
+        if (Error.isSet()) {
+            do t.dispose();
+            return 0;
+        }
+
+        let n = Eval.integer(t, 0, depth+1);
+
+        do t.dispose();
+
+        if (i < s.length()) {
+
+            let op = s.charAt(i);
+
+            if ( (i+1) < s.length() ) { if (s.charAt(i+1) = 61) {
+                let op = op + 200;
+                let i = i + 1;
+            }}
+
+            let n = Eval.operate(n, Eval.integer(s, i+1, depth), op);
+        }
+
+        return n;
+    }
+
+
+    function int term(String s) {
+        var char c;
+        var Symbol p;
+
+        let c = s.charAt(0);
+
+        if (c = 45) {
+            do Str.shift(s, 1, 0);
+            return -Eval.term(s);
+        }
+
+        if (c = 126) {
+            do Str.shift(s, 1, 0);
+            return ~Eval.term(s);
+        }
+
+        if ( (c>47) & (c<58) ) {
+            return s.intValue();
+        }
+
+        if (c = 40) {
+            return Eval.parenTerm(s);
+        }
+
+        if (c = 123) {
+            return Eval.blockTerm(s);
+        }
+
+        return Eval.symbolTerm(s);
+
+    }
+
+
+    function int parenTerm(String s) {
+
+        do s.eraseLastChar();
+        do Str.shift(s, 1, 0);
+
+        return Eval.integer(s, 0, 0);
+    }
+
+
+    function int blockTerm(String s) {
+        var int n;
+        var Symbol value;
+        var Symbol block;
+
+        let block = Eval.blockExpr(s);
+        let value = Exec.execBlock(block.value());
+        do Symbol.clear(block);
+
+        if (~(value.type() = INT)) {
+            do Error.send("wrong type; expected integer");  // ##DB##
+            do Error.set(1);  // wrong type; expected integer
+        }
+
+        let n = value.value();
+
+        do Symbol.clear(value);
+
+        return n;
+    }
+
+
+    function int symbolTerm(String s) {
+        var Symbol p;
+
+        let p = symtab.lookup(s);
+
+        if (p = null) {
+            do Error.send("undefined symbol");  // ##DB##
+            do Error.set(1);  // undefined symbol
+            return 0;
+        }
+
+        if (~(p.type() = INT)) {
+            do Error.send("wrong type; expected integer");  // ##DB##
+            do Error.set(1);  // wrong type; expected integer
+            return 0;
+        }
+
+        return p.value();
+    }
+
+
+    function int operate(int m, int n, char op) {
+
+        if ( ((op=47) | (op=37)) & (n=0) ) {
+            do Error.send("division by zero");  // ##DB##
+            do Error.set(1);  // division by zero
+            return 0;
+        }
+
+        if (op =  38) { return m & n; }
+        if (op = 124) { return m | n; }
+
+        if (op =  43) { return m + n; }
+        if (op =  45) { return m - n; }
+        if (op =  42) { return m * n; }
+        if (op =  47) { return m / n; }
+        if (op =  37) { return Lib.mod(m, n); }
+
+        if (op = 261) { return   m = n;  }
+        if (op = 233) { return ~(m = n); }
+        if (op =  60) { return   m < n;  }
+        if (op =  62) { return   m > n;  }
+        if (op = 260) { return  (m<n) | (m=n); }
+        if (op = 262) { return  (m>n) | (m=n); }
+
+        do Error.send("unrecognized operator");  // ##DB##
+        do Error.set(1);  // unrecognized operator
+        return 0;
+    }
+
 
 }
