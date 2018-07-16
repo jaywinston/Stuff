@@ -518,7 +518,7 @@ class Exec {
         }
 
         let t = String.new(s.length());
-        let i = Exec.intTkn(s, t, INTOPS[depth], i);
+        let i = Lex.integer(s, t, INTOPS[depth], i);
 
         if (Error.isSet()) {
             do t.dispose();
@@ -629,61 +629,6 @@ class Exec {
         return p.value();
     }
 
-
-    function int intTkn(String s, String t, String list, int i) {
-
-        /* unary ops: '-' '~'; evaluated with term */
-        while ((s.charAt(i)=45) | (s.charAt(i)=126)) {
-            do t.appendChar(s.charAt(i));
-            let i = i + 1;
-        }
-
-        if (s.charAt(i) = 40) {
-            let i = Str.block(s, t, 40, 41, i);
-            if (i > s.length()) {
-                do Error.send("unclosed parentheses");  // ##DB##
-                do Error.set(1);  // unclosed parentheses
-                return i;
-            }
-        } else { if (s.charAt(i) = 123) {
-            let i = Str.block(s, t, 123, 125, i);
-        }}
-
-        let i = Str.tkn(s, t, list, i);
-
-        /* this includes case of op at s[0] ... */
-        if (t.length() = 0) {
-            do Error.send("unexpected operator");  // ##DB##
-            do Error.set(1);  // unexpected operator
-            return i;
-        }
-
-        /* ... which would crash here.
-           But this covers the case of op after uop, e.g. "-+". */
-        if ( (s.charAt(i-1)=45) | (s.charAt(i-1)=126) ) {
-            do Error.send("unexpected operator");  // ##DB##
-            do Error.set(1);  // unexpected operator
-            return i;
-        }
-
-        if (i < s.length()) {
-            if (s.charAt(i) = 40) {
-                let i = Str.block(s, t, 40, 41, i);
-                if (i > s.length()) {
-                    do Error.send("unclosed parentheses");  // ##DB##
-                    do Error.set(1);  // unclosed parentheses
-                    return i;
-                }
-            if (i < s.length()) {
-                let i = Exec.intTkn(s, t, list, i);
-            }
-            } else { if (s.charAt(i) = 123) {
-                let i = Str.block(s, t, 123, 125, i);
-            }}
-        }
-
-        return i;
-    }
 
     function int operate(int m, int n, char op) {
 

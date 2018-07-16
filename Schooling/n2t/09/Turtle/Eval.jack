@@ -2,7 +2,7 @@ class Eval {
 
     static int BLOCK, CMD, CMDLIN, END, EXPR, FUNC, INT, STR, SYM;
     static String PS1, PS2;
-    static String WORDDLMS, EXPDLMS;
+    static String ASGNDLMS, EXPDLMS;
     static String BLANKS, EQS, BRACES, PERCENTS;
 
 
@@ -18,12 +18,10 @@ class Eval {
         let STR = Symbol.STR();
         let SYM = Symbol.SYM();
 
-
-        let WORDDLMS = String.new(4);
-        do WORDDLMS.appendChar(32);   // ' '
-        do WORDDLMS.appendChar(34);   // '"'
-        do WORDDLMS.appendChar(61);   // '='
-        do WORDDLMS.appendChar(123);  // '{'
+        let ASGNDLMS = String.new(3);
+        do ASGNDLMS.append(34);   // '"'
+        do ASGNDLMS.append(61);   // '='
+        do ASGNDLMS.append(123);  // '{'
 
         let PS1 = ">";
         let PS2 = "|";
@@ -60,7 +58,7 @@ class Eval {
         }
 
         let t = String.new(s.length());
-        let i = Eval.argTkn(s, t, i);
+        let i = Lex.word(s, t, i);
 
         if (Error.isSet()) {
             do t.dispose();
@@ -85,36 +83,10 @@ class Eval {
         return argv;
     }
 
-    function int argTkn(String s, String t, int i) {
-
-        let i = Str.tkn(s, t, WORDDLMS, i);
-
-        if (i < s.length()) {
-            if (s.charAt(i) = 34) {
-                let i = Str.quotes(s, t, i);
-                if (i > s.length()) {
-                    do Error.send("unclosed quote");  // ##DB##
-                    do Error.set(1);  // unclosed quote
-                }
-            } else { if (s.charAt(i) = 123) {
-                let i = Str.block(s, t, 123, 125, i);
-            } else { if (s.charAt(i) = 61) {
-                do t.appendChar(61);
-                let i = Eval.argTkn(s, t, i+1);
-            }}}
-        }
-
-        if (i < s.length()) { if (~(s.charAt(i) = 32)) {
-            let i = Eval.argTkn(s, t, i);
-        }}
-
-        return i;
-    }
-
     function boolean isAssign(String s) {
         var int i;
 
-        let i = Str.index(s, WORDDLMS, 0);
+        let i = Str.index(s, ASGNDLMS, 0);
 
         if (i < s.length()) {
             if (s.charAt(i) = 61) {
@@ -327,7 +299,7 @@ class Eval {
                     return i;
                 }
                 if (s.charAt(i) = 123) {
-                    let i = Str.block(s, t, 123, 125, i);
+                    let i = Lex.block(s, t, 123, 125, i);
                 }
             }
         }

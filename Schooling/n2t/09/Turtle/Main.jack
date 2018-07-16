@@ -12,6 +12,7 @@ class Main {
 
         do Vector.init();
         do Error.init(Lib.ERRTAB(), 2);
+        do Lex.init();
         do Eval.init();
         do Exec.init(2, 32, 20, 31);
         do IOBox.init(2, 1, 20, 30);
