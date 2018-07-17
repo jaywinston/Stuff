@@ -1,12 +1,16 @@
 class Lex {
 
-    static String BRACES, COMMAS, WORDDLMS;
+    static String BRACES, FARGDLMS, WORDDLMS;
 
 
     function void init() {
 
         let BRACES = "{}";
-        let COMMAS = ",";
+
+        let FARGDLMS = String.new(3);
+        do FARGDLMS.appendChar(34);   // '"'
+        do FARGDLMS.appendChar(44);   // ','
+        do FARGDLMS.appendChar(123);  // '{'
 
         let WORDDLMS = String.new(4);
         do WORDDLMS.appendChar(32);   // ' '
@@ -175,7 +179,23 @@ class Lex {
             return -1;
         }
 
-        return Str.tkn(s, t, COMMAS, i);
+        let i = Str.tkn(s, t, FARGDLMS, i);
+
+        if (~(i < s.length())) {
+            return i;
+        }
+
+        if (s.charAt(i) = 34) {
+            let i = Lex.quotes(s, t, i);
+        } else { if (s.charAt(i) = 123) {
+            let i = Lex.brackets(s, t, 123, 125, i);
+        }}
+
+        if (i < s.length()) { if (~(s.charAt(i) = 44)) {
+            return Lex.fArg(s, t, i);
+        }}
+
+        return i;
     }
 
 }

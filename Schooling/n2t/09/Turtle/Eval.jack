@@ -190,13 +190,15 @@ class Eval {
         while (~(s.charAt(i) = 34)) {
             do f.appendChar(s.charAt(i));
             if (s.charAt(i) = 37) {
-                let n = n + 1;
+                if ( (s.charAt(i+1)=68) | (s.charAt(i+1)=83) ) {
+                    let n = n + 1;
+                }
             }
             let i = i + 1;
         }
 
         if (n = 0) {
-            return f;
+            return Str.format(f, null);
         }
 
         let args = Array.new(n);
@@ -215,7 +217,7 @@ class Eval {
             let p = Eval.fArg(arg);
             let reg[a] = p.type();
             let args[a] = p.value();
-            do p.dispose();
+            //do p.dispose();
             do arg.dispose();
             let a = a + 1;
         }
