@@ -57,7 +57,7 @@ class Exec {
         let STR     = Lib.STR();
         let SYM     = Lib.SYM();
 
-        let ASSIGN    =  0;
+        let ASSIGN    =  1;
         let CLEAR     =  2;
         let ELSE      =  3;
         let FORWARD   =  4;
@@ -71,29 +71,22 @@ class Exec {
         let TURNRIGHT = 12;
         let QUIT      = 13;
 
-        do Exec.installKW("MV",128);  // ##DB##
+        do Eval.install("MV",CMD,128);  // ##DB##
 
-        do Exec.installKW("=",         ASSIGN);
-        do Exec.installKW("CLEAR",     CLEAR);
-        do Exec.installKW("ELSE",      ELSE);
-        do Exec.installKW("FORWARD",   FORWARD);
-        do Exec.installKW("FUNCTION",  FUNCTION);
-        do Exec.installKW("IF",        IF);
-        do Exec.installKW("PENDOWN",   PENDOWN);
-        do Exec.installKW("PENUP",     PENUP);
-        do Exec.installKW("PRINT",     PRINT);
-        do Exec.installKW("REPEAT",    REPEAT);
-        do Exec.installKW("TURNLEFT",  TURNLEFT);
-        do Exec.installKW("TURNRIGHT", TURNRIGHT);
-        do Exec.installKW("QUIT",      QUIT);
+        do Eval.install("=",         CMD, ASSIGN);
+        do Eval.install("CLEAR",     CMD, CLEAR);
+        do Eval.install("ELSE",      CMD, ELSE);
+        do Eval.install("FORWARD",   CMD, FORWARD);
+        do Eval.install("FUNCTION",  CMD, FUNCTION);
+        do Eval.install("IF",        CMD, IF);
+        do Eval.install("PENDOWN",   CMD, PENDOWN);
+        do Eval.install("PENUP",     CMD, PENUP);
+        do Eval.install("PRINT",     CMD, PRINT);
+        do Eval.install("REPEAT",    CMD, REPEAT);
+        do Eval.install("TURNLEFT",  CMD, TURNLEFT);
+        do Eval.install("TURNRIGHT", CMD, TURNRIGHT);
+        do Eval.install("QUIT",      CMD, QUIT);
 
-        return;
-    }
-
-
-    function void installKW(String name, int val) {
-        do Eval.install(name, CMD, val);
-        do name.dispose();
         return;
     }
 

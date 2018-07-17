@@ -89,28 +89,6 @@ class Str {
     }
 
 
-    function boolean eq(String s, String t) {
-        var int i;
-        var int sLen, tLen;
-
-        let sLen = s.length();
-        let tLen = t.length();
-        let i = 0;
-        while ( (i<sLen) & (i<tLen) ) {
-            if (~(s.charAt(i) = t.charAt(i))) {
-                return false;
-            }
-            let i = i + 1;
-        }
-
-        if ( (i<sLen) | (i<tLen)) {
-            return false;
-        }
-
-        return true;
-    }
-
-
     function String dup(String s) {
         var int i, len;
         var String t;

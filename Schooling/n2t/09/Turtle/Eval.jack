@@ -5,7 +5,7 @@ class Eval {
     static Array INTOPS;
     static String PS1, PS2;
     static String ASGNDLMS, EXPDLMS;
-    static String EQS, BRACES, PERCENTS;
+    static String EQS; //, PERCENTS;
     static SymbolTable symtab;
 
 
@@ -38,8 +38,7 @@ class Eval {
 
         let EXPDLMS = "=~!<>&|+-*/%";
         let EQS = "=";
-        let BRACES = "{}";
-        let PERCENTS = "%";
+        //let PERCENTS = "%";
 
         let symtab = SymbolTable.new(15);
 
@@ -253,6 +252,7 @@ class Eval {
     }
 
 
+/*
     function String format(String s) {
         var int i;
 
@@ -284,6 +284,7 @@ class Eval {
 
         return s;
     }
+*/
 
 
     function Symbol blockExpr(String s) {

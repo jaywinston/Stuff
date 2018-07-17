@@ -14,6 +14,7 @@ class HashTable {
             let table[i] = null;
             let i = i + 1;
         }
+
         return this;
     }
 
@@ -30,7 +31,7 @@ class HashTable {
 
         let p = table[hash(s)];
         while (~(p = null)) {
-            if (Str.eq(s, p.name())) {
+            if (HashTable.streq(s, p.name())) {
                 return p;
             }
             let p = p.next();
@@ -67,6 +68,7 @@ class HashTable {
     }
 
 
+/*
     method void delete(String name) {
         var int hashval;
         var Symbol sym, prev;
@@ -97,6 +99,7 @@ class HashTable {
 
         return;
     }
+*/
 
 
     method int hash(String s) {
@@ -112,5 +115,35 @@ class HashTable {
         return Math.abs(Lib.mod(h, HASHSIZ));
     }
 
+
+    function boolean streq(String s, String t) {
+        var int i;
+
+        if (s = null) {
+            if (t = null) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        if (t = null) {
+            return false;
+        }
+
+        if (~(s.length() = t.length())) {
+            return false;
+        }
+
+        let i = 0;
+        while (i < s.length()) {
+            if (~(s.charAt(i) = t.charAt(i))) {
+                return false;
+            }
+            let i = i + 1;
+        }
+
+        return true;
+    }
 }
 
