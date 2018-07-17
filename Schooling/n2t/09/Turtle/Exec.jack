@@ -48,14 +48,14 @@ class Exec {
     function void initKWs() {
         var int i;
 
-        let BLOCK   = Symbol.BLOCK();
-        let CMD     = Symbol.CMD();
-        let CMDLIN  = Symbol.CMDLIN();
-        let FUNC    = Symbol.FUNC();
-        let HASHTAB = Symbol.HASHTAB();
-        let INT     = Symbol.INT();
-        let STR     = Symbol.STR();
-        let SYM     = Symbol.SYM();
+        let BLOCK   = Lib.BLOCK();
+        let CMD     = Lib.CMD();
+        let CMDLIN  = Lib.CMDLIN();
+        let FUNC    = Lib.FUNC();
+        let HASHTAB = Lib.HASHTAB();
+        let INT     = Lib.INT();
+        let STR     = Lib.STR();
+        let SYM     = Lib.SYM();
 
         let ASSIGN    =  0;
         let CLEAR     =  2;
@@ -127,7 +127,7 @@ class Exec {
             do Exec.echo(retval);
         }
 
-        do Symbol.clear(retval);
+        do Lib.clear(retval);
 
         return;
     }
@@ -171,7 +171,7 @@ class Exec {
 
         if (cmd=128) {do DB.mv();}  // ##DB##
 
-        do Symbol.clear(argv);
+        do Lib.clear(argv);
 
         return null;
     }
@@ -199,10 +199,10 @@ class Exec {
             let arg = arg.next();
         }
 
-        let ret = Exec.exec(Symbol.copy(argv.value()));
+        let ret = Exec.exec(Lib.copy(argv.value()));
 
         do Eval.dropScope();
-        do Symbol.clear(argv);
+        do Lib.clear(argv);
         do fargs.dispose();
         do fpres.dispose();
 
@@ -215,7 +215,7 @@ class Exec {
         var Symbol p;
 
         let p = Exec.doBlock(b);
-        do Symbol.clear(b);
+        do Lib.clear(b);
 
         return p;
     }
@@ -229,11 +229,11 @@ class Exec {
         }
 
         while (~(b.next() = null)) {
-            do Symbol.clear(Exec.exec(Symbol.copy(b.value())));
+            do Lib.clear(Exec.exec(Lib.copy(b.value())));
             let b = b.next();
         }
 
-        return Exec.exec(Symbol.copy(b.value()));
+        return Exec.exec(Lib.copy(b.value()));
     }
 
 
@@ -279,7 +279,7 @@ class Exec {
             return;
         }
 
-        do Eval.install(arg.name(), FUNC, Symbol.copy(arg.next()));
+        do Eval.install(arg.name(), FUNC, Lib.copy(arg.next()));
 
         return;
     }
@@ -358,10 +358,10 @@ class Exec {
 
         let condition = arg.value();
         while (~(condition = 0)) {
-            do Exec.try(Symbol.copy(arg.next()));
+            do Exec.try(Lib.copy(arg.next()));
             let p = Eval.arg(Eval.eval(arg.name(), 0));
             let condition = p.value();
-            do Symbol.clear(p);
+            do Lib.clear(p);
         }
 
         return;

@@ -11,15 +11,15 @@ class Eval {
 
     function void init() {
 
-        let BLOCK = Symbol.BLOCK();
-        let CMD = Symbol.CMD();
-        let CMDLIN = Symbol.CMDLIN();
-        let END = Symbol.END();
-        let EXPR = Symbol.EXPR();
-        let FUNC = Symbol.FUNC();
-        let INT = Symbol.INT();
-        let STR = Symbol.STR();
-        let SYM = Symbol.SYM();
+        let BLOCK = Lib.BLOCK();
+        let CMD = Lib.CMD();
+        let CMDLIN = Lib.CMDLIN();
+        let END = Lib.END();
+        let EXPR = Lib.EXPR();
+        let FUNC = Lib.FUNC();
+        let INT = Lib.INT();
+        let STR = Lib.STR();
+        let SYM = Lib.SYM();
 
         let TERM = 4;
         let INTOPS = Array.new(4);
@@ -77,7 +77,7 @@ class Eval {
         }
 
         if (Eval.isAssign(t)) {
-            let argv = Symbol.new(EQS, SYM, null);
+            let argv = Symbol.new("=", SYM, null);
             do argv.append(Symbol.new(null, STR, t));
         } else {
             let argv = Eval.expression(t);
@@ -87,7 +87,7 @@ class Eval {
         do argv.append(Eval.eval(s, i+1));
 
         if (Error.isSet()) {
-            do Symbol.clear(argv);
+            do Lib.clear(argv);
             return null;
         }
 
@@ -135,7 +135,7 @@ class Eval {
 
         if (Error.isSet()) {
             do name.dispose();
-            do Symbol.clear(value);
+            do Lib.clear(value);
             return;
         }
 
@@ -151,7 +151,7 @@ class Eval {
         }
 
         do name.dispose();
-        do Symbol.clear(value);
+        do Lib.clear(value);
 
         return;
     }
@@ -163,7 +163,7 @@ class Eval {
         let c = s.charAt(0);
 
         if (c = 34) {
-            return Symbol.new(s, STR, Eval.StringExpr(s));
+            return Symbol.new(Str.dup(s), STR, Eval.StringExpr(s));
         }
 
         if (c = 123) {
@@ -171,10 +171,10 @@ class Eval {
         }
 
         if ( (Str.index(s, EXPDLMS, 0) = s.length()) & ~((c>47) & (c<58)) ) {
-            return Symbol.new(s, SYM, null);
+            return Symbol.new(Str.dup(s), SYM, null);
         }
 
-        return Symbol.new(s, INT, 0);  // s is evaluated at execution
+        return Symbol.new(Str.dup(s), INT, 0);  // s is evaluated at execution
     }
 
 
@@ -217,7 +217,7 @@ class Eval {
             let p = Eval.fArg(arg);
             let reg[a] = p.type();
             let args[a] = p.value();
-            //do p.dispose();
+            do p.dispose();
             do arg.dispose();
             let a = a + 1;
         }
@@ -494,7 +494,7 @@ class Eval {
 
         if (type = BLOCK) {
             let p = Exec.execBlock(arg.value());
-            do Symbol.clear(arg.value());
+            do Lib.clear(arg.value());
         } else { if (type = SYM) {
             let p = symtab.lookup(arg.name());
             if (p = null) {
@@ -510,7 +510,7 @@ class Eval {
 
         if (~(p = null)) {
             if ( (p.type()=BLOCK) | (p.type()=FUNC) ) {
-                do arg.setValue(Symbol.copy(p.value()));
+                do arg.setValue(Lib.copy(p.value()));
             } else { if (p.type() = STR) {
                 do arg.setValue(Str.dup(p.value()));
             } else {
@@ -619,7 +619,7 @@ class Eval {
 
         let block = Eval.blockExpr(s);
         let value = Exec.execBlock(block);
-        do Symbol.clear(block);
+        do Lib.clear(block);
 
         if (value = null) {
             do Error.send("invalid integer");  // ##DB##
@@ -635,7 +635,7 @@ class Eval {
 
         let n = value.value();
 
-        do Symbol.clear(value);
+        do Lib.clear(value);
 
         return n;
     }

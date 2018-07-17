@@ -19,4 +19,104 @@ class Lib {
         return errtab;
     }
 
+
+    function Symbol copy1(Symbol sym) {
+        var int type;
+
+        if (sym = null) {
+            return null;
+        }
+
+        let type = sym.type();
+
+        if (type = Lib.STR()) {
+            return Symbol.new(Str.dup(sym.name()), sym.type(),
+                              Str.dup(sym.value()));
+        }
+
+        if (       (type=Lib.BLOCK())
+                | ((type=Lib.CMDLIN()) 
+                |  (type=Lib.FUNC())) ) {
+            return Symbol.new(Str.dup(sym.name()), sym.type(),
+                              Lib.copy(sym.value()));
+        }
+
+        return Symbol.new(Str.dup(sym.name()), sym.type(), sym.value());
+    }
+
+
+    function Symbol copy(Symbol sym) {
+        var Symbol new;
+
+        if (sym = null) {
+            return null;
+        }
+
+        let new = Lib.copy1(sym);
+
+        let sym = sym.next();
+        while (~(sym = null)) {
+            do new.append(Lib.copy1(sym));
+            let sym = sym.next();
+        }
+
+        return new;
+    }
+
+
+    function void dispose(Symbol sym) {
+        var String s;
+        var HashTable ht;
+
+        if (sym = null) {
+            return;
+        }
+
+        let s = sym.name();
+
+        if (~(s = null)) {
+            do s.dispose();
+        }
+
+        if (       (sym.type()=Lib.STR())
+                | ((sym.type()=Lib.END())
+                |  (sym.type()=Lib.EXPR())) ) {
+            let s = sym.value();
+            do s.dispose();
+        } else { if (   (sym.type()=Lib.BLOCK())
+                     | ((sym.type()=Lib.CMDLIN())
+                     |  (sym.type()=Lib.FUNC())) ) {
+            do Lib.clear(sym.value());
+        } else { if (sym.type() = Lib.HASHTAB()) {
+            let ht = sym.value();
+            do ht.dispose();
+        }}}
+
+        return;
+    }
+
+
+    function void clear(Symbol sym) {
+        var Symbol next;
+
+        while (~(sym = null)) {
+            let next = sym.next();
+            do Lib.dispose(sym);
+            let sym = next;
+        }
+
+        return;
+    }
+
+
+    function int BLOCK     () { return  1; }
+    function int CMD       () { return  2; }
+    function int CMDLIN    () { return  3; }
+    function int FUNC      () { return  4; }
+    function int END       () { return  5; }
+    function int EXPR      () { return  6; }
+    function int INT       () { return  7; }
+    function int STR       () { return  8; }
+    function int SYM       () { return  9; }
+    function int HASHTAB   () { return 10; }
 }

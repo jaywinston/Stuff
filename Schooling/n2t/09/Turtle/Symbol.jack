@@ -7,11 +7,7 @@ class Symbol {
     field Symbol _next;
 
     constructor Symbol new(String name, int type, int value) {
-        if (name = null) {
-            let _name = null;
-        } else {
-            let _name = Str.dup(name);
-        }
+        let _name = name;
         let _type = type;
         let _value = value;
         let _next = null;
@@ -20,25 +16,11 @@ class Symbol {
 
     method void dispose() {
         var String s;
-        var HashTable ht;
 
-        if (~(_name = null)) {
-            do _name.dispose();
-        }
-
-        if (       (_type=Symbol.STR())
-                | ((_type=Symbol.END())
-                |  (_type=Symbol.EXPR())) ) {
-            let s = _value;
+        let s = _name;
+        if (~(s = null)) {
             do s.dispose();
-        } else { if (   (_type=Symbol.BLOCK())
-                     | ((_type=Symbol.CMDLIN())
-                     |  (_type=Symbol.FUNC())) ) {
-            do Symbol.clear(_value);
-        } else { if (_type = Symbol.HASHTAB()) {
-            let ht = _value;
-            do ht.dispose();
-        }}}
+        }
 
         do Memory.deAlloc(this);
 
@@ -93,71 +75,5 @@ class Symbol {
 
         return;
     }
-
-    function void clear(Symbol sym) {
-        var Symbol next;
-
-        while (~(sym = null)) {
-            let next = sym.next();
-            do sym.dispose();
-            let sym = next;
-        }
-
-        return;
-    }
-
-    function Symbol copy1(Symbol sym) {
-        var int type;
-
-        if (sym = null) {
-            return null;
-        }
-
-        let type = sym.type();
-
-        if (type = Symbol.STR()) {
-            return Symbol.new(sym.name(), sym.type(), Str.dup(sym.value()));
-        }
-
-        if (       (type=Symbol.BLOCK())
-                | ((type=Symbol.CMDLIN()) 
-                |  (type=Symbol.FUNC())) ) {
-            return Symbol.new(sym.name(), sym.type(),
-                              Symbol.copy(sym.value()));
-        }
-
-        return Symbol.new(sym.name(), sym.type(), sym.value());
-    }
-
-
-    function Symbol copy(Symbol sym) {
-        var Symbol new;
-
-        if (sym = null) {
-            return null;
-        }
-
-        let new = Symbol.copy1(sym);
-
-        let sym = sym.next();
-        while (~(sym = null)) {
-            do new.append(Symbol.copy1(sym));
-            let sym = sym.next();
-        }
-
-        return new;
-    }
-
-
-    function int BLOCK     () { return  1; }
-    function int CMD       () { return  2; }
-    function int CMDLIN    () { return  3; }
-    function int FUNC      () { return  4; }
-    function int END       () { return  5; }
-    function int EXPR      () { return  6; }
-    function int INT       () { return  7; }
-    function int STR       () { return  8; }
-    function int SYM       () { return  9; }
-    function int HASHTAB   () { return 10; }
 
 }

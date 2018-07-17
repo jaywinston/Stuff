@@ -53,9 +53,9 @@ class HashTable {
             do p.setNext(table[hashval]);
             let table[hashval] = p;
         } else {
-            if (p.type() = Symbol.FUNC()) {
-                do Symbol.clear(p.value());
-            } else { if (p.type() = Symbol.STR()) {
+            if (p.type() = Lib.FUNC()) {
+                do Lib.clear(p.value());
+            } else { if (p.type() = Lib.STR()) {
                 let s = p.value();
                 do s.dispose();
             }}

@@ -115,6 +115,10 @@ class Str {
         var int i, len;
         var String t;
 
+        if (s = null) {
+            return null;
+        }
+
         let len = s.length();
         let t = String.new(len);
         let i = 0;
