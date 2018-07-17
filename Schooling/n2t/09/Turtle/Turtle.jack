@@ -35,7 +35,7 @@ class Turtle {
     }
 
     method int setDirection(int d) {
-        let direction = Lib.mod(d, 360);
+        let direction = Vector.mod(d, 360);
         if (direction < 0) {
             let direction = direction + 360;
         }

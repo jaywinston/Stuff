@@ -1,23 +1,4 @@
-class Lib {
-
-
-    function int mod(int n, int d) {
-        var int q;
-
-        let q = n / d;
-        return n - (q*d);
-    }
-
-
-    function Array ERRTAB() {
-        var Array errtab;
-
-        let errtab = Array.new(2);
-        let errtab[0] = null;
-        let errtab[1] = "error";
-
-        return errtab;
-    }
+class LibSym {
 
 
     function Symbol copySym(Symbol sym) {
@@ -29,15 +10,15 @@ class Lib {
 
         let type = sym.meta();
 
-        if (type = Lib.STR()) {
+        if (type = LibSym.STR()) {
             return Symbol.new(Str.dup(sym.name()), type, Str.dup(sym.data()));
         }
 
-        if (       (type=Lib.BLOCK())
-                | ((type=Lib.CMDLIN()) 
-                |  (type=Lib.FUNC())) ) {
+        if (       (type=LibSym.BLOCK())
+                | ((type=LibSym.CMDLIN()) 
+                |  (type=LibSym.FUNC())) ) {
             return Symbol.new(Str.dup(sym.name()), type,
-                              Lib.copyList(sym.data()));
+                              LibSym.copyList(sym.data()));
         }
 
         return Symbol.new(Str.dup(sym.name()), type, sym.data());
@@ -51,11 +32,11 @@ class Lib {
             return null;
         }
 
-        let new = Lib.copySym(sym);
+        let new = LibSym.copySym(sym);
 
         let sym = sym.next();
         while (~(sym = null)) {
-            do new.append(Lib.copySym(sym));
+            do new.append(LibSym.copySym(sym));
             let sym = sym.next();
         }
 
@@ -80,18 +61,18 @@ class Lib {
 
         let type = sym.meta();
 
-        if (       (type=Lib.STR())
-                | ((type=Lib.END())
-                |  (type=Lib.EXPR())) ) {
+        if (       (type=LibSym.STR())
+                | ((type=LibSym.END())
+                |  (type=LibSym.EXPR())) ) {
             let s = sym.data();
             do s.dispose();
-        } else { if (   (type=Lib.BLOCK())
-                     | ((type=Lib.CMDLIN())
-                     |  (type=Lib.FUNC())) ) {
-            do Lib.destroyList(sym.data());
-        } else { if (type = Lib.HASHTAB()) {
+        } else { if (   (type=LibSym.BLOCK())
+                     | ((type=LibSym.CMDLIN())
+                     |  (type=LibSym.FUNC())) ) {
+            do LibSym.destroyList(sym.data());
+        } else { if (type = LibSym.HASHTAB()) {
             let ht = sym.data();
-            do Lib.destroyHashTab(ht);
+            do LibSym.destroyHashTable(ht);
         }}}
 
         do sym.dispose();
@@ -105,7 +86,7 @@ class Lib {
 
         while (~(sym = null)) {
             let next = sym.next();
-            do Lib.destroySym(sym);
+            do LibSym.destroySym(sym);
             let sym = next;
         }
 
@@ -113,16 +94,36 @@ class Lib {
     }
 
 
-    function void destroyHashTab(HashTable ht) {
+    function void destroyHashTable(HashTable ht) {
         var int i;
 
         let i = 0;
         while (i < ht.hashSize()) {
-            do Lib.destroyList(ht.bucket(i));
+            do LibSym.destroyList(ht.bucket(i));
             let i = i + 1;
         }
 
         do ht.dispose();
+
+        return;
+    }
+
+
+    function void install(HashTable ht, String name, int type, int value) {
+        var String s;
+        var Symbol p;
+
+        let p = ht.lookup(name);
+        if (~(p = null)) {
+            if (p.meta() = LibSym.STR()) {
+                let s = p.data();
+                do s.dispose();
+            } else { if (p.meta() = LibSym.FUNC()) {
+                do LibSym.destroyList(p.data());
+            }}
+        }
+
+        do ht.install(name, type, value);
 
         return;
     }

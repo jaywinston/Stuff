@@ -64,52 +64,12 @@ class HashTable {
             do p.setNext(table[hashval]);
             let table[hashval] = p;
         } else {
-            if (p.meta() = Lib.FUNC()) {
-                do Lib.destroyList(p.data());
-            } else { if (p.meta() = Lib.STR()) {
-                let s = p.data();
-                do s.dispose();
-            }}
             do p.setData(val);
             do p.setMeta(type);
         }
 
         return;
     }
-
-
-/*
-    method void delete(String name) {
-        var int hashval;
-        var Symbol sym, prev;
-
-        let sym = lookup(name);
-
-        if (sym = null) {
-            return;
-        }
-
-        let hashval = hash(name);
-
-        let prev = table[hashval];
-
-        if (prev = sym) {
-            let table[hashval] = sym.next();
-            do sym.dispose();
-            return;
-        }
-
-        while (~(prev.next() = sym)) {
-            let prev = prev.next();
-        }
-
-        do prev.setNext(sym.next());
-
-        do sym.dispose();
-
-        return;
-    }
-*/
 
 
     method int hash(String s) {
@@ -122,7 +82,7 @@ class HashTable {
             let i = i + 1;
         }
 
-        return Math.abs(Lib.mod(h, HASHSIZ));
+        return Math.abs(Vector.mod(h, HASHSIZ));
     }
 
 

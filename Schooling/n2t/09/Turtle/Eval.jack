@@ -5,21 +5,21 @@ class Eval {
     static Array INTOPS;
     static String PS1, PS2;
     static String ASGNDLMS, EXPDLMS;
-    static String EQS; //, PERCENTS;
-    static SymbolTable symtab;
+    static String EQS;
+    static Symbol symtab;
 
 
     function void init() {
 
-        let BLOCK = Lib.BLOCK();
-        let CMD = Lib.CMD();
-        let CMDLIN = Lib.CMDLIN();
-        let END = Lib.END();
-        let EXPR = Lib.EXPR();
-        let FUNC = Lib.FUNC();
-        let INT = Lib.INT();
-        let STR = Lib.STR();
-        let SYM = Lib.SYM();
+        let BLOCK = LibSym.BLOCK();
+        let CMD = LibSym.CMD();
+        let CMDLIN = LibSym.CMDLIN();
+        let END = LibSym.END();
+        let EXPR = LibSym.EXPR();
+        let FUNC = LibSym.FUNC();
+        let INT = LibSym.INT();
+        let STR = LibSym.STR();
+        let SYM = LibSym.SYM();
 
         let TERM = 4;
         let INTOPS = Array.new(4);
@@ -38,9 +38,8 @@ class Eval {
 
         let EXPDLMS = "=~!<>&|+-*/%";
         let EQS = "=";
-        //let PERCENTS = "%";
 
-        let symtab = SymbolTable.new(15);
+        let symtab = Symbol.new(null, LibSym.HASHTAB(), HashTable.new(15));
 
         return;
     }
@@ -86,7 +85,7 @@ class Eval {
         do argv.append(Eval.eval(s, i+1));
 
         if (Error.isSet()) {
-            do Lib.destroyList(argv);
+            do LibSym.destroyList(argv);
             return null;
         }
 
@@ -134,25 +133,70 @@ class Eval {
 
         if (Error.isSet()) {
             do name.dispose();
-            do Lib.destroyList(value);
+            do LibSym.destroyList(value);
             return;
         }
 
         if (value = null) {
-            do symtab.install(name, SYM, null);
+            do LibSym.install(symtab.data(), name, SYM, null);
             return;
         }
 
         if (value.meta() = STR) {
-            do symtab.install(name, value.meta(), Str.dup(value.data()));
+            do LibSym.install(symtab.data(),
+                              name, value.meta(), Str.dup(value.data()));
         } else {
-            do symtab.install(name, value.meta(), value.data());
+            do LibSym.install(symtab.data(),
+                              name, value.meta(), value.data());
         }
 
         do name.dispose();
-        do Lib.destroyList(value);
+        do LibSym.destroyList(value);
 
         return;
+    }
+
+
+    function Symbol arg(Symbol arg) {
+        var int type;
+        var Symbol p;
+
+        if (arg = null) {
+            return null;
+        }
+
+        let type = arg.meta();
+        let p = null;
+
+        if (type = BLOCK) {
+            let p = Exec.execBlock(arg.data());
+            do LibSym.destroyList(arg.data());
+        } else { if (type = SYM) {
+            let p = Eval.lookup(arg.name());
+            if (p = null) {
+                do Error.send("undefined symbol");  // ##DB##
+                do Error.set(1);  // undefined symbol
+                return null;
+            }
+        } else { if (type = INT) {
+            do arg.setData(Eval.integer(arg.name(), 0, 0));
+        } else {
+            return arg;
+        }}}
+
+        if (~(p = null)) {
+            if (p.meta() = FUNC) {
+                do arg.setData(LibSym.copyList(p.data()));
+            } else { if (p.meta() = STR) {
+                do arg.setData(Str.dup(p.data()));
+            } else {
+                do arg.setData(p.data());
+            }}
+
+            do arg.setMeta(p.meta());
+        }
+
+        return arg;
     }
 
 
@@ -250,41 +294,6 @@ class Eval {
 
         return p;
     }
-
-
-/*
-    function String format(String s) {
-        var int i;
-
-        let i = 0;
-
-        while (i < s.length()) {
-
-            let i = Str.index(s, PERCENTS, i);
-
-            if ((i+1) < s.length()) {
-                if (s.charAt(i+1) = 81) {
-                    do s.setCharAt(i, 34);
-                } else { if (s.charAt(i+1) = 80) {
-                    do s.setCharAt(i, 37);
-                } else { if (s.charAt(i+1) = 78) {
-                    do s.setCharAt(i, 128);
-                } else {
-                    do Error.send("unrecognized format specifier");  // ##DB##
-                    do Error.set(1);
-                    do t.dispose();
-                    return null;
-                }}}
-
-                let i = i + 1;
-                do Str.shift(s, 1, i);
-
-            }  // todo: error no fspec
-        }
-
-        return s;
-    }
-*/
 
 
     function Symbol blockExpr(String s) {
@@ -464,70 +473,6 @@ class Eval {
     }
 
 
-    function void install(String name, int type, int value) {
-        do symtab.install(name, type, value);
-        return;
-    }
-
-
-    function void pushScope(int hsize) {
-        do symtab.pushScope(hsize);
-        return;
-    }
-
-
-    function void dropScope() {
-        do symtab.dropScope();
-        return;
-    }
-
-
-    function Symbol arg(Symbol arg) {
-        var int type;
-        var Symbol p;
-
-        if (arg = null) {
-            return null;
-        }
-
-        let type = arg.meta();
-        let p = null;
-
-        if (type = BLOCK) {
-            let p = Exec.execBlock(arg.data());
-            do Lib.destroyList(arg.data());
-        } else { if (type = SYM) {
-            let p = symtab.lookup(arg.name());
-            if (p = null) {
-                do Error.send("undefined symbol");  // ##DB##
-                do Error.set(1);  // undefined symbol
-                return null;
-            }
-        } else { if (type = INT) {
-            do arg.setData(Eval.integer(arg.name(), 0, 0));
-        } else {
-            return arg;
-        }}}
-
-        if (~(p = null)) {
-            if ( (p.meta()=BLOCK) | (p.meta()=FUNC) ) {
-                do arg.setData(Lib.copyList(p.data()));
-            } else { if (p.meta() = STR) {
-                do arg.setData(Str.dup(p.data()));
-            } else {
-                do arg.setData(p.data());
-            }}
-
-            do arg.setMeta(p.meta());
-            if (type = BLOCK) {
-                do p.dispose();
-            }
-        }
-
-        return arg;
-    }
-
-
     function int integer(String s, int i, int depth) {
         var char op;
         var int n;
@@ -588,7 +533,7 @@ class Eval {
         }
 
         if ( (c>47) & (c<58) ) {
-            return s.intValue();
+            return s.intValue();  // allows malformed tokens but won't break
         }
 
         if (c = 40) {
@@ -619,8 +564,12 @@ class Eval {
         var Symbol block;
 
         let block = Eval.blockExpr(s);
-        let value = Exec.execBlock(block);
-        do Lib.destroyList(block);
+        if (block.meta() = BLOCK) {
+            let value = Exec.execBlock(block);
+            do LibSym.destroyList(block);
+        } else {
+            let value = block;
+        }
 
         if (value = null) {
             do Error.send("invalid integer");  // ##DB##
@@ -629,6 +578,7 @@ class Eval {
         }
 
         if (~(value.meta() = INT)) {
+            do LibSym.destroyList(value);
             do Error.send("expected integer");  // ##DB##
             do Error.set(1);  // expected integer
             return 0;
@@ -636,7 +586,7 @@ class Eval {
 
         let n = value.data();
 
-        do Lib.destroyList(value);
+        do LibSym.destroyList(value);
 
         return n;
     }
@@ -645,7 +595,7 @@ class Eval {
     function int symbolTerm(String s) {
         var Symbol p;
 
-        let p = symtab.lookup(s);
+        let p = Eval.lookup(s);
 
         if (p = null) {
             do Error.send("undefined symbol");  // ##DB##
@@ -654,8 +604,8 @@ class Eval {
         }
 
         if (~(p.meta() = INT)) {
-            do Error.send("wrong type; expected integer");  // ##DB##
-            do Error.set(1);  // wrong type; expected integer
+            do Error.send("expected integer");  // ##DB##
+            do Error.set(1);  // expected integer
             return 0;
         }
 
@@ -678,7 +628,7 @@ class Eval {
         if (op =  45) { return m - n; }
         if (op =  42) { return m * n; }
         if (op =  47) { return m / n; }
-        if (op =  37) { return Lib.mod(m, n); }
+        if (op =  37) { return Vector.mod(m, n); }
 
         if (op = 261) { return   m = n;  }
         if (op = 233) { return ~(m = n); }
@@ -692,5 +642,50 @@ class Eval {
         return 0;
     }
 
+
+    function void pushScope(int hsize) {
+        var Symbol scope;
+
+        let scope = Symbol.new(null, 0, HashTable.new(hsize));
+        do scope.setNext(symtab);
+        let symtab = scope;
+
+        return;
+    }
+
+
+    function void dropScope() {
+        var Symbol scope;
+
+        let scope = symtab;
+        let symtab = scope.next();
+        do LibSym.destroySym(scope);
+
+        return;
+    }
+
+
+    function Symbol lookup(String s) {
+        var HashTable table;
+        var Symbol scope, sym;
+
+        let scope = symtab;
+        while (~(scope = null)) {
+            let table = scope.data();
+            let sym = table.lookup(s);
+            if (~(sym = null)) {
+                return sym;
+            }
+            let scope = scope.next();
+        }
+
+        return null;
+    }
+
+
+    function void install(String name, int type, int value) {
+        do LibSym.install(symtab.data(), name, type, value);
+        return;
+    }
 
 }

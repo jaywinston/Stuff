@@ -11,7 +11,7 @@ class Main {
         do Screen.drawLine(0, 13, 509, 13);
 
         do Vector.init();
-        do Error.init(Lib.ERRTAB(), 2);
+        do Error.init(Main.ERRTAB(), 2);
         do Lex.init();
         do Eval.init();
         do Exec.init(2, 32, 20, 31);
@@ -32,6 +32,16 @@ class Main {
             do Exec.try(Eval.next());
         }
         return;
+    }
+
+    function Array ERRTAB() {
+        var Array errtab;
+
+        let errtab = Array.new(2);
+        let errtab[0] = null;
+        let errtab[1] = "error";
+
+        return errtab;
     }
 
 }

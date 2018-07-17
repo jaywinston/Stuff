@@ -48,14 +48,14 @@ class Exec {
     function void initKWs() {
         var int i;
 
-        let BLOCK   = Lib.BLOCK();
-        let CMD     = Lib.CMD();
-        let CMDLIN  = Lib.CMDLIN();
-        let FUNC    = Lib.FUNC();
-        let HASHTAB = Lib.HASHTAB();
-        let INT     = Lib.INT();
-        let STR     = Lib.STR();
-        let SYM     = Lib.SYM();
+        let BLOCK   = LibSym.BLOCK();
+        let CMD     = LibSym.CMD();
+        let CMDLIN  = LibSym.CMDLIN();
+        let FUNC    = LibSym.FUNC();
+        let HASHTAB = LibSym.HASHTAB();
+        let INT     = LibSym.INT();
+        let STR     = LibSym.STR();
+        let SYM     = LibSym.SYM();
 
         let ASSIGN    =  1;
         let CLEAR     =  2;
@@ -120,7 +120,7 @@ class Exec {
             do Exec.echo(retval);
         }
 
-        do Lib.destroyList(retval);
+        do LibSym.destroyList(retval);
 
         return;
     }
@@ -164,7 +164,7 @@ class Exec {
 
         if (cmd=128) {do DB.mv();}  // ##DB##
 
-        do Lib.destroyList(argv);
+        do LibSym.destroyList(argv);
 
         return null;
     }
@@ -192,10 +192,10 @@ class Exec {
             let arg = arg.next();
         }
 
-        let ret = Exec.exec(Lib.copyList(argv.data()));
+        let ret = Exec.exec(LibSym.copyList(argv.data()));
 
         do Eval.dropScope();
-        do Lib.destroyList(argv);
+        do LibSym.destroyList(argv);
         do fargs.dispose();
         do fpres.dispose();
 
@@ -208,7 +208,7 @@ class Exec {
         var Symbol p;
 
         let p = Exec.doBlock(b);
-        do Lib.destroyList(b);
+        do LibSym.destroyList(b);
 
         return p;
     }
@@ -222,11 +222,11 @@ class Exec {
         }
 
         while (~(b.next() = null)) {
-            do Lib.destroyList(Exec.exec(Lib.copyList(b.data())));
+            do LibSym.destroyList(Exec.exec(LibSym.copyList(b.data())));
             let b = b.next();
         }
 
-        return Exec.exec(Lib.copyList(b.data()));
+        return Exec.exec(LibSym.copyList(b.data()));
     }
 
 
@@ -272,7 +272,7 @@ class Exec {
             return;
         }
 
-        do Eval.install(arg.name(), FUNC, Lib.copyList(arg.next()));
+        do Eval.install(arg.name(), FUNC, LibSym.copyList(arg.next()));
 
         return;
     }
@@ -351,10 +351,10 @@ class Exec {
 
         let condition = arg.data();
         while (~(condition = 0)) {
-            do Exec.try(Lib.copyList(arg.next()));
+            do Exec.try(LibSym.copyList(arg.next()));
             let p = Eval.arg(Eval.eval(arg.name(), 0));
             let condition = p.data();
-            do Lib.destroyList(p);
+            do LibSym.destroyList(p);
         }
 
         return;

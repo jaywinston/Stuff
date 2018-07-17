@@ -69,7 +69,7 @@ let trigv[90] = 100;
         var boolean neg;
 
         if (Math.abs(a) > 360) {
-            let a = Lib.mod(a, 360);
+            let a = Vector.mod(a, 360);
         }
 
         if (a < 0) {
@@ -79,11 +79,11 @@ let trigv[90] = 100;
         let neg = a > 180;
 
         if (neg) {
-            let a = Lib.mod(a, 180);
+            let a = Vector.mod(a, 180);
         }
 
         if (a > 90) {
-            let a = 90 - (Lib.mod(a-1, 90)+1);
+            let a = 90 - (Vector.mod(a-1, 90)+1);
         }
 
         if (neg) {
@@ -95,6 +95,13 @@ let trigv[90] = 100;
 
     function int cos(int a) {
         return Vector.sin(a+90);
+    }
+
+    function int mod(int n, int d) {
+        var int q;
+
+        let q = n / d;
+        return n - (q*d);
     }
 
 }
