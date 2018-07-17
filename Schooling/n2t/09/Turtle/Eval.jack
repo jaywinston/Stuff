@@ -138,16 +138,14 @@ class Eval {
         }
 
         if (value = null) {
-            do LibSym.install(symtab.data(), name, SYM, null);
+            do Eval.install(name, SYM, null);
             return;
         }
 
         if (value.meta() = STR) {
-            do LibSym.install(symtab.data(),
-                              name, value.meta(), Str.dup(value.data()));
+            do Eval.install(name, value.meta(), Str.dup(value.data()));
         } else {
-            do LibSym.install(symtab.data(),
-                              name, value.meta(), value.data());
+            do Eval.install(name, value.meta(), value.data());
         }
 
         do name.dispose();
@@ -684,7 +682,7 @@ class Eval {
 
 
     function void install(String name, int type, int value) {
-        do LibSym.install(symtab.data(), name, type, value);
+        do LibSym.install(symtab.data(), Str.dup(name), type, value);
         return;
     }
 

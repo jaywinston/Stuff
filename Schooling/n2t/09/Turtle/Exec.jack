@@ -8,7 +8,6 @@ class Exec {
         CMD,
         CMDLIN,
         FUNC,
-        HASHTAB,
         INT,
         STR,
         SYM,
@@ -16,7 +15,6 @@ class Exec {
         ASSIGN,
         BLOCK,
         CLEAR,
-        ELSE,
         FORWARD,
         FUNCTION,
         IF,
@@ -52,14 +50,12 @@ class Exec {
         let CMD     = LibSym.CMD();
         let CMDLIN  = LibSym.CMDLIN();
         let FUNC    = LibSym.FUNC();
-        let HASHTAB = LibSym.HASHTAB();
         let INT     = LibSym.INT();
         let STR     = LibSym.STR();
         let SYM     = LibSym.SYM();
 
         let ASSIGN    =  1;
         let CLEAR     =  2;
-        let ELSE      =  3;
         let FORWARD   =  4;
         let FUNCTION  =  5;
         let IF        =  6;
@@ -71,22 +67,28 @@ class Exec {
         let TURNRIGHT = 12;
         let QUIT      = 13;
 
-        do Eval.install("MV",CMD,128);  // ##DB##
+        do Exec.installKW("MV",128);  // ##DB##
 
-        do Eval.install("=",         CMD, ASSIGN);
-        do Eval.install("CLEAR",     CMD, CLEAR);
-        do Eval.install("ELSE",      CMD, ELSE);
-        do Eval.install("FORWARD",   CMD, FORWARD);
-        do Eval.install("FUNCTION",  CMD, FUNCTION);
-        do Eval.install("IF",        CMD, IF);
-        do Eval.install("PENDOWN",   CMD, PENDOWN);
-        do Eval.install("PENUP",     CMD, PENUP);
-        do Eval.install("PRINT",     CMD, PRINT);
-        do Eval.install("REPEAT",    CMD, REPEAT);
-        do Eval.install("TURNLEFT",  CMD, TURNLEFT);
-        do Eval.install("TURNRIGHT", CMD, TURNRIGHT);
-        do Eval.install("QUIT",      CMD, QUIT);
+        do Exec.installKW("=",         ASSIGN);
+        do Exec.installKW("CLEAR",     CLEAR);
+        do Exec.installKW("FORWARD",   FORWARD);
+        do Exec.installKW("FUNCTION",  FUNCTION);
+        do Exec.installKW("IF",        IF);
+        do Exec.installKW("PENDOWN",   PENDOWN);
+        do Exec.installKW("PENUP",     PENUP);
+        do Exec.installKW("PRINT",     PRINT);
+        do Exec.installKW("REPEAT",    REPEAT);
+        do Exec.installKW("TURNLEFT",  TURNLEFT);
+        do Exec.installKW("TURNRIGHT", TURNRIGHT);
+        do Exec.installKW("QUIT",      QUIT);
 
+        return;
+    }
+
+
+    function void installKW(String nam, int val) {
+        do Eval.install(nam, CMD, val);
+        do nam.dispose();
         return;
     }
 
@@ -138,13 +140,8 @@ class Exec {
 
         do Eval.arg(argv);
 
-        if (argv.meta() = FUNC) {
-            return Exec.call(argv);
-        }
-
-        if (~(argv.meta() = CMD)) {
-            return argv;
-        }
+        if   (argv.meta() = FUNC) { return Exec.call(argv);             }
+        if (~(argv.meta() = CMD)) { return argv;                        }
 
         let cmd = argv.data();
 
@@ -169,23 +166,24 @@ class Exec {
         return null;
     }
 
+
     function Symbol call(Symbol argv) {
         var int n;
         var Array fargs;
-        var String argname, fpres;
+        var String argname, fstr;
         var Symbol arg, ret;
 
         do Eval.pushScope(3);
 
         let fargs = Array.new(1);
-        let fpres = "$%D";
+        let fstr = "$%D";
         let n = 0;
 
         let arg = argv.next();
         while (~(arg = null)) {
             let n = n + 1;
             let fargs[0] = n;
-            let argname = Str.format(fpres, fargs);
+            let argname = Str.format(fstr, fargs);
             do Eval.arg(arg);
             do Eval.install(argname, arg.meta(), arg.data());
             do argname.dispose();
@@ -197,22 +195,10 @@ class Exec {
         do Eval.dropScope();
         do LibSym.destroyList(argv);
         do fargs.dispose();
-        do fpres.dispose();
+        do fstr.dispose();
 
         return ret;
     }
-
-
-/*
-    function Symbol execBlock(Symbol b) {
-        var Symbol p;
-
-        let p = Exec.doBlock(b);
-        do LibSym.destroyList(b);
-
-        return p;
-    }
-*/
 
 
     function Symbol execBlock(Symbol b) {
@@ -222,7 +208,7 @@ class Exec {
         }
 
         while (~(b.next() = null)) {
-            do LibSym.destroyList(Exec.exec(LibSym.copyList(b.data())));
+            do Exec.try(LibSym.copyList(b.data()));
             let b = b.next();
         }
 
@@ -232,12 +218,14 @@ class Exec {
 
     function void doAssign(Symbol arg) {
         do Eval.assign(arg.data());
+        do Exec.try(arg.next());
         return;
     }
 
 
     function void doClear(Symbol arg) {
         do Exec.clear();
+        do Exec.try(arg.next());
         return;
     }
 
@@ -260,6 +248,7 @@ class Exec {
 
         /* do Error.set(t.forward(arg.data())); will be this */
 
+        do Exec.try(arg.next());
         return;
     }
 
@@ -279,24 +268,65 @@ class Exec {
 
 
     function void doIf(Symbol arg) {
+        var Symbol elsep;
+
+        let elsep = Exec.getElse(arg);
 
         do Eval.arg(arg);
 
         if (~(arg.data() = 0)) {
             do Exec.try(arg.next());
-        }
+        } else { if (~(elsep = null)) {
+            do Exec.try(elsep.next());
+        }}
 
         return;
     }
 
+
+    function Symbol getElse(Symbol argv) {
+        var int ifc;
+        var String IF, ELSE;
+        var Symbol argp;
+
+        let IF = "IF";
+        let ELSE = "ELSE";
+
+        let argp = argv.next();
+        while (~(argp = null)) {
+            if (HashTable.streq(ELSE, argp.name())) {
+                if (ifc = 0) {
+                    do IF.dispose();
+                    do ELSE.dispose();
+                    do argv.setNext(null);
+                    return argp;
+                } else {
+                    let ifc = ifc - 1;
+                }
+            } else { if (HashTable.streq(IF, argp.name())) {
+                let ifc = ifc + 1;
+            }}
+            let argv = argv.next();
+            let argp = argp.next();
+        }
+
+        do IF.dispose();
+        do ELSE.dispose();
+
+        return null;
+    }
+
+
     function void doPendown(Symbol arg) {
         do t.pendown();
+        do Exec.try(arg.next());
         return;
     }
 
 
     function void doPenup(Symbol arg) {
         do t.penup();
+        do Exec.try(arg.next());
         return;
     }
 
@@ -317,6 +347,7 @@ class Exec {
 
         do t.show();
 
+        do Exec.try(arg.next());
         return;
     }
 
@@ -364,6 +395,7 @@ class Exec {
     function void doTurnleft(Symbol arg) {
         do Eval.arg(arg);
         do t.turnleft(arg.data());
+        do Exec.try(arg.next());
         return;
     }
 
@@ -371,6 +403,7 @@ class Exec {
     function void doTurnright(Symbol arg) {
         do Eval.arg(arg);
         do t.turnright(arg.data());
+        do Exec.try(arg.next());
         return;
     }
 
@@ -382,16 +415,19 @@ class Exec {
 
 
     function void echo(Symbol sym) {
-        while (~(sym = null)) {
-            if (sym.meta() = STR) {
-                do IOBox.echo(sym.data());
-            } else { if (sym.meta() = SYM) {
-                //do Exec.echo(sym.data());
-            } else { if (sym.meta() = INT) {
-                do Exec.echoInt(sym);
-            }}}
-            let sym = sym.next();
+
+        if (sym = null) {
+            return;
         }
+
+        if (sym.meta() = STR) {
+            do IOBox.echo(sym.data());
+        } else { if (sym.meta() = INT) {
+            do Exec.echoInt(sym);
+        }}
+
+        do Exec.try(sym.next());
+
         return;
     }
 
