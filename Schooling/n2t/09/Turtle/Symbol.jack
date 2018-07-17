@@ -2,14 +2,14 @@
 
 class Symbol {
 
-    field int _type, _value;
+    field int _meta, _data;
     field String _name;
     field Symbol _next;
 
-    constructor Symbol new(String name, int type, int value) {
+    constructor Symbol new(String name, int meta, int data) {
         let _name = name;
-        let _type = type;
-        let _value = value;
+        let _meta = meta;
+        let _data = data;
         let _next = null;
         return this;
     }
@@ -31,12 +31,12 @@ class Symbol {
         return _name;
     }
 
-    method int type() {
-        return _type;
+    method int meta() {
+        return _meta;
     }
 
-    method int value() {
-        return _value;
+    method int data() {
+        return _data;
     }
 
     method int next() {
@@ -48,13 +48,13 @@ class Symbol {
         return;
     }
 
-    method void setType(int type) {
-        let _type = type;
+    method void setMeta(int meta) {
+        let _meta = meta;
         return;
     }
 
-    method void setValue(int value) {
-        let _value = value;
+    method void setData(int data) {
+        let _data = data;
         return;
     }
 

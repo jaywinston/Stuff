@@ -86,7 +86,7 @@ class Eval {
         do argv.append(Eval.eval(s, i+1));
 
         if (Error.isSet()) {
-            do Lib.clear(argv);
+            do Lib.destroyList(argv);
             return null;
         }
 
@@ -134,7 +134,7 @@ class Eval {
 
         if (Error.isSet()) {
             do name.dispose();
-            do Lib.clear(value);
+            do Lib.destroyList(value);
             return;
         }
 
@@ -143,14 +143,14 @@ class Eval {
             return;
         }
 
-        if (value.type() = STR) {
-            do symtab.install(name, value.type(), Str.dup(value.value()));
+        if (value.meta() = STR) {
+            do symtab.install(name, value.meta(), Str.dup(value.data()));
         } else {
-            do symtab.install(name, value.type(), value.value());
+            do symtab.install(name, value.meta(), value.data());
         }
 
         do name.dispose();
-        do Lib.clear(value);
+        do Lib.destroyList(value);
 
         return;
     }
@@ -214,8 +214,8 @@ class Eval {
                 return null;
             }
             let p = Eval.fArg(arg);
-            let reg[a] = p.type();
-            let args[a] = p.value();
+            let reg[a] = p.meta();
+            let args[a] = p.data();
             do p.dispose();
             do arg.dispose();
             let a = a + 1;
@@ -292,25 +292,25 @@ class Eval {
         var Symbol block, end, line;
 
         let line = Eval.blockLine(s, 1);
-        let end = Eval.eval(line.value(), 0);
+        let end = Eval.eval(line.data(), 0);
 
-        if (~(end = null)) { if (end.type() = END) {
+        if (~(end = null)) { if (end.meta() = END) {
             do line.dispose();  // end is prepended with line.next
             return Eval.toSuperBlock(end);  // destroys end
         }}
 
         let block = Symbol.new(null, CMDLIN, end);
 
-        while (~(line.type() = END)) {
+        while (~(line.meta() = END)) {
             do line.dispose();
             let line = Eval.blockLine(IOBox.read(PS2), 0);
-            let end = Eval.eval(line.value(), 0);
+            let end = Eval.eval(line.data(), 0);
             if (~(end = null)) {
                 do block.append(Symbol.new(null, CMDLIN, end));
             }
         }
 
-        if (block.value() = null) {
+        if (block.data() = null) {
             let end = block;
             let block = block.next();
             do end.dispose();
@@ -320,7 +320,7 @@ class Eval {
         let block = line.next();
         do line.dispose();
 
-        if (block.type() = EXPR) {
+        if (block.meta() = EXPR) {
             let block = Eval.blockToExpr(block);  // destroys block
         }
 
@@ -380,14 +380,14 @@ class Eval {
         do super.setNext(Symbol.new(null, BLOCK, block));
 
         /* if this block is an expression, evaluate the expression */
-        let s = end.value();
+        let s = end.data();
 
         if (s.length() > 0) {
             let s = String.new(Str.MAXLEN());
             let t = Eval.blockToStr(super.next());  // detroys argument
             do Str.cat(s, t);
             do t.dispose();
-            do Str.cat(s, end.value());
+            do Str.cat(s, end.data());
             do super.setNext(Eval.eval(s, 0));
             do s.dispose();
         }
@@ -410,11 +410,11 @@ class Eval {
             return "";
         }
 
-        if (expr.type() = STR) {
-            let s = Str.dup(expr.value());
+        if (expr.meta() = STR) {
+            let s = Str.dup(expr.data());
         } else {
             let s = String.new(6);
-            do s.setInt(expr.value());
+            do s.setInt(expr.data());
         }
 
         do expr.dispose();
@@ -449,7 +449,7 @@ class Eval {
         }
         do p1.dispose();
 
-        do Str.cat(expr, block.value());
+        do Str.cat(expr, block.data());
 
         /* overwrite block */
         do p2.setNext(Eval.eval(expr, 0));
@@ -490,12 +490,12 @@ class Eval {
             return null;
         }
 
-        let type = arg.type();
+        let type = arg.meta();
         let p = null;
 
         if (type = BLOCK) {
-            let p = Exec.execBlock(arg.value());
-            do Lib.clear(arg.value());
+            let p = Exec.execBlock(arg.data());
+            do Lib.destroyList(arg.data());
         } else { if (type = SYM) {
             let p = symtab.lookup(arg.name());
             if (p = null) {
@@ -504,21 +504,21 @@ class Eval {
                 return null;
             }
         } else { if (type = INT) {
-            do arg.setValue(Eval.integer(arg.name(), 0, 0));
+            do arg.setData(Eval.integer(arg.name(), 0, 0));
         } else {
             return arg;
         }}}
 
         if (~(p = null)) {
-            if ( (p.type()=BLOCK) | (p.type()=FUNC) ) {
-                do arg.setValue(Lib.copy(p.value()));
-            } else { if (p.type() = STR) {
-                do arg.setValue(Str.dup(p.value()));
+            if ( (p.meta()=BLOCK) | (p.meta()=FUNC) ) {
+                do arg.setData(Lib.copyList(p.data()));
+            } else { if (p.meta() = STR) {
+                do arg.setData(Str.dup(p.data()));
             } else {
-                do arg.setValue(p.value());
+                do arg.setData(p.data());
             }}
 
-            do arg.setType(p.type());
+            do arg.setMeta(p.meta());
             if (type = BLOCK) {
                 do p.dispose();
             }
@@ -620,7 +620,7 @@ class Eval {
 
         let block = Eval.blockExpr(s);
         let value = Exec.execBlock(block);
-        do Lib.clear(block);
+        do Lib.destroyList(block);
 
         if (value = null) {
             do Error.send("invalid integer");  // ##DB##
@@ -628,15 +628,15 @@ class Eval {
             return 0;
         }
 
-        if (~(value.type() = INT)) {
+        if (~(value.meta() = INT)) {
             do Error.send("expected integer");  // ##DB##
             do Error.set(1);  // expected integer
             return 0;
         }
 
-        let n = value.value();
+        let n = value.data();
 
-        do Lib.clear(value);
+        do Lib.destroyList(value);
 
         return n;
     }
@@ -653,13 +653,13 @@ class Eval {
             return 0;
         }
 
-        if (~(p.type() = INT)) {
+        if (~(p.meta() = INT)) {
             do Error.send("wrong type; expected integer");  // ##DB##
             do Error.set(1);  // wrong type; expected integer
             return 0;
         }
 
-        return p.value();
+        return p.data();
     }
 
 

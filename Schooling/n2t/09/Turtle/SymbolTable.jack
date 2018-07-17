@@ -4,7 +4,7 @@ class SymbolTable {
 
 
     constructor SymbolTable new(int hsize) {
-        let stack = Symbol.new(null, Lib.HASHTAB(), HashTable.new(hsize));
+        let stack = Symbol.new(null, 0, HashTable.new(hsize));
         return this;
     }
 
@@ -12,7 +12,7 @@ class SymbolTable {
     method void pushScope(int hsize) {
         var Symbol scope;
 
-        let scope = Symbol.new(null, Lib.HASHTAB(), HashTable.new(hsize));
+        let scope = Symbol.new(null, 0, HashTable.new(hsize));
         do scope.setNext(stack);
         let stack = scope;
 
@@ -37,7 +37,7 @@ class SymbolTable {
 
         let scope = stack;
         while (~(scope = null)) {
-            let table = scope.value();
+            let table = scope.data();
             let sym = table.lookup(s);
             if (~(sym = null)) {
                 return sym;
@@ -52,7 +52,7 @@ class SymbolTable {
     method void install(String name, int type, int value) {
         var HashTable table;
 
-        let table = stack.value();
+        let table = stack.data();
         do table.install(name, type, value);
 
         return;

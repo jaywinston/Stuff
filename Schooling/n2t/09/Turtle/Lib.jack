@@ -20,43 +20,42 @@ class Lib {
     }
 
 
-    function Symbol copy1(Symbol sym) {
+    function Symbol copySym(Symbol sym) {
         var int type;
 
         if (sym = null) {
             return null;
         }
 
-        let type = sym.type();
+        let type = sym.meta();
 
         if (type = Lib.STR()) {
-            return Symbol.new(Str.dup(sym.name()), sym.type(),
-                              Str.dup(sym.value()));
+            return Symbol.new(Str.dup(sym.name()), type, Str.dup(sym.data()));
         }
 
         if (       (type=Lib.BLOCK())
                 | ((type=Lib.CMDLIN()) 
                 |  (type=Lib.FUNC())) ) {
-            return Symbol.new(Str.dup(sym.name()), sym.type(),
-                              Lib.copy(sym.value()));
+            return Symbol.new(Str.dup(sym.name()), type,
+                              Lib.copyList(sym.data()));
         }
 
-        return Symbol.new(Str.dup(sym.name()), sym.type(), sym.value());
+        return Symbol.new(Str.dup(sym.name()), type, sym.data());
     }
 
 
-    function Symbol copy(Symbol sym) {
+    function Symbol copyList(Symbol sym) {
         var Symbol new;
 
         if (sym = null) {
             return null;
         }
 
-        let new = Lib.copy1(sym);
+        let new = Lib.copySym(sym);
 
         let sym = sym.next();
         while (~(sym = null)) {
-            do new.append(Lib.copy1(sym));
+            do new.append(Lib.copySym(sym));
             let sym = sym.next();
         }
 
@@ -64,7 +63,8 @@ class Lib {
     }
 
 
-    function void dispose(Symbol sym) {
+    function void destroySym(Symbol sym) {
+        var int type;
         var String s;
         var HashTable ht;
 
@@ -78,32 +78,51 @@ class Lib {
             do s.dispose();
         }
 
-        if (       (sym.type()=Lib.STR())
-                | ((sym.type()=Lib.END())
-                |  (sym.type()=Lib.EXPR())) ) {
-            let s = sym.value();
+        let type = sym.meta();
+
+        if (       (type=Lib.STR())
+                | ((type=Lib.END())
+                |  (type=Lib.EXPR())) ) {
+            let s = sym.data();
             do s.dispose();
-        } else { if (   (sym.type()=Lib.BLOCK())
-                     | ((sym.type()=Lib.CMDLIN())
-                     |  (sym.type()=Lib.FUNC())) ) {
-            do Lib.clear(sym.value());
-        } else { if (sym.type() = Lib.HASHTAB()) {
-            let ht = sym.value();
-            do ht.dispose();
+        } else { if (   (type=Lib.BLOCK())
+                     | ((type=Lib.CMDLIN())
+                     |  (type=Lib.FUNC())) ) {
+            do Lib.destroyList(sym.data());
+        } else { if (type = Lib.HASHTAB()) {
+            let ht = sym.data();
+            do Lib.destroyHashTab(ht);
         }}}
+
+        do sym.dispose();
 
         return;
     }
 
 
-    function void clear(Symbol sym) {
+    function void destroyList(Symbol sym) {
         var Symbol next;
 
         while (~(sym = null)) {
             let next = sym.next();
-            do Lib.dispose(sym);
+            do Lib.destroySym(sym);
             let sym = next;
         }
+
+        return;
+    }
+
+
+    function void destroyHashTab(HashTable ht) {
+        var int i;
+
+        let i = 0;
+        while (i < ht.hashSize()) {
+            do Lib.destroyList(ht.bucket(i));
+            let i = i + 1;
+        }
+
+        do ht.dispose();
 
         return;
     }
