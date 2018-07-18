@@ -8,6 +8,7 @@ class Exec {
         CMD,
         CMDLIN,
         FUNC,
+        EXPR,
         INT,
         STR,
         SYM,
@@ -49,6 +50,7 @@ class Exec {
         let BLOCK   = LibSym.BLOCK();
         let CMD     = LibSym.CMD();
         let CMDLIN  = LibSym.CMDLIN();
+        let EXPR    = LibSym.EXPR();
         let FUNC    = LibSym.FUNC();
         let INT     = LibSym.INT();
         let STR     = LibSym.STR();

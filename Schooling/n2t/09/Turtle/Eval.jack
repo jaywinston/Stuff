@@ -169,6 +169,8 @@ class Eval {
         if (type = BLOCK) {
             let p = Exec.execBlock(arg.data());
             do LibSym.destroyList(arg.data());
+        } else { if (type = EXPR) {
+            let p = Eval.arg(Eval.blockToExpr((arg.data())));
         } else { if (type = SYM) {
             let p = Eval.lookup(arg.name());
             if (p = null) {
@@ -180,7 +182,7 @@ class Eval {
             do arg.setData(Eval.integer(arg.name(), 0, 0));
         } else {
             return arg;
-        }}}
+        }}}}
 
         if (~(p = null)) {
             if (p.meta() = FUNC) {
@@ -192,7 +194,7 @@ class Eval {
             }}
 
             do arg.setMeta(p.meta());
-            if (type = BLOCK) {
+            if ( (type=BLOCK) | (type=BLOCK) ) {
                 do p.dispose();
             }
         }
@@ -316,7 +318,7 @@ class Eval {
         let block = Symbol.new(null, CMDLIN, end);
 
         while (~(line.meta() = END)) {
-            do line.dispose();
+            do LibSym.destroySym(line);
             let line = Eval.blockLine(IOBox.read(PS2), 0);
             let end = Eval.eval(line.data(), 0);
             if (~(end = null)) {
@@ -327,16 +329,16 @@ class Eval {
         if (block.data() = null) {
             let end = block;
             let block = block.next();
-            do end.dispose();
+            do LibSym.destroySym(end);
         }
 
         do line.append(Symbol.new(null, BLOCK, block));
         let block = line.next();
-        do line.dispose();
+        do LibSym.destroySym(line);
 
-        if (block.meta() = EXPR) {
-            let block = Eval.blockToExpr(block);  // destroys block
-        }
+        //if (block.meta() = EXPR) {
+            //let block = Eval.blockToExpr(block);  // destroys block
+        //}
 
         return block;
     }
@@ -643,17 +645,12 @@ class Eval {
         let exprp = Eval.blockExpr(t);
         do t.dispose();
 
-if (~(exprp = null)) { if (exprp.meta() = BLOCK) {
-        let t = Eval.blockToStr(exprp);
-        do LibSym.destroyList(exprp);
-        do Str.cat(exprs, t);
-        do t.dispose();
-
-}}
-        let exprp = Eval.arg(Eval.eval(exprs, 0));
-        let n = exprp.data();
-        do LibSym.destroyList(exprp);  // this should be general open block,
-                                       // called by int open block
+        if (exprp.data() = null) {
+            do exprs.dispose();
+            do LibSym.destroyList(exprp);
+            do Error.send("expected expression");  // ##DB##
+            do Error.set(1);  // expected expression
+        }
 
         return n;
     }
