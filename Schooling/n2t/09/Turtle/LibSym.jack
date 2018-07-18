@@ -48,6 +48,7 @@ class LibSym {
         var int type;
         var String s;
         var HashTable ht;
+        var Turtle t;
 
         if (sym = null) {
             return;
@@ -73,7 +74,10 @@ class LibSym {
         } else { if (type = LibSym.HASHTAB()) {
             let ht = sym.data();
             do LibSym.destroyHashTable(ht);
-        }}}
+        } else { if (type = LibSym.TTL()) {
+            //let t = sym.data();
+            //do t.dispose();
+        }}}}
 
         do sym.dispose();
 
@@ -132,11 +136,12 @@ class LibSym {
     function int BLOCK     () { return  1; }
     function int CMD       () { return  2; }
     function int CMDLIN    () { return  3; }
-    function int FUNC      () { return  4; }
-    function int END       () { return  5; }
-    function int EXPR      () { return  6; }
-    function int INT       () { return  7; }
-    function int STR       () { return  8; }
-    function int SYM       () { return  9; }
-    function int HASHTAB   () { return 10; }
+    function int END       () { return  4; }
+    function int EXPR      () { return  5; }
+    function int FUNC      () { return  6; }
+    function int HASHTAB   () { return  7; }
+    function int INT       () { return  8; }
+    function int STR       () { return  9; }
+    function int SYM       () { return 10; }
+    function int TTL       () { return 11; }
 }

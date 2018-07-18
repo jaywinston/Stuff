@@ -170,7 +170,9 @@ class Eval {
             let p = Exec.execBlock(arg.data());
             do LibSym.destroyList(arg.data());
         } else { if (type = EXPR) {
-            let p = Eval.arg(Eval.blockToExpr((arg.data())));
+            let p = Eval.blockToExpr(arg);
+            do LibSym.destroySym(arg.next());
+            do arg.setNext(null);
         } else { if (type = SYM) {
             let p = Eval.lookup(arg.name());
             if (p = null) {
@@ -194,8 +196,8 @@ class Eval {
             }}
 
             do arg.setMeta(p.meta());
-            if ( (type=BLOCK) | (type=BLOCK) ) {
-                do p.dispose();
+            if ( (type=BLOCK) | (type=EXPR) ) {
+                do LibSym.destroyList(p);
             }
         }
 
@@ -336,10 +338,6 @@ class Eval {
         let block = line.next();
         do LibSym.destroySym(line);
 
-        //if (block.meta() = EXPR) {
-            //let block = Eval.blockToExpr(block);  // destroys block
-        //}
-
         return block;
     }
 
@@ -398,7 +396,9 @@ class Eval {
         /* if this block is an expression, evaluate the expression */
         let s = end.data();
 
+        /* todo: use block2expr */
         if (s.length() > 0) {
+/*
             let s = String.new(Str.MAXLEN());
             let t = Eval.blockToStr(super.next());
             do LibSym.destroySym(super.next());
@@ -407,6 +407,12 @@ class Eval {
             do Str.cat(s, end.data());
             do super.setNext(Eval.eval(s, 0));
             do s.dispose();
+*/
+            let block = LibSym.copySym(end);
+            do block.append(super.next());
+            do super.setNext(Eval.blockToExpr(block));
+            do LibSym.destroyList(block);
+    do DB.db("dd");
         }
 
         let block = end.next();
@@ -421,7 +427,7 @@ class Eval {
         var String s;
         var Symbol expr;
 
-        let expr = Exec.execBlock(block);
+        let expr = Exec.execBlock(block.data());
 
         if (expr = null) {
             return "";
@@ -448,7 +454,7 @@ class Eval {
         var String expr, term;
         var Symbol p1, p2;
 
-        /* get block */
+        /* get block, convert to string */
         let p1 = block;
         while (~(p1.next() = null)) {
             let p1 = p1.next();
@@ -459,12 +465,12 @@ class Eval {
         do Str.cat(expr, term);
         do term.dispose();
 
-        /* get block's parent, dispose block */
+        /* get block's parent, destroy block */
         let p2 = block;
         while (~(p2.next() = p1)) {
             let p2 = p2.next();
         }
-        do p1.dispose();
+        do LibSym.destroySym(p1);
 
         do Str.cat(expr, block.data());
 
@@ -475,7 +481,7 @@ class Eval {
 
         let p1 = block;
         let block = block.next();
-        do p1.dispose();
+        do LibSym.destroySym(p1);
 
         return block;
     }
@@ -646,14 +652,61 @@ class Eval {
         do t.dispose();
 
         if (exprp.data() = null) {
+            do exprp.dispose();
             do exprs.dispose();
-            do LibSym.destroyList(exprp);
             do Error.send("expected expression");  // ##DB##
             do Error.set(1);  // expected expression
         }
 
+        if (exprp.meta() = EXPR) {
+            let t = Eval.blockToStr(exprp.next());
+            do Str.cat(exprs, t);
+            do t.dispose();
+            do Str.cat(exprs, exprp.data());
+        } else {
+            let t = Eval.blockToStr(exprp);
+            do Str.cat(exprs, t);
+            do t.dispose();
+        }
+
+        do LibSym.destroyList(exprp);
+        let exprp = Eval.arg(Eval.eval(exprs, 0));
+
+        if (exprp = null) {
+            /* error */
+        }
+
+        if (~(exprp.meta() = INT)) {
+            /* error */
+        }
+
+        do exprs.dispose();
+        let n = exprp.data();
+        do LibSym.destroyList(exprp);
+
         return n;
     }
+
+
+/*
+    function int intOpenBlock(String s) {
+        var int n;
+        var Symbol exprp;
+
+        let exprp = Eval.openBlock(s);
+
+        if (exprp = null) {
+        }
+
+        if (~(exprp.meta() = INT)) {
+        }
+
+        let n = exprp.data();
+        do LibSym.destroyList(exprp);
+
+        return n;
+    }
+*/
 
 
     function int operate(int m, int n, char op) {
