@@ -5,7 +5,7 @@ class Eval {
     static Array INTOPS;
     static String PS1, PS2;
     static String ASGNDLMS, EXPDLMS;
-    static String EQS;
+    static String EQS, LBRACES;
     static Symbol symtab;
 
 
@@ -38,7 +38,7 @@ class Eval {
 
         let EXPDLMS = "=~!<>&|+-*/%";
         let EQS = "=";
-
+        let LBRACES = "{";
         let symtab = Symbol.new(null, LibSym.HASHTAB(), HashTable.new(15));
 
         return;
@@ -51,7 +51,7 @@ class Eval {
     }
 
 
-    /* parse s from index i */
+    /* parse one word from s from index i */
     function Symbol eval(String s, int i) {
         var String t;
         var Symbol argv;
@@ -75,7 +75,7 @@ class Eval {
         }
 
         if (Eval.isAssign(t)) {
-            let argv = Symbol.new("=", SYM, null);
+            let argv = Symbol.new(EQS, SYM, null);
             do argv.append(Symbol.new(null, STR, t));
         } else {
             let argv = Eval.expression(t);
@@ -192,6 +192,9 @@ class Eval {
             }}
 
             do arg.setMeta(p.meta());
+            if (type = BLOCK) {
+                do p.dispose();
+            }
         }
 
         return arg;
@@ -204,7 +207,7 @@ class Eval {
         let c = s.charAt(0);
 
         if (c = 34) {
-            return Symbol.new(s, STR, Eval.StringExpr(s));
+            return Symbol.new(Str.dup(s), STR, Eval.StringExpr(s));
         }
 
         if (c = 123) {
@@ -234,6 +237,7 @@ class Eval {
             }
             do f.appendChar(s.charAt(i));
             if (s.charAt(i) = 37) {
+                /* i+1 is assured less than s.length() */
                 if ( (s.charAt(i+1)=68) | (s.charAt(i+1)=83) ) {
                     let n = n + 1;
                 }
@@ -394,7 +398,8 @@ class Eval {
 
         if (s.length() > 0) {
             let s = String.new(Str.MAXLEN());
-            let t = Eval.blockToStr(super.next());  // detroys argument
+            let t = Eval.blockToStr(super.next());
+            do LibSym.destroySym(super.next());
             do Str.cat(s, t);
             do t.dispose();
             do Str.cat(s, end.data());
@@ -427,7 +432,7 @@ class Eval {
             do s.setInt(expr.data());
         }
 
-        do expr.dispose();
+        do LibSym.destroySym(expr);
 
         return s;
     }
@@ -462,7 +467,7 @@ class Eval {
         do Str.cat(expr, block.data());
 
         /* overwrite block */
-        do p2.setNext(Eval.eval(expr, 0));
+        do p2.setNext(Eval.arg(Eval.eval(expr, 0)));
 
         do expr.dispose();
 
@@ -491,6 +496,12 @@ class Eval {
 
         let t = String.new(s.length());
         let i = Lex.integer(s, t, INTOPS[depth], i);
+
+        if (i > s.length()) {
+            let n = Eval.intOpenBlock(t);
+            do t.dispose();
+            return n;
+        }
 
         if (Error.isSet()) {
             do t.dispose();
@@ -611,6 +622,40 @@ class Eval {
         }
 
         return p.data();
+    }
+
+
+    function int intOpenBlock(String s) {
+        var int i, n;
+        var String t, exprs;
+        var Symbol exprp;
+
+        let exprs = String.new(Str.MAXLEN());
+        let t = String.new(s.length());
+
+        let i = Str.tkn(s, t, LBRACES, 0);
+        do Str.cat(exprs, t);
+        do t.dispose();
+
+        let t = String.new(s.length());
+        let i = Str.tkn(s, t, null, i);
+
+        let exprp = Eval.blockExpr(t);
+        do t.dispose();
+
+if (~(exprp = null)) { if (exprp.meta() = BLOCK) {
+        let t = Eval.blockToStr(exprp);
+        do LibSym.destroyList(exprp);
+        do Str.cat(exprs, t);
+        do t.dispose();
+
+}}
+        let exprp = Eval.arg(Eval.eval(exprs, 0));
+        let n = exprp.data();
+        do LibSym.destroyList(exprp);  // this should be general open block,
+                                       // called by int open block
+
+        return n;
     }
 
 

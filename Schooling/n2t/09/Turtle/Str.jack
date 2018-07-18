@@ -44,19 +44,11 @@ class Str {
                     do t.setInt(arg[a]);
                 } else { if (c = 83) {
                     let t = arg[a];
-                } else { if (c = 80) {
+                } else {
                     if (i < Str.MAXLEN()) {
-                        do s.appendChar(37);
+                        do s.appendChar(c);
                     }
-                } else { if (c = 81) {
-                    if (i < Str.MAXLEN()) {
-                        do s.appendChar(34);
-                    }
-                } else { if (c = 78) {
-                    if (i < Str.MAXLEN()) {
-                        do s.appendChar(128);
-                    }
-                }}}}}
+                }}
 
                 if (~(t = null)) {
                     do Str.cat(s, t);
