@@ -204,7 +204,7 @@ class Eval {
         let c = s.charAt(0);
 
         if (c = 34) {
-            return Symbol.new(Str.dup(s), STR, Eval.StringExpr(s));
+            return Symbol.new(s, STR, Eval.StringExpr(s));
         }
 
         if (c = 123) {
@@ -229,6 +229,9 @@ class Eval {
         let n = 0;
         let i = 1;
         while (~(s.charAt(i) = 34)) {
+            if (s.charAt(i) = 92) {
+                let i = i + 1;
+            }
             do f.appendChar(s.charAt(i));
             if (s.charAt(i) = 37) {
                 if ( (s.charAt(i+1)=68) | (s.charAt(i+1)=83) ) {

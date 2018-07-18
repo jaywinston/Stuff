@@ -53,7 +53,7 @@ class Lex {
     }
 
 
-    function int quotes(String s, String t, int i) {
+    function int string(String s, String t, int i) {
         var char c;
         var int len;
 
@@ -64,9 +64,20 @@ class Lex {
         while (i < len) {
             let c = s.charAt(i);
             do t.appendChar(c);
-            if (c = 34) {
+            if (c = 92) {
+                if ( (i+1) = s.length() ) {
+                    return i + 2;
+                }
+                let i = i + 1;
+                let c = s.charAt(i);
+                if (c = 78) {
+                    do t.appendChar(128);
+                } else {
+                    do t.appendChar(c);
+                }
+            } else { if (c = 34) {
                 return i + 1;
-            }
+            }}
             let i = i + 1;
         }
 
@@ -80,7 +91,7 @@ class Lex {
 
         if (i < s.length()) {
             if (s.charAt(i) = 34) {
-                let i = Lex.quotes(s, t, i);
+                let i = Lex.string(s, t, i);
                 if (i > s.length()) {
                     do Error.send("unclosed quote");  // ##DB##
                     do Error.set(1);  // unclosed quote
@@ -186,7 +197,7 @@ class Lex {
         }
 
         if (s.charAt(i) = 34) {
-            let i = Lex.quotes(s, t, i);
+            let i = Lex.string(s, t, i);
         } else { if (s.charAt(i) = 123) {
             let i = Lex.brackets(s, t, 123, 125, i);
         }}
