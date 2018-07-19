@@ -54,7 +54,7 @@ class Eval {
     /* parse one word from s from index i */
     function Symbol eval(String s, int i) {
         var String t;
-        var Symbol argv;
+        var Symbol argv,p;
 
         if (i > s.length()) {
             return null;
@@ -171,8 +171,8 @@ class Eval {
             do LibSym.destroyList(arg.data());
         } else { if (type = EXPR) {
             let p = Eval.blockToExpr(arg);
-            do LibSym.destroySym(arg.next());
-            do arg.setNext(null);
+            //do LibSym.destroyList(arg.next());
+            //do arg.setNext(null);
         } else { if (type = SYM) {
             let p = Eval.lookup(arg.name());
             if (p = null) {
@@ -200,6 +200,7 @@ class Eval {
                 do LibSym.destroyList(p);
             }
         }
+
 
         return arg;
     }
@@ -306,6 +307,10 @@ class Eval {
     function Symbol fArg(String s) {
         var Symbol p;
 
+        if (s.length() = 0) {
+            return Symbol.new(null, null, null);
+        }
+
         let p = Eval.arg(Eval.eval(s, 0));
 
         if (p = null) {
@@ -327,7 +332,6 @@ class Eval {
             do line.dispose();  // end is prepended with line.next
             return Eval.toSuperBlock(end);  // destroys end
         }}
-
         let block = Symbol.new(null, CMDLIN, end);
 
         while (~(line.meta() = END)) {
@@ -407,27 +411,15 @@ class Eval {
         /* if this block is an expression, evaluate the expression */
         let s = end.data();
 
-        /* todo: use block2expr */
         if (s.length() > 0) {
-/*
-            let s = String.new(Str.MAXLEN());
-            let t = Eval.blockToStr(super.next());
-            do LibSym.destroySym(super.next());
-            do Str.cat(s, t);
-            do t.dispose();
-            do Str.cat(s, end.data());
-            do super.setNext(Eval.eval(s, 0));
-            do s.dispose();
-*/
             let block = LibSym.copySym(end);
             do block.append(super.next());
             do super.setNext(Eval.blockToExpr(block));
             do LibSym.destroyList(block);
-    do DB.db("dd");
         }
 
         let block = end.next();
-        do end.dispose();
+        do LibSym.destroySym(end);
 
         return block;
     }
@@ -445,7 +437,11 @@ class Eval {
         }
 
         if (expr.meta() = STR) {
-            let s = Str.dup(expr.data());
+            let s = expr.data();
+            let s = String.new(s.length()+2);
+            do s.appendChar(34);
+            do Str.cat(s, expr.data());
+            do s.appendChar(34);
         } else {
             let s = String.new(6);
             do s.setInt(expr.data());
@@ -457,10 +453,6 @@ class Eval {
     }
 
 
-    /* evaluate block's execution, represent value as a String,
-     * concatenate continuation of expression, overwite block
-     * with expression's evaluation
-     */
     function Symbol blockToExpr(Symbol block) {
         var String expr, term;
         var Symbol p1, p2;
@@ -476,7 +468,6 @@ class Eval {
         do Str.cat(expr, term);
         do term.dispose();
 
-        /* get block's parent, destroy block */
         let p2 = block;
         while (~(p2.next() = p1)) {
             let p2 = p2.next();

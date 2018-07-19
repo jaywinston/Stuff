@@ -82,18 +82,17 @@ class Str {
 
 
     function String dup(String s) {
-        var int i, len;
+        var int i;
         var String t;
 
         if (s = null) {
             return null;
         }
 
-        let len = s.length();
-        let t = String.new(len);
+        let t = String.new(s.length());
         let i = 0;
 
-        while (i < len) {
+        while (i < s.length()) {
             do t.appendChar(s.charAt(i));
             let i = i + 1;
         }
