@@ -5,6 +5,7 @@ class Exec {
         ASSIGN, BLOCK, CLEAR, DISPOSE, FORWARD, FUNCTION, IF, PENDOWN, PENUP,
         PRINT, REPEAT, TURNLEFT, TURNRIGHT, TURTLE, QUIT;
     static TextBox tb;
+    static Symbol turtle;
     static Turtle t;
 
 
