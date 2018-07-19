@@ -232,6 +232,8 @@ class Eval {
         var String f, t, arg;
         var Symbol p;
 
+        let s = Str.dup(s);
+
         let f = String.new(s.length());
         let n = 0;
         let i = 1;
@@ -257,9 +259,16 @@ class Eval {
         let reg = Array.new(n);
 
         let a = 0;
-        while (a < n) {
+        while (i < s.length()) {
             let arg = String.new(s.length());
             let i = Lex.fArg(s, arg, i+1);
+            if (i > s.length()) {
+                do s.dispose();
+                let s = Eval.openBlock(arg);
+                do arg.dispose();
+                let arg = String.new(s.length());
+                let i = Lex.fArg(s, arg, 0);
+            }
             if (i < 0) {
                 do arg.dispose();
                 do Error.send("no argument for format specifier");  // ##DB##
@@ -273,7 +282,9 @@ class Eval {
             do arg.dispose();
             let a = a + 1;
         }
-            
+
+        do s.dispose();
+
         let t = Str.format(f, args);
 
         do f.dispose();
@@ -633,8 +644,8 @@ class Eval {
     }
 
 
-    function int intOpenBlock(String s) {
-        var int i, n;
+    function String openBlock(String s) {
+        var int i;
         var String t, exprs;
         var Symbol exprp;
 
@@ -670,35 +681,26 @@ class Eval {
         }
 
         do LibSym.destroyList(exprp);
-        let exprp = Eval.arg(Eval.eval(exprs, 0));
 
-        if (exprp = null) {
-            /* error */
-        }
-
-        if (~(exprp.meta() = INT)) {
-            /* error */
-        }
-
-        do exprs.dispose();
-        let n = exprp.data();
-        do LibSym.destroyList(exprp);
-
-        return n;
+        return exprs;
     }
 
 
-/*
     function int intOpenBlock(String s) {
         var int n;
+        var String exprs;
         var Symbol exprp;
 
-        let exprp = Eval.openBlock(s);
+        let exprs = Eval.openBlock(s);
+        let exprp = Eval.arg(Eval.eval(exprs, 0));
+        do exprs.dispose();
 
         if (exprp = null) {
+            // error
         }
 
         if (~(exprp.meta() = INT)) {
+            // error
         }
 
         let n = exprp.data();
@@ -706,7 +708,6 @@ class Eval {
 
         return n;
     }
-*/
 
 
     function int operate(int m, int n, char op) {
