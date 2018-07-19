@@ -75,7 +75,7 @@ class Eval {
         }
 
         if (Eval.isAssign(t)) {
-            let argv = Symbol.new(EQS, SYM, null);
+            let argv = Symbol.new("=", SYM, null);
             do argv.append(Symbol.new(null, STR, t));
         } else {
             let argv = Eval.expression(t);

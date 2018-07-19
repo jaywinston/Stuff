@@ -242,14 +242,15 @@ class Exec {
         }
 
         do Eval.arg(argv);
-        let x = argv.data();
+        let x = argv.data() + left;
         let argv = argv.next();
+
         do Eval.arg(argv);
-        let y = argv.data();
+        let y = argv.data() + top;
         let argv = argv.next();
+
         do Eval.arg(argv);
         let d = argv.data();
-
 
         let p = Symbol.new(null, TTL,
                            Turtle.new(x, y, d, top, left, bottom, right));
@@ -294,19 +295,44 @@ class Exec {
 
 
     function void doDispose(Symbol arg) {
+        var Symbol p;
         var Symbol np, pp, tp;  // next, previous, turtle pointers
         var Turtle t;
 
+        if (arg = null) {
+            /* error */
+            return;
+        }
+
         do Eval.arg(arg);
 
-        let pp = turtles.next();
-        while (~(pp.next() = arg.data())) {
+        if (arg.data() = null) {
+            /* error */
+            return;
+        }
+
+        let tp = null;
+
+        let p = turtles.next();
+        while (~(p = null)) {
+            if (p.data() = arg.data()) {
+                let tp = p;
+            }
+            let p = p.next();
+        }
+
+        if (tp = null) {
+            return;
+        }
+
+        let pp = turtles;
+        while (~(pp.next() = tp)) {
             let pp = pp.next();
         }
-        let tp = pp.next();
+
         let np = tp.next();
-        do tp.dispose();
         do pp.setNext(np);
+        do tp.dispose();
 
         let t = arg.data();
         do t.dispose();
