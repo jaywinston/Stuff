@@ -139,8 +139,8 @@ class Exec {
             return null;
         }
 
-        if (argv.meta() = BLOCK)  { return Exec.execBlock(argv.data()); }
-        if (argv.meta() = CMDLIN) { return Exec.exec(argv.data());      }
+        if (argv.meta() = BLOCK)  { return Exec.execBlock(argv);   }
+        if (argv.meta() = CMDLIN) { return Exec.exec(argv.data()); }
 
         do Eval.arg(argv);
 
@@ -216,18 +216,26 @@ class Exec {
     }
 
 
-    function Symbol execBlock(Symbol b) {
+    function Symbol execBlock(Symbol block) {
+        var Symbol cmdlin, lines;
 
-        if (b = null) {
+        if (block = null) {
             return null;
         }
 
-        while (~(b.next() = null)) {
-            do Exec.try(LibSym.copyList(b.data()));
-            let b = b.next();
+        let lines = LibSym.copyList(block.data());
+
+        let cmdlin = lines;
+        while (~(cmdlin.next() = null)) {
+            do Exec.try(LibSym.copyList(cmdlin.data()));
+            let cmdlin = cmdlin.next();
         }
 
-        return Exec.exec(LibSym.copyList(b.data()));
+        let cmdlin = LibSym.copyList(cmdlin.data());
+
+        do LibSym.destroyList(lines);
+
+        return Exec.exec(cmdlin);
     }
 
 

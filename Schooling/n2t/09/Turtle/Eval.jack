@@ -167,12 +167,11 @@ class Eval {
         let p = null;
 
         if (type = BLOCK) {
-            let p = Exec.execBlock(arg.data());
+            let p = Exec.execBlock(arg);
             do LibSym.destroyList(arg.data());
         } else { if (type = EXPR) {
+            /* todo: fix block2expr */
             let p = Eval.blockToExpr(arg);
-            //do LibSym.destroyList(arg.next());
-            //do arg.setNext(null);
         } else { if (type = SYM) {
             let p = Eval.lookup(arg.name());
             if (p = null) {
@@ -196,8 +195,14 @@ class Eval {
             }}
 
             do arg.setMeta(p.meta());
-            if ( (type=BLOCK) | (type=EXPR) ) {
+            /* todo: fixme, block2expr  */
+            if  (type=BLOCK) {
                 do LibSym.destroyList(p);
+            }
+            if  (type=EXPR)  {
+                do LibSym.destroyList(p);
+                do LibSym.destroyList(arg.next());
+                do arg.setNext(null);
             }
         }
 
@@ -430,7 +435,7 @@ class Eval {
         var String s;
         var Symbol expr;
 
-        let expr = Exec.execBlock(block.data());
+        let expr = Exec.execBlock(block);
 
         if (expr = null) {
             return "";
