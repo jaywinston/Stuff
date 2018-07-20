@@ -117,7 +117,6 @@ class Eval {
 
 
     function void assign(String s) {
-        var int i;
         var String name;
         var Symbol value;
 
@@ -128,8 +127,7 @@ class Eval {
         }
 
         let name = String.new(s.length());
-        let i = Str.tkn(s, name, EQS, 0);
-        let value = Eval.arg(Eval.eval(s, i+1));
+        let value = Eval.arg(Eval.eval(s, Str.tkn(s, name, EQS, 0)+1));
 
         if (Error.isSet()) {
             do name.dispose();
@@ -170,8 +168,9 @@ class Eval {
             let p = Exec.execBlock(arg);
             do LibSym.destroyList(arg.data());
         } else { if (type = EXPR) {
-            /* todo: fix block2expr */
-            let p = Eval.blockToExpr(arg);
+            let p = Eval.exprBlock(arg);
+            do LibSym.destroySym(arg.next());
+            do arg.setNext(null);
         } else { if (type = SYM) {
             let p = Eval.lookup(arg.name());
             if (p = null) {
@@ -195,17 +194,11 @@ class Eval {
             }}
 
             do arg.setMeta(p.meta());
-            /* todo: fixme, block2expr  */
-            if  (type=BLOCK) {
+
+            if ( (type=BLOCK) | (type=EXPR) ) {
                 do LibSym.destroyList(p);
-            }
-            if  (type=EXPR)  {
-                do LibSym.destroyList(p);
-                do LibSym.destroyList(arg.next());
-                do arg.setNext(null);
             }
         }
-
 
         return arg;
     }
@@ -234,8 +227,8 @@ class Eval {
 
     function String StringExpr(String s) {
         var int a, i, n;
-        var Array args, reg;
-        var String f, t, arg;
+        var Array argv, reg;
+        var String f, t, args;
         var Symbol p;
 
         let s = Str.dup(s);
@@ -261,48 +254,58 @@ class Eval {
             return Str.format(f, null);
         }
 
-        let args = Array.new(n);
+        let argv = Array.new(n);
         let reg = Array.new(n);
 
         let a = 0;
         while (i < s.length()) {
-            let arg = String.new(s.length());
-            let i = Lex.fArg(s, arg, i+1);
+            let args = String.new(s.length());
+            let i = Lex.fArg(s, args, i+1);
             if (i > s.length()) {
                 do s.dispose();
-                let s = Eval.openBlock(arg);
-                do arg.dispose();
-                let arg = String.new(s.length());
-                let i = Lex.fArg(s, arg, 0);
+                let s = Eval.openBlock(args);
+                do args.dispose();
+                let args = String.new(s.length());
+                let i = Lex.fArg(s, args, 0);
             }
             if (i < 0) {
-                do arg.dispose();
+                do s.dispose();
+                do f.dispose();
+                do args.dispose();
                 do Error.send("no argument for format specifier");  // ##DB##
                 do Error.set(1);  // no argument for format specifier
                 return null;
             }
-            let p = Eval.fArg(arg);
+            let p = Eval.fArg(args);
+            if (p = null) {
+                do s.dispose();
+                do f.dispose();
+                do args.dispose();
+                do Error.send("invalid argument for format specifier");//##DB##
+                do Error.set(1);  // invalid argument for format specifier
+                return null;
+            }
             let reg[a] = p.meta();
-            let args[a] = p.data();
+            let argv[a] = p.data();
             do p.dispose();
-            do arg.dispose();
+            do args.dispose();
             let a = a + 1;
         }
 
         do s.dispose();
 
-        let t = Str.format(f, args);
+        let t = Str.format(f, argv);
 
         do f.dispose();
         let a = 0;
         while (a < n) {
             if (reg[a] = STR) {
-                let arg = args[a];
-                do arg.dispose();
+                let args = argv[a];
+                do args.dispose();
             }
             let a = a + 1;
         }
-        do args.dispose();
+        do argv.dispose();
         do reg.dispose();
 
         return t;
@@ -310,24 +313,16 @@ class Eval {
 
 
     function Symbol fArg(String s) {
-        var Symbol p;
 
         if (s.length() = 0) {
-            return Symbol.new(null, null, null);
+            return null;
         }
 
-        let p = Eval.arg(Eval.eval(s, 0));
-
-        if (p = null) {
-            return Symbol.new(null, null, null);
-        }
-
-        return p;
+        return Eval.arg(Eval.eval(s, 0));
     }
 
 
     function Symbol blockExpr(String s) {
-        var int i, n;
         var Symbol block, end, line;
 
         let line = Eval.blockLine(s, 1);
@@ -337,6 +332,7 @@ class Eval {
             do line.dispose();  // end is prepended with line.next
             return Eval.toSuperBlock(end);  // destroys end
         }}
+
         let block = Symbol.new(null, CMDLIN, end);
 
         while (~(line.meta() = END)) {
@@ -419,7 +415,7 @@ class Eval {
         if (s.length() > 0) {
             let block = LibSym.copySym(end);
             do block.append(super.next());
-            do super.setNext(Eval.blockToExpr(block));
+            do super.setNext(Eval.exprBlock(block));
             do LibSym.destroyList(block);
         }
 
@@ -438,7 +434,7 @@ class Eval {
         let expr = Exec.execBlock(block);
 
         if (expr = null) {
-            return "";
+            return null;
         }
 
         if (expr.meta() = STR) {
@@ -458,39 +454,24 @@ class Eval {
     }
 
 
-    function Symbol blockToExpr(Symbol block) {
+    function Symbol exprBlock(Symbol block) {
         var String expr, term;
-        var Symbol p1, p2;
-
-        /* get block, convert to string */
-        let p1 = block;
-        while (~(p1.next() = null)) {
-            let p1 = p1.next();
-        }
 
         let expr = String.new(Str.MAXLEN());
-        let term = Eval.blockToStr(p1);
+        let term = Eval.blockToStr(block.next());
+
+        if (term = null) {
+            /* error */
+        }
+
         do Str.cat(expr, term);
         do term.dispose();
 
-        let p2 = block;
-        while (~(p2.next() = p1)) {
-            let p2 = p2.next();
-        }
-        do LibSym.destroySym(p1);
-
         do Str.cat(expr, block.data());
-
-        /* overwrite block */
-        do p2.setNext(Eval.arg(Eval.eval(expr, 0)));
 
         do expr.dispose();
 
-        let p1 = block;
-        let block = block.next();
-        do LibSym.destroySym(p1);
-
-        return block;
+        return Eval.arg(Eval.eval(expr, 0));
     }
 
 
