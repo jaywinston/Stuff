@@ -9,12 +9,10 @@ class Str {
     function String format(String f, Array arg) {
         var boolean continue;
         var char c;
-        var int a, i, j, fLen, tLen;
+        var int a, i, j, tLen;
         var String s, t;
 
-        let fLen = f.length();
-
-        if (fLen < 2) {
+        if (f.length() < 2) {
             return Str.dup(f);
         }
 
@@ -23,19 +21,20 @@ class Str {
 
         let a = 0;
         let i = 0;
-        while (i < fLen) {
+        while (i < f.length()) {
 
             let c = f.charAt(i);
             let continue = ~(c = 37);
+
             let i = i + 1;
-            while ( (i<fLen) & continue ) {
+            while ( (i<f.length()) & continue ) {
                 do s.appendChar(c);
                 let c = f.charAt(i);
                 let continue = ~(c = 37);
                 let i = i + 1;
             }
 
-            if (i < fLen) {
+            if (i < f.length()) {
 
                 let c = f.charAt(i);
 
@@ -43,12 +42,10 @@ class Str {
                     let t = String.new(6);
                     do t.setInt(arg[a]);
                 } else { if (c = 83) {
-                    let t = arg[a];
-                } else {
-                    if (i < Str.MAXLEN()) {
-                        do s.appendChar(c);
-                    }
-                }}
+                    let t = Str.dup(arg[a]);
+                } else { if (i < Str.MAXLEN()) {
+                    do s.appendChar(c);
+                }}}
 
                 if (~(t = null)) {
                     do Str.cat(s, t);
@@ -57,11 +54,11 @@ class Str {
                     let a = a + 1;
                 }
 
+                let i = i + 1;
+
             } else {
                 do s.appendChar(c);
             }
-
-            let i = i + 1;
         }
 
         return s;
