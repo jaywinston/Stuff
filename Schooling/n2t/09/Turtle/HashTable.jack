@@ -82,7 +82,16 @@ class HashTable {
             let i = i + 1;
         }
 
-        return Math.abs(Vector.mod(h, HASHSIZ));
+        return Math.abs(mod(h));
+    }
+
+
+    method int mod (int n) {
+        var int q;
+
+        let q = n / HASHSIZ;
+
+        return n - (q*HASHSIZ);
     }
 
 

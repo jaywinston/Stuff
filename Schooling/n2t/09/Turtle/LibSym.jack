@@ -2,26 +2,25 @@ class LibSym {
 
 
     function Symbol copySym(Symbol sym) {
-        var int type;
+        var int typeClass;
 
         if (sym = null) {
             return null;
         }
 
-        let type = sym.meta();
+        let typeClass = LibSym.typeClass(sym);
 
-        if (type = LibSym.STR()) {
-            return Symbol.new(Str.dup(sym.name()), type, Str.dup(sym.data()));
+        if (typeClass = LibSym.STR()) {
+            return Symbol.new(Str.dup(sym.name()), sym.meta(),
+                              Str.dup(sym.data()));
         }
 
-        if (       (type=LibSym.BLOCK())
-                | ((type=LibSym.CMDLIN()) 
-                |  (type=LibSym.FUNC())) ) {
-            return Symbol.new(Str.dup(sym.name()), type,
+        if (typeClass = LibSym.BLOCK()) {
+            return Symbol.new(Str.dup(sym.name()), sym.meta(),
                               LibSym.copyList(sym.data()));
         }
 
-        return Symbol.new(Str.dup(sym.name()), type, sym.data());
+        return Symbol.new(Str.dup(sym.name()), sym.meta(), sym.data());
     }
 
 
@@ -45,10 +44,8 @@ class LibSym {
 
 
     function void destroySym(Symbol sym) {
-        var int type;
+        var int typeClass;
         var String s;
-        var HashTable ht;
-        var Turtle t;
 
         if (sym = null) {
             return;
@@ -60,24 +57,14 @@ class LibSym {
             do s.dispose();
         }
 
-        let type = sym.meta();
+        let typeClass = LibSym.typeClass(sym);
 
-        if (       (type=LibSym.STR())
-                | ((type=LibSym.END())
-                |  (type=LibSym.EXPR())) ) {
+        if (typeClass = LibSym.STR()) {
             let s = sym.data();
             do s.dispose();
-        } else { if (   (type=LibSym.BLOCK())
-                     | ((type=LibSym.CMDLIN())
-                     |  (type=LibSym.FUNC())) ) {
+        } else { if (typeClass = LibSym.BLOCK()) {
             do LibSym.destroyList(sym.data());
-        } else { if (type = LibSym.HASHTAB()) {
-            let ht = sym.data();
-            do LibSym.destroyHashTable(ht);
-        } else { if (type = LibSym.TTL()) {
-            //let t = sym.data();
-            //do t.dispose();
-        }}}}
+        }}
 
         do sym.dispose();
 
@@ -133,15 +120,34 @@ class LibSym {
     }
 
 
-    function int BLOCK     () { return  1; }
-    function int CMD       () { return  2; }
-    function int CMDLIN    () { return  3; }
-    function int END       () { return  4; }
-    function int EXPR      () { return  5; }
-    function int FUNC      () { return  6; }
-    function int HASHTAB   () { return  7; }
-    function int INT       () { return  8; }
-    function int STR       () { return  9; }
-    function int SYM       () { return 10; }
-    function int TTL       () { return 11; }
+    function int typeClass(Symbol sym) {
+        var int CLASSMASK, TYPEMASK;
+
+        let TYPEMASK = 3;
+        let CLASSMASK = 24;
+
+        return (sym.meta()&CLASSMASK) | TYPEMASK;
+    }
+
+
+    /*
+     * Don't change these values without consulting typeClass().
+     */
+
+    function int CMD       () { return  1; }
+    function int HASHTAB   () { return  2; }
+    function int INT       () { return  3; }
+    function int SYM       () { return  4; }
+    function int TTL       () { return  5; }
+
+    /* string type-class */
+    function int END       () { return  9; }
+    function int EXPR      () { return 10; }
+    function int STR       () { return 11; }
+
+    /* block type-class */
+    function int FUNC      () { return 17; }
+    function int CMDLIN    () { return 18; }
+    function int BLOCK     () { return 19; }
+
 }

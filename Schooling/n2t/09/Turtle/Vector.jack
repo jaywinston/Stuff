@@ -101,6 +101,7 @@ let trigv[90] = 100;
         var int q;
 
         let q = n / d;
+
         return n - (q*d);
     }
 

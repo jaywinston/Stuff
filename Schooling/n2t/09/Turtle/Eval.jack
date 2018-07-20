@@ -752,7 +752,8 @@ class Eval {
 
         let scope = symtab;
         let symtab = scope.next();
-        do LibSym.destroySym(scope);
+        do LibSym.destroyHashTable(scope.data());
+        do scope.dispose();
 
         return;
     }
