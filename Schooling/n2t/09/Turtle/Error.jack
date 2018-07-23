@@ -1,14 +1,16 @@
 // make 1 "won't go backwards" and 2 "target beyond boundary"
 class Error {
 
-    static int e;
+    static int e, nmsg;
     static int TABSIZE;
     static Array ERRTAB;
 
     function void init(Array tab, int ts) {
         let e = 1;
+        let nmsg = 0;
         let TABSIZE = ts;
         let ERRTAB = tab;
+        let ERRTAB[0] = Array.new(1);
         return;
     }
 
@@ -34,12 +36,19 @@ class Error {
     }
 
     function void set(int i) {
+        var Array a;
+
         if (~(i < TABSIZE)) {
-            do Error.set(0);
+            //let a = Array.new(1);
+            //let a[0] = "no such error";
+            //do Error.send(a, 1);
             do Error.send("no such error");
+            do Error.set(0);
             return;
         }
+
         let e = -i;
+
         return;
     }
 
@@ -54,6 +63,7 @@ class Error {
 
         if (e = 0) {
             let e = 1;
+            do Error.clear();
             let ERRTAB[0] = null;
         } else {
             if (ERRTAB[0] = null) {
@@ -66,15 +76,42 @@ class Error {
         return s;
     }
 
-    function void send(String s) {
-        var String t;
+function void send(String s) {
+let ERRTAB[0]=s;
+let e = 0;
+return;
+}
 
-        let t = ERRTAB[0];
-        if (~(t = null)) {
-            do t.dispose();
+function void clear() {
+var String s;
+let s=ERRTAB[0];
+do s.dispose();
+let ERRTAB[0]=null;
+return;
+}
+
+    function void _send(Array a, int nm) {
+
+        let ERRTAB[0] = a;
+        let nmsg = nm;
+
+        return;
+    }
+
+    function void _clear() {
+        var int i;
+        var Array b;
+        var String s;
+
+        let b = ERRTAB[0];
+        let i = 0;
+        while (i < nmsg) {
+            let s = b[i];
+            do s.dispose();
+            let i = i + 1;
         }
-        let ERRTAB[0] = s;
-        let e = 0;
+        do b.dispose();
+
         return;
     }
 

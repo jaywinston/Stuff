@@ -120,7 +120,7 @@ class Exec {
 
         if (Error.isSet()) {
             while (Error.isSet()) {
-                do /*IOBox.echo(*/Error.message();//;//);
+                do IOBox.echo(Error.message());
             }
         } else {
             do Exec.echo(retval);
