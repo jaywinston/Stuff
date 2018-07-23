@@ -54,7 +54,7 @@ class Eval {
     /* parse one word from s from index i */
     function Symbol eval(String s, int i) {
         var String t;
-        var Symbol argv,p;
+        var Symbol argv, word;
 
         if (i > s.length()) {
             return null;
@@ -82,7 +82,12 @@ class Eval {
             do t.dispose();
         }
 
-        do argv.append(Eval.eval(s, i+1));
+        let word = Eval.eval(s, i+1);
+        do argv.append(word);
+
+        if (~(word = null)) { if (word.meta() = END) {
+            let argv = Eval.superBlock(argv);
+        }}
 
         if (Error.isSet()) {
             do LibSym.destroyList(argv);
@@ -216,11 +221,6 @@ class Eval {
 
         if (c = 123) {
             return Eval.blockExpr(s);
-            //let block = Eval.blockExpr(s);
-            //if (block.meta() = END) {
-                //return Eval.superBlock(block);
-            //}
-            //return block;
         }
 
         if ( (Str.index(s, EXPDLMS, 0) = s.length()) & ~((c>47) & (c<58)) ) {
@@ -401,34 +401,26 @@ class Eval {
     function Symbol superBlock(Symbol end) {
         var String s, t;
         var Symbol block, super;
+        var Symbol p1, p2, p3, p4;
 
-        /* make block a sub-block of the super-block */
-        let block = end;
-        while (~(block.next() = null)) {  // the last node holds the block
-            let block = block.next();
+        let p1 = end.next();
+        while (~(p1 = null)) {
+            if (~(p1.meta() = END)) {
+                let p2 = p1;
+            }
+            let p1 = p1.next();
         }
 
-        let super = end;
-        while (~(super.next() = block)) {
-            let super = super.next();
+        let p3 = end;
+        while (~(p3.next() = p2)) {
+            let p3 = p3.next();
         }
 
-        do super.setNext(Symbol.new(null, BLOCK, block));
+        let p4 = end.next();
+        do end.setNext(p2);
+        do p3.setNext(end);
 
-        /* if this block is an expression, evaluate the expression */
-        let s = end.data();
-
-        if (s.length() > 0) {
-            let block = LibSym.copySym(end);
-            do block.append(super.next());
-            do super.setNext(Eval.exprBlock(block));
-            do LibSym.destroyList(block);
-        }
-
-        let block = end.next();
-        do LibSym.destroySym(end);
-
-        return block;
+        return p4;
     }
 
 
