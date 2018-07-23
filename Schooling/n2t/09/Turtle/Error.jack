@@ -34,6 +34,11 @@ class Error {
     }
 
     function void set(int i) {
+        if (~(i < TABSIZE)) {
+            do Error.set(0);
+            do Error.send("no such error");
+            return;
+        }
         let e = -i;
         return;
     }

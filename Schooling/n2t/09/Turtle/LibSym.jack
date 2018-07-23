@@ -121,12 +121,7 @@ class LibSym {
 
 
     function int typeClass(Symbol sym) {
-        var int CLASSMASK, TYPEMASK;
-
-        let TYPEMASK = 3;
-        let CLASSMASK = 24;
-
-        return (sym.meta()&CLASSMASK) | TYPEMASK;
+        return sym.meta() & 24;
     }
 
 
@@ -141,13 +136,13 @@ class LibSym {
     function int TTL       () { return  5; }
 
     /* string type-class */
+    function int STR       () { return  8; }
     function int END       () { return  9; }
     function int EXPR      () { return 10; }
-    function int STR       () { return 11; }
 
     /* block type-class */
+    function int BLOCK     () { return 16; }
     function int FUNC      () { return 17; }
     function int CMDLIN    () { return 18; }
-    function int BLOCK     () { return 19; }
 
 }

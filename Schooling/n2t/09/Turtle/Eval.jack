@@ -45,7 +45,7 @@ class Eval {
     }
 
 
-    /* read and evaluate next command line */
+    /* This function is only to keep PS1 and PS2 in one class */
     function Symbol next() {
         return Eval.eval(IOBox.read(PS1), 0);
     }
@@ -335,8 +335,8 @@ class Eval {
         let end = Eval.eval(line.data(), 0);
 
         if (~(end = null)) { if (end.meta() = END) {
-            do LibSym.destroySym(line);  // end is prepended with line.next
-            return Eval.superBlock(end);  // destroys end
+            do LibSym.destroyList(line);
+            return Eval.blockEnd(end);
         }}
 
         let block = Symbol.new(null, CMDLIN, end);
@@ -398,29 +398,51 @@ class Eval {
     }
 
 
-    function Symbol superBlock(Symbol end) {
-        var String s, t;
-        var Symbol block, super;
-        var Symbol p1, p2, p3, p4;
+    function Symbol blockEnd(Symbol end) {
+        var String s;
+        var Symbol p1, p2, p3;
+
+        let s = end.data();
 
         let p1 = end.next();
-        while (~(p1 = null)) {
-            if (~(p1.meta() = END)) {
-                let p2 = p1;
-            }
+        let p2 = end;
+        while (~(p1.next() = null)) {
             let p1 = p1.next();
+            let p2 = p2.next();
         }
 
-        let p3 = end;
-        while (~(p3.next() = p2)) {
-            let p3 = p3.next();
+        let p3 = Symbol.new(null, BLOCK, Symbol.new(null, CMDLIN, p1));
+        let p1 = end.next();
+
+        if (s.length() > 0) {
+            do end.setNext(p3);
+            let p3 = Eval.exprBlock(end);
+            do LibSym.destroyList(end);
+        } else {
+            do LibSym.destroySym(end);
         }
 
-        let p4 = end.next();
-        do end.setNext(p2);
-        do p3.setNext(end);
+        do p2.setNext(p3);
 
-        return p4;
+        return p1;
+    }
+
+
+    function Symbol superBlock(Symbol end) {
+        var Symbol p1, p2, p3;
+
+        let p1 = end.next();
+        let p2 = end;
+        while (p1.meta() = END) {
+            let p1 = p1.next();
+            let p2 = p2.next();
+        }
+
+        let p3 = end.next();
+        do end.setNext(p1);
+        do p2.setNext(end);
+
+        return p3;
     }
 
 
