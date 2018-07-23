@@ -206,6 +206,7 @@ class Eval {
 
     function Symbol expression(String s) {
         var char c;
+        var Symbol block;
 
         let c = s.charAt(0);
 
@@ -215,6 +216,11 @@ class Eval {
 
         if (c = 123) {
             return Eval.blockExpr(s);
+            //let block = Eval.blockExpr(s);
+            //if (block.meta() = END) {
+                //return Eval.superBlock(block);
+            //}
+            //return block;
         }
 
         if ( (Str.index(s, EXPDLMS, 0) = s.length()) & ~((c>47) & (c<58)) ) {
@@ -329,8 +335,8 @@ class Eval {
         let end = Eval.eval(line.data(), 0);
 
         if (~(end = null)) { if (end.meta() = END) {
-            do line.dispose();  // end is prepended with line.next
-            return Eval.toSuperBlock(end);  // destroys end
+            do LibSym.destroySym(line);  // end is prepended with line.next
+            return Eval.superBlock(end);  // destroys end
         }}
 
         let block = Symbol.new(null, CMDLIN, end);
@@ -392,7 +398,7 @@ class Eval {
     }
 
 
-    function Symbol toSuperBlock(Symbol end) {
+    function Symbol superBlock(Symbol end) {
         var String s, t;
         var Symbol block, super;
 
