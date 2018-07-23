@@ -2,7 +2,7 @@ class Eval {
 
     static int BLOCK, CMD, CMDLIN, END, EXPR, FUNC, INT, STR, SYM;
     static int TERM;
-    static Array INTOPS;
+    static Array INTOPSV;
     static String PS1, PS2;
     static String ASGNDLMS, EXPDLMS;
     static String EQS, LBRACES;
@@ -22,11 +22,11 @@ class Eval {
         let SYM = LibSym.SYM();
 
         let TERM = 4;
-        let INTOPS = Array.new(4);
-        let INTOPS[0] = "&|({";
-        let INTOPS[1] = "=!<>({";
-        let INTOPS[2] = "+-({";
-        let INTOPS[3] = "*/%({";
+        let INTOPSV = Array.new(4);
+        let INTOPSV[0] = "&|({";
+        let INTOPSV[1] = "=!<>({";
+        let INTOPSV[2] = "+-({";
+        let INTOPSV[3] = "*/%({";
 
         let ASGNDLMS = String.new(3);
         do ASGNDLMS.appendChar(34);   // '"'
@@ -491,7 +491,7 @@ class Eval {
         }
 
         let t = String.new(s.length());
-        let i = Lex.integer(s, t, INTOPS[depth], i);
+        let i = Lex.integer(s, t, INTOPSV[depth], i);
 
         if (i > s.length()) {
             let n = Eval.intOpenBlock(t);
