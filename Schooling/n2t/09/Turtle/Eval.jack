@@ -127,7 +127,7 @@ class Eval {
 
         if (s.charAt(0) = 61) {
             do Error.send("expected name");  // ##DB##
-            do Error.set(1);  // expected name
+            do Error.set(0);  // expected name
             return;
         }
 
@@ -180,7 +180,7 @@ class Eval {
             let p = Eval.lookup(arg.name());
             if (p = null) {
                 do Error.send("undefined symbol");  // ##DB##
-                do Error.set(1);  // undefined symbol
+                do Error.set(0);  // undefined symbol
                 return null;
             }
         } else { if (type = INT) {
@@ -279,7 +279,7 @@ class Eval {
                 do f.dispose();
                 do args.dispose();
                 do Error.send("no argument for format specifier");  // ##DB##
-                do Error.set(1);  // no argument for format specifier
+                do Error.set(0);  // no argument for format specifier
                 return null;
             }
             let p = Eval.fArg(args);
@@ -288,7 +288,7 @@ class Eval {
                 do f.dispose();
                 do args.dispose();
                 do Error.send("invalid argument for format specifier");//##DB##
-                do Error.set(1);  // invalid argument for format specifier
+                do Error.set(0);  // invalid argument for format specifier
                 return null;
             }
             let reg[a] = p.meta();
@@ -502,7 +502,7 @@ class Eval {
 
         if (i = s.length()) {
             do Error.send("expected integer expression");  // ##DB##
-            do Error.set(1);  //  expected integer expression
+            do Error.set(0);  //  expected integer expression
             return 0;
         }
             
@@ -561,7 +561,7 @@ class Eval {
         }
 
         if ( (c>47) & (c<58) ) {
-            return s.intValue();  // allows malformed tokens but won't break
+            return s.intValue();
         }
 
         if (c = 40) {
@@ -601,14 +601,14 @@ class Eval {
 
         if (value = null) {
             do Error.send("invalid integer");  // ##DB##
-            do Error.set(1);  // invalid integer
+            do Error.set(0);  // invalid integer
             return 0;
         }
 
         if (~(value.meta() = INT)) {
             do LibSym.destroyList(value);
             do Error.send("expected integer");  // ##DB##
-            do Error.set(1);  // expected integer
+            do Error.set(0);  // expected integer
             return 0;
         }
 
@@ -627,13 +627,13 @@ class Eval {
 
         if (p = null) {
             do Error.send("undefined symbol");  // ##DB##
-            do Error.set(1);  // undefined symbol
+            do Error.set(0);  // undefined symbol
             return 0;
         }
 
         if (~(p.meta() = INT)) {
             do Error.send("expected integer");  // ##DB##
-            do Error.set(1);  // expected integer
+            do Error.set(0);  // expected integer
             return 0;
         }
 
@@ -663,7 +663,7 @@ class Eval {
             do exprp.dispose();
             do exprs.dispose();
             do Error.send("expected expression");  // ##DB##
-            do Error.set(1);  // expected expression
+            do Error.set(0);  // expected expression
         }
 
         if (exprp.meta() = EXPR) {
@@ -711,7 +711,7 @@ class Eval {
 
         if ( ((op=47) | (op=37)) & (n=0) ) {
             do Error.send("division by zero");  // ##DB##
-            do Error.set(1);  // division by zero
+            do Error.set(0);  // division by zero
             return 0;
         }
 
@@ -732,7 +732,7 @@ class Eval {
         if (op = 262) { return  (m>n) | (m=n); }
 
         do Error.send("unrecognized operator");  // ##DB##
-        do Error.set(1);  // unrecognized operator
+        do Error.set(0);  // unrecognized operator
         return 0;
     }
 

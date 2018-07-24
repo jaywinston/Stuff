@@ -364,12 +364,12 @@ class Exec {
 
         if (errno = 1) {
             do Error.send("won't go backwards");  // ##DB##
-            do Error.set(1);  // won't go backwards
+            do Error.set(0);  // won't go backwards
         }
 
         if (errno = 2) {
             do Error.send("target beyond boundary");  // ##DB##
-            do Error.set(1);  // target beyond boundary
+            do Error.set(0);  // target beyond boundary
         }
 
         /* do Error.set(t.forward(arg.data())); will be this */
@@ -383,7 +383,7 @@ class Exec {
 
         if (arg = null) {
             do Error.send("no function name");  // ##DB##
-            do Error.set(1);  // no function name
+            do Error.set(0);  // no function name
             return;
         }
 
@@ -477,7 +477,7 @@ class Exec {
 
         if (tb.set(t.y()/11, (t.x()/8)+1) = 1) {
             do Error.send("illegal cursor coordinate");  // ##DB##
-            do Error.set(1);  // illegal cursor coordinate
+            do Error.set(0);  // illegal cursor coordinate
             return;
         }
 
