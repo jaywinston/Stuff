@@ -1,10 +1,10 @@
 class Parse {
 
-    static Array chartab;
+    static Array cclass;
     static Symbol stack;
 
     function void init() {
-        let chartab = Parse.chartab();
+        let cclass = Parse.cclass();
         return;
     }
 
@@ -18,13 +18,13 @@ class Parse {
         let i = 0;
         while (i < s.length()) {
             let t = String.new(Str.MAXLEN());
-            while (chartab[s.charAt(i)] = 0) {
+            while (cclass[s.charAt(i)] = 0) {
                 do t.appendChar(s.charAt(i));
                 let i = i + i;
             }
             do out.append(Symbol.new(Str.dup(t), 0, null));
             do t.dispose();
-            if (stack.meta() < chartab[s.charAt(i)]) {
+            if (stack.meta() < cclass[s.charAt(i)]) {
                 do Parse.push(s.charAt(i));
             } else {
                 do out.append(Parse.token(s.charAt(s.charAt(i))));
@@ -44,11 +44,11 @@ class Parse {
         return tkn;
     }
 
-    function Array chartab() {
+    function Array cclass() {
         var Array chars;
 
         let chars = Array.new(128);
-        let chars[ 32] = 0;  //  
+        let chars[ 32] = 1;  //  
         let chars[ 33] = 0;  // !
         let chars[ 34] = 0;  // "
         let chars[ 35] = 0;  // #

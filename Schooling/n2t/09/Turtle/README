@@ -5,21 +5,28 @@ cmdline:
     arglist
 
 assgn:
-    name '=' expression
+    lvalue '=' expression
+
+lvalue:
+    name
+    name indexexpr
 
 name:
     namstart
     namstart namend
 
 namstart:
-    (?![ ={}()"+*/%[:digit:]-])[[:graph:]]
+    '[^-~<>=!"|&+*/%{}() [:cntrl:][:digit:]]'
 
 namend:
     namchar
     namchar namend
 
 namchar:
-    (?![ ={}()"+*/%-])[[:graph:]]
+    '[^-~<>=!"|&+*/%{}() [:cntrl:]]'
+
+indexexpr:
+    '[' expression ']'
 
 expression:
     stringexpr
@@ -28,6 +35,10 @@ expression:
     intexpr
 
 stringexpr:
+    formatstring
+    formatstring expression
+
+formatstring:
     '"' text '"'
 
 text:
@@ -35,14 +46,22 @@ text:
     textchar text
 
 textchar:
-    (?![\n%"])[[:graph:]]
+    '[^\%"[:cntrl:]]'
+    escseq
     formatseq
+
+escseq:
+    '\'
+    escspec
+
+escspec:
+    '[\N"]'
 
 formatseq:
     '%' formatspec
 
 formatspec:
-    [NPQ]
+    '[%DCS]'
 
 intexpr:
     logicexpr
