@@ -141,14 +141,14 @@ class Eval {
         }
 
         if (value = null) {
-            do Eval.install(name, SYM, null);
+            do Exec.install(name, SYM, null);
             return;
         }
 
         if (value.meta() = STR) {
-            do Eval.install(name, value.meta(), Str.dup(value.data()));
+            do Exec.install(name, value.meta(), Str.dup(value.data()));
         } else {
-            do Eval.install(name, value.meta(), value.data());
+            do Exec.install(name, value.meta(), value.data());
         }
 
         do name.dispose();
@@ -177,7 +177,7 @@ class Eval {
             do LibSym.destroySym(arg.next());
             do arg.setNext(null);
         } else { if (type = SYM) {
-            let p = Eval.lookup(arg.name());
+            let p = Exec.lookup(arg.name());
             if (p = null) {
                 do Error.send("undefined symbol");  // ##DB##
                 do Error.set(1);  // undefined symbol
@@ -623,7 +623,7 @@ class Eval {
     function int symbolTerm(String s) {
         var Symbol p;
 
-        let p = Eval.lookup(s);
+        let p = Exec.lookup(s);
 
         if (p = null) {
             do Error.send("undefined symbol");  // ##DB##

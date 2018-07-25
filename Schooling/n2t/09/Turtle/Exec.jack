@@ -5,6 +5,7 @@ class Exec {
         ASSIGN, BLOCK, CLEAR, DISPOSE, FORWARD, FUNCTION, IF, PENDOWN, PENUP,
         PRINT, REPEAT, TURNLEFT, TURNRIGHT, TURTLE, QUIT;
     static TextBox tb;
+    static Symbol symtab;
     static Symbol turtles;
     static Turtle t;
 
@@ -16,6 +17,7 @@ class Exec {
         let left = j * 8;
         let bottom = (i+h) * 11;
         let right = (j+w) * 8;
+        let symtab = Symbol.new(null, LibSym.HASHTAB(), HashTable.new(15));
         let turtles = Symbol.new(null, null, null);
         let t = Exec.defaultTurtle();
 
@@ -83,14 +85,13 @@ class Exec {
 
 
     function void installKW(String name, int val) {
-        do Eval.install(name, CMD, val);
+        do Exec.install(name, CMD, val);
         do name.dispose();
         return;
     }
 
 
     function void clear() {
-        var Symbol tp;
 
         do t.dispose();
         do tb.clear();
@@ -173,32 +174,32 @@ class Exec {
 
     function Symbol call(Symbol argv) {
         var int n;
-        var Array fargs;
+        var Array fargv;
         var String argname, fstr;
         var Symbol arg, ret;
 
-        do Eval.pushScope(3);
+        do Exec.pushScope(3);
 
-        let fargs = Array.new(1);
+        let fargv = Array.new(1);
         let fstr = "$%D";
         let n = 0;
 
         let arg = argv.next();
         while (~(arg = null)) {
             let n = n + 1;
-            let fargs[0] = n;
-            let argname = Str.format(fstr, fargs);
+            let fargv[0] = n;
+            let argname = Str.format(fstr, fargv);
             do Eval.arg(arg);
-            do Eval.install(argname, arg.meta(), arg.data());
+            do Exec.install(argname, arg.meta(), arg.data());
             do argname.dispose();
             let arg = arg.next();
         }
 
         let ret = Exec.exec(LibSym.copyList(argv.data()));
 
-        do Eval.dropScope();
+        do Exec.dropScope();
         do LibSym.destroyList(argv);
-        do fargs.dispose();
+        do fargv.dispose();
         do fstr.dispose();
 
         return ret;
@@ -230,7 +231,7 @@ class Exec {
 
         if (argv = null) {
             let p = Symbol.new(null, TTL, Exec.defaultTurtle());
-            do turtles.append(p);
+            do turtles.append(Symbol.new(null, TTL, p.data()));
             return p;
         }
 
@@ -248,7 +249,7 @@ class Exec {
         let p = Symbol.new(null, TTL,
                            Turtle.new(x, y, d, top, left, bottom, right));
 
-        do turtles.append(p);
+        do turtles.append(Symbol.new(null, TTL, p.data()));
 
         do Exec.try(argv.next());
 
@@ -275,12 +276,12 @@ class Exec {
 
     function void refreshTurtles() {
         var Symbol tp;
-        var Turtle t;
+        var Turtle tt;
 
         let tp = turtles.next();
         while (~(tp = null)) {
-            let t = tp.data();
-            do t.show();
+            let tt = tp.data();
+            do tt.show();
             let tp = tp.next();
         }
 
@@ -330,7 +331,7 @@ class Exec {
 
         let tt = arg.data();
         do tt.dispose();
-        do Eval.install(arg.name(), null, null);
+        do Exec.install(arg.name(), null, null);
 
         do Exec.try(arg.next());
 
@@ -373,7 +374,7 @@ class Exec {
             return;
         }
 
-        do Eval.install(arg.name(), FUNC, LibSym.copyList(arg.next()));
+        do Exec.install(arg.name(), FUNC, LibSym.copyList(arg.next()));
 
         return;
     }
@@ -521,24 +522,21 @@ class Exec {
 
 
     function void doTurnleft(Symbol arg) {
-        //var Turtle t;
 
-
-        //let t = turtle.data();
         do Eval.arg(arg);
         do t.turnleft(arg.data());
         do Exec.try(arg.next());
+
         return;
     }
 
 
     function void doTurnright(Symbol arg) {
-        //var Turtle t;
 
-        //let t = turtle.data();
         do Eval.arg(arg);
         do t.turnright(arg.data());
         do Exec.try(arg.next());
+
         return;
     }
 
@@ -579,23 +577,49 @@ class Exec {
     }
 
 
-    function void pushTurtle(Turtle t) {
-        var Symbol p;
+    function void pushScope(int hsize) {
+        var Symbol scope;
 
-        //let p = Symbol.new(null, TTL, t);
-        //do p.setNext(turtle);
-        //let turtle = p;
+        let scope = Symbol.new(null, 0, HashTable.new(hsize));
+        do scope.setNext(symtab);
+        let symtab = scope;
 
         return;
     }
 
-    function void dropTurtle() {
-        var Symbol p;
 
-        //let p = turtle;
-        //let turtle = turtle.next();
-        //do p.dispose();
+    function void dropScope() {
+        var Symbol scope;
 
+        let scope = symtab;
+        let symtab = scope.next();
+        do LibSym.destroyHashTable(scope.data());
+        do scope.dispose();
+
+        return;
+    }
+
+
+    function Symbol lookup(String s) {
+        var HashTable table;
+        var Symbol scope, sym;
+
+        let scope = symtab;
+        while (~(scope = null)) {
+            let table = scope.data();
+            let sym = table.lookup(s);
+            if (~(sym = null)) {
+                return sym;
+            }
+            let scope = scope.next();
+        }
+
+        return null;
+    }
+
+
+    function void install(String name, int type, int value) {
+        do LibSym.install(symtab.data(), name, type, value);
         return;
     }
 

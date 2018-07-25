@@ -112,6 +112,8 @@ class LibSym {
             } else { if (p.meta() = LibSym.FUNC()) {
                 do LibSym.destroyList(p.data());
             }}
+        } else {
+            let name = Str.dup(name);
         }
 
         do ht.install(name, type, value);
