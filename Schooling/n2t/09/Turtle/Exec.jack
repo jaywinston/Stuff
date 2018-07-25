@@ -290,12 +290,17 @@ class Exec {
 
 
     function void doDispose(Symbol arg) {
+        var boolean continue;
         var Symbol p;
         var Symbol np, pp, tp;  // next, previous, turtle pointers
         var Turtle tt;
 
         if (arg = null) {
             /* error */
+            return;
+        }
+
+        if (turtles.next() = null) {
             return;
         }
 
@@ -308,21 +313,20 @@ class Exec {
 
         let tp = null;
 
-        let p = turtles.next();
+        let p = turtles;
         while (~(p = null)) {
-            if (p.data() = arg.data()) {
-                let tp = p;
+            let np = p.next();
+            if (~(np = null)) {
+                if (np.data() = arg.data()) {
+                    let tp = np;
+                    let pp = p;
+                }
             }
             let p = p.next();
         }
 
         if (tp = null) {
             return;
-        }
-
-        let pp = turtles;
-        while (~(pp.next() = tp)) {
-            let pp = pp.next();
         }
 
         let np = tp.next();
