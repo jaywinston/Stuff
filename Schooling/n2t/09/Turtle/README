@@ -36,7 +36,7 @@ expression:
 
 stringexpr:
     formatstring
-    formatstring expression
+    formatstring farglist
 
 formatstring:
     '"' text '"'
@@ -62,6 +62,14 @@ formatseq:
 
 formatspec:
     '[%DCS]'
+
+farglist:
+    expression
+    expression space farglist
+
+space:
+    ' '
+    ' ' space
 
 intexpr:
     logicexpr
@@ -120,8 +128,4 @@ mulop:
 arglist:
     word
     word space arglist
-
-space:
-    ' '
-    ' ' space
 

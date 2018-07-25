@@ -6,6 +6,7 @@ class Exec {
         PRINT, REPEAT, TURNLEFT, TURNRIGHT, TURTLE, QUIT;
     static TextBox tb;
     static Symbol turtle, turtles;
+    static ttl;
 
 
     function void init(int i, int j, int h, int w) {
@@ -15,8 +16,9 @@ class Exec {
         let left = j * 8;
         let bottom = (i+h) * 11;
         let right = (j+w) * 8;
-        let turtle = Symbol.new(null, TTL, Exec.defaultTurtle());
-        let turtles = Symbol.new(null, null, null);
+        //let turtle = Symbol.new(null, TTL, Exec.defaultTurtle());
+        //let turtles = Symbol.new(null, null, null);
+        let ttl = Exec.defaultTurtle();
 
         do Exec.initKWs();
 
@@ -102,10 +104,8 @@ class Exec {
 
     function void clear() {
         var Symbol tp;
-        var Turtle t;
 
         let tp = Exec.globalTurtle();
-        let t = tp.data();
         do t.dispose();
         do tb.clear();
         do tp.setData(Exec.defaultTurtle());

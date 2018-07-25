@@ -1,185 +1,187 @@
+// depends on LibSym.jack, see init()
+
 class Parse {
 
+    static char buf;
+    static int i;
+    static int BLOCK, INT, OP, STR, SYM;
     static Array cclass;
-    static Symbol stack;
+    static String stream;
+    static Symbol stack, tlist;
 
-    function void init() {
-        let cclass = Parse.cclass();
+
+    function char getch() {
+        var char c;
+
+        if (i = stream.length()) {
+            return 0;
+        }
+
+        if (buf > 0) {
+            let c = buf;
+            let buf = 0;
+        } else {
+            let c = stream.charAt(i);
+            let i = i + 1;
+        }
+
+        return c;
+    }
+
+
+    function void ungetch(char c) {
+        let buf = c;
         return;
+    }
+
+
+    function Symbol token() {
+        var char c;
+        var int type;
+        var String t;
+
+        let t = String.new(stream.length());
+        let c = Parse.getch();
+        while (c = 32) {
+            let c = Parse.getch();
+        }
+        let type = 8;
+        while (cclass[c] = 0) {
+            do t.appendChar(c);
+            let c = Parse.getch();
+        }
+
+        do Parse.ungetch(c);
+
+        return Symbol.new(t, type, null);
     }
 
 
     function Symbol parse(String s) {
-        var int i;
-        var String t;
-        var Symbol buf, out;
+        var Symbol out;
 
-        let out = Symbol.new(null, null, null);
+        let stream = s;
+        let tlist = Symbol.new(null, null, null);
+        let buf = 0;
         let i = 0;
+
         while (i < s.length()) {
-            let t = String.new(Str.MAXLEN());
-            while (cclass[s.charAt(i)] = 0) {
-                do t.appendChar(s.charAt(i));
-                let i = i + i;
-            }
-            do out.append(Symbol.new(Str.dup(t), 0, null));
-            do t.dispose();
-            if (stack.meta() < cclass[s.charAt(i)]) {
-                do Parse.push(s.charAt(i));
-            } else {
-                do out.append(Parse.token(s.charAt(s.charAt(i))));
-            }
+            do tlist.append(Parse.token());
         }
+
+        let out = tlist.next();
+        do tlist.dispose();
 
         return out;
     }
 
-    function void push(char c) {
+
+    function void init() {
+
+        let BLOCK = LibSym.BLOCK();
+        let INT = LibSym.INT();
+        let OP = LibSym.OP();
+        let STR = LibSym.STR();
+        let SYM = LibSym.SYM();
+
+        let cclass[0] = -1;
+        let cclass[ 32] = 1;  //  
+        let cclass[ 33] = 0;  // !
+        let cclass[ 34] = 0;  // "
+        let cclass[ 35] = 0;  // #
+        let cclass[ 36] = 0;  // $
+        let cclass[ 37] = 0;  // %
+        let cclass[ 38] = 3;  // &
+        let cclass[ 39] = 0;  // '
+        let cclass[ 40] = 0;  // (
+        let cclass[ 41] = 0;  // )
+        let cclass[ 42] = 0;  // *
+        let cclass[ 43] = 0;  // +
+        let cclass[ 44] = 0;  // ,
+        let cclass[ 45] = 0;  // -
+        let cclass[ 46] = 0;  // .
+        let cclass[ 47] = 0;  // /
+        let cclass[ 48] = 0;  // 0
+        let cclass[ 49] = 0;  // 1
+        let cclass[ 50] = 0;  // 2
+        let cclass[ 51] = 0;  // 3
+        let cclass[ 52] = 0;  // 4
+        let cclass[ 53] = 0;  // 5
+        let cclass[ 54] = 0;  // 6
+        let cclass[ 55] = 0;  // 7
+        let cclass[ 56] = 0;  // 8
+        let cclass[ 57] = 0;  // 9
+        let cclass[ 58] = 0;  // :
+        let cclass[ 59] = 0;  // ;
+        let cclass[ 60] = 0;  // <
+        let cclass[ 61] = 2;  // =
+        let cclass[ 62] = 0;  // >
+        let cclass[ 63] = 0;  // ?
+        let cclass[ 64] = 0;  // @
+        let cclass[ 65] = 0;  // A
+        let cclass[ 66] = 0;  // B
+        let cclass[ 67] = 0;  // C
+        let cclass[ 68] = 0;  // D
+        let cclass[ 69] = 0;  // E
+        let cclass[ 70] = 0;  // F
+        let cclass[ 71] = 0;  // G
+        let cclass[ 72] = 0;  // H
+        let cclass[ 73] = 0;  // I
+        let cclass[ 74] = 0;  // J
+        let cclass[ 75] = 0;  // K
+        let cclass[ 76] = 0;  // L
+        let cclass[ 77] = 0;  // M
+        let cclass[ 78] = 0;  // N
+        let cclass[ 79] = 0;  // O
+        let cclass[ 80] = 0;  // P
+        let cclass[ 81] = 0;  // Q
+        let cclass[ 82] = 0;  // R
+        let cclass[ 83] = 0;  // S
+        let cclass[ 84] = 0;  // T
+        let cclass[ 85] = 0;  // U
+        let cclass[ 86] = 0;  // V
+        let cclass[ 87] = 0;  // W
+        let cclass[ 88] = 0;  // X
+        let cclass[ 89] = 0;  // Y
+        let cclass[ 90] = 0;  // Z
+        let cclass[ 91] = 0;  // [
+        let cclass[ 92] = 0;  // \
+        let cclass[ 93] = 0;  // ]
+        let cclass[ 94] = 0;  // ^
+        let cclass[ 95] = 0;  // _
+        let cclass[ 96] = 0;  // `
+        let cclass[ 97] = 0;  // a
+        let cclass[ 98] = 0;  // b
+        let cclass[ 99] = 0;  // c
+        let cclass[100] = 0;  // d
+        let cclass[101] = 0;  // e
+        let cclass[102] = 0;  // f
+        let cclass[103] = 0;  // g
+        let cclass[104] = 0;  // h
+        let cclass[105] = 0;  // i
+        let cclass[106] = 0;  // j
+        let cclass[107] = 0;  // k
+        let cclass[108] = 0;  // l
+        let cclass[109] = 0;  // m
+        let cclass[110] = 0;  // n
+        let cclass[111] = 0;  // o
+        let cclass[112] = 0;  // p
+        let cclass[113] = 0;  // q
+        let cclass[114] = 0;  // r
+        let cclass[115] = 0;  // s
+        let cclass[116] = 0;  // t
+        let cclass[117] = 0;  // u
+        let cclass[118] = 0;  // v
+        let cclass[119] = 0;  // w
+        let cclass[120] = 0;  // x
+        let cclass[121] = 0;  // y
+        let cclass[122] = 0;  // z
+        let cclass[123] = 0;  // {
+        let cclass[124] = 3;  // |
+        let cclass[125] = 0;  // }
+        let cclass[126] = 0;  // ~
+
         return;
     }
 
-    function Symbol token(char c) {
-        var Symbol tkn;
-
-        return tkn;
-    }
-
-    function Array cclass() {
-        var Array chars;
-
-        let chars = Array.new(128);
-        let chars[ 32] = 1;  //  
-        let chars[ 33] = 0;  // !
-        let chars[ 34] = 0;  // "
-        let chars[ 35] = 0;  // #
-        let chars[ 36] = 0;  // $
-        let chars[ 37] = 0;  // %
-        let chars[ 38] = 0;  // &
-        let chars[ 39] = 0;  // '
-        let chars[ 40] = 0;  // (
-        let chars[ 41] = 0;  // )
-        let chars[ 42] = 0;  // *
-        let chars[ 43] = 0;  // +
-        let chars[ 44] = 0;  // ,
-        let chars[ 45] = 0;  // -
-        let chars[ 46] = 0;  // .
-        let chars[ 47] = 0;  // /
-        let chars[ 48] = 0;  // 0
-        let chars[ 49] = 0;  // 1
-        let chars[ 50] = 0;  // 2
-        let chars[ 51] = 0;  // 3
-        let chars[ 52] = 0;  // 4
-        let chars[ 53] = 0;  // 5
-        let chars[ 54] = 0;  // 6
-        let chars[ 55] = 0;  // 7
-        let chars[ 56] = 0;  // 8
-        let chars[ 57] = 0;  // 9
-        let chars[ 58] = 0;  // :
-        let chars[ 59] = 0;  // ;
-        let chars[ 60] = 0;  // <
-        let chars[ 61] = 0;  // =
-        let chars[ 62] = 0;  // >
-        let chars[ 63] = 0;  // ?
-        let chars[ 64] = 0;  // @
-        let chars[ 65] = 0;  // A
-        let chars[ 66] = 0;  // B
-        let chars[ 67] = 0;  // C
-        let chars[ 68] = 0;  // D
-        let chars[ 69] = 0;  // E
-        let chars[ 70] = 0;  // F
-        let chars[ 71] = 0;  // G
-        let chars[ 72] = 0;  // H
-        let chars[ 73] = 0;  // I
-        let chars[ 74] = 0;  // J
-        let chars[ 75] = 0;  // K
-        let chars[ 76] = 0;  // L
-        let chars[ 77] = 0;  // M
-        let chars[ 78] = 0;  // N
-        let chars[ 79] = 0;  // O
-        let chars[ 80] = 0;  // P
-        let chars[ 81] = 0;  // Q
-        let chars[ 82] = 0;  // R
-        let chars[ 83] = 0;  // S
-        let chars[ 84] = 0;  // T
-        let chars[ 85] = 0;  // U
-        let chars[ 86] = 0;  // V
-        let chars[ 87] = 0;  // W
-        let chars[ 88] = 0;  // X
-        let chars[ 89] = 0;  // Y
-        let chars[ 90] = 0;  // Z
-        let chars[ 91] = 0;  // [
-        let chars[ 92] = 0;  // \
-        let chars[ 93] = 0;  // ]
-        let chars[ 94] = 0;  // ^
-        let chars[ 95] = 0;  // _
-        let chars[ 96] = 0;  // `
-        let chars[ 97] = 0;  // a
-        let chars[ 98] = 0;  // b
-        let chars[ 99] = 0;  // c
-        let chars[100] = 0;  // d
-        let chars[101] = 0;  // e
-        let chars[102] = 0;  // f
-        let chars[103] = 0;  // g
-        let chars[104] = 0;  // h
-        let chars[105] = 0;  // i
-        let chars[106] = 0;  // j
-        let chars[107] = 0;  // k
-        let chars[108] = 0;  // l
-        let chars[109] = 0;  // m
-        let chars[110] = 0;  // n
-        let chars[111] = 0;  // o
-        let chars[112] = 0;  // p
-        let chars[113] = 0;  // q
-        let chars[114] = 0;  // r
-        let chars[115] = 0;  // s
-        let chars[116] = 0;  // t
-        let chars[117] = 0;  // u
-        let chars[118] = 0;  // v
-        let chars[119] = 0;  // w
-        let chars[120] = 0;  // x
-        let chars[121] = 0;  // y
-        let chars[122] = 0;  // z
-        let chars[123] = 0;  // {
-        let chars[124] = 0;  // |
-        let chars[125] = 0;  // }
-        let chars[126] = 0;  // ~
-
-        return chars;
-    }
 }
-
-/* just in case
-        let chars[  0] = 0;
-        let chars[  1] = 0;
-        let chars[  2] = 0;
-        let chars[  3] = 0;
-        let chars[  4] = 0;
-        let chars[  5] = 0;
-        let chars[  6] = 0;
-        let chars[  7] = 0;
-        let chars[  8] = 0;
-        let chars[  9] = 0;
-        let chars[ 10] = 0;
-        let chars[ 11] = 0;
-        let chars[ 12] = 0;
-        let chars[ 13] = 0;
-        let chars[ 14] = 0;
-        let chars[ 15] = 0;
-        let chars[ 16] = 0;
-        let chars[ 17] = 0;
-        let chars[ 18] = 0;
-        let chars[ 19] = 0;
-        let chars[ 20] = 0;
-        let chars[ 21] = 0;
-        let chars[ 22] = 0;
-        let chars[ 23] = 0;
-        let chars[ 24] = 0;
-        let chars[ 25] = 0;
-        let chars[ 26] = 0;
-        let chars[ 27] = 0;
-        let chars[ 28] = 0;
-        let chars[ 29] = 0;
-        let chars[ 30] = 0;
-        let chars[ 31] = 0;
-        let chars[127] = 0;
-*/

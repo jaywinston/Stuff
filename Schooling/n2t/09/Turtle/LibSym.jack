@@ -132,8 +132,9 @@ class LibSym {
     function int CMD       () { return  1; }
     function int HASHTAB   () { return  2; }
     function int INT       () { return  3; }
-    function int SYM       () { return  4; }
-    function int TTL       () { return  5; }
+    function int OP        () { return  4; }
+    function int SYM       () { return  5; }
+    function int TTL       () { return  6; }
 
     /* string type-class */
     function int STR       () { return  8; }
