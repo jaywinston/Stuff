@@ -5,8 +5,8 @@ class Exec {
         ASSIGN, BLOCK, CLEAR, DISPOSE, FORWARD, FUNCTION, IF, PENDOWN, PENUP,
         PRINT, REPEAT, TURNLEFT, TURNRIGHT, TURTLE, QUIT;
     static TextBox tb;
-    static Symbol turtle, turtles;
-    static ttl;
+    static Symbol turtles;
+    static Turtle t;
 
 
     function void init(int i, int j, int h, int w) {
@@ -16,9 +16,8 @@ class Exec {
         let left = j * 8;
         let bottom = (i+h) * 11;
         let right = (j+w) * 8;
-        //let turtle = Symbol.new(null, TTL, Exec.defaultTurtle());
-        //let turtles = Symbol.new(null, null, null);
-        let ttl = Exec.defaultTurtle();
+        let turtles = Symbol.new(null, null, null);
+        let t = Exec.defaultTurtle();
 
         do Exec.initKWs();
 
@@ -90,25 +89,13 @@ class Exec {
     }
 
 
-    function Symbol globalTurtle() {
-        var Symbol tp;
-
-        let tp = turtle;
-        while (~(tp.next() = null)) {
-            let tp = tp.next();
-        }
-
-        return tp;
-    }
-
-
     function void clear() {
         var Symbol tp;
 
-        let tp = Exec.globalTurtle();
         do t.dispose();
         do tb.clear();
-        do tp.setData(Exec.defaultTurtle());
+        let t = Exec.defaultTurtle();
+
         return;
     }
 
@@ -134,6 +121,7 @@ class Exec {
 
     function Symbol exec(Symbol argv) {
         var int cmd;
+        var Turtle tt;
 
         if (argv = null) {
             return null;
@@ -145,9 +133,10 @@ class Exec {
         do Eval.arg(argv);
 
         if (argv.meta() = TTL) {
-            do Exec.pushTurtle(argv.data());
+            let tt = t;
+            let t = argv.data();
             do Exec.try(argv.next());
-            do Exec.dropTurtle();
+            let t = tt;
             do argv.dispose();
             return null;
         }
@@ -217,23 +206,19 @@ class Exec {
 
 
     function Symbol execBlock(Symbol block) {
-        var Symbol cmdlin, lines;
+        var Symbol cmdlin;
 
         if (block = null) {
             return null;
         }
 
-        let lines = LibSym.copyList(block.data());
-
-        let cmdlin = lines;
+        let cmdlin = block.data();
         while (~(cmdlin.next() = null)) {
             do Exec.try(LibSym.copyList(cmdlin.data()));
             let cmdlin = cmdlin.next();
         }
 
         let cmdlin = LibSym.copyList(cmdlin.data());
-
-        do LibSym.destroyList(lines);
 
         return Exec.exec(cmdlin);
     }
@@ -262,6 +247,7 @@ class Exec {
 
         let p = Symbol.new(null, TTL,
                            Turtle.new(x, y, d, top, left, bottom, right));
+
         do turtles.append(p);
 
         do Exec.try(argv.next());
@@ -305,7 +291,7 @@ class Exec {
     function void doDispose(Symbol arg) {
         var Symbol p;
         var Symbol np, pp, tp;  // next, previous, turtle pointers
-        var Turtle t;
+        var Turtle tt;
 
         if (arg = null) {
             /* error */
@@ -342,8 +328,8 @@ class Exec {
         do pp.setNext(np);
         do tp.dispose();
 
-        let t = arg.data();
-        do t.dispose();
+        let tt = arg.data();
+        do tt.dispose();
         do Eval.install(arg.name(), null, null);
 
         do Exec.try(arg.next());
@@ -354,11 +340,11 @@ class Exec {
 
     function void doForward(Symbol arg) {
         var int errno;  // ##TEMP##
-        var Turtle t;
+        //var Turtle t;
 
         do Eval.arg(arg);
 
-        let t = turtle.data();
+        //let t = turtle.data();
 
         let errno = t.forward(arg.data());  // ##TEMP##
 
@@ -444,10 +430,10 @@ class Exec {
 
 
     function void doPendown(Symbol arg) {
-        var Turtle t;
+        //var Turtle t;
 
 
-        let t = turtle.data();
+        //let t = turtle.data();
         do t.pendown();
 
         do Exec.try(arg);
@@ -457,10 +443,10 @@ class Exec {
 
 
     function void doPenup(Symbol arg) {
-        var Turtle t;
+        //var Turtle t;
 
 
-        let t = turtle.data();
+        //let t = turtle.data();
         do t.penup();
 
         do Exec.try(arg);
@@ -470,10 +456,10 @@ class Exec {
 
 
     function void doPrint(Symbol arg) {
-        var Turtle t;
+        //var Turtle t;
 
 
-        let t = turtle.data();
+        //let t = turtle.data();
 
         if (tb.set(t.y()/11, (t.x()/8)+1) = 1) {
             do Error.send("illegal cursor coordinate");  // ##DB##
@@ -535,10 +521,10 @@ class Exec {
 
 
     function void doTurnleft(Symbol arg) {
-        var Turtle t;
+        //var Turtle t;
 
 
-        let t = turtle.data();
+        //let t = turtle.data();
         do Eval.arg(arg);
         do t.turnleft(arg.data());
         do Exec.try(arg.next());
@@ -547,9 +533,9 @@ class Exec {
 
 
     function void doTurnright(Symbol arg) {
-        var Turtle t;
+        //var Turtle t;
 
-        let t = turtle.data();
+        //let t = turtle.data();
         do Eval.arg(arg);
         do t.turnright(arg.data());
         do Exec.try(arg.next());
@@ -596,9 +582,9 @@ class Exec {
     function void pushTurtle(Turtle t) {
         var Symbol p;
 
-        let p = Symbol.new(null, TTL, t);
-        do p.setNext(turtle);
-        let turtle = p;
+        //let p = Symbol.new(null, TTL, t);
+        //do p.setNext(turtle);
+        //let turtle = p;
 
         return;
     }
@@ -606,9 +592,9 @@ class Exec {
     function void dropTurtle() {
         var Symbol p;
 
-        let p = turtle;
-        let turtle = turtle.next();
-        do p.dispose();
+        //let p = turtle;
+        //let turtle = turtle.next();
+        //do p.dispose();
 
         return;
     }
