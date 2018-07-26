@@ -216,7 +216,7 @@ class Eval {
         let c = s.charAt(0);
 
         if (c = 34) {
-            return Symbol.new(Str.dup(s), STR, Eval.StringExpr(s));
+            return Symbol.new(Str.dup(s), STR, Eval.stringExpr(s));
         }
 
         if (c = 123) {
@@ -231,7 +231,7 @@ class Eval {
     }
 
 
-    function String StringExpr(String s) {
+    function String stringExpr(String s) {
         var int a, i, n;
         var Array argv, reg;
         var String f, t, args;
