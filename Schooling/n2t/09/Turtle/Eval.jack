@@ -249,7 +249,9 @@ class Eval {
             do f.appendChar(s.charAt(i));
             if (s.charAt(i) = 37) {
                 /* i+1 is assured less than s.length() */
-                if ( (s.charAt(i+1)=68) | (s.charAt(i+1)=83) ) {
+                if ( (s.charAt(i+1)=67) |
+                    ((s.charAt(i+1)=68) |
+                     (s.charAt(i+1)=83)) ) {
                     let n = n + 1;
                 }
             }
@@ -264,6 +266,7 @@ class Eval {
         let reg = Array.new(n);
 
         let a = 0;
+        let i = i + 1;
         while (i < s.length()) {
             let args = String.new(s.length());
             let i = Lex.fArg(s, args, i+1);
