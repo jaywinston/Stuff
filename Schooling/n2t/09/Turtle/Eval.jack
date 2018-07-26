@@ -329,6 +329,8 @@ class Eval {
 
 
     function Symbol blockExpr(String s) {
+
+/*
         var Symbol block, end, line;
 
         let line = Eval.blockLine(s, 1);
@@ -359,6 +361,39 @@ class Eval {
         do line.append(Symbol.new(null, BLOCK, block));
         let block = line.next();
         do LibSym.destroySym(line);
+
+        return block;
+*/
+        var int i;
+        var String t;
+        var Symbol block, line, word;
+
+        let t = String.new(s.length());
+        let i = Lex.block(s, t, 1);
+        let line = Eval.eval(t, 0);
+        do t.dispose();
+        let block = Symbol.new(null, CMDLIN, line);
+
+        while (~(i < s.length())) {
+            let s = IOBox.read(PS2);
+            let t = String .new(s.length());
+            let i = Lex.block(s, t, 0);
+            let line = Eval.eval(t, 0);
+            do block.append(Symbol.new(null, CMDLIN, line));
+            do t.dispose();
+        }
+
+        let t = String.new(s.length());
+        do Str.tkn(s, t, null, i+1);
+        let block = Symbol.new(t, BLOCK, block);
+
+        let word = line;
+        while (~(word = null)) {
+            if (word.meta() = BLOCK) {
+                let t = word.name();
+            }
+            let word = word.next();
+        }
 
         return block;
     }

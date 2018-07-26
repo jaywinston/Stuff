@@ -1,5 +1,6 @@
 class Lex {
 
+    static Array CTAB;
     static String BRACES, FARGDLMS, WORDDLMS;
 
 
@@ -18,7 +19,110 @@ class Lex {
         do WORDDLMS.appendChar(61);   // '='
         do WORDDLMS.appendChar(123);  // '{'
 
+        let CTAB = Array.new(128);
+
+        let CTAB[ 32] = 1;  //  
+        let CTAB[ 33] = 0;  // !
+        let CTAB[ 34] = 0;  // "
+        let CTAB[ 35] = 0;  // #
+        let CTAB[ 36] = 0;  // $
+        let CTAB[ 37] = 0;  // %
+        let CTAB[ 38] = 3;  // &
+        let CTAB[ 39] = 0;  // '
+        let CTAB[ 40] = 0;  // (
+        let CTAB[ 41] = 0;  // )
+        let CTAB[ 42] = 0;  // *
+        let CTAB[ 43] = 0;  // +
+        let CTAB[ 44] = 0;  // ,
+        let CTAB[ 45] = 0;  // -
+        let CTAB[ 46] = 0;  // .
+        let CTAB[ 47] = 0;  // /
+        let CTAB[ 48] = 0;  // 0
+        let CTAB[ 49] = 0;  // 1
+        let CTAB[ 50] = 0;  // 2
+        let CTAB[ 51] = 0;  // 3
+        let CTAB[ 52] = 0;  // 4
+        let CTAB[ 53] = 0;  // 5
+        let CTAB[ 54] = 0;  // 6
+        let CTAB[ 55] = 0;  // 7
+        let CTAB[ 56] = 0;  // 8
+        let CTAB[ 57] = 0;  // 9
+        let CTAB[ 58] = 0;  // :
+        let CTAB[ 59] = 0;  // ;
+        let CTAB[ 60] = 0;  // <
+        let CTAB[ 61] = 2;  // =
+        let CTAB[ 62] = 0;  // >
+        let CTAB[ 63] = 0;  // ?
+        let CTAB[ 64] = 0;  // @
+        let CTAB[ 65] = 0;  // A
+        let CTAB[ 66] = 0;  // B
+        let CTAB[ 67] = 0;  // C
+        let CTAB[ 68] = 0;  // D
+        let CTAB[ 69] = 0;  // E
+        let CTAB[ 70] = 0;  // F
+        let CTAB[ 71] = 0;  // G
+        let CTAB[ 72] = 0;  // H
+        let CTAB[ 73] = 0;  // I
+        let CTAB[ 74] = 0;  // J
+        let CTAB[ 75] = 0;  // K
+        let CTAB[ 76] = 0;  // L
+        let CTAB[ 77] = 0;  // M
+        let CTAB[ 78] = 0;  // N
+        let CTAB[ 79] = 0;  // O
+        let CTAB[ 80] = 0;  // P
+        let CTAB[ 81] = 0;  // Q
+        let CTAB[ 82] = 0;  // R
+        let CTAB[ 83] = 0;  // S
+        let CTAB[ 84] = 0;  // T
+        let CTAB[ 85] = 0;  // U
+        let CTAB[ 86] = 0;  // V
+        let CTAB[ 87] = 0;  // W
+        let CTAB[ 88] = 0;  // X
+        let CTAB[ 89] = 0;  // Y
+        let CTAB[ 90] = 0;  // Z
+        let CTAB[ 91] = 0;  // [
+        let CTAB[ 92] = 0;  // \
+        let CTAB[ 93] = 0;  // ]
+        let CTAB[ 94] = 0;  // ^
+        let CTAB[ 95] = 0;  // _
+        let CTAB[ 96] = 0;  // `
+        let CTAB[ 97] = 0;  // a
+        let CTAB[ 98] = 0;  // b
+        let CTAB[ 99] = 0;  // c
+        let CTAB[100] = 0;  // d
+        let CTAB[101] = 0;  // e
+        let CTAB[102] = 0;  // f
+        let CTAB[103] = 0;  // g
+        let CTAB[104] = 0;  // h
+        let CTAB[105] = 0;  // i
+        let CTAB[106] = 0;  // j
+        let CTAB[107] = 0;  // k
+        let CTAB[108] = 0;  // l
+        let CTAB[109] = 0;  // m
+        let CTAB[110] = 0;  // n
+        let CTAB[111] = 0;  // o
+        let CTAB[112] = 0;  // p
+        let CTAB[113] = 0;  // q
+        let CTAB[114] = 0;  // r
+        let CTAB[115] = 0;  // s
+        let CTAB[116] = 0;  // t
+        let CTAB[117] = 0;  // u
+        let CTAB[118] = 0;  // v
+        let CTAB[119] = 0;  // w
+        let CTAB[120] = 0;  // x
+        let CTAB[121] = 0;  // y
+        let CTAB[122] = 0;  // z
+        let CTAB[123] = 0;  // {
+        let CTAB[124] = 3;  // |
+        let CTAB[125] = 0;  // }
+        let CTAB[126] = 0;  // ~
+
         return;
+    }
+
+
+    function int cclass(char c) {
+        return CTAB[c];
     }
 
 
@@ -168,6 +272,7 @@ class Lex {
         }
 
         while (i < s.length()) {
+
             let i = Str.tkn(s, t, BRACES, i);
 
             if (i < s.length()) {
