@@ -28,25 +28,20 @@ class Lex {
             let i = i + 1;
         }
 
-        let CTAB[ 48] = 1;  // 0
-        let CTAB[ 49] = 1;  // 1
-        let CTAB[ 50] = 1;  // 2
-        let CTAB[ 51] = 1;  // 3
-        let CTAB[ 52] = 1;  // 4
-        let CTAB[ 53] = 1;  // 5
-        let CTAB[ 54] = 1;  // 6
-        let CTAB[ 55] = 1;  // 7
-        let CTAB[ 56] = 1;  // 8
-        let CTAB[ 57] = 1;  // 9
+        let i = 48;
+        while (i < 58) {
+            let CTAB[i] = LibSym.INT();
+            let i = i + 1;
+        }
 
         let CTAB[  0] = 2;
         let CTAB[ 32] = 3;  //  
 
         /* ? */
-        let CTAB[ 34] = 3;  // "
+        let CTAB[ 34] = LibSym.STR();  // "
         let CTAB[ 44] = 3;  // ,
-        let CTAB[ 91] = 3;  // [
-        let CTAB[123] = 3;  // {
+        let CTAB[123] = LibSym.BLOCK();  // {
+        let CTAB[125] = LibSym.BLOCK();  // }
 
         let CTAB[ 37] = 4;  // %
         let CTAB[ 42] = 4;  // *
@@ -55,6 +50,7 @@ class Lex {
         let CTAB[ 45] = 4;  // -
         let CTAB[126] = 4;  // ~
         let CTAB[ 40] = 4;  // (
+        let CTAB[ 41] = 4;  // )
 
         let CTAB[ 43] = 5;  // +
 
@@ -66,9 +62,6 @@ class Lex {
         let CTAB[ 38] = 7;  // &
         let CTAB[124] = 7;  // |
 
-        //let CTAB[ 41] = 0;  // )
-        //let CTAB[ 93] = 0;  // ]
-        //let CTAB[125] = 0;  // }
 
         return;
     }

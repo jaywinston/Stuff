@@ -124,20 +124,13 @@ class LibSym {
 
 
     function int typeClass(Symbol sym) {
-        return sym.meta() & 24;
+        return sym.meta() & 28;
     }
 
 
-    /*
-     * Don't change these values without consulting typeClass().
-     */
+    /* Don't change these values without consulting typeClass(). */
 
-    function int CMD       () { return  1; }
-    function int HASHTAB   () { return  2; }
-    function int INT       () { return  3; }
-    function int OP        () { return  4; }
-    function int SYM       () { return  5; }
-    function int TTL       () { return  6; }
+    function int INT       () { return  1; }
 
     /* string type-class */
     function int STR       () { return  8; }
@@ -148,5 +141,13 @@ class LibSym {
     function int BLOCK     () { return 16; }
     function int FUNC      () { return 17; }
     function int CMDLIN    () { return 18; }
+
+    function int CMD       () { return  32; }
+    function int HASHTAB   () { return  33; }
+    function int OP        () { return  34; }
+    function int SYM       () { return  35; }
+    function int TTL       () { return  36; }
+    function int INTEX     () { return  37; }
+    function int STREX     () { return  38; }
 
 }

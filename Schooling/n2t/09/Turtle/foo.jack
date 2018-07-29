@@ -1,0 +1,115 @@
+class foo {
+
+    static int INT, STR, SYM, BLOCK, INTEX, STREX;
+
+
+    function void init() {
+        let INT = LibSym.INT();
+        let STR = LibSym.STR();
+        let SYM = LibSym.SYM();
+        let BLOCK = LibSym.BLOCK();
+        let INTEX = LibSym.INTEX();
+        let STREX = LibSym.STREX();
+        return;
+    }
+
+
+    function Symbol foo(String s) {
+        var int i, cclass;
+        var String t;
+        var Symbol argv, next;
+
+        let argv = Symbol.new(null, null, null);
+
+        let i = 0;
+        while (i < s.length()) {
+
+            let cclass = Lex.cclass(s.charAt(i));
+            let t = String.new(s.length());
+            let next = Symbol.new(null, cclass, t);
+
+            if (cclass = STR) {
+                let i = Lex.string(s, t, i+1);
+                if (i < s.length()) {
+                    if (s.charAt(i) = 44) {
+                        let i = foo.strex(s, next, i+1);
+                        let s = next.name();
+                        do next.setName(null);
+                        let next = Symbol.new(null, STREX, next);
+                    } else { if (~(s.charAt(i) = 32)) {
+                        do Error.send("should be comma");  // ##DB##
+                        do Error.set(0);
+                        do LibSym.destroyList(next);
+                        do LibSym.destroyList(argv);
+                    } else {
+                        let i = Str.lskip(s, 32, i);
+                    }}
+                }
+            } else { if (cclass = BLOCK) {
+                let i = foo.block(s, next, i);
+                let s = next.name();
+                do next.setName(null);
+                let next = Symbol.new(null, BLOCK, next);
+                if (i < s.length()) {
+                    if ( (Lex.cclass(s.charAt(i))&-4) = 4 ) {
+                        let i = foo.intex(s, next, i);
+                        let s = next.name();
+                        do next.setName(null);
+                        let next = Symbol.new(null, INTEX, next);
+                    } else { if (s.charAt(i) = 44) {
+                        let i = foo.strex(s, next, i+1);
+                        let s = next.name();
+                        do next.setName(null);
+                        let next = Symbol.new(null, STREX, next);
+                    } else { if (~(s.charAt(i) = 32)) {
+                        do Error.send("bad c after block");  // ##DB##
+                        do Error.set(0);
+                        do LibSym.destroyList(next);
+                        do LibSym.destroyList(argv);
+                    } else {
+                        let i = Str.lskip(s, 32, i);
+                    }}}
+                }
+            } else {
+                let i = Lex.token(s, t, i);
+                if (i < s.length()) {
+                    if ( (Lex.cclass(s.charAt(i))&-4) = 4 ) {
+                        let i = foo.intex(s, next, i);
+                        let s = next.name();
+                        do next.setName(null);
+                        let next = Symbol.new(null, INTEX, next);
+                    } else { if (~(s.charAt(i) = 32)) {
+                        do Error.send("should be plus");  // ##DB##
+                        do Error.set(0);
+                        do LibSym.destroyList(next);
+                        do LibSym.destroyList(argv);
+                    } else {
+                        let i = Str.lskip(s, 32, i);
+                    }}
+                }
+            }}
+
+            do argv.append(next);
+        }
+
+        let next = argv;
+        let argv = argv.next();
+        do next.dispose();
+
+        return argv;
+    }
+
+
+    function int intex(String s, Symbol next, int i) {
+        return i;
+    }
+
+    function int strex(String s, Symbol next, int i) {
+        return i;
+    }
+
+    function int block(String s, Symbol next, int i) {
+        return i;
+    }
+
+}
