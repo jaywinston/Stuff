@@ -149,6 +149,5 @@ class LibSym {
     function int FUNC      () { return Lex.cclass(123) + 2; }
     function int INTEX     () { return Lex.cclass(42);      }
     function int STREX     () { return Lex.cclass(44);      }
-    function int DELIM     () { return Lex.cclass(44);      }
 
 }
