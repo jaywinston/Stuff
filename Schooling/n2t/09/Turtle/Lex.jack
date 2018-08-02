@@ -30,38 +30,36 @@ class Lex {
 
         let i = 48;
         while (i < 58) {
-            let CTAB[i] = LibSym.INT();
+            let CTAB[i] =  0;
             let i = i + 1;
         }
 
         let CTAB[  0] = 2;
-        let CTAB[ 32] = 3;  //  
+        let CTAB[ 32] = 3;                   //  
+ 
+        let CTAB[ 34] =  0;      // "
+        let CTAB[ 44] =  0;      // ,
+ 
+        let CTAB[123] =  0;      // {
+        let CTAB[125] =  0;      // }
 
-        /* ? */
-        let CTAB[ 34] = LibSym.STR();  // "
-        let CTAB[ 44] = 3;  // ,
-        let CTAB[123] = LibSym.BLOCK();  // {
-        let CTAB[125] = LibSym.BLOCK();  // }
+        let CTAB[ 37] =  0;      // %
+        let CTAB[ 42] =  0;      // *
+        let CTAB[ 47] =  0;      // /
+        let CTAB[ 40] =  0;      // (
+        let CTAB[ 41] =  0;      // )
 
-        let CTAB[ 37] = 4;  // %
-        let CTAB[ 42] = 4;  // *
-        let CTAB[ 47] = 4;  // /
+        let CTAB[ 43] =  0;  // +
+        let CTAB[ 45] =  0;  // -
+        let CTAB[126] =  0;  // ~
 
-        let CTAB[ 45] = 4;  // -
-        let CTAB[126] = 4;  // ~
-        let CTAB[ 40] = 4;  // (
-        let CTAB[ 41] = 4;  // )
+        let CTAB[ 61] =  0;  // =
+        let CTAB[ 33] =  0;  // !
+        let CTAB[ 60] =  0;  // <
+        let CTAB[ 62] =  0;  // >
 
-        let CTAB[ 43] = 5;  // +
-
-        let CTAB[ 61] = 6;  // =
-        let CTAB[ 33] = 6;  // !
-        let CTAB[ 60] = 6;  // <
-        let CTAB[ 62] = 6;  // >
-
-        let CTAB[ 38] = 7;  // &
-        let CTAB[124] = 7;  // |
-
+        let CTAB[ 38] =  0;  // &
+        let CTAB[124] =  0;  // |
 
         return;
     }
@@ -127,26 +125,28 @@ class Lex {
 
     function int string(String s, String t, int i) {
         var char c;
-        var int len;
 
-        let len = s.length();
         let i = i + 1;
-        
-        while (i < len) {
+
+        while (i < s.length()) {
+
             let c = s.charAt(i);
-            if (c = 92) {
+
+            if (c = 34) {
+                return i + 1;  // success
+            } else { if (c = 92) {
                 if ( (i+1) = s.length() ) {
-                    return i + 2;
+                    return i + 2;  // EOS while scanning for quote
                 }
                 let i = i + 1;
                 let c = s.charAt(i);
                 if (c = 78) {
                     let c = 128;
                 }
-            } else { if (c = 34) {
-                return i + 1;
             }}
+
             do t.appendChar(c);
+
             let i = i + 1;
         }
 

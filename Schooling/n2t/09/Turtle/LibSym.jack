@@ -11,16 +11,16 @@ class LibSym {
         let typeClass = LibSym.typeClass(sym);
 
         if (typeClass = LibSym.STR()) {
-            return Symbol.new(Str.dup(sym.name()), sym.meta(),
+            return Symbol.new(Str.dup(sym.tag()), sym.meta(),
                               Str.dup(sym.data()));
         }
 
         if (typeClass = LibSym.BLOCK()) {
-            return Symbol.new(Str.dup(sym.name()), sym.meta(),
+            return Symbol.new(Str.dup(sym.tag()), sym.meta(),
                               LibSym.copyList(sym.data()));
         }
 
-        return Symbol.new(Str.dup(sym.name()), sym.meta(), sym.data());
+        return Symbol.new(Str.dup(sym.tag()), sym.meta(), sym.data());
     }
 
 
@@ -51,7 +51,7 @@ class LibSym {
             return;
         }
 
-        let s = sym.name();
+        let s = sym.tag();
 
         if (~(s = null)) {
             do s.dispose();
@@ -105,7 +105,10 @@ class LibSym {
         var Symbol p;
 
         let p = ht.lookup(name);
-        if (~(p = null)) {
+
+        if (p = null) {
+            do ht.install(Str.dup(name), type, value);
+        } else {
             if (p.meta() = LibSym.STR()) {
                 let s = p.data();
                 do s.dispose();
@@ -114,8 +117,6 @@ class LibSym {
             }}
             do p.setMeta(type);
             do p.setData(value);
-        } else {
-            do ht.install(Str.dup(name), type, value);
         }
 
 
@@ -124,30 +125,29 @@ class LibSym {
 
 
     function int typeClass(Symbol sym) {
-        return sym.meta() & 28;
+        return sym.meta() & 96;
     }
 
 
     /* Don't change these values without consulting typeClass(). */
 
-    function int INT       () { return  1; }
+    function int INT       () { return  Lex.cclass(48); }
+    function int CMD       () { return  2; }
+    function int HASHTAB   () { return  3; }
+    function int OP        () { return  4; }
+    function int SYM       () { return  5; }
+    function int TTL       () { return  6; }
 
     /* string type-class */
-    function int STR       () { return  8; }
-    function int END       () { return  9; }
-    function int EXPR      () { return 10; }
+    function int STR       () { return Lex.cclass(34); }
+    function int END       () { return 33; }
+    function int EXPR      () { return 34; }
 
     /* block type-class */
-    function int BLOCK     () { return 16; }
-    function int FUNC      () { return 17; }
-    function int CMDLIN    () { return 18; }
-
-    function int CMD       () { return  32; }
-    function int HASHTAB   () { return  33; }
-    function int OP        () { return  34; }
-    function int SYM       () { return  35; }
-    function int TTL       () { return  36; }
-    function int INTEX     () { return  37; }
-    function int STREX     () { return  38; }
+    function int BLOCK     () { return Lex.cclass(123);     }
+    function int CMDLIN    () { return Lex.cclass(123) + 1; }
+    function int FUNC      () { return Lex.cclass(123) + 2; }
+    function int INTEX     () { return Lex.cclass(42);      }
+    function int STREX     () { return Lex.cclass(44);      }
 
 }
