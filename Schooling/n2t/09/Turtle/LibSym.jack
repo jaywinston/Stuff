@@ -125,7 +125,7 @@ class LibSym {
 
 
     function int typeClass(Symbol sym) {
-        return sym.meta() & 96;
+        return sym.meta() & 1026;
     }
 
 
@@ -135,7 +135,7 @@ class LibSym {
     function int CMD       () { return  2; }
     function int HASHTAB   () { return  3; }
     function int OP        () { return  4; }
-    function int SYM       () { return  5; }
+    function int SYM       () { return  Lex.cclass(65); }
     function int TTL       () { return  6; }
 
     /* string type-class */

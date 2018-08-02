@@ -211,9 +211,6 @@ class TextBox {
             let width = width + 1;
         }
 
-        do Screen.setColor(true);
-        do Screen.drawLine((left*8)-2, top*11, (left*8)-2, bottom*11);
-
         return;
     }
 

@@ -24,42 +24,44 @@ class Lex {
 
         let i = 0;
         while (i < 128) {
-            let CTAB[i] = 0;
+            let CTAB[i] = 4;
             let i = i + 1;
         }
 
         let i = 48;
         while (i < 58) {
-            let CTAB[i] =  0;
+            let CTAB[i] = 8;
             let i = i + 1;
         }
-
-        let CTAB[  0] = 2;
-        let CTAB[ 32] = 3;                   //  
  
-        let CTAB[ 34] =  0;      // "
-        let CTAB[ 44] =  0;      // ,
+        let CTAB[ 34] = 16;  // "
  
-        let CTAB[123] =  0;      // {
-        let CTAB[125] =  0;      // }
+        let CTAB[123] = 32;  // {
 
-        let CTAB[ 37] =  0;      // %
-        let CTAB[ 42] =  0;      // *
-        let CTAB[ 47] =  0;      // /
-        let CTAB[ 40] =  0;      // (
-        let CTAB[ 41] =  0;      // )
+        let CTAB[ 44] = 36;  // ,
 
-        let CTAB[ 43] =  0;  // +
-        let CTAB[ 45] =  0;  // -
-        let CTAB[126] =  0;  // ~
+        let CTAB[ 37] = 40;  // %
+        let CTAB[ 42] = 40;  // *
+        let CTAB[ 47] = 40;  // /
+        let CTAB[ 40] = 40;  // (
+        let CTAB[ 41] = 40;  // )
 
-        let CTAB[ 61] =  0;  // =
-        let CTAB[ 33] =  0;  // !
-        let CTAB[ 60] =  0;  // <
-        let CTAB[ 62] =  0;  // >
+        let CTAB[ 43] = 41;  // +
+        let CTAB[ 45] = 41;  // -
+        let CTAB[126] = 41;  // ~
 
-        let CTAB[ 38] =  0;  // &
-        let CTAB[124] =  0;  // |
+        let CTAB[ 61] = 42;  // =
+        let CTAB[ 33] = 42;  // !
+        let CTAB[ 60] = 42;  // <
+        let CTAB[ 62] = 42;  // >
+
+        let CTAB[ 38] = 43;  // &
+        let CTAB[124] = 43;  // |
+
+        let CTAB[125] = 64;  // }
+
+        let CTAB[  0] = 128;
+        let CTAB[ 32] = 256;  //  
 
         return;
     }
@@ -82,7 +84,7 @@ class Lex {
         var char c;
 
         let c = Lex.getch(s, i);
-        while (CTAB[c] < 2) {
+        while (CTAB[c] < 16) {
             do t.appendChar(c);
             let i = i + 1;
             let c = Lex.getch(s, i);

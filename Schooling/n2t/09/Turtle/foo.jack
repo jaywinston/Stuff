@@ -1,6 +1,7 @@
 class foo {
 
     static int BLANK, DELIM, BLOCK, END, CMDLIN, INT, INTEX, STR, STREX, SYM;
+    static int MASK;
 
 
     function void init() {
@@ -14,6 +15,7 @@ class foo {
         let STR = LibSym.STR();
         let STREX = LibSym.STREX();
         let SYM = LibSym.SYM();
+        let MASK = 124;
         return;
     }
 
@@ -31,11 +33,11 @@ class foo {
                 return i;
             }
 
-            let cclass = Lex.cclass(s.charAt(i));
+            let cclass = Lex.cclass(s.charAt(i)) & MASK;
 
             if (cclass = END) {
                 do argv.setTag(s);
-                return i + 1;
+                return i;
             }
 
             if (cclass = BLOCK) {
@@ -95,7 +97,7 @@ class foo {
             } else { if (cclass = SYM) {
                 let t = String.new(s.length());
                 let i = Lex.token(s, t, i);
-                let next = Symbol.new(t, INT, null);
+                let next = Symbol.new(t, SYM, null);
                 if (i < s.length()) {
                     let cclass = Lex.cclass(s.charAt(i));
                     if (cclass = INTEX) {
@@ -157,24 +159,28 @@ class foo {
         return i;
     }
 
-    function int block(String s, Symbol next, int i) {
+    function int block(String s, Symbol arg, int i) {
         var Symbol cmdlin;
 
         let cmdlin = Symbol.new(null, CMDLIN, null);
-        let i = foo.foo(s, cmdlin, i);
+        let i = foo.foo(s, cmdlin, i+1);
         do cmdlin.setData(cmdlin.next());
         do cmdlin.setNext(null);
         while (~(i < s.length())) {
-            do next.append(cmdlin);
+            do arg.append(cmdlin);
             let s = IOBox.read("|");
+            let cmdlin = Symbol.new(s, CMDLIN, null);
             let i = foo.foo(s, cmdlin, 0);
+            let s = cmdlin.tag();
+            do cmdlin.setTag(null);
             do cmdlin.setData(cmdlin.next());
             do cmdlin.setNext(null);
         }
 
-        do next.append(cmdlin);
+        do arg.append(cmdlin);
+        do arg.setTag(s);
 
-        return i;
+        return i + 1;
     }
 
 }
