@@ -2,6 +2,7 @@ class foo {
 
     static int BLANK, DELIM, BLOCK, END, CMDLIN, INT, INTEX, STR, STREX, SYM;
     static int MASK;
+    static String PS1, PS2;
 
 
     function void init() {
@@ -16,6 +17,7 @@ class foo {
         let STREX = LibSym.STREX();
         let SYM = LibSym.SYM();
         let MASK = 124;
+        let PS2 = "|";
         return;
     }
 
@@ -59,9 +61,7 @@ class foo {
                         let s = next.tag();
                         do next.setTag(null);
                         let next = Symbol.new(null, STREX, next);
-                    } else { if (~(cclass = BLANK)) {
-                        /* error */
-                    }}}
+                    }}
                 }
             } else { if (cclass = INT) {
                 let t = String.new(s.length());
@@ -110,14 +110,14 @@ class foo {
                         let s = next.tag();
                         do next.setTag(null);
                         let next = Symbol.new(null, STREX, next);
-                    } else { if (~(cclass = BLANK)) {
-                        /* error */
-                    }}}
+                    }}
                 }
             }}}}}}
 
             do argv.append(next);
         }
+
+        do argv.setTag(s);
 
         return i;
     }
@@ -159,7 +159,7 @@ class foo {
         return i;
     }
 
-    function int block(String s, Symbol arg, int i) {
+    function int block(String s, Symbol block, int i) {
         var Symbol cmdlin;
 
         let cmdlin = Symbol.new(null, CMDLIN, null);
@@ -167,8 +167,12 @@ class foo {
         do cmdlin.setData(cmdlin.next());
         do cmdlin.setNext(null);
         while (~(i < s.length())) {
-            do arg.append(cmdlin);
-            let s = IOBox.read("|");
+            if (cmdlin.data() = null) {
+                do cmdlin.dispose();
+            } else {
+                do block.append(cmdlin);
+            }
+            let s = IOBox.read(PS2);
             let cmdlin = Symbol.new(s, CMDLIN, null);
             let i = foo.foo(s, cmdlin, 0);
             let s = cmdlin.tag();
@@ -177,8 +181,13 @@ class foo {
             do cmdlin.setNext(null);
         }
 
-        do arg.append(cmdlin);
-        do arg.setTag(s);
+        if (cmdlin.data() = null) {
+            do cmdlin.dispose();
+        } else {
+            do block.append(cmdlin);
+        }
+
+        do block.setTag(s);
 
         return i + 1;
     }

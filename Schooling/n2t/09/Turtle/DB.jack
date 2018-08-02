@@ -1,6 +1,9 @@
 class DB {
 
     function void db(String s) {
+        if (s = null) {
+            let s = "DB: no string";
+        }
         do Output.moveCursor(0,0);
         do Output.printString("                  ");
         do Output.moveCursor(0,0);
@@ -26,3 +29,67 @@ class DB {
 
     }
 }
+/*
+class Test {
+
+
+    function void print(Symbol p, int c1, int r1) {
+        var int c, r, l;
+        var Array a;
+        var String s, t;
+
+        if (p=0) {
+            return;
+        }
+
+        let a = Array.new(90);
+        let a[0] = "null";
+        let a[LibSym.CMD()] = "CMD";
+        let a[LibSym.HASHTAB()] = "HASHTAB";
+        let a[LibSym.INT()] = "INT";
+        let a[LibSym.SYM()] = "SYM";
+        let a[LibSym.TTL()] = "TTL";
+        let a[LibSym.END()] = "END";
+        let a[LibSym.EXPR()] = "EXPR";
+        let a[LibSym.STR()] = "STR";
+        let a[LibSym.FUNC()] = "FUNC";
+        let a[LibSym.CMDLIN()] = "CMDLIN";
+        let a[LibSym.BLOCK()] = "BLOCK";
+        let a[LibSym.INTEX()] = "INTEX";
+        let a[LibSym.STREX()] = "STREX";
+        let c = c1;
+        let r = r1;
+
+        if (p.tag()=0) {
+            let s = "null";
+        } else {
+            let s = p.tag();
+        }
+        let t = a[p.meta()];
+
+        let l = Math.max(s.length(),t.length());
+
+        do Output.moveCursor(r,c);
+        do Output.printString(s);
+
+        if (p.next()>0) {
+            do Output.moveCursor(r,c+l);
+            do Output.printString(" -> ");
+        }
+
+        do Output.moveCursor(r+1,c);
+        do Output.printString(t);
+
+        if ( (p.meta()&32) = 32 ) {
+            do Output.moveCursor(r+2,c);
+            do Output.printString("|");
+            do Test.print(p.data(), c, r+3);
+        }
+
+        do Test.print(p.next(), c+(l+4), r);
+
+        return;
+    }
+
+}
+*/

@@ -30,7 +30,7 @@ class Symbol {
 
     /* todo: change to tag() */
     method int tag() {
-        return _tag;
+        return _name;
     }
 
     method int name() {
@@ -50,7 +50,7 @@ class Symbol {
     }
 
     method void setTag(int tag) {
-        let _tag = tag;
+        let _name = tag;
         return;
     }
 
