@@ -1,11 +1,12 @@
 class foo {
 
-    static int BLOCK, CMDLIN, INT, INTEX, STR, STREX, SYM;
+    static int BLOCK, CMDLIN, DELIM, INT, INTEX, STR, STREX, SYM;
 
 
     function void init() {
         let BLOCK = LibSym.BLOCK();
         let CMDLIN = LibSym.CMDLIN();
+        let DELIM = LibSym.DELIM();
         let INT = LibSym.INT();
         let INTEX = LibSym.INTEX();
         let STR = LibSym.STR();
@@ -20,14 +21,55 @@ class foo {
         var String t;
         var Symbol next;
 
-        let i = Str.lskip(s, 32, i);
         while (i < s.length()) {
 
+            let i = Str.lskip(s, 32, i);
+
+            if (i = s.length()) {
+                return i;
+            }
+
             let cclass = Lex.cclass(s.charAt(i));
-            let t = String.new(s.length());
-            let next = Symbol.new(s, cclass, t);
+
+            if (cclass = BLOCK) {
+            } else { if (cclass = INT) {
+                let t = String.new(s.length());
+                let i = Lex.token(s, t, i);
+                let next = Symbol.new(null, INT, t.intValue());
+                do t.dispose();
+                if (i < s.length()) {
+                    if (Lex.cclass(s.charAt(i)) = INTEX) {
+                        let i = foo.intex(s, next, i);
+                        let s = next.tag();
+                        do next.setTag(null);
+                        let next = Symbol.new(null, INTEX, next);
+                    } else { if (~(Lex.cclass(s.charAT(i)&DELIM = DELIM))) {
+                        /* Errror */
+                    }}
+                }
+            } else { if (cclass = INTEX) {
+            } else { if (cclass = STR) {
+            } else { if (cclass = STREX) {
+            } else { if (cclass = SYM) {
+            }}}}}}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
             if (cclass = STR) {
+                let t = String.new(s.length());
                 let i = Lex.string(s, t, i+1);
                 if (i < s.length()) {
                     if (s.charAt(i) = 44) {
@@ -91,8 +133,8 @@ class foo {
                 }
             }}
 
-            do t.dispose();
-            do next.setTag(null);
+            //do t.dispose();
+            //do next.setTag(null);
             do argv.append(next);
         }
 
