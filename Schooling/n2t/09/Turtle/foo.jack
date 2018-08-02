@@ -1,11 +1,12 @@
 class foo {
 
-    static int BLANK, BLOCK, CMDLIN, DELIM, INT, INTEX, STR, STREX, SYM;
+    static int BLANK, DELIM, BLOCK, END, CMDLIN, INT, INTEX, STR, STREX, SYM;
 
 
     function void init() {
         let BLANK = Lex.cclass(32);
         let BLOCK = LibSym.BLOCK();
+        let END = Lex.cclass(125);
         let CMDLIN = LibSym.CMDLIN();
         let DELIM = Lex.cclass(32) | Lex.cclass(44);
         let INT = LibSym.INT();
@@ -31,6 +32,11 @@ class foo {
             }
 
             let cclass = Lex.cclass(s.charAt(i));
+
+            if (cclass = END) {
+                do argv.setTag(s);
+                return i + 1;
+            }
 
             if (cclass = BLOCK) {
                 let next = Symbol.new(null, BLOCK, null);
@@ -154,9 +160,6 @@ class foo {
     function int block(String s, Symbol next, int i) {
         var Symbol cmdlin;
 
-do DB.db(s);
-do Output.println();
-do Output.printInt(i);
         let cmdlin = Symbol.new(null, CMDLIN, null);
         let i = foo.foo(s, cmdlin, i);
         do cmdlin.setData(cmdlin.next());
