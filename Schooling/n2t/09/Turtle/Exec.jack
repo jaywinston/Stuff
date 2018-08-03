@@ -17,7 +17,7 @@ class Exec {
         let left = j * 8;
         let bottom = (i+h) * 11;
         let right = (j+w) * 8;
-        let symtab = Symbol.new(null, LibSym.HASHTAB(), HashTable.new(15));
+        let symtab = Symbol.new(null, null, HashTable.new(15));
         let turtles = Symbol.new(null, null, null);
         let t = Exec.defaultTurtle();
 

@@ -39,7 +39,7 @@ class Eval {
         let EXPDLMS = "=~!<>&|+-*/%";
         let EQS = "=";
         let LBRACES = "{";
-        let symtab = Symbol.new(null, LibSym.HASHTAB(), HashTable.new(15));
+        let symtab = Symbol.new(null, null, HashTable.new(15));
 
         return;
     }

@@ -1,187 +1,176 @@
-// depends on LibSym.jack, see init()
-
 class Parse {
 
-    static char buf;
-    static int i;
-    static int BLOCK, INT, OP, STR, SYM;
-    static Array cclass;
-    static String stream;
-    static Symbol stack, tlist;
-
-
-    function char getch() {
-        var char c;
-
-        if (i = stream.length()) {
-            return 0;
-        }
-
-        if (buf > 0) {
-            let c = buf;
-            let buf = 0;
-        } else {
-            let c = stream.charAt(i);
-            let i = i + 1;
-        }
-
-        return c;
-    }
-
-
-    function void ungetch(char c) {
-        let buf = c;
-        return;
-    }
-
-
-    function Symbol token() {
-        var char c;
-        var int type;
-        var String t;
-
-        let t = String.new(stream.length());
-        let c = Parse.getch();
-        while (c = 32) {
-            let c = Parse.getch();
-        }
-        let type = 8;
-        while (cclass[c] = 0) {
-            do t.appendChar(c);
-            let c = Parse.getch();
-        }
-
-        do Parse.ungetch(c);
-
-        return Symbol.new(t, type, null);
-    }
-
-
-    function Symbol parse(String s) {
-        var Symbol out;
-
-        let stream = s;
-        let tlist = Symbol.new(null, null, null);
-        let buf = 0;
-        let i = 0;
-
-        while (i < s.length()) {
-            do tlist.append(Parse.token());
-        }
-
-        let out = tlist.next();
-        do tlist.dispose();
-
-        return out;
-    }
+    static int BLANK, DELIM, BLOCK, END, EOS, CMDLIN, INT,
+                INTEX, OP, STR, STREX, SYM, UOP;
+    static int MASK;
+    static String PS1, PS2;
 
 
     function void init() {
-
+        let BLANK = Lex.cclass(32);
         let BLOCK = LibSym.BLOCK();
+        let END = Lex.cclass(125);
+        let EOS = 0;
+        let CMDLIN = LibSym.CMDLIN();
+        let DELIM = Lex.cclass(32) | Lex.cclass(44);
         let INT = LibSym.INT();
-        let OP = LibSym.OP();
+        let INTEX = LibSym.INTEX();
         let STR = LibSym.STR();
+        let STREX = LibSym.STREX();
         let SYM = LibSym.SYM();
-
-        let cclass[0] = -1;
-        let cclass[ 32] = 1;  //  
-        let cclass[ 33] = 0;  // !
-        let cclass[ 34] = 0;  // "
-        let cclass[ 35] = 0;  // #
-        let cclass[ 36] = 0;  // $
-        let cclass[ 37] = 0;  // %
-        let cclass[ 38] = 3;  // &
-        let cclass[ 39] = 0;  // '
-        let cclass[ 40] = 0;  // (
-        let cclass[ 41] = 0;  // )
-        let cclass[ 42] = 0;  // *
-        let cclass[ 43] = 0;  // +
-        let cclass[ 44] = 0;  // ,
-        let cclass[ 45] = 0;  // -
-        let cclass[ 46] = 0;  // .
-        let cclass[ 47] = 0;  // /
-        let cclass[ 48] = 0;  // 0
-        let cclass[ 49] = 0;  // 1
-        let cclass[ 50] = 0;  // 2
-        let cclass[ 51] = 0;  // 3
-        let cclass[ 52] = 0;  // 4
-        let cclass[ 53] = 0;  // 5
-        let cclass[ 54] = 0;  // 6
-        let cclass[ 55] = 0;  // 7
-        let cclass[ 56] = 0;  // 8
-        let cclass[ 57] = 0;  // 9
-        let cclass[ 58] = 0;  // :
-        let cclass[ 59] = 0;  // ;
-        let cclass[ 60] = 0;  // <
-        let cclass[ 61] = 2;  // =
-        let cclass[ 62] = 0;  // >
-        let cclass[ 63] = 0;  // ?
-        let cclass[ 64] = 0;  // @
-        let cclass[ 65] = 0;  // A
-        let cclass[ 66] = 0;  // B
-        let cclass[ 67] = 0;  // C
-        let cclass[ 68] = 0;  // D
-        let cclass[ 69] = 0;  // E
-        let cclass[ 70] = 0;  // F
-        let cclass[ 71] = 0;  // G
-        let cclass[ 72] = 0;  // H
-        let cclass[ 73] = 0;  // I
-        let cclass[ 74] = 0;  // J
-        let cclass[ 75] = 0;  // K
-        let cclass[ 76] = 0;  // L
-        let cclass[ 77] = 0;  // M
-        let cclass[ 78] = 0;  // N
-        let cclass[ 79] = 0;  // O
-        let cclass[ 80] = 0;  // P
-        let cclass[ 81] = 0;  // Q
-        let cclass[ 82] = 0;  // R
-        let cclass[ 83] = 0;  // S
-        let cclass[ 84] = 0;  // T
-        let cclass[ 85] = 0;  // U
-        let cclass[ 86] = 0;  // V
-        let cclass[ 87] = 0;  // W
-        let cclass[ 88] = 0;  // X
-        let cclass[ 89] = 0;  // Y
-        let cclass[ 90] = 0;  // Z
-        let cclass[ 91] = 0;  // [
-        let cclass[ 92] = 0;  // \
-        let cclass[ 93] = 0;  // ]
-        let cclass[ 94] = 0;  // ^
-        let cclass[ 95] = 0;  // _
-        let cclass[ 96] = 0;  // `
-        let cclass[ 97] = 0;  // a
-        let cclass[ 98] = 0;  // b
-        let cclass[ 99] = 0;  // c
-        let cclass[100] = 0;  // d
-        let cclass[101] = 0;  // e
-        let cclass[102] = 0;  // f
-        let cclass[103] = 0;  // g
-        let cclass[104] = 0;  // h
-        let cclass[105] = 0;  // i
-        let cclass[106] = 0;  // j
-        let cclass[107] = 0;  // k
-        let cclass[108] = 0;  // l
-        let cclass[109] = 0;  // m
-        let cclass[110] = 0;  // n
-        let cclass[111] = 0;  // o
-        let cclass[112] = 0;  // p
-        let cclass[113] = 0;  // q
-        let cclass[114] = 0;  // r
-        let cclass[115] = 0;  // s
-        let cclass[116] = 0;  // t
-        let cclass[117] = 0;  // u
-        let cclass[118] = 0;  // v
-        let cclass[119] = 0;  // w
-        let cclass[120] = 0;  // x
-        let cclass[121] = 0;  // y
-        let cclass[122] = 0;  // z
-        let cclass[123] = 0;  // {
-        let cclass[124] = 3;  // |
-        let cclass[125] = 0;  // }
-        let cclass[126] = 0;  // ~
-
+        let MASK = -16;
+        let PS2 = "|";
         return;
+    }
+
+
+    function int cmdline(String s, Symbol argv, int i) {
+        var int cclass;
+        var String t;
+        var Symbol next;
+
+        while (i < s.length()) {
+
+            let i = Str.lskip(s, 32, i);
+
+            if (i = s.length()) {
+                return i;
+            }
+
+            let cclass = Lex.cclass(s.charAt(i)) & MASK;
+
+            if (cclass = END) {
+                do argv.setTag(s);
+                return i;
+            }
+
+            if (cclass = BLOCK) {
+                let next = Symbol.new(null, BLOCK, null);
+                let i = Parse.block(s, next, i);
+                let s = next.tag();
+                do next.setTag(null);
+                do next.setData(next.next());
+                do next.setNext(null);
+                if (i < s.length()) {
+                    let cclass = Lex.cclass(s.charAt(i));
+                    if (cclass = INTEX) {
+                        let i = Parse.intex(null, next, i);
+                        let s = next.tag();
+                        do next.setTag(null);
+                        let next = Symbol.new(null, INTEX, next);
+                    } else { if (cclass = STREX) {
+                        let i = Parse.strex(s, next, i);
+                        let s = next.tag();
+                        do next.setTag(null);
+                        let next = Symbol.new(null, STREX, next);
+                    }}
+                }
+            } else { if (cclass = INT) {
+                let t = String.new(s.length());
+                let i = Lex.token(s, t, i);
+                let next = Symbol.new(null, INT, t.intValue());
+                do t.dispose();
+                if (i < s.length()) { if (Lex.cclass(s.charAt(i)) = INTEX) {
+                    let i = Parse.intex(s, next, i);
+                    let s = next.tag();
+                    do next.setTag(null);
+                    let next = Symbol.new(null, INTEX, next);
+                }}
+            } else { if (cclass = INTEX) {
+                let next = Symbol.new(null, INTEX, null);
+                let i = Parse.intex(s, next, i);
+                let s = next.tag();
+                do next.setTag(null);
+                do next.setData(next.next());
+                do next.setNext(null);
+            } else { if (cclass = STR) {
+                let t = String.new(s.length());
+                let i = Lex.string(s, t, i+1);
+                let next = Symbol.new(null, STR, t);
+                if (i < s.length()) { if (s.charAt(i) = 44) {
+                    let i = Parse.strex(s, next, i);
+                    let s = next.tag();
+                    do next.setTag(null);
+                    let next = Symbol.new(null, STREX, next);
+                }}
+            //} else { if (cclass = STREX) {
+                //let next = Symbol.new(null, STREX, null);
+                //let i = Parse.intex(s, next, i);
+                //let s = next.tag();
+                //do next.setTag(null);
+            } else { if (cclass = SYM) {
+                let t = String.new(s.length());
+                let i = Lex.token(s, t, i);
+                let next = Symbol.new(t, SYM, null);
+                if (i < s.length()) {
+                    let cclass = Lex.cclass(s.charAt(i));
+                    if (cclass = INTEX) {
+                        let i = Parse.intex(s, next, i);
+                        let s = next.tag();
+                        do next.setTag(null);
+                        let next = Symbol.new(null, INTEX, next);
+                    } else { if (cclass = STREX) {
+                        let i = Parse.strex(s, next, i);
+                        let s = next.tag();
+                        do next.setTag(null);
+                        let next = Symbol.new(null, STREX, next);
+                    }}
+                }
+            } else {
+                /* error */
+            }}}}}//}
+
+            do argv.append(next);
+        }
+
+        do argv.setTag(s);
+
+        return i;
+    }
+
+
+    function int intex(String s, Symbol next, int i) {
+
+        return i;
+    }
+
+
+    function int strex(String s, Symbol next, int i) {
+        return i;
+    }
+
+
+    function int block(String s, Symbol block, int i) {
+        var Symbol cmdlin;
+
+        let cmdlin = Symbol.new(null, CMDLIN, null);
+        let i = Parse.cmdline(s, cmdlin, i+1);
+        do cmdlin.setData(cmdlin.next());
+        do cmdlin.setNext(null);
+        while (~(i < s.length())) {
+            if (cmdlin.data() = null) {
+                do cmdlin.dispose();
+            } else {
+                do block.append(cmdlin);
+            }
+            let s = IOBox.read(PS2);
+            let cmdlin = Symbol.new(s, CMDLIN, null);
+            let i = Parse.cmdline(s, cmdlin, 0);
+            let s = cmdlin.tag();
+            do cmdlin.setTag(null);
+            do cmdlin.setData(cmdlin.next());
+            do cmdlin.setNext(null);
+        }
+
+        if (cmdlin.data() = null) {
+            do cmdlin.dispose();
+        } else {
+            do block.append(cmdlin);
+        }
+
+        do block.setTag(s);
+
+        return i + 1;
     }
 
 }

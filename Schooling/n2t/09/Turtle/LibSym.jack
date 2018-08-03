@@ -125,29 +125,29 @@ class LibSym {
 
 
     function int typeClass(Symbol sym) {
-        return sym.meta() & 1026;
+        return sym.meta() & -64;
     }
 
 
-    /* Don't change these values without consulting typeClass(). */
+    /* typeClass() depends on these values. */
+                                                              // see Lex.init()
+    function int CMD       () { return  3;                  }
+    function int TTL       () { return  4;                  }
+    function int OP        () { return  Lex.cclass(38);     }  // 8
 
-    function int INT       () { return  Lex.cclass(48); }
-    function int CMD       () { return  2; }
-    function int HASHTAB   () { return  3; }
-    function int OP        () { return  4; }
-    function int SYM       () { return  Lex.cclass(65); }
-    function int TTL       () { return  6; }
-
-    /* string type-class */
-    function int STR       () { return Lex.cclass(34); }
-    function int END       () { return 33; }
-    function int EXPR      () { return 34; }
+    /* string type-class */  // defunct
+    function int END       () { return 33; }  // defunct
+    function int EXPR      () { return 34; }  // defunct
 
     /* block type-class */
-    function int BLOCK     () { return Lex.cclass(123);     }
-    function int CMDLIN    () { return Lex.cclass(123) + 1; }
-    function int FUNC      () { return Lex.cclass(123) + 2; }
-    function int INTEX     () { return Lex.cclass(42);      }
-    function int STREX     () { return Lex.cclass(44);      }
+    function int BLOCK     () { return Lex.cclass(123);     }  // 64
+    function int CMDLIN    () { return Lex.cclass(123) + 1; }  // 65
+    function int FUNC      () { return Lex.cclass(123) + 2; }  // 66
+    function int INTEX     () { return Lex.cclass(126) - 1; }  // 80
+    function int STREX     () { return Lex.cclass(44);      }  // 96
+
+    function int STR       () { return Lex.cclass(34);      }  // 256
+    function int SYM       () { return  Lex.cclass(65);     }  // 2048
+    function int INT       () { return  Lex.cclass(48);     }  // 4096
 
 }
