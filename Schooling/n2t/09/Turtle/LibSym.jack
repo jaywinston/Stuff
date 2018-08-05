@@ -125,19 +125,17 @@ class LibSym {
 
 
     function int typeClass(Symbol sym) {
-        return sym.meta() & -64;
+        return sym.meta() & (LibSym.STR() | LibSym.BLOCK());
     }
 
-
-    /* typeClass() depends on these values. */
                                                               // see Lex.init()
     function int CMD       () { return  3;                  }
     function int TTL       () { return  4;                  }
     function int OP        () { return  Lex.cclass(38);     }  // 8
 
     /* string type-class */  // defunct
-    function int END       () { return 33; }  // defunct
-    function int EXPR      () { return 34; }  // defunct
+    function int END       () { return 33; }  // in obsolescence
+    function int EXPR      () { return 34; }  // in obsolescence
 
     /* block type-class */
     function int BLOCK     () { return Lex.cclass(123);     }  // 64
@@ -147,7 +145,7 @@ class LibSym {
     function int STREX     () { return Lex.cclass(44);      }  // 96
 
     function int STR       () { return Lex.cclass(34);      }  // 256
-    function int SYM       () { return  Lex.cclass(65);     }  // 2048
-    function int INT       () { return  Lex.cclass(48);     }  // 4096
+    function int INT       () { return Lex.cclass(48);      }  // 8192
+    function int SYM       () { return Lex.cclass(65);      }  // 16384
 
 }

@@ -28,9 +28,6 @@ class DB {
         return;
 
     }
-}
-/*
-class Test {
 
 
     function void print(Symbol p, int c1, int r1) {
@@ -42,12 +39,16 @@ class Test {
             return;
         }
 
+        if ((c1>55)|(r1>20)){
+            let c1=0;
+            let r1=0;
+        }
+
         let a = Array.new(90);
         let a[0] = "null";
         let a[LibSym.CMD()] = "CMD";
-        let a[LibSym.HASHTAB()] = "HASHTAB";
-        let a[LibSym.INT()] = "INT";
-        let a[LibSym.SYM()] = "SYM";
+        let a[LibSym.INT()-8190] = "INT";
+        let a[LibSym.SYM()-16381] = "SYM";
         let a[LibSym.TTL()] = "TTL";
         let a[LibSym.END()] = "END";
         let a[LibSym.EXPR()] = "EXPR";
@@ -80,7 +81,7 @@ class Test {
         do Output.moveCursor(r+1,c);
         do Output.printString(t);
 
-        if ( (p.meta()&32) = 32 ) {
+        if ( (p.meta()&64) = 64 ) {
             do Output.moveCursor(r+2,c);
             do Output.printString("|");
             do Test.print(p.data(), c, r+3);
@@ -92,4 +93,3 @@ class Test {
     }
 
 }
-*/

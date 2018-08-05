@@ -24,13 +24,13 @@ class Lex {
 
         let i = 32;
         while (i < 128) {
-            let CTAB[i] = 512;
+            let CTAB[i] = 16384;
             let i = i + 1;
         }
 
         let i = 48;
         while (i < 58) {
-            let CTAB[i] = 1024;
+            let CTAB[i] = 8192;
             let i = i + 1;
         }
  
@@ -74,9 +74,11 @@ class Lex {
 
     function int token(String s, String t, int i) {
         var char c;
+        var int MASK;
 
+        let MASK = CTAB[65] | CTAB[48];
         let c = Lex.getch(s, i);
-        while (CTAB[c] < 3) {
+        while ( (CTAB[c]&MASK) > 0 ) {
             do t.appendChar(c);
             let i = i + 1;
             let c = Lex.getch(s, i);
