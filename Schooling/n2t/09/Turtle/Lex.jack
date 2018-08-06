@@ -46,9 +46,9 @@ class Lex {
         let CTAB[ 42] =   11;  // *
         let CTAB[ 47] =   11;  // /
         let CTAB[123] =   64;  // {
-        let CTAB[126] =   81;  // ~
-        let CTAB[ 40] =   82;  // (
-        let CTAB[ 41] =   83;  // )
+        let CTAB[126] =   89;  // ~
+        let CTAB[ 40] =   90;  // (
+        let CTAB[ 41] =   90;  // )
         let CTAB[ 44] =   96;  // ,
         let CTAB[125] =  128;  // }
         let CTAB[ 34] =  256;  // "

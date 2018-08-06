@@ -1,23 +1,27 @@
 class Parse {
 
-    static int BLANK, DELIM, BLOCK, END, EOS, CMDLIN, INT,
+    static int EQ, BLANK, DELIM, BLOCK, END, EOS, CMDLIN, INT,
                 INTEX, OP, STR, STREX, SYM, UOP;
     static int MASK;
     static String PS1, PS2;
 
 
     function void init() {
+        let EQ = Lex.cclass(61);
         let BLANK = Lex.cclass(32);
         let BLOCK = LibSym.BLOCK();
         let END = Lex.cclass(125);
         let EOS = 0;
         let CMDLIN = LibSym.CMDLIN();
-        let DELIM = Lex.cclass(32) | Lex.cclass(44);
+        let DELIM = Lex.cclass(32)
+                    | ( (Lex.cclass(44)&~Lex.cclass(123)) | Lex.cclass(0));
         let INT = LibSym.INT();
         let INTEX = LibSym.INTEX();
+        let OP = LibSym.OP();
         let STR = LibSym.STR();
         let STREX = LibSym.STREX();
         let SYM = LibSym.SYM();
+        let UOP = LibSym.UOP();
         let MASK = -16;
         let PS2 = "|";
         return;
@@ -101,7 +105,24 @@ class Parse {
             } else { if (cclass = SYM) {
                 let t = String.new(s.length());
                 let i = Lex.token(s, t, i);
-                let next = Symbol.new(t, SYM, null);
+                let next = null;
+                /* assignment? */
+                if (i < s.length()) {
+                    if (Lex.cclass(s.charAt(i)) = EQ) {
+                        if ( (i+1) < s.length() ) {
+                            if (~(Lex.cclass(s.charAt(i+1)) = EQ)) {
+                                let next = Symbol.new("=", SYM, null);
+                            }
+                        } else {  /* "foo=" */
+                            let next = Symbol.new("=", SYM, null);
+                        }
+                    }
+                }
+                if (next = null) {
+                    let next = Symbol.new(t, SYM, null);
+                } else {
+                    do next.append(Symbol.new(t, SYM, null));
+                }
                 if (i < s.length()) {
                     let cclass = Lex.cclass(s.charAt(i));
                     if (cclass = INTEX) {
@@ -129,7 +150,120 @@ class Parse {
     }
 
 
-    function int intex(String s, Symbol next, int i) {
+    function int intex(String s, Symbol queue, int i) {
+        var int cclass, op;
+        var String t;
+        var Symbol objbuf, stack, stackbuf;
+
+        let stack = Symbol.new(null, null, null);
+
+        let cclass = Lex.cclass(s.charAt(i));
+        while ( (cclass&DELIM) = null ) {
+
+            /* unary ops */
+            while ( (cclass&OP) = OP ) {
+                let objbuf = Symbol.new(null, UOP, s.charAt(i));
+                do objbuf.setNext(stack);
+                let stack = objbuf;
+                let i = i + 1;
+                if (i = s.length()) {
+                    /* error
+                        todo: cleanup */
+                    return -i;
+                }
+                let cclass = Lex.cclass(s.charAt(i));
+            }
+
+            /* operand */
+            if (cclass = INT) {
+                let t = String.new(5);
+                let i = Lex.token(s, t, i);
+                let objbuf = Symbol.new(null, INT, t.intValue());
+                do t.dispose();
+            } else { if (cclass = SYM) {
+                let t = String.new(5);
+                let i = Lex.token(s, t, i);
+                let objbuf = Symbol.new(t, SYM, null);
+            } else { if (cclass = BLOCK) {
+                let objbuf = Symbol.new(null, BLOCK, null);
+                let i = Parse.block(s, objbuf, i);
+                let s = objbuf.tag();
+                do objbuf.setTag(null);
+                do objbuf.setData(objbuf.next());
+                do objbuf.setNext(null);
+            } else {
+                /* error */
+            }}}
+
+            do queue.append(objbuf);
+
+            /* operator */
+            if (i < s.length()) {
+                let op = s.charAt(i);
+                let objbuf = Symbol.new(null, Lex.cclass(op), op);
+                if ( (i+1) < s.length() ) {
+                    if ((Lex.cclass(op)=EQ) & (Lex.cclass(s.charAt(i+1))=EQ)) {
+                        let op = (op*1000) + s.charAt(i+1);
+                        let i = i + 1;
+                        do objbuf.setData(op);
+                    }
+                }
+
+                /* pop higher equal ops to queue */
+                while (  ((stack.meta()>objbuf.meta())
+                        | (stack.meta()=objbuf.meta()))
+                        & (~(stack.data()=40)) ) {
+                    let stackbuf = stack;
+                    let stack = stack.next();
+                    do stackbuf.setNext(null);
+                    do queue.append(stackbuf);
+                }
+
+                /* handle parens if else put op on queue */
+                if (objbuf.data() = 41) {
+                    do objbuf.dispose();
+                    while (~(stack.data() = 40)) {
+                        if (stack.meta() = null) { /* mismatched parens */
+                            do stack.dispose();
+                            return -i;
+                        }
+                        let stackbuf = stack;
+                        let stack = stack.next();
+                        do stackbuf.setNext(null);
+                        do queue.append(stackbuf);
+                    }
+                    let stackbuf = stack;
+                    let stack = stack.next();
+                    do stackbuf.dispose();
+                } else {
+                    do objbuf.setNext(stack);
+                    let stack = objbuf;
+                }
+
+                let i = i + 1;
+            }
+
+            let cclass = Lex.cclass(Lex.getch(s, i));
+        }
+
+        while (~(stack.meta() = null)) {
+            if (stack.data() = 40) {
+                while (~(stack = null)) {
+                    let stackbuf = stack;
+                    let stack = stack.next();
+                    do stackbuf.dispose();
+                }
+                return -i; /* mismatched parens */
+            }
+            let stackbuf = stack;
+            let stack = stack.next();
+            do stackbuf.setNext(null);
+            do queue.append(stackbuf);
+        }
+
+        do stack.dispose();
+
+        do queue.setTag(s);
 
         return i;
     }
@@ -172,5 +306,8 @@ class Parse {
 
         return i + 1;
     }
+
+
+    //function void push(Symbol stack, Symbol object) {
 
 }
