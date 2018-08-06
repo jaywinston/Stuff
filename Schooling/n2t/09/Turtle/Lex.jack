@@ -78,7 +78,7 @@ class Lex {
 
         let MASK = CTAB[65] | CTAB[48];
         let c = Lex.getch(s, i);
-        while ( (CTAB[c]&MASK) > 0 ) {
+        while (~( (CTAB[c]&MASK) = 0 )) {
             do t.appendChar(c);
             let i = i + 1;
             let c = Lex.getch(s, i);

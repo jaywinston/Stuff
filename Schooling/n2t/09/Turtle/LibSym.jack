@@ -2,20 +2,20 @@ class LibSym {
 
 
     function Symbol copySym(Symbol sym) {
-        var int typeClass;
+        var int tclass;
 
         if (sym = null) {
             return null;
         }
 
-        let typeClass = LibSym.typeClass(sym);
+        let tclass = LibSym.typeClass(sym);
 
-        if (typeClass = LibSym.STR()) {
+        if (tclass = LibSym.STR()) {
             return Symbol.new(Str.dup(sym.tag()), sym.meta(),
                               Str.dup(sym.data()));
         }
 
-        if (typeClass = LibSym.BLOCK()) {
+        if (tclass = LibSym.BLOCK()) {
             return Symbol.new(Str.dup(sym.tag()), sym.meta(),
                               LibSym.copyList(sym.data()));
         }
@@ -44,7 +44,7 @@ class LibSym {
 
 
     function void destroySym(Symbol sym) {
-        var int typeClass;
+        var int tclass;
         var String s;
 
         if (sym = null) {
@@ -57,12 +57,12 @@ class LibSym {
             do s.dispose();
         }
 
-        let typeClass = LibSym.typeClass(sym);
+        let tclass = LibSym.typeClass(sym);
 
-        if (typeClass = LibSym.STR()) {
+        if (tclass = LibSym.STR()) {
             let s = sym.data();
             do s.dispose();
-        } else { if (typeClass = LibSym.BLOCK()) {
+        } else { if (tclass = LibSym.BLOCK()) {
             do LibSym.destroyList(sym.data());
         }}
 
