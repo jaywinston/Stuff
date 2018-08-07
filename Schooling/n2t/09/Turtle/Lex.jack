@@ -22,6 +22,29 @@ class Lex {
 
         let CTAB = Array.new(128);
 
+        /* bitmap:
+           0000000000000000
+           ||||||||||||||||
+      unused|||||||||||||||
+          sym||||||||||||||
+           int|||||||||||||
+            eos||||||||||||
+           blank|||||||||||
+           rparen||||||||||
+            lparen|||||||||
+                str||||||||
+                 end|||||||
+                block||||||
+                    \/|||||
+                strex |||||
+                      \/|||
+  intex(+reserved==uop)||||
+                       ||||
+           op(+reserved)|||
+                        \|/
+                  reserved
+*/
+
         let i = 32;
         while (i < 128) {
             let CTAB[i] = 16384;
@@ -47,11 +70,11 @@ class Lex {
         let CTAB[ 47] =   11;  // /
         let CTAB[123] =   64;  // {
         let CTAB[126] =   89;  // ~
-        let CTAB[ 40] =   90;  // (
-        let CTAB[ 41] =   90;  // )
         let CTAB[ 44] =   96;  // ,
         let CTAB[125] =  128;  // }
         let CTAB[ 34] =  256;  // "
+        let CTAB[ 40] =  512;  // (
+        let CTAB[ 41] = 1024;  // )
         let CTAB[ 32] = 2048;  //  
         let CTAB[  0] = 4096;  // EOS
 

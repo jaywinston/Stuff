@@ -1,7 +1,7 @@
 class Parse {
 
     static int EQ, BLANK, DELIM, BLOCK, END, EOS, CMDLIN, INT,
-                INTEX, OP, STR, STREX, SYM, UOP;
+                INTEX, OP, STR, STREX, SYM, UOP, LPAREN, RPAREN;
     static int MASK;
     static String PS1, PS2;
 
@@ -22,6 +22,8 @@ class Parse {
         let STREX = LibSym.STREX();
         let SYM = LibSym.SYM();
         let UOP = LibSym.UOP();
+        let LPAREN = Lex.cclass(40);
+        let RPAREN = Lex.cclass(41);
         let MASK = -16;
         let PS2 = "|";
         return;
@@ -151,109 +153,108 @@ class Parse {
 
 
     function int intex(String s, Symbol queue, int i) {
+        var boolean uop;
         var int cclass, op;
         var String t;
         var Symbol objbuf, stack, stackbuf;
 
         let stack = Symbol.new(null, null, null);
-
+        let uop = queue.meta() = INTEX;
         let cclass = Lex.cclass(s.charAt(i));
-        while ( (cclass&DELIM) = null ) {
 
-            /* unary ops */
-            while ( (cclass&OP) = OP ) {
-                let objbuf = Symbol.new(null, UOP, s.charAt(i));
-                do objbuf.setNext(stack);
-                let stack = objbuf;
-                let i = i + 1;
-                if (i = s.length()) {
-                    /* error
-                        todo: cleanup */
-                    return -i;
-                }
-                let cclass = Lex.cclass(s.charAt(i));
-            }
+        while ( (cclass&DELIM) = 0 ) {
 
-            /* operand */
-            if (cclass = INT) {
-                let t = String.new(5);
-                let i = Lex.token(s, t, i);
-                let objbuf = Symbol.new(null, INT, t.intValue());
-                do t.dispose();
-            } else { if (cclass = SYM) {
-                let t = String.new(5);
-                let i = Lex.token(s, t, i);
-                let objbuf = Symbol.new(t, SYM, null);
-            } else { if (cclass = BLOCK) {
-                let objbuf = Symbol.new(null, BLOCK, null);
-                let i = Parse.block(s, objbuf, i);
-                let s = objbuf.tag();
-                do objbuf.setTag(null);
-                do objbuf.setData(objbuf.next());
-                do objbuf.setNext(null);
-            } else {
-                /* error */
-            }}}
-
-            do queue.append(objbuf);
-
-            /* operator */
-            if (i < s.length()) {
-                let op = s.charAt(i);
-                let objbuf = Symbol.new(null, Lex.cclass(op), op);
-                if ( (i+1) < s.length() ) {
-                    if ((Lex.cclass(op)=EQ) & (Lex.cclass(s.charAt(i+1))=EQ)) {
-                        let op = (op*1000) + s.charAt(i+1);
-                        let i = i + 1;
-                        do objbuf.setData(op);
-                    }
-                }
-
-                /* pop higher equal ops to queue */
-                while (  ((stack.meta()>objbuf.meta())
-                        | (stack.meta()=objbuf.meta()))
-                        & (~(stack.data()=40)) ) {
+            if ( (cclass=INT) | ((cclass=SYM) | (cclass=BLOCK)) ) {
+                if (cclass = INT) {
+                    let t = String.new(5);
+                    let i = Lex.token(s, t, i);
+                    let objbuf = Symbol.new(null, INT, t.intValue());
+                    do t.dispose();
+                } else { if (cclass = SYM) {
+                    let t = String.new(5);
+                    let i = Lex.token(s, t, i);
+                    let objbuf = Symbol.new(t, SYM, null);
+                } else { if (cclass = BLOCK) {
+                    let objbuf = Symbol.new(null, BLOCK, null);
+                    let i = Parse.block(s, objbuf, i);
+                    let s = objbuf.tag();
+                    do objbuf.setTag(null);
+                    do objbuf.setData(objbuf.next());
+                    do objbuf.setNext(null);
+                }}}
+                do queue.append(objbuf);
+                while (stack.meta() = UOP) {
                     let stackbuf = stack;
                     let stack = stack.next();
                     do stackbuf.setNext(null);
                     do queue.append(stackbuf);
                 }
-
-                /* handle parens if else put op on queue */
-                if (objbuf.data() = 41) {
-                    do objbuf.dispose();
-                    while (~(stack.data() = 40)) {
-                        if (stack.meta() = null) { /* mismatched parens */
-                            do stack.dispose();
-                            return -i;
-                        }
+                let uop = false;
+            } else { if ( (cclass&OP) = OP) {
+                let op = s.charAt(i);
+                if (uop) {
+                    let objbuf = Symbol.new(null, UOP, op);
+                } else {
+                    let objbuf = Symbol.new(null, Lex.cclass(op), op);
+                }
+                if ( (i+1) < s.length() ) {
+                    if ((Lex.cclass(op)=EQ) & (Lex.cclass(s.charAt(i+1))=EQ)) {
+                        let op = (op*100) + s.charAt(i+1);
+                        let i = i + 1;
+                        do objbuf.setData(op);
+                    }
+                }
+                /* pop higher equal ops to queue */
+                if (~uop) {
+                    while (  ((stack.meta()>objbuf.meta())
+                            | (stack.meta()=objbuf.meta()))
+                            & (~(stack.meta()=LPAREN)) ) {
                         let stackbuf = stack;
                         let stack = stack.next();
                         do stackbuf.setNext(null);
                         do queue.append(stackbuf);
                     }
+                    let uop = true;
+                }
+                do objbuf.setNext(stack);
+                let stack = objbuf;
+                let i = i + 1;
+            } else { if (cclass = LPAREN) {
+                let objbuf = Symbol.new(null, LPAREN, null);
+                do objbuf.setNext(stack);
+                let stack = objbuf;
+                let uop = true;
+                let i = i + 1;
+            } else { if (cclass = RPAREN) {
+                do objbuf.dispose();
+                while (~(stack.meta() = LPAREN)) {
+                    if (stack.meta() = null) { /* mismatched parens */
+                        do stack.dispose();
+                        return -i;
+                    }
                     let stackbuf = stack;
                     let stack = stack.next();
-                    do stackbuf.dispose();
-                } else {
-                    do objbuf.setNext(stack);
-                    let stack = objbuf;
+                    do stackbuf.setNext(null);
+                    do queue.append(stackbuf);
                 }
-
+                let stackbuf = stack;
+                let stack = stack.next();
+                do stackbuf.dispose();
+                let uop = false;
                 let i = i + 1;
-            }
+            }}}}
 
             let cclass = Lex.cclass(Lex.getch(s, i));
         }
 
         while (~(stack.meta() = null)) {
-            if (stack.data() = 40) {
+            if (stack.meta() = LPAREN) {    /* mismatched parens */
                 while (~(stack = null)) {
                     let stackbuf = stack;
                     let stack = stack.next();
                     do stackbuf.dispose();
                 }
-                return -i; /* mismatched parens */
+                return -i;
             }
             let stackbuf = stack;
             let stack = stack.next();
