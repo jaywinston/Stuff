@@ -44,20 +44,40 @@ class DB {
             let r1=0;
         }
 
-        let a = Array.new(90);
-        let a[0] = "null";
-        let a[LibSym.CMD()] = "CMD";
-        let a[LibSym.INT()-8190] = "INT";
-        let a[LibSym.SYM()-16381] = "SYM";
-        let a[LibSym.TTL()] = "TTL";
-        let a[LibSym.END()] = "END";
-        let a[LibSym.EXPR()] = "EXPR";
-        let a[LibSym.STR()] = "STR";
-        let a[LibSym.FUNC()] = "FUNC";
-        let a[LibSym.CMDLIN()] = "CMDLIN";
-        let a[LibSym.BLOCK()] = "BLOCK";
-        let a[LibSym.INTEX()] = "INTEX";
-        let a[LibSym.STREX()] = "STREX";
+        if (p.meta() = 0) {
+            let t = "null";
+        } else { if (p.meta() = LibSym.CMD()) {
+            let t = "CMD";
+        } else { if (p.meta() = LibSym.INT()) {
+            let t = "INT";
+        } else { if (p.meta() = LibSym.SYM()) {
+            let t = "SYM";
+        } else { if (p.meta() = LibSym.TTL()) {
+            let t = "TTL";
+        } else { if (p.meta() = LibSym.END()) {
+            let t = "END";
+        } else { if (p.meta() = LibSym.EXPR()) {
+            let t = "EXPR";
+        } else { if (p.meta() = LibSym.STR()) {
+            let t = "STR";
+        } else { if (p.meta() = LibSym.FUNC()) {
+            let t = "FUNC";
+        } else { if (p.meta() = LibSym.CMDLIN()) {
+            let t = "CMDLIN";
+        } else { if (p.meta() = LibSym.BLOCK()) {
+            let t = "BLOCK";
+        } else { if (p.meta() = LibSym.INTEX()) {
+            let t = "INTEX";
+        } else { if (p.meta() = LibSym.STREX()) {
+            let t = "STREX";
+        } else { if (p.meta() < 8) {
+            let t = "OP";
+        } else { if (p.meta() = LibSym.UOP()) {
+            let t = "UOP";
+        } else {
+            let t = "?";
+        }}}}}}}}}}}}}}}
+
         let c = c1;
         let r = r1;
 
@@ -66,7 +86,6 @@ class DB {
         } else {
             let s = p.tag();
         }
-        let t = a[p.meta()];
 
         let l = Math.max(s.length(),t.length());
 
@@ -81,13 +100,14 @@ class DB {
         do Output.moveCursor(r+1,c);
         do Output.printString(t);
 
-        if ( (p.meta()&64) = 64 ) {
+        if ( ((p.meta()&(LibSym.BLOCK())) = LibSym.BLOCK())
+            & (~((p.meta()&31)=26)) ) {
             do Output.moveCursor(r+2,c);
             do Output.printString("|");
-            do Test.print(p.data(), c, r+3);
+            do DB.print(p.data(), c, r+3);
         }
 
-        do Test.print(p.next(), c+(l+4), r);
+        do DB.print(p.next(), c+(l+4), r);
 
         return;
     }

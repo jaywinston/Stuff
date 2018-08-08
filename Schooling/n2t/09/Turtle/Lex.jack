@@ -47,7 +47,7 @@ class Lex {
 
         let i = 32;
         while (i < 128) {
-            let CTAB[i] = 16384;
+            let CTAB[i] = 16640;
             let i = i + 1;
         }
 

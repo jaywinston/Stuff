@@ -1,6 +1,6 @@
 class Parse {
 
-    static int EQ, BLANK, DELIM, BLOCK, END, EOS, CMDLIN, INT,
+    static int EQ, BLANK, DELIM, BLOCK, END, EOS, CMDLIN, INT, COMMA,
                 INTEX, OP, STR, STREX, SYM, UOP, LPAREN, RPAREN;
     static int MASK;
     static String PS1, PS2;
@@ -11,20 +11,19 @@ class Parse {
         let BLANK = Lex.cclass(32);
         let BLOCK = LibSym.BLOCK();
         let END = Lex.cclass(125);
-        let EOS = 0;
+        let EOS = Lex.cclass(0);
         let CMDLIN = LibSym.CMDLIN();
         let INT = LibSym.INT();
         let INTEX = LibSym.INTEX();
         let OP = LibSym.OP();
         let STR = LibSym.STR();
         let STREX = LibSym.STREX();
+        let COMMA = STREX & ~BLOCK;
         let SYM = LibSym.SYM();
         let UOP = LibSym.UOP();
         let LPAREN = Lex.cclass(40);
         let RPAREN = Lex.cclass(41);
-        //let MASK = -16;
-        let MASK = LibSym.INT() | LibSym.INTEX() | LibSym.STR()
-                    | LibSym.STREX() | LibSym.SYM();
+        let MASK = -16;
         let PS2 = "|";
         return;
     }
@@ -35,13 +34,10 @@ class Parse {
         var String t;
         var Symbol next;
 
-        let cclass = Lex.cclass(s.charAt(i)) & MASK;
-        let DELIM = (Lex.cclass(44)&~Lex.cclass(123)) | Lex.cclass(0);
+        let i = Str.lskip(s, 32, i);
+        let cclass = Lex.cclass(Lex.getch(s, i)) & MASK;
+        let DELIM = COMMA | EOS;
         while ( (cclass&DELIM) = 0 ) {
-
-            let i = Str.lskip(s, 32, i);
-
-            let cclass = Lex.cclass(Lex.getch(s, i)) & MASK;
 
             if (cclass = END) {
                 do argv.setTag(s);
@@ -55,26 +51,24 @@ class Parse {
                 do next.setTag(null);
                 do next.setData(next.next());
                 do next.setNext(null);
-                if (i < s.length()) {
-                    let cclass = Lex.cclass(s.charAt(i));
-                    if (cclass = INTEX) {
-                        let i = Parse.intex(null, next, i);
-                        let s = next.tag();
-                        do next.setTag(null);
-                        let next = Symbol.new(null, INTEX, next);
-                    } else { if (cclass = STREX) {
-                        let i = Parse.strex(s, next, i);
-                        let s = next.tag();
-                        do next.setTag(null);
-                        let next = Symbol.new(null, STREX, next);
-                    }}
-                }
+                let cclass = Lex.cclass(Lex.getch(s, i)) & MASK;
+                if (cclass = INTEX) {
+                    let i = Parse.intex(s, next, i);
+                    let s = next.tag();
+                    do next.setTag(null);
+                    let next = Symbol.new(null, INTEX, next);
+                } else { if (cclass = STREX) {
+                    let i = Parse.strex(s, next, i);
+                    let s = next.tag();
+                    do next.setTag(null);
+                    let next = Symbol.new(null, STREX, next);
+                }}
             } else { if (cclass = INT) {
                 let t = String.new(s.length());
                 let i = Lex.token(s, t, i);
                 let next = Symbol.new(null, INT, t.intValue());
                 do t.dispose();
-                if (Lex.cclass(Lex.getch(s, i)) = INTEX) {
+                if ( (Lex.cclass(Lex.getch(s, i))&MASK) = INTEX ) {
                     let i = Parse.intex(s, next, i);
                     let s = next.tag();
                     do next.setTag(null);
@@ -89,7 +83,7 @@ class Parse {
                 do next.setNext(null);
             } else { if (cclass = STR) {
                 let t = String.new(s.length());
-                let i = Lex.string(s, t, i+1);
+                let i = Lex.string(s, t, i);
                 let next = Symbol.new(null, STR, t);
                 if (Lex.cclass(Lex.getch(s, i)) = STREX) {
                     let i = Parse.strex(s, next, i);
@@ -108,31 +102,35 @@ class Parse {
                 /* assignment? */
                 if ( (Lex.cclass(Lex.getch(s, i)) = EQ)
                         & (~(Lex.cclass(Lex.getch(s, i+1)) = EQ)) ) {
-                    let next = Symbol.new("=", SYM, null);
-                    do next.append(Symbol.new(t, SYM, null));
+                    let next = Symbol.new(null, SYM, "=");
+                    do next.append(Symbol.new(null, SYM, t));
                 } else {
-                    let next = Symbol.new(t, SYM, null);
+                    let next = Symbol.new(null, SYM, t);
                 }
-                if (i < s.length()) {
-                    let cclass = Lex.cclass(s.charAt(i));
-                    if (cclass = INTEX) {
-                        let i = Parse.intex(s, next, i);
-                        let s = next.tag();
-                        do next.setTag(null);
-                        let next = Symbol.new(null, INTEX, next);
-                    } else { if (cclass = STREX) {
-                        let i = Parse.strex(s, next, i);
-                        let s = next.tag();
-                        do next.setTag(null);
-                        let next = Symbol.new(null, STREX, next);
-                    }}
-                }
+                let cclass = Lex.cclass(Lex.getch(s, i)) & MASK;
+                if (cclass = INTEX) {
+                    let i = Parse.intex(s, next, i);
+                    let s = next.tag();
+                    do next.setTag(null);
+                    let next = Symbol.new(null, INTEX, next);
+                } else { if (cclass = STREX) {
+                    let i = Parse.strex(s, next, i);
+                    let s = next.tag();
+                    do next.setTag(null);
+                    let next = Symbol.new(null, STREX, next);
+                }}
             } else {
                 /* error */
             }}}}}//}
 
+//do Output.printInt(next);
+//do Output.println();
+//do Output.printInt(next.next());
+//do Output.println();
+//do Output.println();
             do argv.append(next);
 
+            let i = Str.lskip(s, 32, i);
             let cclass = Lex.cclass(Lex.getch(s, i)) & MASK;
         }
 
@@ -150,10 +148,9 @@ class Parse {
 
         let stack = Symbol.new(null, null, null);
         let uop = queue.meta() = INTEX;
-        let cclass = Lex.cclass(s.charAt(i));
+        let cclass = Lex.cclass(Lex.getch(s, i));
 
-        let DELIM = Lex.cclass(32)
-                    | ( (Lex.cclass(44)&~Lex.cclass(123)) | Lex.cclass(0));
+        let DELIM = BLANK | (COMMA | EOS);
         while ( (cclass&DELIM) = 0 ) {
 
             if ( (cclass=INT) | ((cclass=SYM) | (cclass=BLOCK)) ) {
@@ -165,7 +162,7 @@ class Parse {
                 } else { if (cclass = SYM) {
                     let t = String.new(5);
                     let i = Lex.token(s, t, i);
-                    let objbuf = Symbol.new(t, SYM, null);
+                    let objbuf = Symbol.new(null, SYM, t);
                 } else { if (cclass = BLOCK) {
                     let objbuf = Symbol.new(null, BLOCK, null);
                     let i = Parse.block(s, objbuf, i);
@@ -187,7 +184,7 @@ class Parse {
                 if (uop) {
                     let objbuf = Symbol.new(null, UOP, op);
                 } else {
-                    let objbuf = Symbol.new(null, Lex.cclass(op), op);
+                    let objbuf = Symbol.new(null, Lex.cclass(op)&7, op);
                 }
                 if ( (i+1) < s.length() ) {
                     if ((Lex.cclass(op)=EQ) & (Lex.cclass(s.charAt(i+1))=EQ)) {
@@ -263,6 +260,24 @@ class Parse {
 
 
     function int strex(String s, Symbol next, int i) {
+        var int cclass;
+        var Symbol arg;
+
+        let DELIM = BLANK | EOS;
+        let arg = Symbol.new(null, null, null);
+        let cclass = Lex.cclass(Lex.getch(s, i+1));
+        while ( (cclass&DELIM) = 0 ) {
+            let i = Parse.cmdline(s, arg, i+1);
+            do next.append(arg.next());
+            do arg.setNext(null);
+            let s = arg.tag();
+            let cclass = Lex.cclass(Lex.getch(s, i+1));
+        }
+
+        do arg.setTag(null);
+        do arg.dispose();
+        do next.setTag(s);
+
         return i;
     }
 
@@ -270,37 +285,35 @@ class Parse {
     function int block(String s, Symbol block, int i) {
         var Symbol cmdlin;
 
-        let cmdlin = Symbol.new(null, CMDLIN, null);
-        let i = Parse.cmdline(s, cmdlin, i+1);
-        do cmdlin.setData(cmdlin.next());
-        do cmdlin.setNext(null);
-        while (~(i < s.length())) {
-            if (cmdlin.data() = null) {
-                do cmdlin.dispose();
-            } else {
-                do block.append(cmdlin);
-            }
-            let s = IOBox.read(PS2);
-            let cmdlin = Symbol.new(s, CMDLIN, null);
-            let i = Parse.cmdline(s, cmdlin, 0);
+        let i = Str.lskip(s, 32, i+1);
+
+        if ( (Lex.cclass(Lex.getch(s, i))&(END|EOS)) = 0 ) {
+            let cmdlin = Symbol.new(null, CMDLIN, null);
+            let i = Parse.cmdline(s, cmdlin, i);
             let s = cmdlin.tag();
             do cmdlin.setTag(null);
             do cmdlin.setData(cmdlin.next());
             do cmdlin.setNext(null);
+            do block.append(cmdlin);
         }
 
-        if (cmdlin.data() = null) {
-            do cmdlin.dispose();
-        } else {
-            do block.append(cmdlin);
+        while (Lex.cclass(Lex.getch(s, i)) = EOS) {
+            let s = IOBox.read(PS2);
+            let i = Str.lskip(s, 32, 0);
+            if (~(Lex.cclass(Lex.getch(s, i)) = END)) {
+                let cmdlin = Symbol.new(s, CMDLIN, null);
+                let i = Parse.cmdline(s, cmdlin, 0);
+                let s = cmdlin.tag();
+                do cmdlin.setTag(null);
+                do cmdlin.setData(cmdlin.next());
+                do cmdlin.setNext(null);
+                do block.append(cmdlin);
+            }
         }
 
         do block.setTag(s);
 
         return i + 1;
     }
-
-
-    //function void push(Symbol stack, Symbol object) {
 
 }
