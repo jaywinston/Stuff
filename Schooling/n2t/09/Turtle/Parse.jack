@@ -13,8 +13,6 @@ class Parse {
         let END = Lex.cclass(125);
         let EOS = 0;
         let CMDLIN = LibSym.CMDLIN();
-        let DELIM = Lex.cclass(32)
-                    | ( (Lex.cclass(44)&~Lex.cclass(123)) | Lex.cclass(0));
         let INT = LibSym.INT();
         let INTEX = LibSym.INTEX();
         let OP = LibSym.OP();
@@ -24,7 +22,9 @@ class Parse {
         let UOP = LibSym.UOP();
         let LPAREN = Lex.cclass(40);
         let RPAREN = Lex.cclass(41);
-        let MASK = -16;
+        //let MASK = -16;
+        let MASK = LibSym.INT() | LibSym.INTEX() | LibSym.STR()
+                    | LibSym.STREX() | LibSym.SYM();
         let PS2 = "|";
         return;
     }
@@ -35,15 +35,13 @@ class Parse {
         var String t;
         var Symbol next;
 
-        while (i < s.length()) {
+        let cclass = Lex.cclass(s.charAt(i)) & MASK;
+        let DELIM = (Lex.cclass(44)&~Lex.cclass(123)) | Lex.cclass(0);
+        while ( (cclass&DELIM) = 0 ) {
 
             let i = Str.lskip(s, 32, i);
 
-            if (i = s.length()) {
-                return i;
-            }
-
-            let cclass = Lex.cclass(s.charAt(i)) & MASK;
+            let cclass = Lex.cclass(Lex.getch(s, i)) & MASK;
 
             if (cclass = END) {
                 do argv.setTag(s);
@@ -76,12 +74,12 @@ class Parse {
                 let i = Lex.token(s, t, i);
                 let next = Symbol.new(null, INT, t.intValue());
                 do t.dispose();
-                if (i < s.length()) { if (Lex.cclass(s.charAt(i)) = INTEX) {
+                if (Lex.cclass(Lex.getch(s, i)) = INTEX) {
                     let i = Parse.intex(s, next, i);
                     let s = next.tag();
                     do next.setTag(null);
                     let next = Symbol.new(null, INTEX, next);
-                }}
+                }
             } else { if (cclass = INTEX) {
                 let next = Symbol.new(null, INTEX, null);
                 let i = Parse.intex(s, next, i);
@@ -93,12 +91,12 @@ class Parse {
                 let t = String.new(s.length());
                 let i = Lex.string(s, t, i+1);
                 let next = Symbol.new(null, STR, t);
-                if (i < s.length()) { if (s.charAt(i) = 44) {
+                if (Lex.cclass(Lex.getch(s, i)) = STREX) {
                     let i = Parse.strex(s, next, i);
                     let s = next.tag();
                     do next.setTag(null);
                     let next = Symbol.new(null, STREX, next);
-                }}
+                }
             //} else { if (cclass = STREX) {
                 //let next = Symbol.new(null, STREX, null);
                 //let i = Parse.intex(s, next, i);
@@ -107,23 +105,13 @@ class Parse {
             } else { if (cclass = SYM) {
                 let t = String.new(s.length());
                 let i = Lex.token(s, t, i);
-                let next = null;
                 /* assignment? */
-                if (i < s.length()) {
-                    if (Lex.cclass(s.charAt(i)) = EQ) {
-                        if ( (i+1) < s.length() ) {
-                            if (~(Lex.cclass(s.charAt(i+1)) = EQ)) {
-                                let next = Symbol.new("=", SYM, null);
-                            }
-                        } else {  /* "foo=" */
-                            let next = Symbol.new("=", SYM, null);
-                        }
-                    }
-                }
-                if (next = null) {
-                    let next = Symbol.new(t, SYM, null);
-                } else {
+                if ( (Lex.cclass(Lex.getch(s, i)) = EQ)
+                        & (~(Lex.cclass(Lex.getch(s, i+1)) = EQ)) ) {
+                    let next = Symbol.new("=", SYM, null);
                     do next.append(Symbol.new(t, SYM, null));
+                } else {
+                    let next = Symbol.new(t, SYM, null);
                 }
                 if (i < s.length()) {
                     let cclass = Lex.cclass(s.charAt(i));
@@ -144,6 +132,8 @@ class Parse {
             }}}}}//}
 
             do argv.append(next);
+
+            let cclass = Lex.cclass(Lex.getch(s, i)) & MASK;
         }
 
         do argv.setTag(s);
@@ -162,6 +152,8 @@ class Parse {
         let uop = queue.meta() = INTEX;
         let cclass = Lex.cclass(s.charAt(i));
 
+        let DELIM = Lex.cclass(32)
+                    | ( (Lex.cclass(44)&~Lex.cclass(123)) | Lex.cclass(0));
         while ( (cclass&DELIM) = 0 ) {
 
             if ( (cclass=INT) | ((cclass=SYM) | (cclass=BLOCK)) ) {
