@@ -70,7 +70,7 @@ class DB {
             let t = "INTEX";
         } else { if (p.meta() = LibSym.STREX()) {
             let t = "STREX";
-        } else { if (p.meta() < 8) {
+        } else { if ((p.meta()&LibSym.OP()) = LibSym.OP()) {
             let t = "OP";
         } else { if (p.meta() = LibSym.UOP()) {
             let t = "UOP";

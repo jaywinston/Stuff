@@ -130,7 +130,8 @@ class LibSym {
                                                               // see Lex.init()
     function int CMD       () { return  3;                    }
     function int TTL       () { return  4;                    }
-    function int OP        () { return  Lex.cclass(38);       }  // 8
+    function int OP        () { return  Lex.cclass(38)
+                                           & (-8 & ~LibSym.INTEX()); }  // 8
     function int UOP       () { return  Lex.cclass(126)
                                            & ~LibSym.BLOCK(); }  // 16
 
