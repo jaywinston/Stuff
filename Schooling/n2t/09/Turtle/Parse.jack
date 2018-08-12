@@ -2,7 +2,7 @@ class Parse {
 
     static int EQ, BLANK, DELIM, BLOCK, END, EOS, CMDLIN, INT, COMMA,
                 INTEX, OP, STR, STREX, SYM, UOP, LPAREN, RPAREN;
-    static int MASK;
+    static int CLASSMASK;
     static String PS1, PS2;
 
 
@@ -23,24 +23,25 @@ class Parse {
         let UOP = LibSym.UOP();
         let LPAREN = Lex.cclass(40);
         let RPAREN = Lex.cclass(41);
-        let MASK = -16;
+        let CLASSMASK = -16;
+        let PS1 = ">";
         let PS2 = "|";
         return;
     }
 
 
     function int cclass(String s, int i) {
-        return Lex.cclass(Lex.getch(s, i)) & MASK;
+        return Lex.cclass(Lex.getch(s, i)) & CLASSMASK;
     }
 
 
     function int cmdlin(String s, Symbol argv, int i) {
         var int cclass;
         var String t;
-        var Symbol intex, next;
+        var Symbol extok, next;
 
         let i = Str.lskip(s, 32, i);
-        let cclass = Lex.cclass(Lex.getch(s, i)) & MASK;
+        let cclass = Parse.cclass(s, i);
         while (~(cclass = EOS)) {
 
             if (cclass = END) {
@@ -71,10 +72,11 @@ class Parse {
                 let t = String.new(s.length());
                 let i = Lex.token(s, t, i);
                 /* assignment? */
-                if ( (Lex.cclass(Lex.getch(s, i)) = EQ)
-                        & (~(Lex.cclass(Lex.getch(s, i+1)) = EQ)) ) {
+                if ( (Parse.cclass(s, i) = EQ)
+                        & (~(Parse.cclass(s, i+1) = EQ)) ) {
                     let next = Symbol.new(null, SYM, "=");
                     do next.append(Symbol.new(null, SYM, t));
+                    let i = i + 1;
                 } else {
                     let next = Symbol.new(null, SYM, t);
                 }
@@ -82,28 +84,28 @@ class Parse {
                 return -i;  // Error.set parse.cmdlin bad token (probably ',')
             }}}}}
 
-            let cclass = Lex.cclass(Lex.getch(s, i)) & MASK;
+            let cclass = Parse.cclass(s, i);
             if (cclass = INTEX) {
-                let intex = Symbol.new(null, INTEX, null);
-                do intex.append(next);
-                let i = Parse.intex(s, intex, i);
-                let s = intex.tag();
-                do intex.setTag(null);
-                let next = intex;
+                let extok = Symbol.new(null, INTEX, null);
+                do extok.append(next);
+                let i = Parse.intex(s, extok, i);
+                let s = extok.tag();
+                do extok.setTag(null);
+                let next = extok;
             } else { if (cclass = STREX) {
                 /* todo: intex -> something better */
-                let intex = Symbol.new(null, STREX, null);
-                do intex.append(next);
-                let i = Parse.strex(s, intex, i);
-                let s = intex.tag();
-                do intex.setTag(null);
-                let next = intex;
+                let extok = Symbol.new(null, STREX, null);
+                do extok.append(next);
+                let i = Parse.strex(s, extok, i);
+                let s = extok.tag();
+                do extok.setTag(null);
+                let next = extok;
             }}
 
             do argv.append(next);
 
             let i = Str.lskip(s, 32, i);
-            let cclass = Lex.cclass(Lex.getch(s, i)) & MASK;
+            let cclass = Parse.cclass(s, i);
         }
 
         do argv.setTag(s);
@@ -120,6 +122,7 @@ class Parse {
 
         let stack = Symbol.new(null, null, null);
         let uop = queue.next() = 0;
+        //let cclass = Parse.cclass(s, i);
         let cclass = Lex.cclass(Lex.getch(s, i));
 
         /* todo: should END be in exit cond? */
@@ -165,9 +168,11 @@ class Parse {
                 }
                 /* pop higher equal ops to queue */
                 if (~uop) {
-                    while (  ((stack.meta()>objbuf.meta())
-                            | (stack.meta()=objbuf.meta()))
-                            & (~(stack.meta()=LPAREN)) ) {
+                    //while (    ((stack.meta()>objbuf.meta())
+                             //| (stack.meta()=objbuf.meta()))
+                            //& ~(stack.meta()=LPAREN) ) {
+                    while ( ~(stack.meta()<objbuf.meta())
+                            & ~(stack.meta()=LPAREN) ) {
                         let stackbuf = stack;
                         let stack = stack.next();
                         do stackbuf.setNext(null);
@@ -204,6 +209,7 @@ class Parse {
             }}}}
 
             let cclass = Lex.cclass(Lex.getch(s, i));
+            //let cclass = Parse.cclass(s, i);
         }
 
         /* pop ops to queue */
@@ -238,11 +244,11 @@ class Parse {
         var String t;
         var Symbol arg, intex;
 
-        let cclass = Lex.cclass(Lex.getch(s, i)) & MASK;
+        let cclass = Parse.cclass(s, i);
         while (cclass = STREX) {
 
             let i = i + 1;
-            let cclass = Lex.cclass(Lex.getch(s, i)) & MASK;
+            let cclass = Parse.cclass(s, i);
 
             if (cclass = BLOCK) {
                 let arg = Symbol.new(null, BLOCK, null);
@@ -269,7 +275,7 @@ class Parse {
                 let arg = Symbol.new(null, SYM, t);
             }}}}}
 
-            if ( (Lex.cclass(Lex.getch(s, i))&MASK) = INTEX) {
+            if (Parse.cclass(s, i) = INTEX) {
                 let intex = Symbol.new(null, INTEX, null);
                 do intex.append(arg);
                 let i = Parse.intex(s, intex, i);
@@ -280,7 +286,7 @@ class Parse {
 
             do next.append(arg);
 
-            let cclass = Lex.cclass(Lex.getch(s, i)) & MASK;
+            let cclass = Parse.cclass(s, i);
         }
 
         do next.setData(next.next());
@@ -297,7 +303,7 @@ class Parse {
 
         let i = Str.lskip(s, 32, i+1);
 
-        if ( (Lex.cclass(Lex.getch(s, i))&(END|EOS)) = 0 ) {
+        if ( (Parse.cclass(s, i)&(END|EOS)) = 0 ) {
             let cmdlin = Symbol.new(null, CMDLIN, null);
             let i = Parse.cmdlin(s, cmdlin, i);
             let s = cmdlin.tag();
@@ -307,10 +313,10 @@ class Parse {
             do block.append(cmdlin);
         }
 
-        while (Lex.cclass(Lex.getch(s, i)) = EOS) {
+        while (Parse.cclass(s, i) = EOS) {
             let s = IOBox.read(PS2);
             let i = Str.lskip(s, 32, 0);
-            if (~(Lex.cclass(Lex.getch(s, i)) = END)) {
+            if (~(Parse.cclass(s, i) = END)) {
                 let cmdlin = Symbol.new(s, CMDLIN, null);
                 let i = Parse.cmdlin(s, cmdlin, 0);
                 let s = cmdlin.tag();
