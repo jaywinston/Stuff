@@ -29,14 +29,19 @@ class Parse {
     }
 
 
-    function int cmdline(String s, Symbol argv, int i) {
+    function int cclass(String s, int i) {
+        return Lex.cclass(Lex.getch(s, i)) & MASK;
+    }
+
+
+    function int cmdlin(String s, Symbol argv, int i) {
         var int cclass;
         var String t;
         var Symbol intex, next;
 
         let i = Str.lskip(s, 32, i);
         let cclass = Lex.cclass(Lex.getch(s, i)) & MASK;
-        while ( (cclass & EOS) = 0 ) {
+        while (~(cclass = EOS)) {
 
             if (cclass = END) {
                 do argv.setTag(s);
@@ -74,7 +79,7 @@ class Parse {
                     let next = Symbol.new(null, SYM, t);
                 }
             } else {
-                return -i;  // Error.set parse.cmdline bad token (probably ',')
+                return -i;  // Error.set parse.cmdlin bad token (probably ',')
             }}}}}
 
             let cclass = Lex.cclass(Lex.getch(s, i)) & MASK;
@@ -86,10 +91,13 @@ class Parse {
                 do intex.setTag(null);
                 let next = intex;
             } else { if (cclass = STREX) {
-                let i = Parse.strex(s, next, i+1);
-                let s = next.tag();
-                do next.setTag(null);
-                let next = Symbol.new(null, STREX, next);
+                /* todo: intex -> something better */
+                let intex = Symbol.new(null, STREX, null);
+                do intex.append(next);
+                let i = Parse.strex(s, intex, i);
+                let s = intex.tag();
+                do intex.setTag(null);
+                let next = intex;
             }}
 
             do argv.append(next);
@@ -114,7 +122,8 @@ class Parse {
         let uop = queue.next() = 0;
         let cclass = Lex.cclass(Lex.getch(s, i));
 
-        while ( (cclass & (BLANK|(COMMA|EOS))) = 0 ) {
+        /* todo: should END be in exit cond? */
+        while ( (cclass & ((BLANK|COMMA)|(END|EOS))) = 0 ) {
 
             if ( (cclass=INT) | ((cclass=SYM) | (cclass=BLOCK)) ) {
                 if (cclass = INT) {
@@ -230,7 +239,10 @@ class Parse {
         var Symbol arg, intex;
 
         let cclass = Lex.cclass(Lex.getch(s, i)) & MASK;
-        while ( (cclass & (BLANK|EOS)) = 0 ) {
+        while (cclass = STREX) {
+
+            let i = i + 1;
+            let cclass = Lex.cclass(Lex.getch(s, i)) & MASK;
 
             if (cclass = BLOCK) {
                 let arg = Symbol.new(null, BLOCK, null);
@@ -257,8 +269,7 @@ class Parse {
                 let arg = Symbol.new(null, SYM, t);
             }}}}}
 
-            let cclass = Lex.cclass(Lex.getch(s, i)) & MASK;
-            if (cclass = INTEX) {
+            if ( (Lex.cclass(Lex.getch(s, i))&MASK) = INTEX) {
                 let intex = Symbol.new(null, INTEX, null);
                 do intex.append(arg);
                 let i = Parse.intex(s, intex, i);
@@ -267,15 +278,13 @@ class Parse {
                 let arg = intex;
             }
 
-            if ( (cclass & (COMMA|(BLANK|EOS))) = 0 ) {
-                return -i;  // unexpected token in strex arg
-            }
-
             do next.append(arg);
 
-            let i = i + 1;
             let cclass = Lex.cclass(Lex.getch(s, i)) & MASK;
         }
+
+        do next.setData(next.next());
+        do next.setNext(null);
 
         do next.setTag(s);
 
@@ -290,7 +299,7 @@ class Parse {
 
         if ( (Lex.cclass(Lex.getch(s, i))&(END|EOS)) = 0 ) {
             let cmdlin = Symbol.new(null, CMDLIN, null);
-            let i = Parse.cmdline(s, cmdlin, i);
+            let i = Parse.cmdlin(s, cmdlin, i);
             let s = cmdlin.tag();
             do cmdlin.setTag(null);
             do cmdlin.setData(cmdlin.next());
@@ -303,7 +312,7 @@ class Parse {
             let i = Str.lskip(s, 32, 0);
             if (~(Lex.cclass(Lex.getch(s, i)) = END)) {
                 let cmdlin = Symbol.new(s, CMDLIN, null);
-                let i = Parse.cmdline(s, cmdlin, 0);
+                let i = Parse.cmdlin(s, cmdlin, 0);
                 let s = cmdlin.tag();
                 do cmdlin.setTag(null);
                 do cmdlin.setData(cmdlin.next());
