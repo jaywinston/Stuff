@@ -31,7 +31,7 @@ class Parse {
 
 
     function int cclass(String s, int i) {
-        return Lex.cclass(Lex.getch(s, i)) & CLASSMASK;
+        return Lex.cclass(Lex.getch(s, i));
     }
 
 
@@ -41,7 +41,7 @@ class Parse {
         var Symbol extok, next;
 
         let i = Str.lskip(s, 32, i);
-        let cclass = Parse.cclass(s, i);
+        let cclass = Parse.cclass(s, i) & CLASSMASK;
         while (~(cclass = EOS)) {
 
             if (cclass = END) {
@@ -74,17 +74,17 @@ class Parse {
                 /* assignment? */
                 if ( (Parse.cclass(s, i) = EQ)
                         & (~(Parse.cclass(s, i+1) = EQ)) ) {
-                    let next = Symbol.new(null, SYM, "=");
-                    do next.append(Symbol.new(null, SYM, t));
+                    let next = Symbol.new("=", SYM, null);
+                    do next.append(Symbol.new(t, SYM, null));
                     let i = i + 1;
                 } else {
-                    let next = Symbol.new(null, SYM, t);
+                    let next = Symbol.new(t, SYM, null);
                 }
             } else {
                 return -i;  // Error.set parse.cmdlin bad token (probably ',')
             }}}}}
 
-            let cclass = Parse.cclass(s, i);
+            let cclass = Parse.cclass(s, i) & CLASSMASK;
             if (cclass = INTEX) {
                 let extok = Symbol.new(null, INTEX, null);
                 do extok.append(next);
@@ -105,7 +105,7 @@ class Parse {
             do argv.append(next);
 
             let i = Str.lskip(s, 32, i);
-            let cclass = Parse.cclass(s, i);
+            let cclass = Parse.cclass(s, i) & CLASSMASK;
         }
 
         do argv.setTag(s);
@@ -137,7 +137,7 @@ class Parse {
                 } else { if (cclass = SYM) {
                     let t = String.new(5);
                     let i = Lex.token(s, t, i);
-                    let objbuf = Symbol.new(null, SYM, t);
+                    let objbuf = Symbol.new(t, SYM, null);
                 } else { if (cclass = BLOCK) {
                     let objbuf = Symbol.new(null, BLOCK, null);
                     let i = Parse.block(s, objbuf, i);
@@ -157,7 +157,7 @@ class Parse {
                 if (uop) {
                     let objbuf = Symbol.new(null, UOP, op);
                 } else {
-                    let objbuf = Symbol.new(null, Lex.cclass(op)&7, op);
+                    let objbuf = Symbol.new(null, Lex.cclass(op)&15, op);
                 }
                 if ( (i+1) < s.length() ) {
                     if ((Lex.cclass(op)=EQ) & (Lex.cclass(s.charAt(i+1))=EQ)) {
@@ -244,11 +244,11 @@ class Parse {
         var String t;
         var Symbol arg, intex;
 
-        let cclass = Parse.cclass(s, i);
+        let cclass = Parse.cclass(s, i) & CLASSMASK;
         while (cclass = STREX) {
 
             let i = i + 1;
-            let cclass = Parse.cclass(s, i);
+            let cclass = Parse.cclass(s, i) & CLASSMASK;
 
             if (cclass = BLOCK) {
                 let arg = Symbol.new(null, BLOCK, null);
@@ -272,10 +272,10 @@ class Parse {
             } else { if (cclass = SYM) {
                 let t = String.new(s.length());
                 let i = Lex.token(s, t, i);
-                let arg = Symbol.new(null, SYM, t);
+                let arg = Symbol.new(t, SYM, null);
             }}}}}
 
-            if (Parse.cclass(s, i) = INTEX) {
+            if ( (Parse.cclass(s, i)&CLASSMASK) = INTEX) {
                 let intex = Symbol.new(null, INTEX, null);
                 do intex.append(arg);
                 let i = Parse.intex(s, intex, i);
@@ -286,7 +286,7 @@ class Parse {
 
             do next.append(arg);
 
-            let cclass = Parse.cclass(s, i);
+            let cclass = Parse.cclass(s, i) & CLASSMASK;
         }
 
         do next.setData(next.next());
