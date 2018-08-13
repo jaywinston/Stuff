@@ -1,11 +1,12 @@
 class Exec {
 
     static int bottom, left, right, top;
-    static int CMD, CMDLIN, FUNC, EXPR, INT, STR, SYM, TTL;
+    static int CMD, CMDLIN, FUNC, INT, STR, TTL;
     static int ASSIGN, BLOCK, CLEAR, DISPOSE, FORWARD, FUNCTION, IF,
-        PENDOWN, PENUP, PRINT, REPEAT, TURNLEFT, TURNRIGHT, TURTLE, QUIT;
+        PENDOWN, PENUP, POSX, POSY, PRINT, REPEAT, TURNLEFT, TURNRIGHT,
+        TURTLE, QUIT;
     static TextBox tb;
-    static Symbol globalt, turtles;
+    static Symbol turtles;
     static Turtle t;
 
 
@@ -18,7 +19,6 @@ class Exec {
         let right = (j+w) * 8;
         let t = Exec.defaultTurtle();
         let turtles = Symbol.new(null, null, t);
-        let globalt = turtles;
 
         do Exec.initKWs();
 
@@ -39,11 +39,9 @@ class Exec {
         let BLOCK   = LibSym.BLOCK();
         let CMD     = LibSym.CMD();
         let CMDLIN  = LibSym.CMDLIN();
-        let EXPR    = LibSym.EXPR();
         let FUNC    = LibSym.FUNC();
         let INT     = LibSym.INT();
         let STR     = LibSym.STR();
-        let SYM     = LibSym.SYM();
         let TTL     = LibSym.TTL();
 
         let ASSIGN    =  1;
@@ -54,12 +52,14 @@ class Exec {
         let IF        =  6;
         let PENDOWN   =  7;
         let PENUP     =  8;
-        let PRINT     =  9;
-        let REPEAT    = 10;
-        let TURNLEFT  = 11;
-        let TURNRIGHT = 12;
-        let TURTLE    = 13;
-        let QUIT      = 14;
+        let POSX      =  9;
+        let POSY      = 10;
+        let PRINT     = 11;
+        let REPEAT    = 12;
+        let TURNLEFT  = 13;
+        let TURNRIGHT = 14;
+        let TURTLE    = 15;
+        let QUIT      = 16;
 
         do Exec.installKW("MV",128);  // ##DB##
 
@@ -71,6 +71,8 @@ class Exec {
         do Exec.installKW("IF",        IF);
         do Exec.installKW("PENDOWN",   PENDOWN);
         do Exec.installKW("PENUP",     PENUP);
+        do Exec.installKW("POSX",      POSX);
+        do Exec.installKW("POSY",      POSY);
         do Exec.installKW("PRINT",     PRINT);
         do Exec.installKW("REPEAT",    REPEAT);
         do Exec.installKW("TURNLEFT",  TURNLEFT);
@@ -92,29 +94,27 @@ class Exec {
     function void clear() {
         var Turtle tt;
 
-        let tt = globalt.data();
+        let tt = turtles.data();
         do tt.dispose();
         do tb.clear();
-        do globalt.setData(Exec.defaultTurtle());
+        do turtles.setData(Exec.defaultTurtle());
 
         return;
     }
 
 
     function void try(Symbol argv) {
-        var Symbol retval;
+        var Symbol ret;
 
-        let retval = Exec.exec(argv);
+        let ret = Exec.exec(argv);
 
         if (Error.isSet()) {
             while (Error.isSet()) {
                 do IOBox.echo(Error.message());
             }
         } else {
-            do Exec.echo(retval);
+            do Exec.echo(ret);
         }
-
-        do LibSym.destroyList(retval);
 
         return;
     }
@@ -148,6 +148,8 @@ class Exec {
         let cmd = argv.data();
 
         if (cmd = TURTLE) { return Exec.newTurtle(argv.next());         }
+        if (cmd = POSX)   { return Exec.posx(argv);                     }
+        if (cmd = POSY)   { return Exec.posy(argv);                     }
 
         if (cmd = ASSIGN)           { do Exec.doAssign(argv.next());    }
         else { if (cmd = CLEAR)     { do Exec.doClear(argv.next());     }
@@ -165,8 +167,6 @@ class Exec {
         }}}}}}}}}}}}
 
         if (cmd=128) {do DB.mv();}  // ##DB##
-
-        do LibSym.destroyList(argv);
 
         return null;
     }
@@ -195,10 +195,9 @@ class Exec {
             let arg = arg.next();
         }
 
-        let ret = Exec.exec(LibSym.copyList(argv.data()));
+        let ret = Exec.exec(argv.data());
 
         do Eval.dropScope();
-        do LibSym.destroyList(argv);
         do fargv.dispose();
         do fstr.dispose();
 
@@ -216,13 +215,10 @@ class Exec {
         let cmdlin = block.data();
         while (~(cmdlin.next() = null)) {
             do Exec.try(cmdlin.data());
-            do cmdlin.setData(null);
             let cmdlin = cmdlin.next();
         }
 
-        let cmdlin = LibSym.copyList(cmdlin.data());
-
-        return Exec.exec(cmdlin);
+        return Exec.exec(cmdlin.data());
     }
 
 
@@ -250,7 +246,7 @@ class Exec {
         let p = Symbol.new(null, TTL,
                            Turtle.new(x, y, d, top, left, bottom, right));
 
-        do turtles.append(Symbol.new(null, TTL, p.data()));
+        do turtles.append(p); // ##DB##Symbol.new(null, TTL, p.data()));
 
         do Exec.try(argv.next());
 
@@ -336,7 +332,7 @@ class Exec {
 
         let np = tp.next();
         do pp.setNext(np);
-        do tp.dispose();
+        //do tp.dispose();
 
         let tt = arg.data();
         do tt.dispose();
@@ -365,7 +361,7 @@ class Exec {
             do Error.set(1);  // target beyond boundary
         }
 
-        /* do Error.set(t.forward(arg.data())); will be this */
+        /* ##DB## do Error.set(t.forward(arg.data())); will be this */
 
         do Exec.try(arg.next());
 
@@ -406,32 +402,31 @@ class Exec {
 
     function Symbol elsePointer(Symbol argv) {
         var int ifc;
-        var String IF, ELSE;
+        var String IFS, ELSES;
         var Symbol argp;
 
-        let IF = "IF";
-        let ELSE = "ELSE";
+        let IFS = "IF";
+        let ELSES = "ELSE";
 
         let argp = argv.next();
         while (~(argp = null)) {
-            if (HashTable.streq(ELSE, argp.name())) {
+            if (HashTable.streq(ELSES, argp.name())) {
                 if (ifc = 0) {
                     do IF.dispose();
                     do ELSE.dispose();
-                    do argv.setNext(null);
                     return argp;
                 } else {
                     let ifc = ifc - 1;
                 }
-            } else { if (HashTable.streq(IF, argp.name())) {
+            } else { if (HashTable.streq(IFS, argp.name())) {
                 let ifc = ifc + 1;
             }}
-            let argv = argv.next();
+            //let argv = argv.next();
             let argp = argp.next();
         }
 
-        do IF.dispose();
-        do ELSE.dispose();
+        do IFS.dispose();
+        do ELSES.dispose();
 
         return null;
     }
@@ -457,8 +452,29 @@ class Exec {
     }
 
 
-    function void doPrint(Symbol arg) {
+    function int posx(Symbol arg) {
+        var int x;
 
+        let x = t.x();
+
+        do Exec.try(arg);
+
+        return x;
+    }
+
+
+    function int posy(Symbol arg) {
+        var int y;
+
+        let y = t.y();
+
+        do Exec.try(arg);
+
+        return y;
+    }
+
+
+    function void doPrint(Symbol arg) {
 
         if (tb.set(t.y()/11, (t.x()/8)+1) = 1) {
             do Error.send("illegal cursor coordinate");  // ##DB##
@@ -468,13 +484,41 @@ class Exec {
 
         do Eval.arg(arg);
 
-        /* todo: I think this needs to hide all turtles so other turtles
-                 won't restore old screen data over the newly printed string */
-        do t.hide();
+        do Exec.hideAll();
         do tb.puts(arg.data());
-        do t.show();
+        do Exec.showAll();
 
         do Exec.try(arg.next());
+
+        return;
+    }
+
+
+    function void hideAll() {
+        var Symbol tp;
+        var Turtle tt;
+
+        let tp = turtles;
+        while (~(tp = null)) {
+            let tt = tp.data();
+            do tt.hide();
+            let tp = tp.next();
+        }
+
+        return;
+    }
+
+
+    function void showAll() {
+        var Symbol tp;
+        var Turtle tt;
+
+        let tp = turtles;
+        while (~(tp = null)) {
+            let tt = tp.data();
+            do tt.show();
+            let tp = tp.next();
+        }
 
         return;
     }
@@ -509,8 +553,9 @@ class Exec {
 
         let p = Eval.arg(LibSym.copyList(arg));
         let condition = p.data();
+        do LibSym.destroyList(p);
         while (~(condition = 0)) {
-            do Exec.try(LibSym.copyList(arg.next()));
+            do Exec.try(arg.next());
             let p = Eval.arg(LibSym.copyList(arg));
             let condition = p.data();
             do LibSym.destroyList(p);
@@ -575,7 +620,5 @@ class Exec {
 
         return;
     }
-
-
 
 }

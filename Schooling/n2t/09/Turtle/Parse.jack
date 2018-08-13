@@ -4,6 +4,7 @@ class Parse {
                 INTEX, OP, STR, STREX, SYM, UOP, LPAREN, RPAREN;
     static int CLASSMASK;
     static String PS1, PS2;
+    static Symbol ARGV;
 
 
     function void init() {
@@ -26,7 +27,15 @@ class Parse {
         let CLASSMASK = -16;
         let PS1 = ">";
         let PS2 = "|";
+        let ARGV = Symbol.new(null, null, null);
         return;
+    }
+
+
+    function Symbol next() {
+        do ARGV.setNext(null);
+        do Parse.cmdlin(IOBox.read(PS1), ARGV, 0);
+        return ARGV.next();
     }
 
 

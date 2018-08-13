@@ -1,6 +1,11 @@
 class LibSym {
 
 
+    function void init() {
+        return;
+    }
+
+
     function Symbol copySym(Symbol sym) {
         var int tclass;
 

@@ -147,6 +147,17 @@ function void eval(int i, int u) {return;} // ##DB##
 
 
     function void sym(Symbol sym) {
+        var Symbol p;
+
+        let p = Eval.lookup(sym.tag());
+        if (p = null) {
+            do Error.send("undefined symbol");  // ##DB##
+            do Error.set(0);  // undefined symbol
+            return;
+        }
+        do sym.setData(p.data());
+        do sym.setMeta(p.meta());
+
         return;
     }
 
@@ -156,6 +167,10 @@ function void eval(int i, int u) {return;} // ##DB##
 
         let p = Exec.block(block);
         do LibSym.destroyList(block.data());
+        if (p = null) {
+            do block.setData(null);
+            do block.setMeta(null);
+        }
         do block.setData(p.data());
         do block.setMeta(p.meta());
         do p.dispose();
