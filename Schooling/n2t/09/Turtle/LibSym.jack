@@ -1,26 +1,31 @@
 class LibSym {
 
 
+    function void init() {
+        return;
+    }
+
+
     function Symbol copySym(Symbol sym) {
-        var int typeClass;
+        var int tclass;
 
         if (sym = null) {
             return null;
         }
 
-        let typeClass = LibSym.typeClass(sym);
+        let tclass = LibSym.typeClass(sym) & 320;
 
-        if (typeClass = LibSym.STR()) {
-            return Symbol.new(Str.dup(sym.name()), sym.meta(),
+        if (tclass = LibSym.STR()) {
+            return Symbol.new(Str.dup(sym.tag()), sym.meta(),
                               Str.dup(sym.data()));
         }
 
-        if (typeClass = LibSym.BLOCK()) {
-            return Symbol.new(Str.dup(sym.name()), sym.meta(),
+        if (tclass = LibSym.BLOCK()) {
+            return Symbol.new(Str.dup(sym.tag()), sym.meta(),
                               LibSym.copyList(sym.data()));
         }
 
-        return Symbol.new(Str.dup(sym.name()), sym.meta(), sym.data());
+        return Symbol.new(Str.dup(sym.tag()), sym.meta(), sym.data());
     }
 
 
@@ -44,25 +49,25 @@ class LibSym {
 
 
     function void destroySym(Symbol sym) {
-        var int typeClass;
+        var int tclass;
         var String s;
 
         if (sym = null) {
             return;
         }
 
-        let s = sym.name();
+        let s = sym.tag();
 
         if (~(s = null)) {
             do s.dispose();
         }
 
-        let typeClass = LibSym.typeClass(sym);
+        let tclass = LibSym.typeClass(sym);
 
-        if (typeClass = LibSym.STR()) {
+        if (tclass = LibSym.STR()) {
             let s = sym.data();
             do s.dispose();
-        } else { if (typeClass = LibSym.BLOCK()) {
+        } else { if (tclass = LibSym.BLOCK()) {
             do LibSym.destroyList(sym.data());
         }}
 
@@ -105,44 +110,49 @@ class LibSym {
         var Symbol p;
 
         let p = ht.lookup(name);
-        if (~(p = null)) {
+
+        if (p = null) {
+            do ht.install(Str.dup(name), type, value);
+        } else {
             if (p.meta() = LibSym.STR()) {
                 let s = p.data();
                 do s.dispose();
             } else { if (p.meta() = LibSym.FUNC()) {
                 do LibSym.destroyList(p.data());
             }}
+            do p.setMeta(type);
+            do p.setData(value);
         }
-
-        do ht.install(name, type, value);
 
         return;
     }
 
 
     function int typeClass(Symbol sym) {
-        return sym.meta() & 24;
+        return sym.meta() & (LibSym.STR() | LibSym.BLOCK());
     }
 
+                                                              // see Lex.init()
+    function int CMD       () { return  3;                    }
+    function int TTL       () { return  4;                    }
+    function int OP        () { return  Lex.cclass(38)
+                                           & (-8 & ~LibSym.INTEX()); }  // 8
+    function int UOP       () { return  Lex.cclass(126)
+                                           & ~LibSym.BLOCK(); }  // 16
 
-    /*
-     * Don't change these values without consulting typeClass().
-     */
-
-    function int CMD       () { return  1; }
-    function int HASHTAB   () { return  2; }
-    function int INT       () { return  3; }
-    function int SYM       () { return  4; }
-    function int TTL       () { return  5; }
-
-    /* string type-class */
-    function int STR       () { return  8; }
-    function int END       () { return  9; }
-    function int EXPR      () { return 10; }
+    /* string type-class */  // defunct
+    function int END       () { return 33; }  // in obsolescence
+    function int EXPR      () { return 34; }  // in obsolescence
 
     /* block type-class */
-    function int BLOCK     () { return 16; }
-    function int FUNC      () { return 17; }
-    function int CMDLIN    () { return 18; }
+    function int BLOCK     () { return Lex.cclass(123);       }  // 64
+    function int CMDLIN    () { return Lex.cclass(123) + 1;   }  // 65
+    function int FUNC      () { return Lex.cclass(123) + 2;   }  // 66
+    function int INTEX     () { return Lex.cclass(126) & -16; }  // 80
+    function int STREX     () { return Lex.cclass(44);        }  // 96
+
+    function int STR       () { return Lex.cclass(34);        }  // 256
+    function int INT       () { return Lex.cclass(48);        }  // 8192
+    function int SYM       () { return Lex.cclass(65);        }  // 16384
 
 }

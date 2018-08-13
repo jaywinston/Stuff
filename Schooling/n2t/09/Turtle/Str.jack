@@ -43,9 +43,12 @@ class Str {
                     do t.setInt(arg[a]);
                 } else { if (c = 83) {
                     let t = Str.dup(arg[a]);
+                } else { if (c = 67) {
+                    do s.appendChar(arg[a]);
                 } else { if (i < Str.MAXLEN()) {
                     do s.appendChar(c);
-                }}}
+                    let t = 1;
+                }}}}
 
                 if (~(t = null)) {
                     do Str.cat(s, t);

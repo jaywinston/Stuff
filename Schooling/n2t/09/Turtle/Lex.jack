@@ -1,9 +1,11 @@
 class Lex {
 
+    static Array CTAB;
     static String BRACES, FARGDLMS, WORDDLMS;
 
 
     function void init() {
+        var int i;
 
         let BRACES = "{}";
 
@@ -18,7 +20,94 @@ class Lex {
         do WORDDLMS.appendChar(61);   // '='
         do WORDDLMS.appendChar(123);  // '{'
 
+        let CTAB = Array.new(128);
+
+        /* bitmap:
+           0000000000000000
+           ||||||||||||||||
+      unused|||||||||||||||
+          sym||||||||||||||
+           int|||||||||||||
+            eos||||||||||||
+           blank|||||||||||
+           rparen||||||||||
+            lparen|||||||||
+                str||||||||
+                 end|||||||
+                block||||||
+                    \/|||||
+                strex |||||
+                      \/|||
+  intex(+reserved==uop)||||
+                       ||||
+           op(+reserved)|||
+                        \|/
+                  reserved
+*/
+
+        let i = 32;
+        while (i < 128) {
+            let CTAB[i] = 16640;
+            let i = i + 1;
+        }
+
+        let i = 48;
+        while (i < 58) {
+            let CTAB[i] = 8192;
+            let i = i + 1;
+        }
+ 
+        let CTAB[123] =   64;  // {
+        let CTAB[ 40] =   80;  // (
+        let CTAB[ 41] =   81;  // )
+        let CTAB[ 38] =   88;  // &
+        let CTAB[124] =   88;  // |
+        let CTAB[ 61] =   89;  // =
+        let CTAB[ 33] =   89;  // !
+        let CTAB[ 60] =   89;  // <
+        let CTAB[ 62] =   89;  // >
+        let CTAB[ 43] =   90;  // +  INTEX + 2, i.e. INTEX & OPMASK = 2 i.e.
+        let CTAB[ 45] =   90;  // -  binds second tightest of operators.
+        let CTAB[126] =   90;  // ~
+        let CTAB[ 37] =   91;  // %
+        let CTAB[ 42] =   91;  // *
+        let CTAB[ 47] =   91;  // /
+        let CTAB[ 44] =   96;  // ,
+        let CTAB[125] =  128;  // }
+        let CTAB[ 34] =  256;  // "
+        let CTAB[ 32] = 2048;  //  
+        let CTAB[  0] = 4096;  // EOS
+
         return;
+    }
+
+
+    function int cclass(char c) {
+        return CTAB[c];
+    }
+
+
+    function char getch(String s, int i) {
+        if (~(i < s.length())) {
+            return 0;
+        }
+        return s.charAt(i);
+    }
+
+
+    function int token(String s, String t, int i) {
+        var char c;
+        var int MASK;
+
+        let MASK = CTAB[65] | CTAB[48];
+        let c = Lex.getch(s, i);
+        while (~( (CTAB[c]&MASK) = 0 )) {
+            do t.appendChar(c);
+            let i = i + 1;
+            let c = Lex.getch(s, i);
+        }
+
+        return i;
     }
 
 
@@ -55,29 +144,30 @@ class Lex {
 
     function int string(String s, String t, int i) {
         var char c;
-        var int len;
 
-        let len = s.length();
-        do t.appendChar(s.charAt(i));
         let i = i + 1;
-        
-        while (i < len) {
+
+        while (i < s.length()) {
+
             let c = s.charAt(i);
-            do t.appendChar(c);
+
+            if (c = 34) {
+                return i + 1;  // success
+            }
+
             if (c = 92) {
                 if ( (i+1) = s.length() ) {
-                    return i + 2;
+                    return i + 2;  // EOS while scanning for quote
                 }
                 let i = i + 1;
                 let c = s.charAt(i);
                 if (c = 78) {
-                    do t.appendChar(128);
-                } else {
-                    do t.appendChar(c);
+                    let c = 128;
                 }
-            } else { if (c = 34) {
-                return i + 1;
-            }}
+            }
+
+            do t.appendChar(c);
+
             let i = i + 1;
         }
 
@@ -168,6 +258,7 @@ class Lex {
         }
 
         while (i < s.length()) {
+
             let i = Str.tkn(s, t, BRACES, i);
 
             if (i < s.length()) {

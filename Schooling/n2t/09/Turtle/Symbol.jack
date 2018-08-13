@@ -3,11 +3,12 @@
 class Symbol {
 
     field int _meta, _data;
-    field String _name;
+    field String _name, _tag;
     field Symbol _next;
 
     constructor Symbol new(String name, int meta, int data) {
         let _name = name;
+        let _tag  = name;
         let _meta = meta;
         let _data = data;
         let _next = null;
@@ -27,6 +28,11 @@ class Symbol {
         return;
     }
 
+    /* todo: change to tag() */
+    method int tag() {
+        return _name;
+    }
+
     method int name() {
         return _name;
     }
@@ -41,6 +47,11 @@ class Symbol {
 
     method int next() {
         return _next;
+    }
+
+    method void setTag(int tag) {
+        let _name = tag;
+        return;
     }
 
     method void setName(int name) {

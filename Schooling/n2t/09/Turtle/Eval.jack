@@ -1,0 +1,285 @@
+class Eval {
+
+    static int BLOCK, INT, INTEX, OP, STR, STREX, SYM, UOP;
+    static Symbol symtab;
+
+
+    function void init() {
+        let BLOCK = LibSym.BLOCK();
+        let INT = LibSym.INT();
+        let INTEX = LibSym.INTEX();
+        let OP = LibSym.OP();
+        let STR = LibSym.STR();
+        let STREX = LibSym.STREX();
+        let SYM = LibSym.SYM();
+        let UOP = LibSym.UOP();
+        let symtab = Symbol.new(null, null, HashTable.new(15));
+        return;
+    }
+
+
+    function int integer(Symbol queue) {
+        var int n;
+        var Symbol p, stack;
+        var Symbol np;
+
+        while (~(queue = null)) {
+            if ( (queue.meta()&OP) = OP) {
+                let np = stack;
+                let stack = stack.next();
+                do stack.setData(Eval.operate(stack.data(), np.data(),
+                                              queue.data()));
+                do np.dispose();
+            } else { if (queue.meta() = UOP) {
+                do stack.setData(Eval.uoperate(stack.data(), queue.data()));
+            } else {
+                let p = Eval.arg(LibSym.copySym(queue));
+                if (~(p.meta() = INT)) {
+                    do Error.send("expected integer");  // ##DB##
+                    do Error.set(0);  // expected integer
+                    do LibSym.destroyList(stack);
+                    do LibSym.destroySym(p);
+                    return 0;
+                }
+                do p.setNext(stack);
+                let stack = p;
+            }}
+            let queue = queue.next();
+        }
+
+        let n = stack.data();
+        do stack.dispose();
+
+        return n;
+    }
+
+
+    function String string(Symbol fstrex) {
+        var boolean fspec;
+        var char c;
+        var int a, i;
+        var Array argv;
+        var String s, t;
+        var Symbol argp;
+
+        do Eval.arg(fstrex);
+
+        if (~(fstrex.meta() = STR)) {
+            do Error.send("expected string");  // ##DB##
+            do Error.set(0);  // expected string
+            return null;
+        }
+
+        let s = fstrex.data();
+
+        let argv = Array.new(s.length()/2);
+        let argp = fstrex.next();
+        let fspec = false;
+        let a = 0;
+        let i = 0;
+        while (i < s.length()) {
+            let c = s.charAt(i);
+            if (fspec) {
+                if ((c=68) | (c=83)) {
+                    if (argp = null) {
+                        do Error.send("format specifier without argument");  // ##DB##
+                        do Error.set(0);  // format specifier without argument
+                        do argv.dispose();
+                        return null;
+                    }
+                    do Eval.arg(argp);
+                    if ( (c=68) & ~(argp.meta()=INT) ) {
+                        do Error.send(
+                    "argument type does not match format specifier, integer"
+                                     );  // ##DB##
+                        do Error.set(0);  // argument type does not match format specifier, integer
+                        do argv.dispose();
+                        return null;
+                    } else { if ( (c=83) & ~(argp.meta()=STR) ) {
+                        do Error.send(
+                    "argument type does not match format specifier, string"
+                                     );  // ##DB##
+                        do Error.set(0);  // argument type does not match format specifier, string
+                        do argv.dispose();
+                        return null;
+                    }}
+                    let argv[a] = argp.data();
+                    let a = a + 1;
+                    let argp = argp.next();
+                }
+                let fspec = false;
+            } else { if (c = 37) {
+                let fspec = true;
+            }}
+            let i = i + 1;
+        }
+
+        let t = Str.format(s, argv);
+        do argv.dispose();
+
+        return t;
+    }
+
+
+    function void intex(Symbol intex) {
+        var int n;
+
+        let n = Eval.integer(intex.data());
+        do LibSym.destroyList(intex.data());
+        do intex.setData(n);
+        do intex.setMeta(INT);
+
+        return;
+    }
+
+
+    function void strex(Symbol strex) {
+        var String s;
+
+        let s = Eval.string(strex.data());
+        do LibSym.destroyList(strex.data());
+        do strex.setData(s);
+        do strex.setMeta(STR);
+
+        return;
+    }
+
+
+    function void sym(Symbol sym) {
+        var Symbol p;
+
+        let p = Eval.lookup(sym.tag());
+        if (p = null) {
+            do Error.send("undefined symbol");  // ##DB##
+            do Error.set(0);  // undefined symbol
+            return;
+        }
+        do sym.setData(p.data());
+        do sym.setMeta(p.meta());
+
+        return;
+    }
+
+
+    function void block(Symbol block) {
+        var Symbol p;
+
+        let p = Exec.block(block);
+        do LibSym.destroyList(block.data());
+        if (p = null) {
+            do block.setData(null);
+            do block.setMeta(null);
+        }
+        do block.setData(p.data());
+        do block.setMeta(p.meta());
+        do p.dispose();
+
+        return;
+    }
+
+
+    function Symbol arg(Symbol arg) {
+
+        if (arg.meta() = SYM) {
+            do Eval.sym(arg);
+        } else { if (arg.meta() = INTEX) {
+            do Eval.intex(arg);
+        } else { if (arg.meta() = STREX) {
+            do Eval.strex(arg);
+        } else { if (arg.meta() = BLOCK) {
+            do Eval.block(arg);
+        }}}}
+
+        return arg;
+    }
+
+
+    function int uoperate(int n, int op) {
+
+        if (op =  43) { return Math.abs(n); }
+        if (op =  45) { return -n;          }
+        if (op = 126) { return ~n;          }
+
+        do Error.send("unrecognized operator");  // ##DB##
+        do Error.set(1);  // unrecognized operator
+        return 0;
+    }
+
+
+    function int operate(int m, int n, int op) {
+
+        if ( ((op=47) | (op=37)) & (n=0) ) {
+            do Error.send("division by zero");  // ##DB##
+            do Error.set(1);  // division by zero
+            return 0;
+        }
+
+        if (op =  38) { return m & n; }
+        if (op = 124) { return m | n; }
+
+        if (op =  43) { return m + n; }
+        if (op =  45) { return m - n; }
+        if (op =  42) { return m * n; }
+        if (op =  47) { return m / n; }
+        if (op =  37) { return Vector.mod(m, n); }
+
+        if (op = 6161) { return   m = n;  }
+        if (op = 3361) { return ~(m = n); }
+        if (op =   60) { return   m < n;  }
+        if (op =   62) { return   m > n;  }
+        if (op = 6061) { return  (m<n) | (m=n); }
+        if (op = 6261) { return  (m>n) | (m=n); }
+
+        do Error.send("unrecognized operator");  // ##DB##
+        do Error.set(1);  // unrecognized operator
+        return 0;
+    }
+
+
+    function void pushScope(int hsize) {
+        var Symbol scope;
+
+        let scope = Symbol.new(null, 0, HashTable.new(hsize));
+        do scope.setNext(symtab);
+        let symtab = scope;
+
+        return;
+    }
+
+
+    function void dropScope() {
+        var Symbol scope;
+
+        let scope = symtab;
+        let symtab = scope.next();
+        do LibSym.destroyHashTable(scope.data());
+        do scope.dispose();
+
+        return;
+    }
+
+
+    function Symbol lookup(String s) {
+        var HashTable table;
+        var Symbol scope, sym;
+
+        let scope = symtab;
+        while (~(scope = null)) {
+            let table = scope.data();
+            let sym = table.lookup(s);
+            if (~(sym = null)) {
+                return sym;
+            }
+            let scope = scope.next();
+        }
+
+        return null;
+    }
+
+
+    function void install(String name, int type, int value) {
+        do LibSym.install(symtab.data(), name, type, value);
+        return;
+    }
+
+}
