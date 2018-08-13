@@ -112,4 +112,11 @@ class DB {
         return;
     }
 
+
+    function void pause() {
+        while (Keyboard.keyPressed() = 0){}
+        do Memory.poke(16384,0);
+        return;
+    }
+
 }

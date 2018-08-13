@@ -67,6 +67,18 @@ function void eval(int i, int u) {return;} // ##DB##
     }
 
 
+    function void intex(Symbol intex) {
+        var int n;
+
+        let n = Eval.integer(intex.data());
+        do LibSym.destroyList(intex.data());
+        do intex.setData(n);
+        do intex.setMeta(INT);
+
+        return;
+    }
+
+
     function void strex(Symbol argv) {
         return;
     }

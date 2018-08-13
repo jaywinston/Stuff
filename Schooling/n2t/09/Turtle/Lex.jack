@@ -58,6 +58,8 @@ class Lex {
         }
  
         let CTAB[123] =   64;  // {
+        let CTAB[ 40] =   80;  // (
+        let CTAB[ 41] =   81;  // )
         let CTAB[ 38] =   88;  // &
         let CTAB[124] =   88;  // |
         let CTAB[ 61] =   89;  // =
@@ -73,8 +75,6 @@ class Lex {
         let CTAB[ 44] =   96;  // ,
         let CTAB[125] =  128;  // }
         let CTAB[ 34] =  256;  // "
-        let CTAB[ 40] =  512;  // (
-        let CTAB[ 41] = 1024;  // )
         let CTAB[ 32] = 2048;  //  
         let CTAB[  0] = 4096;  // EOS
 
