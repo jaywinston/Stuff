@@ -93,7 +93,6 @@ class Parse {
                 do extok.setTag(null);
                 let next = extok;
             } else { if (cclass = STREX) {
-                /* todo: intex -> something better */
                 let extok = Symbol.new(null, STREX, null);
                 do extok.append(next);
                 let i = Parse.strex(s, extok, i);
@@ -238,8 +237,8 @@ class Parse {
         var String t;
         var Symbol arg, intex;
 
-        let cclass = Parse.cclass(s, i) & CLASSMASK;
-        while (cclass = STREX) {
+        //let cclass = Parse.cclass(s, i) & CLASSMASK;
+        while (Parse.cclass(s, i) = STREX) {
 
             let i = i + 1;
             let cclass = Parse.cclass(s, i) & CLASSMASK;
@@ -280,7 +279,7 @@ class Parse {
 
             do next.append(arg);
 
-            let cclass = Parse.cclass(s, i) & CLASSMASK;
+            //let cclass = Parse.cclass(s, i) & CLASSMASK;
         }
 
         do next.setData(next.next());

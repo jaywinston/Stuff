@@ -206,6 +206,9 @@ class Exec {
     }
 
 
+    function Symbol block(Symbol block) {
+        return Exec.execBlock(block);
+    }
     function Symbol execBlock(Symbol block) {
         var Symbol cmdlin;
 

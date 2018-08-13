@@ -1,21 +1,12 @@
 class Eval {
 
-
-
-    static int EQ, BLANK, DELIM, BLOCK, END, EOS, CMDLIN, INT, COMMA,
-                INTEX, OP, STR, STREX, SYM, UOP, LPAREN, RPAREN;
-    static int CLASSMASK;
+    static int BLOCK, INT, INTEX, OP, STR, STREX, SYM, UOP;
     static Symbol symtab;
 
 function void eval(int i, int u) {return;} // ##DB##
 
     function void init() {
-        let EQ = Lex.cclass(61);
-        let BLANK = Lex.cclass(32);
         let BLOCK = LibSym.BLOCK();
-        let END = Lex.cclass(125);
-        let EOS = Lex.cclass(0);
-        let CMDLIN = LibSym.CMDLIN();
         let INT = LibSym.INT();
         let INTEX = LibSym.INTEX();
         let OP = LibSym.OP();
@@ -23,9 +14,6 @@ function void eval(int i, int u) {return;} // ##DB##
         let STREX = LibSym.STREX();
         let SYM = LibSym.SYM();
         let UOP = LibSym.UOP();
-        let LPAREN = Lex.cclass(40);
-        let RPAREN = Lex.cclass(41);
-        let CLASSMASK = -16;
         return;
     }
 
@@ -46,7 +34,13 @@ function void eval(int i, int u) {return;} // ##DB##
                 do stack.setData(Eval.uoperate(stack.data(), queue.data()));
             } else {
                 let p = Eval.arg(LibSym.copySym(queue));
-                /* todo: type check */
+                if (~(p.meta() = INT)) {
+                    do Error.send("expected integer");  // ##DB##
+                    do Error.set(0);  // expected integer
+                    do LibSym.destroyList(stack);
+                    do LibSym.destroySym(p);
+                    return 0;
+                }
                 do p.setNext(stack);
                 let stack = p;
             }}
@@ -60,10 +54,70 @@ function void eval(int i, int u) {return;} // ##DB##
     }
 
 
-    function String string(Symbol argv) {
-        var String s;
+    function String string(Symbol fstrex) {
+        var boolean fspec;
+        var char c;
+        var int a, i;
+        var Array argv;
+        var String s, t;
+        var Symbol argp;
 
-        return s;
+        do Eval.arg(fstrex);
+
+        if (~(fstrex.meta() = STR)) {
+            do Error.send("expected string");  // ##DB##
+            do Error.set(0);  // expected string
+            return null;
+        }
+
+        let s = fstrex.data();
+
+        let argv = Array.new(s.length()/2);
+        let argp = fstrex.next();
+        let fspec = false;
+        let a = 0;
+        let i = 0;
+        while (i < s.length()) {
+            let c = s.charAt(i);
+            if (fspec) {
+                if ((c=68) | (c=83)) {
+                    if (argp = null) {
+                        do Error.send("format specifier without argument");  // ##DB##
+                        do Error.set(0);  // format specifier without argument
+                        do argv.dispose();
+                        return null;
+                    }
+                    do Eval.arg(argp);
+                    if ( (c=68) & ~(argp.meta()=INT) ) {
+                        do Error.send(
+                    "argument type does not match format specifier, integer"
+                                     );  // ##DB##
+                        do Error.set(0);  // argument type does not match format specifier, integer
+                        do argv.dispose();
+                        return null;
+                    } else { if ( (c=83) & ~(argp.meta()=STR) ) {
+                        do Error.send(
+                    "argument type does not match format specifier, string"
+                                     );  // ##DB##
+                        do Error.set(0);  // argument type does not match format specifier, string
+                        do argv.dispose();
+                        return null;
+                    }}
+                    let argv[a] = argp.data();
+                    let a = a + 1;
+                    let argp = argp.next();
+                }
+                let fspec = false;
+            } else { if (c = 37) {
+                let fspec = true;
+            }}
+            let i = i + 1;
+        }
+
+        let t = Str.format(s, argv);
+        do argv.dispose();
+
+        return t;
     }
 
 
@@ -79,7 +133,14 @@ function void eval(int i, int u) {return;} // ##DB##
     }
 
 
-    function void strex(Symbol argv) {
+    function void strex(Symbol strex) {
+        var String s;
+
+        let s = Eval.string(strex.data());
+        do LibSym.destroyList(strex.data());
+        do strex.setData(s);
+        do strex.setMeta(STR);
+
         return;
     }
 
@@ -90,11 +151,30 @@ function void eval(int i, int u) {return;} // ##DB##
 
 
     function void block(Symbol block) {
+        var Symbol p;
+
+        let p = Exec.block(block);
+        do LibSym.destroyList(block.data());
+        do block.setData(p.data());
+        do block.setMeta(p.meta());
+        do p.dispose();
+
         return;
     }
 
 
     function Symbol arg(Symbol arg) {
+
+        if (arg.meta() = SYM) {
+            do Eval.sym(arg);
+        } else { if (arg.meta() = INTEX) {
+            do Eval.intex(arg);
+        } else { if (arg.meta() = STREX) {
+            do Eval.strex(arg);
+        } else { if (arg.meta() = BLOCK) {
+            do Eval.block(arg);
+        }}}}
+
         return arg;
     }
 
