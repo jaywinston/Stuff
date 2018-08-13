@@ -184,7 +184,7 @@ class Lex {
                 let i = Lex.string(s, t, i);
                 if (i > s.length()) {
                     do Error.send("unclosed quote");  // ##DB##
-                    do Error.set(1);  // unclosed quote
+                    do Error.set(0);  // unclosed quote
                 }
             } else { if (s.charAt(i) = 123) {
                 let i = Lex.brackets(s, t, 123, 125, i);
@@ -214,7 +214,7 @@ class Lex {
             let i = Lex.brackets(s, t, 40, 41, i);
             if (i > s.length()) {
                 do Error.send("unclosed parentheses");  // ##DB##
-                do Error.set(1);  // unclosed parentheses
+                do Error.set(0);  // unclosed parentheses
                 return i;
             }
         } else { if (s.charAt(i) = 123) {
@@ -229,7 +229,7 @@ class Lex {
         /* this includes case of op at s[0] ... */
         if (t.length() = 0) {
             do Error.send("unexpected operator");  // ##DB##
-            do Error.set(1);  // unexpected operator
+            do Error.set(0);  // unexpected operator
             return i;
         }
 
@@ -237,7 +237,7 @@ class Lex {
            But this covers the case of op after uop, e.g. "-+". */
         if ( (s.charAt(i-1)=45) | (s.charAt(i-1)=126) ) {
             do Error.send("unexpected operator");  // ##DB##
-            do Error.set(1);  // unexpected operator
+            do Error.set(0);  // unexpected operator
             return i;
         }
 

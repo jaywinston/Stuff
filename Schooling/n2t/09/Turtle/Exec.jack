@@ -351,12 +351,12 @@ class Exec {
 
         let errno = t.forward(arg.data());  // ##TEMP##
 
-        if (errno = 1) {
+        if (errno = -1) {
             do Error.send("won't go backwards");  // ##DB##
             do Error.set(0);  // won't go backwards
         }
 
-        if (errno = 2) {
+        if (errno = -2) {
             do Error.send("target beyond boundary");  // ##DB##
             do Error.set(0);  // target beyond boundary
         }
