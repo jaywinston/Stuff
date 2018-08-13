@@ -14,6 +14,7 @@ function void eval(int i, int u) {return;} // ##DB##
         let STREX = LibSym.STREX();
         let SYM = LibSym.SYM();
         let UOP = LibSym.UOP();
+        let symtab = Symbol.new(null, null, HashTable.new(15));
         return;
     }
 
@@ -221,7 +222,49 @@ function void eval(int i, int u) {return;} // ##DB##
     }
 
 
-    function void assign(String name) { // ##DB## , int type, int value) {
+    function void pushScope(int hsize) {
+        var Symbol scope;
+
+        let scope = Symbol.new(null, 0, HashTable.new(hsize));
+        do scope.setNext(symtab);
+        let symtab = scope;
+
+        return;
+    }
+
+
+    function void dropScope() {
+        var Symbol scope;
+
+        let scope = symtab;
+        let symtab = scope.next();
+        do LibSym.destroyHashTable(scope.data());
+        do scope.dispose();
+
+        return;
+    }
+
+
+    function Symbol lookup(String s) {
+        var HashTable table;
+        var Symbol scope, sym;
+
+        let scope = symtab;
+        while (~(scope = null)) {
+            let table = scope.data();
+            let sym = table.lookup(s);
+            if (~(sym = null)) {
+                return sym;
+            }
+            let scope = scope.next();
+        }
+
+        return null;
+    }
+
+
+    function void install(String name, int type, int value) {
+        do LibSym.install(symtab.data(), name, type, value);
         return;
     }
 

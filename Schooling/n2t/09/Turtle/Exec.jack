@@ -1,12 +1,11 @@
 class Exec {
 
     static int bottom, left, right, top;
-    static int CMD, CMDLIN, FUNC, EXPR, INT, STR, SYM, TTL,
-        ASSIGN, BLOCK, CLEAR, DISPOSE, FORWARD, FUNCTION, IF, PENDOWN, PENUP,
-        PRINT, REPEAT, TURNLEFT, TURNRIGHT, TURTLE, QUIT;
+    static int CMD, CMDLIN, FUNC, EXPR, INT, STR, SYM, TTL;
+    static int ASSIGN, BLOCK, CLEAR, DISPOSE, FORWARD, FUNCTION, IF,
+        PENDOWN, PENUP, PRINT, REPEAT, TURNLEFT, TURNRIGHT, TURTLE, QUIT;
     static TextBox tb;
-    static Symbol symtab;
-    static Symbol turtles;
+    static Symbol globalt, turtles;
     static Turtle t;
 
 
@@ -17,9 +16,9 @@ class Exec {
         let left = j * 8;
         let bottom = (i+h) * 11;
         let right = (j+w) * 8;
-        let symtab = Symbol.new(null, null, HashTable.new(15));
-        let turtles = Symbol.new(null, null, null);
         let t = Exec.defaultTurtle();
+        let turtles = Symbol.new(null, null, t);
+        let globalt = turtles;
 
         do Exec.initKWs();
 
@@ -34,7 +33,6 @@ class Exec {
     }
 
 
-    /* intialize key words and internal symbols */
     function void initKWs() {
         var int i;
 
@@ -85,17 +83,19 @@ class Exec {
 
 
     function void installKW(String name, int val) {
-        do Exec.install(name, CMD, val);
+        do Eval.install(name, CMD, val);
         do name.dispose();
         return;
     }
 
 
     function void clear() {
+        var Turtle tt;
 
-        do t.dispose();
+        let tt = globalt.data();
+        do tt.dispose();
         do tb.clear();
-        let t = Exec.defaultTurtle();
+        do globalt.setData(Exec.defaultTurtle());
 
         return;
     }
@@ -128,7 +128,7 @@ class Exec {
             return null;
         }
 
-        if (argv.meta() = BLOCK)  { return Exec.execBlock(argv);   }
+        if (argv.meta() = BLOCK)  { return Exec.block(argv);   }
         if (argv.meta() = CMDLIN) { return Exec.exec(argv.data()); }
 
         do Eval.arg(argv);
@@ -178,7 +178,7 @@ class Exec {
         var String argname, fstr;
         var Symbol arg, ret;
 
-        do Exec.pushScope(3);
+        do Eval.pushScope(3);
 
         let fargv = Array.new(1);
         let fstr = "$%D";
@@ -190,14 +190,14 @@ class Exec {
             let fargv[0] = n;
             let argname = Str.format(fstr, fargv);
             do Eval.arg(arg);
-            do Exec.install(argname, arg.meta(), arg.data());
+            do Eval.install(argname, arg.meta(), arg.data());
             do argname.dispose();
             let arg = arg.next();
         }
 
         let ret = Exec.exec(LibSym.copyList(argv.data()));
 
-        do Exec.dropScope();
+        do Eval.dropScope();
         do LibSym.destroyList(argv);
         do fargv.dispose();
         do fstr.dispose();
@@ -207,9 +207,6 @@ class Exec {
 
 
     function Symbol block(Symbol block) {
-        return Exec.execBlock(block);
-    }
-    function Symbol execBlock(Symbol block) {
         var Symbol cmdlin;
 
         if (block = null) {
@@ -218,7 +215,8 @@ class Exec {
 
         let cmdlin = block.data();
         while (~(cmdlin.next() = null)) {
-            do Exec.try(LibSym.copyList(cmdlin.data()));
+            do Exec.try(cmdlin.data());
+            do cmdlin.setData(null);
             let cmdlin = cmdlin.next();
         }
 
@@ -261,8 +259,12 @@ class Exec {
 
 
     function void doAssign(Symbol arg) {
-        do Eval.assign(arg.data());
-        do Exec.try(arg.next());
+        var Symbol val;
+
+        let val = Eval.arg(arg.next());
+        do Eval.install(arg.tag(), val.meta(), val.data());
+        do Exec.try(val.next());
+
         return;
     }
 
@@ -338,7 +340,7 @@ class Exec {
 
         let tt = arg.data();
         do tt.dispose();
-        do Exec.install(arg.name(), null, null);
+        do Eval.install(arg.name(), null, null);
 
         do Exec.try(arg.next());
 
@@ -348,11 +350,8 @@ class Exec {
 
     function void doForward(Symbol arg) {
         var int errno;  // ##TEMP##
-        //var Turtle t;
 
         do Eval.arg(arg);
-
-        //let t = turtle.data();
 
         let errno = t.forward(arg.data());  // ##TEMP##
 
@@ -369,6 +368,7 @@ class Exec {
         /* do Error.set(t.forward(arg.data())); will be this */
 
         do Exec.try(arg.next());
+
         return;
     }
 
@@ -381,7 +381,7 @@ class Exec {
             return;
         }
 
-        do Exec.install(arg.name(), FUNC, LibSym.copyList(arg.next()));
+        do Eval.install(arg.name(), FUNC, LibSym.copyList(arg.next()));
 
         return;
     }
@@ -438,10 +438,7 @@ class Exec {
 
 
     function void doPendown(Symbol arg) {
-        //var Turtle t;
 
-
-        //let t = turtle.data();
         do t.pendown();
 
         do Exec.try(arg);
@@ -451,10 +448,7 @@ class Exec {
 
 
     function void doPenup(Symbol arg) {
-        //var Turtle t;
 
-
-        //let t = turtle.data();
         do t.penup();
 
         do Exec.try(arg);
@@ -464,10 +458,7 @@ class Exec {
 
 
     function void doPrint(Symbol arg) {
-        //var Turtle t;
 
-
-        //let t = turtle.data();
 
         if (tb.set(t.y()/11, (t.x()/8)+1) = 1) {
             do Error.send("illegal cursor coordinate");  // ##DB##
@@ -477,13 +468,14 @@ class Exec {
 
         do Eval.arg(arg);
 
+        /* todo: I think this needs to hide all turtles so other turtles
+                 won't restore old screen data over the newly printed string */
         do t.hide();
-
         do tb.puts(arg.data());
-
         do t.show();
 
         do Exec.try(arg.next());
+
         return;
     }
 
@@ -499,6 +491,7 @@ class Exec {
         }
 
         /* todo: type check */
+        /* todo: check not negative */
 
         let i = arg.data();
         while (i > 0) {
@@ -514,12 +507,11 @@ class Exec {
         var int condition;
         var Symbol p;
 
-        do Eval.arg(arg);
-
-        let condition = arg.data();
+        let p = Eval.arg(LibSym.copyList(arg));
+        let condition = p.data();
         while (~(condition = 0)) {
             do Exec.try(LibSym.copyList(arg.next()));
-            let p = Eval.arg(Eval.eval(arg.name(), 0));
+            let p = Eval.arg(LibSym.copyList(arg));
             let condition = p.data();
             do LibSym.destroyList(p);
         }
@@ -549,6 +541,7 @@ class Exec {
 
 
     function void doQuit(Symbol arg) {
+        /* todo: return to main? */
         do Sys.halt();
         return;
     }
@@ -584,50 +577,5 @@ class Exec {
     }
 
 
-    function void pushScope(int hsize) {
-        var Symbol scope;
-
-        let scope = Symbol.new(null, 0, HashTable.new(hsize));
-        do scope.setNext(symtab);
-        let symtab = scope;
-
-        return;
-    }
-
-
-    function void dropScope() {
-        var Symbol scope;
-
-        let scope = symtab;
-        let symtab = scope.next();
-        do LibSym.destroyHashTable(scope.data());
-        do scope.dispose();
-
-        return;
-    }
-
-
-    function Symbol lookup(String s) {
-        var HashTable table;
-        var Symbol scope, sym;
-
-        let scope = symtab;
-        while (~(scope = null)) {
-            let table = scope.data();
-            let sym = table.lookup(s);
-            if (~(sym = null)) {
-                return sym;
-            }
-            let scope = scope.next();
-        }
-
-        return null;
-    }
-
-
-    function void install(String name, int type, int value) {
-        do LibSym.install(symtab.data(), name, type, value);
-        return;
-    }
 
 }
