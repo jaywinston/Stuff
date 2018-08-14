@@ -1,11 +1,12 @@
 class Eval {
 
-    static int BLOCK, INT, INTEX, OP, STR, STREX, SYM, UOP;
+    static int BLOCK, FUNC, INT, INTEX, OP, STR, STREX, SYM, UOP;
     static Symbol symtab;
 
 
     function void init() {
         let BLOCK = LibSym.BLOCK();
+        let FUNC = LibSym.FUNC();
         let INT = LibSym.INT();
         let INTEX = LibSym.INTEX();
         let OP = LibSym.OP();
@@ -72,6 +73,10 @@ class Eval {
 
         let s = fstrex.data();
 
+        if (s.length() < 2) {
+            return s;
+        }
+
         let argv = Array.new(s.length()/2);
         let argp = fstrex.next();
         let fspec = false;
@@ -82,26 +87,27 @@ class Eval {
             if (fspec) {
                 if ((c=68) | (c=83)) {
                     if (argp = null) {
-                        do Error.send("format specifier without argument");  // ##DB##
+                        do Error.send(
+                        "format specifier without argument");  // ##DB##
                         do Error.set(0);  // format specifier without argument
                         do argv.dispose();
-                        return null;
+                        return "";
                     }
                     do Eval.arg(argp);
                     if ( (c=68) & ~(argp.meta()=INT) ) {
                         do Error.send(
                     "argument type does not match format specifier, integer"
                                      );  // ##DB##
-                        do Error.set(0);  // argument type does not match format specifier, integer
+                        do Error.set(0);  // fstrex: expected int
                         do argv.dispose();
-                        return null;
+                        return "";
                     } else { if ( (c=83) & ~(argp.meta()=STR) ) {
                         do Error.send(
                     "argument type does not match format specifier, string"
                                      );  // ##DB##
-                        do Error.set(0);  // argument type does not match format specifier, string
+                        do Error.set(0);  // fstrex: expected str
                         do argv.dispose();
-                        return null;
+                        return "";
                     }}
                     let argv[a] = argp.data();
                     let a = a + 1;
@@ -149,12 +155,21 @@ class Eval {
         var Symbol p;
 
         let p = Eval.lookup(sym.tag());
+
         if (p = null) {
             do Error.send("undefined symbol");  // ##DB##
             do Error.set(0);  // undefined symbol
             return;
         }
-        do sym.setData(p.data());
+
+        if (p.meta() = STR) {
+            do sym.setData(Str.dup(p.data()));
+        } else { if (p.meta() = FUNC) {
+            do sym.setData(LibSym.copyList(p.data()));
+        } else {
+            do sym.setData(p.data());
+        }}
+
         do sym.setMeta(p.meta());
 
         return;
@@ -162,17 +177,25 @@ class Eval {
 
 
     function void block(Symbol block) {
-        var Symbol p;
+        var Symbol new, old;
 
-        let p = Exec.block(block);
-        do LibSym.destroyList(block.data());
-        if (p = null) {
+        let old = block.data();
+        let new = Exec.block(block);
+
+        if (new = null) {
             do block.setData(null);
             do block.setMeta(null);
+            return;
         }
-        do block.setData(p.data());
-        do block.setMeta(p.meta());
-        do p.dispose();
+
+        if (new.meta() = STR) {
+            do block.setData(Str.dup(new.data()));
+        } else {
+            do block.setData(new.data());
+        }
+        do block.setMeta(new.meta());
+
+        do LibSym.destroyList(old);
 
         return;
     }
@@ -201,7 +224,7 @@ class Eval {
         if (op = 126) { return ~n;          }
 
         do Error.send("unrecognized operator");  // ##DB##
-        do Error.set(1);  // unrecognized operator
+        do Error.set(0);  // unrecognized operator
         return 0;
     }
 
@@ -210,7 +233,7 @@ class Eval {
 
         if ( ((op=47) | (op=37)) & (n=0) ) {
             do Error.send("division by zero");  // ##DB##
-            do Error.set(1);  // division by zero
+            do Error.set(0);  // division by zero
             return 0;
         }
 
@@ -231,7 +254,7 @@ class Eval {
         if (op = 6261) { return  (m>n) | (m=n); }
 
         do Error.send("unrecognized operator");  // ##DB##
-        do Error.set(1);  // unrecognized operator
+        do Error.set(0);  // unrecognized operator
         return 0;
     }
 
@@ -239,7 +262,7 @@ class Eval {
     function void pushScope(int hsize) {
         var Symbol scope;
 
-        let scope = Symbol.new(null, 0, HashTable.new(hsize));
+        let scope = Symbol.new(null, null, HashTable.new(hsize));
         do scope.setNext(symtab);
         let symtab = scope;
 
@@ -251,7 +274,7 @@ class Eval {
         var Symbol scope;
 
         let scope = symtab;
-        let symtab = scope.next();
+        let symtab = symtab.next();
         do LibSym.destroyHashTable(scope.data());
         do scope.dispose();
 

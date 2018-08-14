@@ -33,9 +33,11 @@ class Parse {
 
 
     function Symbol next() {
-        do ARGV.setNext(null);
+
+        do ARGV.setData(null);
         do Parse.cmdlin(IOBox.read(PS1), ARGV, 0);
-        return ARGV.next();
+
+        return ARGV.data();
     }
 
 
@@ -116,6 +118,8 @@ class Parse {
             let cclass = Parse.cclass(s, i) & CLASSMASK;
         }
 
+        do argv.setData(argv.next());
+        do argv.setNext(null);
         do argv.setTag(s);
 
         return i;
@@ -164,17 +168,15 @@ class Parse {
                 if (uop) {
                     let objbuf = Symbol.new(null, UOP, op);
                 } else {
+                    let objbuf = Symbol.new(null, Lex.cclass(op)&15, op);
                     if ( (i+1) < s.length() ) {
                         if ( (Lex.cclass(op)=EQ)
                                 & (Lex.cclass(s.charAt(i+1))=EQ) ) {
-                            let op = (op*100) + s.charAt(i+1);
                             let i = i + 1;
+                            do objbuf.setData((op*100) + s.charAt(i));
                         }
                     }
-                    let objbuf = Symbol.new(null, Lex.cclass(op)&15, op);
-                }
-                /* pop higher equal ops to queue */
-                if (~uop) {
+                    /* pop higher equal ops to queue */
                     while ( ~(stack.meta()<objbuf.meta())
                             & ~(stack.meta()=LPAREN) ) {
                         let stackbuf = stack;
@@ -234,7 +236,6 @@ class Parse {
 
         do queue.setData(queue.next());
         do queue.setNext(null);
-
         do queue.setTag(s);
 
         return i;
@@ -246,7 +247,6 @@ class Parse {
         var String t;
         var Symbol arg, intex;
 
-        //let cclass = Parse.cclass(s, i) & CLASSMASK;
         while (Parse.cclass(s, i) = STREX) {
 
             let i = i + 1;
@@ -287,13 +287,10 @@ class Parse {
             }
 
             do next.append(arg);
-
-            //let cclass = Parse.cclass(s, i) & CLASSMASK;
         }
 
         do next.setData(next.next());
         do next.setNext(null);
-
         do next.setTag(s);
 
         return i;
@@ -310,8 +307,6 @@ class Parse {
             let i = Parse.cmdlin(s, cmdlin, i);
             let s = cmdlin.tag();
             do cmdlin.setTag(null);
-            do cmdlin.setData(cmdlin.next());
-            do cmdlin.setNext(null);
             do block.append(cmdlin);
         }
 
@@ -323,15 +318,12 @@ class Parse {
                 let i = Parse.cmdlin(s, cmdlin, 0);
                 let s = cmdlin.tag();
                 do cmdlin.setTag(null);
-                do cmdlin.setData(cmdlin.next());
-                do cmdlin.setNext(null);
                 do block.append(cmdlin);
             }
         }
 
         do block.setData(block.next());
         do block.setNext(null);
-
         do block.setTag(s);
 
         return i + 1;

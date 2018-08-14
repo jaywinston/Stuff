@@ -47,7 +47,6 @@ class Str {
                     do s.appendChar(arg[a]);
                 } else { if (i < Str.MAXLEN()) {
                     do s.appendChar(c);
-                    let t = 1;
                 }}}}
 
                 if (~(t = null)) {

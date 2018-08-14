@@ -14,7 +14,7 @@ class DB {
     }
 
 
-    function void dbint(int i) {
+    function void dbi(int i) {
         do Output.moveCursor(0,0);
         do Output.printString("                  ");
         do Output.moveCursor(0,0);
