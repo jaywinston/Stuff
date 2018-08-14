@@ -138,7 +138,8 @@ class LibSym {
     function int OP        () { return  Lex.cclass(38)
                                            & (-8 & ~LibSym.INTEX()); }  // 8
     function int UOP       () { return  Lex.cclass(126)
-                                           & ~LibSym.BLOCK(); }  // 16
+                                           & (~LibSym.BLOCK()
+                                           & ~LibSym.OP()); }  // 16
 
     /* string type-class */  // defunct
     function int END       () { return 33; }  // in obsolescence
