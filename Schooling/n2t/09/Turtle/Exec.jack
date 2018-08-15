@@ -217,6 +217,10 @@ class Exec {
             return null;
         }
 
+        if (block.data() = null) {
+            return null;
+        }
+
         let cmdlin = block.data();
         while (~(cmdlin.next() = null)) {
             do Exec.try(cmdlin.data());

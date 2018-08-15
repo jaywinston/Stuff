@@ -58,6 +58,53 @@ class Parse {
     }
 
 
+    function int token(String s, Symbol next, int i) {
+            var int cclass;
+            var String t;
+
+            let cclass = next.meta();
+
+            if (cclass = BLOCK) {
+                return Parse.block(s, next, i);
+            } else { if (cclass = INT) {
+                let t = String.new(s.length());
+                let i = Lex.token(s, t, i);
+                do next.setData(t.intValue());
+                do t.dispose();
+            } else { if (cclass = INTEX) {
+                return Parse.intex(s, next, i);
+            } else { if (cclass = STR) {
+                let t = String.new(s.length());
+                let i = Lex.string(s, t, i);
+                if (i > s.length()) {
+                    do t.dispose();
+                    do Error.send("EOS while scanning string");  // ##DB##
+                    do Error.set(0);  // EOS while scanning string
+                    return -1;
+                }
+                do next.setData(t);
+            } else { if (cclass = SYM) {
+                let t = String.new(s.length());
+                let i = Lex.token(s, t, i);
+                /* assignment? */
+                if ( (Parse.cclass(s, i) = EQ)
+                        & (~(Parse.cclass(s, i+1) = EQ)) ) {
+                    do next.setTag("=");
+                    do next.append(Symbol.new(t, SYM, null));
+                    let i = i + 1;
+                } else {
+                    do next.setTag(t);
+                }
+            } else {
+                do Error.send("unexpected token");  // ##DB##
+                do Error.set(0);  // unexpected token
+                return -1;
+            }}}}}
+
+        return i;
+    }
+
+
     function int cmdlin(String s, Symbol argv, int i) {
         var int cclass;
         var String t;
@@ -72,50 +119,16 @@ class Parse {
                 return i;
             }
 
-            if (cclass = BLOCK) {
-                let next = Symbol.new(null, BLOCK, null);
-                let i = Parse.block(s, next, i);
-                let s = next.tag();
-                do next.setTag(null);
-            } else { if (cclass = INT) {
-                let t = String.new(s.length());
-                let i = Lex.token(s, t, i);
-                let next = Symbol.new(null, INT, t.intValue());
-                do t.dispose();
-            } else { if (cclass = INTEX) {
-                let next = Symbol.new(null, INTEX, null);
-                let i = Parse.intex(s, next, i);
-                let s = next.tag();
-                do next.setTag(null);
-            } else { if (cclass = STR) {
-                let t = String.new(s.length());
-                let i = Lex.string(s, t, i);
-                if (i > s.length()) {
-                    do Error.send("EOS while scanning string");  // ##DB##
-                    do Error.set(0);  // EOS while scanning string
-                    return -1;
-                }
-                let next = Symbol.new(null, STR, t);
-            } else { if (cclass = SYM) {
-                let t = String.new(s.length());
-                let i = Lex.token(s, t, i);
-                /* assignment? */
-                if ( (Parse.cclass(s, i) = EQ)
-                        & (~(Parse.cclass(s, i+1) = EQ)) ) {
-                    let next = Symbol.new("=", SYM, null);
-                    do next.append(Symbol.new(t, SYM, null));
-                    let i = i + 1;
-                } else {
-                    let next = Symbol.new(t, SYM, null);
-                }
-            } else {
-                do Error.send("unexpected token");  // ##DB##
-                do Error.set(0);  // unexpected token
-                return -1;
-            }}}}}
+            let next = Symbol.new(s, cclass, null);
+            let i = Parse.token(s, next, i);
 
             if (i < 0) {
                 return i;
+            }
+
+            if (~(next.meta() = SYM)) {
+                let s = next.tag();
+                do next.setTag(null);
             }
 
             let cclass = Parse.cclass(s, i) & CLASSMASK;
@@ -305,6 +318,7 @@ class Parse {
                 let t = String.new(s.length());
                 let i = Lex.string(s, t, i);
                 if (i > s.length()) {
+                    do t.dispose();
                     do Error.send("EOS while scanning string");  // ##DB##
                     do Error.set(0);  // EOS while scanning string
                     return -1;
