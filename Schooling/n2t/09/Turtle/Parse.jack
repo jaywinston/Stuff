@@ -35,7 +35,11 @@ class Parse {
     function Symbol next() {
 
         do ARGV.setData(null);
-        do Parse.cmdlin(IOBox.read(PS1), ARGV, 0);
+
+        if (Parse.cmdlin(IOBox.read(PS1), ARGV, 0) < 0) {
+            do LibSym.destroyList(ARGV.data());
+            return null;
+        }
 
         return ARGV.data();
     }
@@ -43,6 +47,14 @@ class Parse {
 
     function int cclass(String s, int i) {
         return Lex.cclass(Lex.getch(s, i));
+    }
+
+
+    function void package(Symbol pkg, String tag) {
+        do pkg.setData(pkg.next());
+        do pkg.setNext(null);
+        do pkg.setTag(tag);
+        return;
     }
 
 
@@ -56,7 +68,7 @@ class Parse {
         while (~(cclass = EOS)) {
 
             if (cclass = END) {
-                do argv.setTag(s);
+                do Parse.package(argv, s);
                 return i;
             }
 
@@ -78,6 +90,11 @@ class Parse {
             } else { if (cclass = STR) {
                 let t = String.new(s.length());
                 let i = Lex.string(s, t, i);
+                if (i > s.length()) {
+                    do Error.send("EOS while scanning string");  // ##DB##
+                    do Error.set(0);  // EOS while scanning string
+                    return -1;
+                }
                 let next = Symbol.new(null, STR, t);
             } else { if (cclass = SYM) {
                 let t = String.new(s.length());
@@ -92,8 +109,14 @@ class Parse {
                     let next = Symbol.new(t, SYM, null);
                 }
             } else {
-                return -i;  // Error.set parse.cmdlin bad token (probably ',')
+                do Error.send("unexpected token");  // ##DB##
+                do Error.set(0);  // unexpected token
+                return -1;
             }}}}}
+
+            if (i < 0) {
+                return i;
+            }
 
             let cclass = Parse.cclass(s, i) & CLASSMASK;
             if (cclass = INTEX) {
@@ -112,15 +135,17 @@ class Parse {
                 let next = extok;
             }}
 
+            if (i < 0) {
+                return i;
+            }
+
             do argv.append(next);
 
             let i = Str.lskip(s, 32, i);
             let cclass = Parse.cclass(s, i) & CLASSMASK;
         }
 
-        do argv.setData(argv.next());
-        do argv.setNext(null);
-        do argv.setTag(s);
+        do Parse.package(argv, s);
 
         return i;
     }
@@ -155,6 +180,11 @@ class Parse {
                     let s = objbuf.tag();
                     do objbuf.setTag(null);
                 }}}
+
+                if (i < 0) {
+                    return i;
+                }
+
                 do queue.append(objbuf);
                 while (stack.meta() = UOP) {
                     let stackbuf = stack;
@@ -162,7 +192,9 @@ class Parse {
                     do stackbuf.setNext(null);
                     do queue.append(stackbuf);
                 }
+
                 let uop = false;
+
             } else { if ( (cclass&OP) = OP) {
                 let op = s.charAt(i);
                 if (uop) {
@@ -199,7 +231,9 @@ class Parse {
                 while (~(stack.meta() = LPAREN)) {
                     if (stack.meta() = null) { /* mismatched parens */
                         do stack.dispose();
-                        return -i;  // Error.set mismatched parens
+                        do Error.send("mismatched parentheses");  // ##DB##
+                        do Error.set(0);  // mismatched parentheses
+                        return -1;
                     }
                     let stackbuf = stack;
                     let stack = stack.next();
@@ -224,7 +258,9 @@ class Parse {
                     let stack = stack.next();
                     do stackbuf.dispose();
                 }
-                return -i;  // Error.set mismatched parens
+                do Error.send("mismatched parentheses");  // ##DB##
+                do Error.set(0);  // mismatched parentheses
+                return -1;
             }
             let stackbuf = stack;
             let stack = stack.next();
@@ -234,9 +270,7 @@ class Parse {
 
         do stack.dispose();
 
-        do queue.setData(queue.next());
-        do queue.setNext(null);
-        do queue.setTag(s);
+        do Parse.package(queue, s);
 
         return i;
     }
@@ -270,12 +304,21 @@ class Parse {
             } else { if (cclass = STR) {
                 let t = String.new(s.length());
                 let i = Lex.string(s, t, i);
+                if (i > s.length()) {
+                    do Error.send("EOS while scanning string");  // ##DB##
+                    do Error.set(0);  // EOS while scanning string
+                    return -1;
+                }
                 let arg = Symbol.new(null, STR, t);
             } else { if (cclass = SYM) {
                 let t = String.new(s.length());
                 let i = Lex.token(s, t, i);
                 let arg = Symbol.new(t, SYM, null);
             }}}}}
+
+            if (i < 0) {
+                return i;
+            }
 
             if ( (Parse.cclass(s, i)&CLASSMASK) = INTEX) {
                 let intex = Symbol.new(null, INTEX, null);
@@ -286,12 +329,14 @@ class Parse {
                 let arg = intex;
             }
 
+            if (i < 0) {
+                return i;
+            }
+
             do next.append(arg);
         }
 
-        do next.setData(next.next());
-        do next.setNext(null);
-        do next.setTag(s);
+        do Parse.package(next, s);
 
         return i;
     }
@@ -310,21 +355,26 @@ class Parse {
             do block.append(cmdlin);
         }
 
+        if (i < 0) {
+            return i;
+        }
+
         while (Parse.cclass(s, i) = EOS) {
             let s = IOBox.read(PS2);
             let i = Str.lskip(s, 32, 0);
             if (~(Parse.cclass(s, i) = END)) {
                 let cmdlin = Symbol.new(s, CMDLIN, null);
                 let i = Parse.cmdlin(s, cmdlin, 0);
+                if (i < 0) {
+                    return i;
+                }
                 let s = cmdlin.tag();
                 do cmdlin.setTag(null);
                 do block.append(cmdlin);
             }
         }
 
-        do block.setData(block.next());
-        do block.setNext(null);
-        do block.setTag(s);
+        do Parse.package(block, s);
 
         return i + 1;
     }

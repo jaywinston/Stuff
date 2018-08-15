@@ -106,7 +106,12 @@ class Exec {
     function void try(Symbol argv) {
         var Symbol ret;
 
-        let ret = Exec.exec(argv);
+        /* This is the check for Parse() errors. */
+        if (argv = null) {
+            let ret = null;
+        } else {
+            let ret = Exec.exec(argv);
+        }
 
         if (Error.isSet()) {
             while (Error.isSet()) {
@@ -148,8 +153,8 @@ class Exec {
         let cmd = argv.data();
 
         if (cmd = TURTLE) { return Exec.newTurtle(argv.next());         }
-        if (cmd = POSX)   { return Exec.posx(argv);                     }
-        if (cmd = POSY)   { return Exec.posy(argv);                     }
+        if (cmd = POSX)   { return Exec.posx(argv.next());              }
+        if (cmd = POSY)   { return Exec.posy(argv.next());              }
 
         if (cmd = ASSIGN)           { do Exec.doAssign(argv.next());    }
         else { if (cmd = CLEAR)     { do Exec.doClear(argv.next());     }
@@ -452,25 +457,25 @@ class Exec {
     }
 
 
-    function int posx(Symbol arg) {
+    function Symbol posx(Symbol arg) {
         var int x;
 
-        let x = t.x();
+        let x = t.x() - left;
 
         do Exec.try(arg);
 
-        return x;
+        return Symbol.new(null, INT, x);
     }
 
 
-    function int posy(Symbol arg) {
+    function Symbol posy(Symbol arg) {
         var int y;
 
-        let y = t.y();
+        let y = t.y() - top;
 
         do Exec.try(arg);
 
-        return y;
+        return Symbol.new(null, INT, y);
     }
 
 
