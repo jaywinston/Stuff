@@ -1,49 +1,12 @@
 class Lex {
 
     static Array CTAB;
-    static String BRACES, FARGDLMS, WORDDLMS;
 
 
     function void init() {
         var int i;
 
-        let BRACES = "{}";
-
-        let FARGDLMS = String.new(3);
-        do FARGDLMS.appendChar(34);   // '"'
-        do FARGDLMS.appendChar(44);   // ','
-        do FARGDLMS.appendChar(123);  // '{'
-
-        let WORDDLMS = String.new(4);
-        do WORDDLMS.appendChar(32);   // ' '
-        do WORDDLMS.appendChar(34);   // '"'
-        do WORDDLMS.appendChar(61);   // '='
-        do WORDDLMS.appendChar(123);  // '{'
-
         let CTAB = Array.new(128);
-
-        /* bitmap:
-           0000000000000000
-           ||||||||||||||||
-      unused|||||||||||||||
-          sym||||||||||||||
-           int|||||||||||||
-            eos||||||||||||
-           blank|||||||||||
-           rparen||||||||||
-            lparen|||||||||
-                str||||||||
-                 end|||||||
-                block||||||
-                    \/|||||
-                strex |||||
-                      \/|||
-  intex(+reserved==uop)||||
-                       ||||
-           op(+reserved)|||
-                        \|/
-                  reserved
-*/
 
         let i = 32;
         while (i < 128) {
@@ -66,8 +29,8 @@ class Lex {
         let CTAB[ 33] =   90;  // !
         let CTAB[ 60] =   90;  // <
         let CTAB[ 62] =   90;  // >
-        let CTAB[ 43] =   91;  // +  INTEX + 2, i.e. INTEX & OPMASK = 2 i.e.
-        let CTAB[ 45] =   91;  // -  binds second tightest of operators.
+        let CTAB[ 43] =   91;  // +
+        let CTAB[ 45] =   91;  // -
         let CTAB[126] =   91;  // ~
         let CTAB[ 37] =   92;  // %
         let CTAB[ 42] =   92;  // *
@@ -111,37 +74,6 @@ class Lex {
     }
 
 
-    /* collect substring of nested brackets delimited by l and r from s into t;
-     * return last used index + 1
-     */
-    function int brackets(String s, String t, char l, char r, int i) {
-        /* i + 1 is returned because the loop breaks on the closing delim.
-           Adding one to the index indicates EOS where appropriate or
-           an unclosed bracket as i will be greater than s.length().
-           Or it conveniently places i on what is likely an operator. */
-        var char c;
-        var int blk, sLen;
-
-        let sLen = s.length();
-        let blk = 0;
-        while (i < sLen) {
-            let c = s.charAt(i);
-            do t.appendChar(c);
-            if (c = l) {
-                let blk = blk + 1;
-            } else { if (c = r) {
-                let blk = blk - 1;
-            }}
-            if (blk = 0) {
-                return i + 1;
-            }
-            let i = i + 1;
-        }
-
-        return i + 1;
-    }
-
-
     function int string(String s, String t, int i) {
         var char c;
 
@@ -172,132 +104,6 @@ class Lex {
         }
 
         return i + 1;  // EOS while scanning for quote
-    }
-
-
-    function int word(String s, String t, int i) {
-
-        let i = Str.tkn(s, t, WORDDLMS, i);
-
-        if (i < s.length()) {
-            if (s.charAt(i) = 34) {
-                let i = Lex.string(s, t, i);
-                if (i > s.length()) {
-                    do Error.send("unclosed quote");  // ##DB##
-                    do Error.set(0);  // unclosed quote
-                }
-            } else { if (s.charAt(i) = 123) {
-                let i = Lex.brackets(s, t, 123, 125, i);
-            } else { if (s.charAt(i) = 61) {
-                do t.appendChar(61);
-                let i = Lex.word(s, t, i+1);
-            }}}
-        }
-
-        if (i < s.length()) { if (~(s.charAt(i) = 32)) {
-            let i = Lex.word(s, t, i);
-        }}
-
-        return i;
-    }
-
-
-    function int integer(String s, String t, String list, int i) {
-
-        /* unary ops: '-' '~'; evaluated with term */
-        while ((s.charAt(i)=45) | (s.charAt(i)=126)) {
-            do t.appendChar(s.charAt(i));
-            let i = i + 1;
-        }
-
-        if (s.charAt(i) = 40) {
-            let i = Lex.brackets(s, t, 40, 41, i);
-            if (i > s.length()) {
-                do Error.send("unclosed parentheses");  // ##DB##
-                do Error.set(0);  // unclosed parentheses
-                return i;
-            }
-        } else { if (s.charAt(i) = 123) {
-            let i = Lex.brackets(s, t, 123, 125, i);
-            if (i > s.length()) {
-                return i;
-            }
-        }}
-
-        let i = Str.tkn(s, t, list, i);
-
-        /* this includes case of op at s[0] ... */
-        if (t.length() = 0) {
-            do Error.send("unexpected operator");  // ##DB##
-            do Error.set(0);  // unexpected operator
-            return i;
-        }
-
-        /* ... which would crash here.
-           But this covers the case of op after uop, e.g. "-+". */
-        if ( (s.charAt(i-1)=45) | (s.charAt(i-1)=126) ) {
-            do Error.send("unexpected operator");  // ##DB##
-            do Error.set(0);  // unexpected operator
-            return i;
-        }
-
-        if (i < s.length()) {
-            if ((s.charAt(i)=40) | (s.charAt(i)=123)) {
-                return Lex.integer(s, t, list, i);
-            }
-        }
-
-        return i;
-    }
-
-
-    function int block(String s, String t, int i) {
-
-        if (~(i < s.length())) {
-            return i;
-        }
-
-        while (i < s.length()) {
-
-            let i = Str.tkn(s, t, BRACES, i);
-
-            if (i < s.length()) {
-                if (s.charAt(i) = 125) {
-                    return i;
-                }
-                if (s.charAt(i) = 123) {
-                    let i = Lex.brackets(s, t, 123, 125, i);
-                }
-            }
-        }
-
-        return i;
-    }
-
-
-    function int fArg(String s, String t, int i) {
-
-        if (~(i < s.length())) {
-            return -1;
-        }
-
-        let i = Str.tkn(s, t, FARGDLMS, i);
-
-        if (~(i < s.length())) {
-            return i;
-        }
-
-        if (s.charAt(i) = 34) {
-            let i = Lex.string(s, t, i);
-        } else { if (s.charAt(i) = 123) {
-            let i = Lex.brackets(s, t, 123, 125, i);
-        }}
-
-        if (i < s.length()) { if (~(s.charAt(i) = 44)) {
-            return Lex.fArg(s, t, i);
-        }}
-
-        return i;
     }
 
 }
