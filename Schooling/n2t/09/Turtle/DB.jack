@@ -66,10 +66,6 @@ class DB {
             let t = "SYM";
         } else { if (p.meta() = LibSym.TTL()) {
             let t = "TTL";
-        } else { if (p.meta() = LibSym.END()) {
-            let t = "END";
-        } else { if (p.meta() = LibSym.EXPR()) {
-            let t = "EXPR";
         } else { if (p.meta() = LibSym.STR()) {
             let t = "STR";
         } else { if (p.meta() = LibSym.FUNC()) {
@@ -88,7 +84,7 @@ class DB {
             let t = "UOP";
         } else {
             let t = "?";
-        }}}}}}}}}}}}}}}
+        }}}}}}}}}}}}}
 
         let c = c1;
         let r = r1;
