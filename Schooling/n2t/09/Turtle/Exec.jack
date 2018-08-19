@@ -64,8 +64,9 @@ class Exec {
 
         do Exec.installKW("MV",128);  // ##DB##
 
-        do Exec.installKW("=",         ASSIGN);
+        do Exec.installKW("ASSIGN",    ASSIGN);
         do Exec.installKW("CLEAR",     CLEAR);
+        do Exec.installKW("DIR",       DIR);
         do Exec.installKW("DISPOSE",   DISPOSE);
         do Exec.installKW("FORWARD",   FORWARD);
         do Exec.installKW("FUNCTION",  FUNCTION);
@@ -154,6 +155,7 @@ class Exec {
         let cmd = argv.data();
 
         if (cmd = TURTLE) { return Exec.newTurtle(argv.next());         }
+        if (cmd = DIR)    { return Exec.dir(argv.next());               }
         if (cmd = POSX)   { return Exec.posx(argv.next());              }
         if (cmd = POSY)   { return Exec.posy(argv.next());              }
 
@@ -300,6 +302,17 @@ class Exec {
     }
 
 
+    function Symbol dir(Symbol arg) {
+        var Symbol p;
+
+        let p = Symbol.new(null, INT, t.direction());
+
+        do Exec.try(arg);
+
+        return p;
+    }
+
+
     function void doDispose(Symbol arg) {
         var boolean continue;
         var Symbol p;
@@ -422,8 +435,8 @@ class Exec {
         while (~(argp = null)) {
             if (HashTable.streq(ELSES, argp.name())) {
                 if (ifc = 0) {
-                    do IF.dispose();
-                    do ELSE.dispose();
+                    do IFS.dispose();
+                    do ELSES.dispose();
                     return argp;
                 } else {
                     let ifc = ifc - 1;
@@ -536,6 +549,7 @@ class Exec {
 
     function void doRepeat(Symbol arg) {
         var int i;
+        var Symbol cmdp;
 
         do Eval.arg(arg);
 
@@ -548,7 +562,9 @@ class Exec {
 
         let i = arg.data();
         while (i > 0) {
-            do Exec.try(arg.next());
+            let cmdp = LibSym.copyList(arg.next());
+            do Exec.try(cmdp);
+            do LibSym.destroyList(cmdp);
             let i = i - 1;
         }
 
@@ -558,16 +574,18 @@ class Exec {
 
     function void doRepeatIf(Symbol arg) {
         var int condition;
-        var Symbol p;
+        var Symbol cmdp, condp;
 
-        let p = Eval.arg(LibSym.copySym(arg));
-        let condition = p.data();
-        do LibSym.destroyList(p);
+        let condp = Eval.arg(LibSym.copySym(arg));
+        let condition = condp.data();
+        do LibSym.destroyList(condp);
         while (~(condition = 0)) {
-            do Exec.try(arg.next());
-            let p = Eval.arg(LibSym.copySym(arg));
-            let condition = p.data();
-            do LibSym.destroyList(p);
+            let cmdp = LibSym.copyList(arg.next());
+            do Exec.try(cmdp);
+            do LibSym.destroyList(cmdp);
+            let condp = Eval.arg(LibSym.copySym(arg));
+            let condition = condp.data();
+            do LibSym.destroyList(condp);
         }
 
         return;

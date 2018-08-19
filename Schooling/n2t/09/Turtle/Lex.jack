@@ -60,15 +60,15 @@ class Lex {
         let CTAB[ 38] =   89;  // &
         let CTAB[124] =   89;  // |
         let CTAB[ 61] =   90;  // =
-        let CTAB[ 33] =   90;  // !
-        let CTAB[ 60] =   90;  // <
-        let CTAB[ 62] =   90;  // >
-        let CTAB[ 43] =   91;  // +
-        let CTAB[ 45] =   91;  // -
-        let CTAB[126] =   91;  // ~
-        let CTAB[ 37] =   92;  // %
-        let CTAB[ 42] =   92;  // *
-        let CTAB[ 47] =   92;  // /
+        let CTAB[ 33] =   91;  // !
+        let CTAB[ 60] =   91;  // <
+        let CTAB[ 62] =   91;  // >
+        let CTAB[ 43] =   92;  // +
+        let CTAB[ 45] =   92;  // -
+        let CTAB[126] =   92;  // ~
+        let CTAB[ 37] =   93;  // %
+        let CTAB[ 42] =   93;  // *
+        let CTAB[ 47] =   93;  // /
         let CTAB[ 44] =   96;  // ,
         let CTAB[125] =  128;  // }
         let CTAB[ 34] =  256;  // "

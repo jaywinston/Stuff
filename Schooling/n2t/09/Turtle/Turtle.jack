@@ -9,7 +9,7 @@ class Turtle {
     field ScreenArea sa;
 
     constructor Turtle new(int x, int y, int d, int t, int l, int b, int r) {
-        let TLEN = 10;
+        let TLEN = 20;
         /* todo: validate boundaries */
         let top = t;
         let left = l;
@@ -88,7 +88,12 @@ class Turtle {
     method void drawTurtle() {
         var int i, l, x, y;
 
-        do v.calculate(TLEN/2, direction);
+        do Screen.setColor(true);
+        do Screen.drawCircle(_x, _y, TLEN);
+        do v.calculate(TLEN, direction);
+        do Screen.setColor(false);
+        do Screen.drawCircle(_x-v.re(), _y+v.im(), TLEN);
+/*
         let x = _x + v.re();
         let y = _y - v.im();
         let i = 160;
@@ -105,6 +110,7 @@ class Turtle {
             let i = i + 2;
             let l = l - 1;
         }
+*/
 
         return;
     }
