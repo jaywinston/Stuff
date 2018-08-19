@@ -21,14 +21,14 @@ class Lex {
                              string literal   |   |   |   |   |   |   |   |
                                       block end   |   |   |   |   |   |   |
                                               block   |   |   |   |   |   |
-                                                  |\ /    /   |   |   |   |
+                                                  |\ /   /    |   |   |   |
                                     string expression   / |   |   |   |   |
-                                                  \   /   |   |   |   |   |
-                                   integer expression     |   |   |   |   |
+                                                  \    /  |   |   |   |   |
+                                     integer expression   |   |   |   |   |
                                              unary operator   |   |   |   |
                                                 binary operator   |   |   |
                                                                    \  |  /
-                                                       opreator precedance
+                                                      opreator precedance
      *
      * String expressions are calls to the format function.
      * Integer expressions are compound expressions i.e. including one or

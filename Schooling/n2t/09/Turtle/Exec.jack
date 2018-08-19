@@ -2,7 +2,7 @@ class Exec {
 
     static int bottom, left, right, top;
     static int CMD, CMDLIN, FUNC, INT, STR, TTL;
-    static int ASSIGN, BLOCK, CLEAR, DISPOSE, FORWARD, FUNCTION, IF,
+    static int ASSIGN, BLOCK, CLEAR, DIR, DISPOSE, FORWARD, FUNCTION, IF,
         PENDOWN, PENUP, POSX, POSY, PRINT, REPEAT, TURNLEFT, TURNRIGHT,
         TURTLE, QUIT;
     static TextBox tb;
@@ -46,20 +46,21 @@ class Exec {
 
         let ASSIGN    =  1;
         let CLEAR     =  2;
-        let DISPOSE   =  3;
-        let FORWARD   =  4;
-        let FUNCTION  =  5;
-        let IF        =  6;
-        let PENDOWN   =  7;
-        let PENUP     =  8;
-        let POSX      =  9;
-        let POSY      = 10;
-        let PRINT     = 11;
-        let REPEAT    = 12;
-        let TURNLEFT  = 13;
-        let TURNRIGHT = 14;
-        let TURTLE    = 15;
-        let QUIT      = 16;
+        let DIR       =  3;
+        let DISPOSE   =  4;
+        let FORWARD   =  5;
+        let FUNCTION  =  6;
+        let IF        =  7;
+        let PENDOWN   =  8;
+        let PENUP     =  9;
+        let POSX      = 10;
+        let POSY      = 11;
+        let PRINT     = 12;
+        let REPEAT    = 13;
+        let TURNLEFT  = 14;
+        let TURNRIGHT = 15;
+        let TURTLE    = 16;
+        let QUIT      = 17;
 
         do Exec.installKW("MV",128);  // ##DB##
 
@@ -544,7 +545,6 @@ class Exec {
         }
 
         /* todo: type check */
-        /* todo: check not negative */
 
         let i = arg.data();
         while (i > 0) {
@@ -560,12 +560,12 @@ class Exec {
         var int condition;
         var Symbol p;
 
-        let p = Eval.arg(LibSym.copyList(arg));
+        let p = Eval.arg(LibSym.copySym(arg));
         let condition = p.data();
         do LibSym.destroyList(p);
         while (~(condition = 0)) {
             do Exec.try(arg.next());
-            let p = Eval.arg(LibSym.copyList(arg));
+            let p = Eval.arg(LibSym.copySym(arg));
             let condition = p.data();
             do LibSym.destroyList(p);
         }

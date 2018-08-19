@@ -87,24 +87,19 @@ class Eval {
             if (fspec) {
                 if ((c=68) | (c=83)) {
                     if (argp = null) {
-                        do Error.send(
-                        "format specifier without argument");  // ##DB##
-                        do Error.set(0);  // format specifier without argument
+                        do Error.send("fstrex: got null");  // ##DB##
+                        do Error.set(0);  // fstrex: got null
                         do argv.dispose();
                         return "";
                     }
                     do Eval.arg(argp);
                     if ( (c=68) & ~(argp.meta()=INT) ) {
-                        do Error.send(
-                    "argument type does not match format specifier, integer"
-                                     );  // ##DB##
+                        do Error.send("fstrex: expected int");  // ##DB##
                         do Error.set(0);  // fstrex: expected int
                         do argv.dispose();
                         return "";
                     } else { if ( (c=83) & ~(argp.meta()=STR) ) {
-                        do Error.send(
-                    "argument type does not match format specifier, string"
-                                     );  // ##DB##
+                        do Error.send("fstrex: expected str");  // ##DB##
                         do Error.set(0);  // fstrex: expected str
                         do argv.dispose();
                         return "";
@@ -181,6 +176,7 @@ class Eval {
 
         let old = block.data();
         let new = Exec.block(block);
+        do LibSym.destroyList(old);
 
         if (new = null) {
             do block.setData(null);
@@ -193,15 +189,18 @@ class Eval {
         } else {
             do block.setData(new.data());
         }
-        do block.setMeta(new.meta());
 
-        do LibSym.destroyList(old);
+        do block.setMeta(new.meta());
 
         return;
     }
 
 
     function Symbol arg(Symbol arg) {
+
+        if (arg = null) {
+            return null;
+        }
 
         if (arg.meta() = SYM) {
             do Eval.sym(arg);
