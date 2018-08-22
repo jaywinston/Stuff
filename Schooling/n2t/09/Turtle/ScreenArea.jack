@@ -64,4 +64,18 @@ class ScreenArea {
         return i;
     }
 
+    method int overlay() {
+        var int i;
+        var Array a;
+
+        let a = 0;
+        let i = 0;
+        while (i < aLen) {
+            let a[words[i]] = a[words[i]] | words[i+1];
+            let i = i + 2;
+        }
+
+        return i;
+    }
+
 }
