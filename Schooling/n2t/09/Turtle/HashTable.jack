@@ -98,15 +98,11 @@ class HashTable {
     function boolean streq(String s, String t) {
         var int i;
 
-        if (s = null) {
-            if (t = null) {
-                return true;
-            } else {
-                return false;
-            }
+        if (s = t) {
+            return true;
         }
 
-        if (t = null) {
+        if ( (s=null) | (t=null) ) {
             return false;
         }
 

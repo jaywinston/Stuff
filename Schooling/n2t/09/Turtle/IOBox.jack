@@ -81,7 +81,7 @@ class IOBox {
             let s = linbuf[bp];
             do s.dispose();
             let s = linbuf[rp];
-            let linbuf[bp] = s;
+            let linbuf[bp] = Str.dup(s);
         }
 
         if (s.length() > 0) {
@@ -102,8 +102,8 @@ class IOBox {
         var int i;
         var String s;
 
+        /* clear current string from screen */
         let s = linbuf[rp];
-
         let i = 0;
         while (i < s.length()) {
             do tb.putc(32);
@@ -112,6 +112,7 @@ class IOBox {
             let i = i + 1;
         }
 
+        /* increment rp, cycle if beyond linbuf boundary */
         if ( (rp=(BUFSIZ-1)) & (step>0) ) {
             let rp = 0;
         } else { if ( (rp=0) & (step<0) ) {
@@ -122,6 +123,8 @@ class IOBox {
 
         let s = linbuf[rp];
 
+        /* prevent stepping into unwritten buf slots, only non empty strings
+           are written to the buffer so an empty string indicates unwritten */
         if ( (s.length()=0) & ~(rp=bp) ) {
             if ( (rp=(BUFSIZ-1)) & (step<0) ) {
                 let rp = 0;
@@ -132,6 +135,7 @@ class IOBox {
             }}
             let s = linbuf[rp];
         }
+
         do tb.puts(s);
 
         return s;

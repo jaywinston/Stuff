@@ -117,14 +117,12 @@ class Turtle {
 
     method void show() {
         do sa.copy(_x-(TLEN*2), _y-(TLEN*2));
-        do Screen.setColor(true);
         do drawTurtle();
         do sa.overlay();
         return;
     }
 
     method void hide() {
-        do Screen.setColor(false);
         do drawTurtle();
         do sa.restore();
         return;
