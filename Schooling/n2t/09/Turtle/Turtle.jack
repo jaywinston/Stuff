@@ -20,7 +20,7 @@ class Turtle {
         let _y = y;
         let direction = setDirection(d);
         let v = Vector.new();
-        let sa = ScreenArea.new(TLEN*6, TLEN*6);
+        let sa = ScreenArea.new(TLEN*8, TLEN*8);
         let _pendown = false;
         do show();
         return this;
@@ -85,14 +85,17 @@ class Turtle {
         return;
     }
 
-    method void drawTurtle() {
+    method void drawTurtle(boolean color) {
         var int i, l, x, y;
 
-        do Screen.setColor(true);
+        do Screen.setColor(color);
         do Screen.drawCircle(_x, _y, TLEN*2);
-        do v.calculate(TLEN*2, direction);
-        do Screen.setColor(false);
-        do Screen.drawCircle(_x-v.re(), _y+v.im(), TLEN*2);
+        if (color) {
+            do v.calculate(TLEN*2, direction);
+            do Screen.setColor(false);
+            do Screen.drawCircle(_x-v.re(), _y+v.im(), TLEN*2);
+            do sa.overlay();
+        }
 /*
         let x = _x + v.re();
         let y = _y - v.im();
@@ -116,14 +119,13 @@ class Turtle {
     }
 
     method void show() {
-        do sa.copy(_x-(TLEN*2), _y-(TLEN*2));
-        do drawTurtle();
-        do sa.overlay();
+        do sa.copy(_x-(TLEN*4), _y-(TLEN*4));
+        do drawTurtle(true);
         return;
     }
 
     method void hide() {
-        do drawTurtle();
+        do drawTurtle(false);
         do sa.restore();
         return;
     }
