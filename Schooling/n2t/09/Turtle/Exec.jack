@@ -320,18 +320,19 @@ class Exec {
         var Turtle tt;
 
         if (arg = null) {
-            /* error */
+            /* todo: error */
             return;
         }
 
         if (turtles.next() = null) {
+            /* todo: not sure, analyze this */
             return;
         }
 
         do Eval.arg(arg);
 
         if (arg.data() = null) {
-            /* error */
+            /* todo: error */
             return;
         }
 
@@ -350,12 +351,12 @@ class Exec {
         }
 
         if (tp = null) {
+            /* todo: not sure, analyze this */
             return;
         }
 
         let np = tp.next();
         do pp.setNext(np);
-        //do tp.dispose();
 
         let tt = arg.data();
         do tt.dispose();
