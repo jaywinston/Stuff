@@ -1,0 +1,36 @@
+class LibErr {
+
+    static Array ERRTAB, argv;
+    static String cfstring, sfstring;
+
+
+    function void init() {
+        let ERRTAB = LibErr.errtab();
+        let argv = Array.new(1);
+        let cfstring = "unexpected token: %C";
+        let sfstring = "unexpected token: %S";
+        return;
+    }
+
+
+    function void unexpectedChar(char c) {
+        let argv[0] = c;
+        do Message.send(Str.format(cfstring, argv));
+        return;
+    }
+
+
+    function void unexpectedString(String s) {
+        let argv[0] = s;
+        do Message.send(Str.format(sfstring, argv));
+        return;
+    }
+
+
+    function Array errtab() {
+        var Array errtab;
+
+        return errtab;
+    }
+
+}

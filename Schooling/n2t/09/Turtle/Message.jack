@@ -1,0 +1,47 @@
+class Message {
+
+    static int msgi, nexti, nodeSize;
+    static Array tail, queue;
+
+
+    function void init() {
+        let nexti = 0;
+        let msgi = 1;
+        let nodeSize = 2;
+        let queue = Array.new(2);
+        let queue[nexti] = null;
+        let tail = queue;
+        return;
+    }
+
+
+    function void send(int msg) {
+        var Array node;
+
+        let node = Array.new(nodeSize);
+        let node[msgi] = msg;
+        let tail[nexti] = node;
+        let tail = node;
+
+        return;
+    }
+
+
+    function int receive() {
+        var int msg;
+        var Array node;
+
+        let node = queue[nexti];
+        let queue[nexti] = node[nexti];
+        let msg = node[msgi];
+        do node.dispose();
+
+        return msg;
+    }
+
+
+    function boolean waiting() {
+        return queue = null;
+    }
+
+}
