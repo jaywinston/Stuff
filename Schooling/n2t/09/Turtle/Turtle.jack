@@ -1,3 +1,4 @@
+// depends on Vector.jack
 class Turtle {
 
     static int TLEN;
@@ -8,8 +9,9 @@ class Turtle {
     field Vector v;
     field ScreenArea sa;
 
+
     constructor Turtle new(int x, int y, int d, int t, int l, int b, int r) {
-        let TLEN = 3;
+        let TLEN = 2;
         /* todo: validate boundaries */
         let top = t;
         let left = l;
@@ -26,6 +28,7 @@ class Turtle {
         return this;
     }
 
+
     method void dispose() {
         do hide();
         do v.dispose();
@@ -33,6 +36,7 @@ class Turtle {
         do Memory.deAlloc(this);
         return;
     }
+
 
     method int setDirection(int d) {
         let direction = Vector.mod(d, 360);
@@ -42,81 +46,38 @@ class Turtle {
         return direction;
     }
 
+
     method int direction() {
         return direction;
     }
+
 
     method int x() {
         return _x;
     }
 
+
     method int y() {
         return _y;
     }
 
-    method void drawLine(int x1, int y1, int x2, int y2) {
-
-        if (x1 < left) {
-            let x1 = left;
-        } else { if (x1 > right) {
-            let x1 = right;
-        }}
-
-        if (y1 < top) {
-            let y1 = top;
-        } else { if (y1 > bottom) {
-            let y1 = bottom;
-        }}
-
-        if (x2 < left) {
-            let x2 = left;
-        } else { if (x2 > right) {
-            let x2 = right;
-        }}
-
-        if (y2 < top) {
-            let y2 = top;
-        } else { if (y2 > bottom) {
-            let y2 = bottom;
-        }}
-
-        do Screen.drawLine(x1, y1, x2, y2);
-
-        return;
-    }
 
     method void drawTurtle(boolean color) {
         var int i, l, x, y;
 
         do Screen.setColor(color);
-        do Screen.drawCircle(_x, _y, TLEN*2);
-        if (color) {
-            do v.calculate(TLEN*2, direction);
-            do Screen.setColor(false);
-            do Screen.drawCircle(_x-v.re(), _y+v.im(), TLEN*2);
-            do sa.overlay();
-        }
-/*
+        do v.calculate(TLEN*3, direction);
         let x = _x + v.re();
         let y = _y - v.im();
-        let i = 160;
-        let l = 0;
-        while (i < 180) {
-            do v.calculate(TLEN-(l/6), direction+i);
-            do drawLine(x, y, x+v.re(), y-v.im());
-            let i = i + 2;
-            let l = l + 1;
-        }
-        while (i < 200) {
-            do v.calculate(TLEN-(l/6), direction+i);
-            do drawLine(x, y, x+v.re(), y-v.im());
-            let i = i + 2;
-            let l = l - 1;
-        }
-*/
+        do Screen.drawCircle(_x, _y, TLEN);
+        do v.calculate(TLEN*5, direction+20);
+        do Screen.drawLine(x, y, x-v.re(), y+v.im());
+        do v.calculate(TLEN*5, direction-20);
+        do Screen.drawLine(x, y, x-v.re(), y+v.im());
 
         return;
     }
+
 
     method void show() {
         do sa.copy(_x-(TLEN*4), _y-(TLEN*4));
@@ -124,11 +85,13 @@ class Turtle {
         return;
     }
 
+
     method void hide() {
         do drawTurtle(false);
         do sa.restore();
         return;
     }
+
 
     method int turn(int d) {
         do hide();
@@ -137,19 +100,22 @@ class Turtle {
         return direction;
     }
 
+
     method int turnleft(int d) {
         return turn(d);
     }
+
 
     method int turnright(int d) {
         return turn(-d);
     }
 
+
     method int forward(int l) {
         var int x, y;
 
         if (l < 0) {
-            return -1;
+            return -1;  // error: won't go backwards
         }
 
         do v.calculate(l, direction);
@@ -157,14 +123,14 @@ class Turtle {
         let y = _y - v.im();
 
         if ( ((x<left) | (x>right)) | ((y<top) | (y>bottom)) ) {
-            return -2;  // target beyond boundary
+            return -2;  // error: target beyond boundary
         }
 
         do hide();
 
         if (_pendown) {
             do Screen.setColor(true);
-            do drawLine(_x, _y, x, y);
+            do Screen.drawLine(_x, _y, x, y);
         }
 
         let _x = x;
@@ -175,13 +141,16 @@ class Turtle {
         return l;
     }
 
+
     method void penup() {
         let _pendown = false;
         return;
     }
 
+
     method void pendown() {
         let _pendown = true;
         return;
     }
+
 }
