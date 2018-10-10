@@ -47,7 +47,11 @@ class Parse {
 
 
     function int cclass(String s, int i) {
-        return Lex.cclass(Lex.getch(s, i));
+        if ( ~(i<s.length()) | (i<0) ) {
+            return 0;
+        }
+        return Lex.cclass(s.charAt(i));
+        //experimental return Lex.cclass(Lex.getch(s, i));
     }
 
 
