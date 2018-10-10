@@ -1,41 +1,41 @@
-/* CTAB is an array of size 128.  It is used as something of a hashtable
- * in that it is indexed by a character.  Its values are bitmaps of the
- * character's type.  That bitmap is also used to implement arithmetic
- * operator precedence.  Most types are one-bit values.  Block types
- * and integer types have subtypes.  Block types are used by LibSym
- * list functions to recurse on the symbol's data.  Integer types are
- * used to announce an integer expression tree and afterwards, are masked
- * and used for arithmetic operator precedence.
- *
- * The bitmap is:
-  32768 16384 8192 4096 2048 1024 512 256 128  64  32  16   8   4   2   1
-      |    |     |    |    |    |   |   |   |   |   |   |   |   |   |   |
- unused    |     |    |    |    |   |   |   |   |   |   |   |   |   |   |
-symbol token     |    |    |    |   |   |   |   |   |   |   |   |   |   |
-     integer token    |    |    |   |   |   |   |   |   |   |   |   |   |
-                    EOS    |    |   |   |   |   |   |   |   |   |   |   |
-             blank character    |   |   |   |   |   |   |   |   |   |   |
-                           unused   |   |   |   |   |   |   |   |   |   |
-                               unused   |   |   |   |   |   |   |   |   |
-                           string literal   |   |   |   |   |   |   |   |
-                                    block end   |   |   |   |   |   |   |
-                                            block   |   |   |   |   |   |
-                                                |\ /   /    |   |   |   |
-                                  string expression   / |   |   |   |   |
-                                                \    /  |   |   |   |   |
-                                   integer expression   |   |   |   |   |
-                                           unary operator   |   |   |   |
-                                              binary operator   |   |   |
-                                                                 \  |  /
-                                                    opreator precedance
-*
-* String expressions are calls to the format function.
-* Integer expressions are compound expressions i.e. including one or
-* more operators.
-*/
+// CTAB is an array of size 128.  It is used as something of a hashtable
+// in that it is indexed by a character.  Its values are a bitmap of the
+// character's type.  That bitmap is also used to implement arithmetic
+// operator precedence.  Most types are one-bit values.  Block types
+// and integer types have subtypes.  Block types are used by LibSym
+// list functions to recurse on the symbol's data.  Integer types are
+// used to announce an integer expression tree and afterwards, are masked
+// and used for arithmetic operator precedence.
+// 
+// The bitmap is:
+//   32768 16384 8192 4096 2048 1024 512 256 128  64  32  16   8   4   2   1
+//       |    |     |    |    |    |   |   |   |   |   |   |   |   |   |   |
+//  unused    |     |    |    |    |   |   |   |   |   |   |   |   |   |   |
+// symbol token     |    |    |    |   |   |   |   |   |   |   |   |   |   |
+//      integer token    |    |    |   |   |   |   |   |   |   |   |   |   |
+//                     EOS    |    |   |   |   |   |   |   |   |   |   |   |
+//              blank character    |   |   |   |   |   |   |   |   |   |   |
+//                            unused   |   |   |   |   |   |   |   |   |   |
+//                                unused   |   |   |   |   |   |   |   |   |
+//                            string literal   |   |   |   |   |   |   |   |
+//                                     block end   |   |   |   |   |   |   |
+//                                             block   |   |   |   |   |   |
+//                                                 |\ /   /    |   |   |   |
+//                                   string expression   / |   |   |   |   |
+//                                                 \    /  |   |   |   |   |
+//                                    integer expression   |   |   |   |   |
+//                                            unary operator   |   |   |   |
+//                                               binary operator   |   |   |
+//                                                                  \  |  /
+//                                                     opreator precedance
+//
+// String expressions are calls to the format function.
+// Integer expressions are compound expressions i.e. including one or
+// more operators.
 
-/** Calls are on the character that indicates the token class. Returns are
- *  the index of the character immediately beyond the end of the token. 
+/**
+ * Calls are on the character that indicates the token class. Returns are
+ * the index of the character immediately beyond the end of the token. 
  */
 class Lex {
 
@@ -95,35 +95,6 @@ class Lex {
     }
 
 
-/*
-    function char getch(String s, int i) {
-        if ( ~(i<s.length()) | (i<0) ) {
-            return 0;
-        }
-        return s.charAt(i);
-    }
-*/
-
-
-/*
-see below for experimental version.
-    function int token(String s, String t, int i) {
-        var char c;
-        var int MASK;
-
-        let MASK = CTAB[65] | CTAB[48];
-        let c = Lex.getch(s, i);
-        while (~( (CTAB[c]&MASK) = 0 )) {  /* negation allows use of bit[15] * /
-            do t.appendChar(c);
-            let i = i + 1;
-            let c = Lex.getch(s, i);
-        }
-
-        return i;
-    }
-*/
-
-
     function int token(String s, String t, int i) {
         var char c;
         var int MASK;
@@ -152,7 +123,6 @@ see below for experimental version.
 
         let i = i + 1;  /* discard left quote */
 
-        /* Scanning for a specific character does not warrant "getch()". */
         while (i < s.length()) {
 
             let c = s.charAt(i);

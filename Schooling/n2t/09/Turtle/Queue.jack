@@ -1,0 +1,66 @@
+class Queue {
+
+    static int MSGI, NEXTI, NODESIZ;
+    static Array tail, queue;
+
+
+    function void init() {
+        let NODESIZ = 2;
+        let NEXTI = 0;
+        let MSGI = 1;
+        let tail = Array.new(NODESIZ);
+        let tail[NEXTI] = null;
+        let queue = tail;
+        return;
+    }
+
+
+    /* This is a memory leak but destroying messages is dangerous
+     * and recording types is unrealistic right now. This is more
+     * a formality until messages can be safely destroyed.
+     */
+    function void dispose() {
+        while (~(queue = null)) {
+            let tail = queue[NEXTI];
+            do queue.dispose();
+            let queue = tail;
+        }
+        return;
+    }
+
+
+    function void put(int msg) {
+        var Array node;
+
+        let node = Array.new(NODESIZ);
+        let node[NEXTI] = null;
+        let tail[NEXTI] = node;
+        let tail[MSGI] = msg;
+        let tail = node;
+
+        return;
+    }
+
+
+    function int get() {
+        var int msg;
+        var Array node;
+
+        if (queue[NEXTI] = null) {
+            return 0;
+        }
+
+        let node = queue;
+        let queue = queue[NEXTI];
+        let msg = node[MSGI];
+        do node.dispose();
+
+        return msg;
+    }
+
+
+    function boolean has() {
+        return ~(queue[NEXTI] = null);
+    }
+
+}
