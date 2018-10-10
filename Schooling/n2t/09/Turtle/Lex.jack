@@ -96,25 +96,23 @@ class Lex {
 
 
     function int token(String s, String t, int i) {
-        var char c;
-        var int MASK;
+        var char c, cupper;
 
         if (i < 0) {
-            return s.length() + 1;
+            return i;
         }
 
-        let MASK = CTAB[65] | CTAB[48];
-
-        while (i < s.length()) {  /* for the compiler */
+        while (i < s.length()) {
             let c = s.charAt(i);
-            if ( (CTAB[c]&MASK) = 0 ) {
+            let cupper = c | 32;
+            if (~( (c>47) & (c<58)) | ((cupper>96) & (cupper<123) )) {
                 return i;
             }
             do t.appendChar(c);
             let i = i + 1;
         }
 
-        return i;  /* for the compiler */
+        return i;
     }
 
 
