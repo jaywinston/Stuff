@@ -26,6 +26,23 @@ class Exec {
     }
 
 
+    function void dispose() {
+        var Symbol np;
+
+        do tb.dispose();
+
+        while (~(turtles = null)) {
+            let np = turtles.next();
+            let t = turtles.data();
+            do t.dispose();
+            do turtles.dispose();
+            let turtles = np;
+        }
+
+        return;
+    }
+
+
     function Turtle defaultTurtle() {
         return Turtle.new(left + ((right-left)/2),
                           top + ((bottom-top)/2),
@@ -96,7 +113,7 @@ class Exec {
     function void clear() {
         var Turtle tt;
 
-        let tt = turtles.data();
+        let tt = turtles.data(); // todo: need get tail of turtles first?
         do tt.dispose();
         do tb.clear();
         do turtles.setData(Exec.defaultTurtle());
@@ -106,21 +123,23 @@ class Exec {
 
 
     function void try(Symbol argv) {
+        var String s;
         var Symbol ret;
 
-        /* This is the check for Parse() errors. */
-        if (argv = null) {
-            let ret = null;
-        } else {
+        if (LibErr.noerr()) {  /* This is the check for parse errors. */
             let ret = Exec.exec(argv);
+            if (LibErr.noerr()) {
+                do Exec.enqueue(ret);
+            }
         }
 
-        if (Error.isSet()) {
-            while (Error.isSet()) {
-                do IOBox.echo(Error.message());
-            }
-        } else {
-            do Exec.echo(ret);
+        /* Error messages are stored on Queue. */
+        do LibErr.clearerr();
+
+        while (Queue.has()) {
+            let s = Queue.get();
+            do IOBox.echo(s);
+            do s.dispose();
         }
 
         return;
@@ -376,16 +395,13 @@ class Exec {
         let errno = t.forward(arg.data());  // ##TEMP##
 
         if (errno = -1) {
-            do Error.send("won't go backwards");  // ##DB##
-            do Error.set(0);  // won't go backwards
+            do LibErr.error("won't go backwards");
         }
 
         if (errno = -2) {
-            do Error.send("target beyond boundary");  // ##DB##
-            do Error.set(0);  // target beyond boundary
+            do LibErr.error("target beyond boundary");
         }
 
-        /* ##DB## do Error.set(t.forward(arg.data())); will be this */
 
         do Exec.try(arg.next());
 
@@ -396,8 +412,7 @@ class Exec {
     function void doFunction(Symbol arg) {
 
         if (arg = null) {
-            do Error.send("no function name");  // ##DB##
-            do Error.set(0);  // no function name
+            do LibErr.error("no function name");
             return;
         }
 
@@ -501,8 +516,7 @@ class Exec {
     function void doPrint(Symbol arg) {
 
         if (tb.set(t.y()/11, (t.x()/8)+1) = 1) {
-            do Error.send("illegal cursor coordinate");  // ##DB##
-            do Error.set(0);  // illegal cursor coordinate
+            do LibErr.error("illegal cursor coordinate");
             return;
         }
 
@@ -614,37 +628,27 @@ class Exec {
 
 
     function void doQuit(Symbol arg) {
-        /* todo: return to main? */
-        do Sys.halt();
+        do Main.stop();
         return;
     }
 
 
-    function void echo(Symbol sym) {
+    function void enqueue(Symbol sym) {
+        var String s;
 
         if (sym = null) {
             return;
         }
 
         if (sym.meta() = STR) {
-            do IOBox.echo(sym.data());
+            do Queue.put(sym.data());
         } else { if (sym.meta() = INT) {
-            do Exec.echoInt(sym);
+            let s = String.new(6);
+            do s.setInt(sym.data());
+            do Queue.put(s);
         }}
 
         do Exec.try(sym.next());
-
-        return;
-    }
-
-
-    function void echoInt(Symbol sym) {
-        var String s;
-
-        let s = String.new(6);
-        do s.setInt(sym.data());
-        do IOBox.echo(s);
-        do s.dispose();
 
         return;
     }

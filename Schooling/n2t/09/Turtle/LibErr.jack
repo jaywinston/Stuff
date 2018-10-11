@@ -1,10 +1,12 @@
 class LibErr {
 
+    static boolean noerr;
     static Array argv;
     static String cfstring, sfstring;
 
 
     function void init() {
+        let noerr = true;
         let argv = Array.new(1);
         let cfstring = "unexpected token: %C";
         let sfstring = "unexpected token: %S";
@@ -16,6 +18,24 @@ class LibErr {
         do argv.dispose();
         do cfstring.dispose();
         do sfstring.dispose();
+        return;
+    }
+
+
+    function void error(String s) {
+        do Queue.put(s);
+        let noerr = false;
+        return;
+    }
+
+
+    function boolean noerr() {
+        return noerr;
+    }
+
+
+    function void clearerr() {
+        let noerr = true;
         return;
     }
 

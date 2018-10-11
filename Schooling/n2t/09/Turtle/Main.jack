@@ -1,5 +1,8 @@
 class Main {
 
+    static boolean running;
+
+
     function void main() {
         var String banner;
 
@@ -12,20 +15,18 @@ class Main {
 
         do Vector.init();
         do Queue.init();
-        do Error.init(Main.ERRTAB(), 2);
         do IOBox.init(2, 1, 20, 30);
-        do Lex.init();
-        do LibErr.init();
-        do LibSym.init();
         do Parse.init();
+        do LibSym.init();
+        do LibErr.init();
         do Eval.init();
         do Exec.init(2, 32, 20, 31);
 
         do Main.run();
 
-        //do Exec.dispose();
-        //do Parser.dispose();
-        //do Error.dispose();
+        // todo: disposes
+        do Exec.dispose();
+        do Parse.dispose();
 
         return;
     }
@@ -34,7 +35,9 @@ class Main {
     function void run() {
         var Symbol argv;
 
-        while (true) {
+        let running = true;
+
+        while (running) {
             let argv = Parse.next();
             do Exec.try(argv);
             do LibSym.destroyList(argv);
@@ -43,14 +46,10 @@ class Main {
         return;
     }
 
-    function Array ERRTAB() {
-        var Array errtab;
 
-        let errtab = Array.new(2);
-        let errtab[0] = null;
-        let errtab[1] = "error";
-
-        return errtab;
+    function void stop() {
+        let running = false;
+        return;
     }
 
 }

@@ -1,19 +1,92 @@
+// CTAB is an array of size 128.  It is used as something of a hashtable
+// in that it is indexed by a character.  Its values are a bitmap of the
+// character's type.  That bitmap is also used to implement arithmetic
+// operator precedence.  Most types are one-bit values.  Block types
+// and integer types have subtypes.  Block types are used by LibSym
+// list functions to recurse on the symbol's data.  Integer types are
+// used to announce an integer expression tree and afterwards, are masked
+// and used for arithmetic operator precedence.
+// 
+// The bitmap is:
+//   32768 16384 8192 4096 2048 1024 512 256 128  64  32  16   8   4   2   1
+//       |     |    |    |    |    |   |   |   |   |   |   |   |   |   |   |
+//  unused     |    |    |    |    |   |   |   |   |   |   |   |   |   |   |
+//  symbol token    |    |    |    |   |   |   |   |   |   |   |   |   |   |
+//      integer token    |    |    |   |   |   |   |   |   |   |   |   |   |
+//                     EOS    |    |   |   |   |   |   |   |   |   |   |   |
+//              blank character    |   |   |   |   |   |   |   |   |   |   |
+//                            unused   |   |   |   |   |   |   |   |   |   |
+//                                unused   |   |   |   |   |   |   |   |   |
+//                            string literal   |   |   |   |   |   |   |   |
+//                                     block end   |   |   |   |   |   |   |
+//                                             block   |   |   |   |   |   |
+//                                                 |\ /   /|   |   |   |   |
+//                                   string expression   / |   |   |   |   |
+//                                                 \    /  |   |   |   |   |
+//                                    integer expression   |   |   |   |   |
+//                                            unary operator   |   |   |   |
+//                                               binary operator   |   |   |
+//                                                                  \  |  /
+//                                                     opreator precedance
+//
+// String expressions are calls to the format function.
+// Integer expressions are compound expressions i.e. including one or
+// more operators.
+
 class Parse {
 
     static int EQ, EQOP, BLANK, DELIM, BLOCK, END, EOS, CMDLIN, INT, COMMA,
                 INTEX, OP, STR, STREX, SYM, UOP, LPAREN, RPAREN;
     static int CLASSMASK;
+    static Array CTAB;
     static String PS1, PS2;
     static Symbol ARGV;
 
 
     function void init() {
-        let EQ = Lex.cclass(61);
-        let EQOP = Lex.cclass(60);
-        let BLANK = Lex.cclass(32);
+        var int i;
+
+        let CTAB = Array.new(128);
+
+        let i = 32;
+        while (i < 128) {
+            let CTAB[i] = 16384;
+            let i = i + 1;
+        }
+
+        let i = 48;
+        while (i < 58) {
+            let CTAB[i] = 8192;
+            let i = i + 1;
+        }
+ 
+        let CTAB[123] =   64;  // {
+        let CTAB[ 40] =   80;  // (
+        let CTAB[ 41] =   81;  // )
+        let CTAB[ 38] =   89;  // &
+        let CTAB[124] =   89;  // |
+        let CTAB[ 61] =   90;  // =
+        let CTAB[ 33] =   91;  // !
+        let CTAB[ 60] =   91;  // <
+        let CTAB[ 62] =   91;  // >
+        let CTAB[ 43] =   92;  // +
+        let CTAB[ 45] =   92;  // -
+        let CTAB[126] =   92;  // ~
+        let CTAB[ 37] =   93;  // %
+        let CTAB[ 42] =   93;  // *
+        let CTAB[ 47] =   93;  // /
+        let CTAB[ 44] =   96;  // ,
+        let CTAB[125] =  128;  // }
+        let CTAB[ 34] =  256;  // "
+        let CTAB[ 32] = 2048;  //  
+        let CTAB[  0] = 4096;  // EOS
+
+        let EQ = Parse.cclass(61);
+        let EQOP = Parse.cclass(60);
+        let BLANK = Parse.cclass(32);
         let BLOCK = LibSym.BLOCK();
-        let END = Lex.cclass(125);
-        let EOS = Lex.cclass(0);
+        let END = Parse.cclass(125);
+        let EOS = Parse.cclass(0);
         let CMDLIN = LibSym.CMDLIN();
         let INT = LibSym.INT();
         let INTEX = LibSym.INTEX();
@@ -23,12 +96,25 @@ class Parse {
         let COMMA = STREX & ~BLOCK;
         let SYM = LibSym.SYM();
         let UOP = LibSym.UOP();
-        let LPAREN = Lex.cclass(40);
-        let RPAREN = Lex.cclass(41);
+        let LPAREN = Parse.cclass(40);
+        let RPAREN = Parse.cclass(41);
+
         let CLASSMASK = -16;
+
         let PS1 = ">";
         let PS2 = "|";
+
         let ARGV = Symbol.new(null, null, null);
+
+        return;
+    }
+
+
+    function void dispose() {
+        do CTAB.dispose();
+        do PS1.dispose();
+        do PS2.dispose();
+        do ARGV.dispose();
         return;
     }
 
@@ -46,19 +132,29 @@ class Parse {
     }
 
 
-    function int cclass(String s, int i) {
-        if ( ~(i<s.length()) | (i<0) ) {
+    function char getch(String s, int i) {
+        if (~(i < s.length())) {
             return 0;
         }
-        return Lex.cclass(s.charAt(i));
-        //experimental return Lex.cclass(Lex.getch(s, i));
+        return s.charAt(i);
     }
 
 
-    function void package(Symbol pkg, String tag) {
+    function int cclass(char c) {
+        return CTAB[c];
+    }
+
+
+    function void mkpackage(Symbol pkg, String tag) {
+
+        if (pkg = null) {
+            return;
+        }
+
         do pkg.setData(pkg.next());
         do pkg.setNext(null);
         do pkg.setTag(tag);
+
         return;
     }
 
@@ -68,12 +164,16 @@ class Parse {
         var String t;
         var Symbol extok, next;
 
+        if ( (i<0) | ~(i<s.length()) ) {
+            return -1;
+        }
+
         let i = Str.lskip(s, 32, i);
-        let cclass = Parse.cclass(s, i) & CLASSMASK;
+        let cclass = Parse.cclass(Parse.getch(s, i)) & CLASSMASK;
         while (~(cclass = EOS)) {
 
             if (cclass = END) {
-                do Parse.package(argv, s);
+                do Parse.mkpackage(argv, s);
                 return i;
             }
 
@@ -96,8 +196,7 @@ class Parse {
                 let t = String.new(s.length());
                 let i = Lex.string(s, t, i);
                 if (i > s.length()) {
-                    do Error.send("EOS while scanning string");  // ##DB##
-                    do Error.set(0);  // EOS while scanning string
+                    do LibErr.error("EOS while scanning string");
                     return -1;
                 }
                 let next = Symbol.new(null, STR, t);
@@ -105,8 +204,8 @@ class Parse {
                 let t = String.new(s.length());
                 let i = Lex.token(s, t, i);
                 /* assignment? */
-                if ( (Parse.cclass(s, i) = EQ)
-                        & (~(Parse.cclass(s, i-1) = EQOP)) ) {
+                if ( (Parse.cclass(Parse.getch(s, i)) = EQ)
+                        & (~(Parse.cclass(Parse.getch(s, i-1)) = EQOP)) ) {
                     let next = Symbol.new("ASSIGN", SYM, null);
                     do next.append(Symbol.new(t, SYM, null));
                     let i = i + 1;
@@ -114,8 +213,7 @@ class Parse {
                     let next = Symbol.new(t, SYM, null);
                 }
             } else {
-                do Error.send("unexpected token");  // ##DB##
-                do Error.set(0);  // unexpected token
+                do LibErr.error("unexpected token");
                 return -1;
             }}}}}
 
@@ -123,7 +221,7 @@ class Parse {
                 return i;
             }
 
-            let cclass = Parse.cclass(s, i) & CLASSMASK;
+            let cclass = Parse.cclass(Parse.getch(s, i)) & CLASSMASK;
             if (cclass = INTEX) {
                 let extok = Symbol.new(null, INTEX, null);
                 do extok.append(next);
@@ -147,10 +245,10 @@ class Parse {
             do argv.append(next);
 
             let i = Str.lskip(s, 32, i);
-            let cclass = Parse.cclass(s, i) & CLASSMASK;
+            let cclass = Parse.cclass(Parse.getch(s, i)) & CLASSMASK;
         }
 
-        do Parse.package(argv, s);
+        do Parse.mkpackage(argv, s);
 
         return i;
     }
@@ -162,9 +260,13 @@ class Parse {
         var String t;
         var Symbol objbuf, stack, stackbuf;
 
+        if ( (i<0) | ~(i<s.length()) ) {
+            return -1;
+        }
+
         let stack = Symbol.new(null, null, null);
         let uop = queue.next() = 0;
-        let cclass = Parse.cclass(s, i);
+        let cclass = Parse.cclass(Parse.getch(s, i));
 
         /* todo: should END be in exit cond? */
         while ( (cclass & ((BLANK|COMMA)|(END|EOS))) = 0 ) {
@@ -206,10 +308,10 @@ class Parse {
                 if (uop) {
                     let objbuf = Symbol.new(null, UOP, op);
                 } else {
-                    let objbuf = Symbol.new(null, Lex.cclass(op)&15, op);
+                    let objbuf = Symbol.new(null, Parse.cclass(op)&15, op);
                     if (i < s.length()) {
-                        if ( ((Lex.cclass(op)=EQ) | (Lex.cclass(op)=EQOP))
-                                & (Lex.cclass(s.charAt(i))=EQ) ) {
+                        if ( ((Parse.cclass(op)=EQ) | (Parse.cclass(op)=EQOP))
+                                & (Parse.cclass(Parse.getch(s, i))=EQ) ) {
                             do objbuf.setData((op*100) + 61);
                             let i = i + 1;
                         }
@@ -236,8 +338,7 @@ class Parse {
                 while (~(stack.meta() = LPAREN)) {
                     if (stack.meta() = null) { /* mismatched parens */
                         do stack.dispose();
-                        do Error.send("mismatched parentheses");  // ##DB##
-                        do Error.set(0);  // mismatched parentheses
+                        do LibErr.error("mismatched parentheses");
                         return -1;
                     }
                     let stackbuf = stack;
@@ -252,7 +353,7 @@ class Parse {
                 let i = i + 1;
             }}}}
 
-            let cclass = Parse.cclass(s, i);
+            let cclass = Parse.cclass(Parse.getch(s, i));
         }
 
         /* pop ops to queue */
@@ -263,8 +364,7 @@ class Parse {
                     let stack = stack.next();
                     do stackbuf.dispose();
                 }
-                do Error.send("mismatched parentheses");  // ##DB##
-                do Error.set(0);  // mismatched parentheses
+                do LibErr.error("mismatched parentheses");
                 return -1;
             }
             let stackbuf = stack;
@@ -275,7 +375,7 @@ class Parse {
 
         do stack.dispose();
 
-        do Parse.package(queue, s);
+        do Parse.mkpackage(queue, s);
 
         return i;
     }
@@ -286,10 +386,14 @@ class Parse {
         var String t;
         var Symbol arg, intex;
 
-        while (Parse.cclass(s, i) = STREX) {
+        if ( (i<0) | ~(i<s.length()) ) {
+            return -1;
+        }
+
+        while (Parse.cclass(Parse.getch(s, i)) = STREX) {
 
             let i = i + 1;
-            let cclass = Parse.cclass(s, i) & CLASSMASK;
+            let cclass = Parse.cclass(Parse.getch(s, i)) & CLASSMASK;
 
             if (cclass = BLOCK) {
                 let arg = Symbol.new(null, BLOCK, null);
@@ -310,8 +414,7 @@ class Parse {
                 let t = String.new(s.length());
                 let i = Lex.string(s, t, i);
                 if (i > s.length()) {
-                    do Error.send("EOS while scanning string");  // ##DB##
-                    do Error.set(0);  // EOS while scanning string
+                    do LibErr.error("EOS while scanning string");
                     return -1;
                 }
                 let arg = Symbol.new(null, STR, t);
@@ -325,7 +428,7 @@ class Parse {
                 return i;
             }
 
-            if ( (Parse.cclass(s, i)&CLASSMASK) = INTEX) {
+            if ( (Parse.cclass(Parse.getch(s, i))&CLASSMASK) = INTEX) {
                 let intex = Symbol.new(null, INTEX, null);
                 do intex.append(arg);
                 let i = Parse.intex(s, intex, i);
@@ -341,7 +444,7 @@ class Parse {
             do next.append(arg);
         }
 
-        do Parse.package(next, s);
+        do Parse.mkpackage(next, s);
 
         return i;
     }
@@ -350,9 +453,13 @@ class Parse {
     function int block(String s, Symbol block, int i) {
         var Symbol cmdlin;
 
+        if ( (i<0) | ~(i<s.length()) ) {
+            return -1;
+        }
+
         let i = Str.lskip(s, 32, i+1);
 
-        if ( (Parse.cclass(s, i)&(END|EOS)) = 0 ) {
+        if ( (Parse.cclass(Parse.getch(s, i))&(END|EOS)) = 0 ) {
             let cmdlin = Symbol.new(null, CMDLIN, null);
             let i = Parse.cmdlin(s, cmdlin, i);
             let s = cmdlin.tag();
@@ -364,10 +471,10 @@ class Parse {
             return i;
         }
 
-        while (Parse.cclass(s, i) = EOS) {
+        while (Parse.cclass(Parse.getch(s, i)) = EOS) {
             let s = IOBox.read(PS2);
             let i = Str.lskip(s, 32, 0);
-            if (~(Parse.cclass(s, i) = END)) {
+            if (~(Parse.cclass(Parse.getch(s, i)) = END)) {
                 let cmdlin = Symbol.new(s, CMDLIN, null);
                 let i = Parse.cmdlin(s, cmdlin, 0);
                 if (i < 0) {
@@ -379,7 +486,7 @@ class Parse {
             }
         }
 
-        do Parse.package(block, s);
+        do Parse.mkpackage(block, s);
 
         return i + 1;
     }

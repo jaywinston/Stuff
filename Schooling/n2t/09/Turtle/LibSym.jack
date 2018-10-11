@@ -7,16 +7,16 @@ class LibSym {
 
       let CMD    = 1;                    
       let TTL    = 2;                    
-      let BLOCK  = Lex.cclass(123);         // 64
-      let CMDLIN = Lex.cclass(123) + 1;     // 65
-      let FUNC   = Lex.cclass(123) + 2;     // 66
-      let INTEX  = Lex.cclass(40);          // 80
-      let STREX  = Lex.cclass(44);          // 96
-      let STR    = Lex.cclass(34);          // 256
-      let INT    = Lex.cclass(48);          // 8192
-      let SYM    = Lex.cclass(65);          // 16384
-      let OP     = Lex.cclass(38)-1 & ~INTEX;   // 8
-      let UOP    = Lex.cclass(126) & (~BLOCK & ~OP);   // 16
+      let BLOCK  = Parse.cclass(123);         // 64
+      let CMDLIN = Parse.cclass(123) + 1;     // 65
+      let FUNC   = Parse.cclass(123) + 2;     // 66
+      let INTEX  = Parse.cclass(40);          // 80
+      let STREX  = Parse.cclass(44);          // 96
+      let STR    = Parse.cclass(34);          // 256
+      let INT    = Parse.cclass(48);          // 8192
+      let SYM    = Parse.cclass(65);          // 16384
+      let OP     = Parse.cclass(38)-1 & ~INTEX;   // 8
+      let UOP    = Parse.cclass(126) & (~BLOCK & ~OP);   // 16
 
         return;
     }
@@ -151,21 +151,21 @@ class LibSym {
                                                               // see Lex.init()
     function int CMD       () { return  1;                    }
     function int TTL       () { return  2;                    }
-    function int OP        () { return  (Lex.cclass(38)-1)
+    function int OP        () { return  (Parse.cclass(38)-1)
                                            & ~LibSym.INTEX(); }  // 8
-    function int UOP       () { return  Lex.cclass(126)
+    function int UOP       () { return  Parse.cclass(126)
                                            & (~LibSym.BLOCK()
                                               & ~LibSym.OP()); }  // 16
 
     /* block type-class */
-    function int BLOCK     () { return Lex.cclass(123);       }  // 64
-    function int CMDLIN    () { return Lex.cclass(123) + 1;   }  // 65
-    function int FUNC      () { return Lex.cclass(123) + 2;   }  // 66
-    function int INTEX     () { return Lex.cclass(40);        }  // 80
-    function int STREX     () { return Lex.cclass(44);        }  // 96
+    function int BLOCK     () { return Parse.cclass(123);       }  // 64
+    function int CMDLIN    () { return Parse.cclass(123) + 1;   }  // 65
+    function int FUNC      () { return Parse.cclass(123) + 2;   }  // 66
+    function int INTEX     () { return Parse.cclass(40);        }  // 80
+    function int STREX     () { return Parse.cclass(44);        }  // 96
 
-    function int STR       () { return Lex.cclass(34);        }  // 256
-    function int INT       () { return Lex.cclass(48);        }  // 8192
-    function int SYM       () { return Lex.cclass(65);        }  // 16384
+    function int STR       () { return Parse.cclass(34);        }  // 256
+    function int INT       () { return Parse.cclass(48);        }  // 8192
+    function int SYM       () { return Parse.cclass(65);        }  // 16384
 
 }
