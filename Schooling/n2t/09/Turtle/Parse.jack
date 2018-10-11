@@ -195,7 +195,7 @@ class Parse {
             } else { if (cclass = STR) {
                 let t = String.new(s.length());
                 let i = Lex.string(s, t, i);
-                if (i > s.length()) {
+                if (i < 0) {
                     do LibErr.error("EOS while scanning string");
                     return -1;
                 }
@@ -413,7 +413,7 @@ class Parse {
             } else { if (cclass = STR) {
                 let t = String.new(s.length());
                 let i = Lex.string(s, t, i);
-                if (i > s.length()) {
+                if (i < 0) {
                     do LibErr.error("EOS while scanning string");
                     return -1;
                 }

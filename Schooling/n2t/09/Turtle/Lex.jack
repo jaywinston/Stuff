@@ -41,7 +41,7 @@ class Lex {
 
             if (c = 92) {
                 if ( (i+1) = s.length() ) {  /* EOS while scanning for quote */
-                    return i + 2;  /* indicate error */
+                    return -1;
                 }
                 let i = i + 1;
                 let c = s.charAt(i);
@@ -55,7 +55,7 @@ class Lex {
             let i = i + 1;
         }
 
-        return i + 1;  /* EOS while scanning for quote */
+        return -1;  /* EOS while scanning for quote */
     }
 
 }
