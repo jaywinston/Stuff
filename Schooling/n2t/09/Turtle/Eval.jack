@@ -36,7 +36,7 @@ class Eval {
             } else {
                 let p = Eval.arg(LibSym.copySym(queue));
                 if (~(p.meta() = INT)) {
-                    do LibErr.error("expected integer");  // ##DB##
+                    do LibOut.error("expected integer");  // ##DB##
                     do LibSym.destroyList(stack);
                     do LibSym.destroySym(p);
                     return 0;
@@ -65,7 +65,7 @@ class Eval {
         do Eval.arg(fstrex);
 
         if (~(fstrex.meta() = STR)) {
-            do LibErr.error("expected string");  // ##DB##
+            do LibOut.error("expected string");  // ##DB##
             return null;
         }
 
@@ -85,17 +85,17 @@ class Eval {
             if (fspec) {
                 if ((c=68) | (c=83)) {
                     if (argp = null) {
-                        do LibErr.error("fstrex: got null");  // ##DB##
+                        do LibOut.error("fstrex: got null");  // ##DB##
                         do argv.dispose();
                         return "";
                     }
                     do Eval.arg(argp);
                     if ( (c=68) & ~(argp.meta()=INT) ) {
-                        do LibErr.error("fstrex: expected int");  // ##DB##
+                        do LibOut.error("fstrex: expected int");  // ##DB##
                         do argv.dispose();
                         return "";
                     } else { if ( (c=83) & ~(argp.meta()=STR) ) {
-                        do LibErr.error("fstrex: expected str");  // ##DB##
+                        do LibOut.error("fstrex: expected str");  // ##DB##
                         do argv.dispose();
                         return "";
                     }}
@@ -147,7 +147,7 @@ class Eval {
         let p = Eval.lookup(sym.tag());
 
         if (p = null) {
-            do LibErr.error("undefined symbol");  // ##DB##
+            do LibOut.error("undefined symbol");  // ##DB##
             return;
         }
 
@@ -216,7 +216,7 @@ class Eval {
         if (op =  45) { return -n;          }
         if (op = 126) { return ~n;          }
 
-        do LibErr.error("unrecognized operator");  // ##DB##
+        do LibOut.error("unrecognized operator");  // ##DB##
         return 0;
     }
 
@@ -224,7 +224,7 @@ class Eval {
     function int operate(int m, int n, int op) {
 
         if ( ((op=47) | (op=37)) & (n=0) ) {
-            do LibErr.error("division by zero");  // ##DB##
+            do LibOut.error("division by zero");  // ##DB##
             return 0;
         }
 
@@ -244,7 +244,7 @@ class Eval {
         if (op = 6061) { return  (m<n) | (m=n); }
         if (op = 6261) { return  (m>n) | (m=n); }
 
-        do LibErr.error("unrecognized operator");  // ##DB##
+        do LibOut.error("unrecognized operator");  // ##DB##
         return 0;
     }
 

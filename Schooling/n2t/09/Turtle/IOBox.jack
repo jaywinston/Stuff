@@ -6,10 +6,10 @@ class IOBox {
     static TextBox tb;
 
 
-    function void init(int i, int j, int h, int w) {
+    function void init(int i, int j, int h, int w, int maxlen) {
 
         let BUFSIZ = 23;
-        let MAXLEN = Str.MAXLEN();
+        let MAXLEN = maxlen;
         let linbuf = Array.new(BUFSIZ);
         let bp = 0;
         while (bp < BUFSIZ) {

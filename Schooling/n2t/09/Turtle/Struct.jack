@@ -1,0 +1,93 @@
+// a general data structure with methods to implement stack, or queue
+/* todo: support list */
+
+class Struct {
+
+    static int VAL, NEXT, NODESIZ;
+
+    field Array head, tail;
+
+
+    function void init() {
+        let NODESIZ = 2;
+        let NEXT = 0;
+        let VAL = 1;
+        return;
+    }
+
+
+    constructor Struct new() {
+        let tail = Array.new(NODESIZ);
+        let tail[NEXT] = null;
+        let head = tail;
+        return this;
+    }
+
+
+    method void dispose() {
+        while (~(head = null)) {
+            let tail = head[NEXT];
+            do head.dispose();
+            let head = tail;
+        }
+        return;
+    }
+
+
+    method void append(int val) {
+        var Array node;
+
+        let node = Array.new(NODESIZ);
+        let node[NEXT] = null;
+        let tail[NEXT] = node;
+        let tail[VAL] = val;
+        let tail = node;
+
+        return;
+    }
+
+
+    method void push(int val) {
+        var Array node;
+
+        let node = Array.new(NODESIZ);
+        let node[VAL] = val;
+        let node[NEXT] = head;
+        let head = node;
+
+        return;
+    }
+
+
+    method int pop() {
+        var int val;
+        var Array node;
+
+        if (head[NEXT] = null) {
+            return 0;
+        }
+
+        let node = head;
+        let head = head[NEXT];
+        let val = node[VAL];
+        do node.dispose();
+
+        return val;
+    }
+
+
+    method int put(int val) {
+        return append(val);
+    }
+
+
+    method int get() {
+        return pop();
+    }
+
+
+    method boolean has() {
+        return ~(head[NEXT] = null);
+    }
+
+}

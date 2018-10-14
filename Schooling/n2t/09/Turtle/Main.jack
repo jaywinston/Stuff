@@ -14,19 +14,17 @@ class Main {
         do Screen.drawLine(0, 13, 509, 13);
 
         do Vector.init();
-        do Queue.init();
-        do IOBox.init(2, 1, 20, 30);
+        do Struct.init();
+        do LibOut.init();
+        do IOBox.init(2, 1, 20, 30, Str.MAXLEN());
         do Parse.init();
         do LibSym.init();
-        do LibErr.init();
         do Eval.init();
         do Exec.init(2, 32, 20, 31);
 
         do Main.run();
 
         // todo: disposes
-        do Exec.dispose();
-        do Parse.dispose();
 
         return;
     }

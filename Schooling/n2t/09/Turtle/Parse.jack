@@ -196,7 +196,7 @@ class Parse {
                 let t = String.new(s.length());
                 let i = Lex.string(s, t, i);
                 if (i < 0) {
-                    do LibErr.error("EOS while scanning string");
+                    do LibOut.error("EOS while scanning string");
                     return -1;
                 }
                 let next = Symbol.new(null, STR, t);
@@ -213,7 +213,7 @@ class Parse {
                     let next = Symbol.new(t, SYM, null);
                 }
             } else {
-                do LibErr.error("unexpected token");
+                do LibOut.error("unexpected token");
                 return -1;
             }}}}}
 
@@ -338,7 +338,7 @@ class Parse {
                 while (~(stack.meta() = LPAREN)) {
                     if (stack.meta() = null) { /* mismatched parens */
                         do stack.dispose();
-                        do LibErr.error("mismatched parentheses");
+                        do LibOut.error("mismatched parentheses");
                         return -1;
                     }
                     let stackbuf = stack;
@@ -364,7 +364,7 @@ class Parse {
                     let stack = stack.next();
                     do stackbuf.dispose();
                 }
-                do LibErr.error("mismatched parentheses");
+                do LibOut.error("mismatched parentheses");
                 return -1;
             }
             let stackbuf = stack;
@@ -414,7 +414,7 @@ class Parse {
                 let t = String.new(s.length());
                 let i = Lex.string(s, t, i);
                 if (i < 0) {
-                    do LibErr.error("EOS while scanning string");
+                    do LibOut.error("EOS while scanning string");
                     return -1;
                 }
                 let arg = Symbol.new(null, STR, t);

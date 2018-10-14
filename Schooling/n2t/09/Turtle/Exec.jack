@@ -126,18 +126,18 @@ class Exec {
         var String s;
         var Symbol ret;
 
-        if (LibErr.noerr()) {  /* This is the check for parse errors. */
+        if (LibOut.noerr()) {  /* This is the check for parse errors. */
             let ret = Exec.exec(argv);
-            if (LibErr.noerr()) {
+            if (LibOut.noerr()) {
                 do Exec.enqueue(ret);
             }
         }
 
-        /* Error messages are stored on Queue. */
-        do LibErr.clearerr();
+        /* Error messages are queued. */
+        do LibOut.clearerr();
 
-        while (Queue.has()) {
-            let s = Queue.get();
+        while (LibOut.has()) {
+            let s = LibOut.get();
             do IOBox.echo(s);
             do s.dispose();
         }
@@ -395,11 +395,11 @@ class Exec {
         let errno = t.forward(arg.data());  // ##TEMP##
 
         if (errno = -1) {
-            do LibErr.error("won't go backwards");
+            do LibOut.error("won't go backwards");
         }
 
         if (errno = -2) {
-            do LibErr.error("target beyond boundary");
+            do LibOut.error("target beyond boundary");
         }
 
 
@@ -412,7 +412,7 @@ class Exec {
     function void doFunction(Symbol arg) {
 
         if (arg = null) {
-            do LibErr.error("no function name");
+            do LibOut.error("no function name");
             return;
         }
 
@@ -516,7 +516,7 @@ class Exec {
     function void doPrint(Symbol arg) {
 
         if (tb.set(t.y()/11, (t.x()/8)+1) = 1) {
-            do LibErr.error("illegal cursor coordinate");
+            do LibOut.error("illegal cursor coordinate");
             return;
         }
 
@@ -641,11 +641,11 @@ class Exec {
         }
 
         if (sym.meta() = STR) {
-            do Queue.put(sym.data());
+            do LibOut.put(sym.data());
         } else { if (sym.meta() = INT) {
             let s = String.new(6);
             do s.setInt(sym.data());
-            do Queue.put(s);
+            do LibOut.put(s);
         }}
 
         do Exec.try(sym.next());
