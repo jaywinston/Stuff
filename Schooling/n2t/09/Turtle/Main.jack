@@ -15,8 +15,7 @@ class Main {
 
         do Vector.init();
         do Struct.init();
-        do LibOut.init();
-        do IOBox.init(2, 1, 20, 30, Str.MAXLEN());
+        do LibIO.init();
         do Parse.init();
         do LibSym.init();
         do Eval.init();

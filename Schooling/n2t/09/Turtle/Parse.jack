@@ -123,7 +123,7 @@ class Parse {
 
         do ARGV.setData(null);
 
-        if (Parse.cmdlin(IOBox.read(PS1), ARGV, 0) < 0) {
+        if (Parse.cmdlin(LibIO.read(PS1), ARGV, 0) < 0) {
             do LibSym.destroyList(ARGV.data());
             return null;
         }
@@ -196,7 +196,7 @@ class Parse {
                 let t = String.new(s.length());
                 let i = Lex.string(s, t, i);
                 if (i < 0) {
-                    do LibOut.error("EOS while scanning string");
+                    do LibIO.error("EOS while scanning string");
                     return -1;
                 }
                 let next = Symbol.new(null, STR, t);
@@ -213,7 +213,7 @@ class Parse {
                     let next = Symbol.new(t, SYM, null);
                 }
             } else {
-                do LibOut.error("unexpected token");
+                do LibIO.error("unexpected token");
                 return -1;
             }}}}}
 
@@ -338,7 +338,7 @@ class Parse {
                 while (~(stack.meta() = LPAREN)) {
                     if (stack.meta() = null) { /* mismatched parens */
                         do stack.dispose();
-                        do LibOut.error("mismatched parentheses");
+                        do LibIO.error("mismatched parentheses");
                         return -1;
                     }
                     let stackbuf = stack;
@@ -364,7 +364,7 @@ class Parse {
                     let stack = stack.next();
                     do stackbuf.dispose();
                 }
-                do LibOut.error("mismatched parentheses");
+                do LibIO.error("mismatched parentheses");
                 return -1;
             }
             let stackbuf = stack;
@@ -414,7 +414,7 @@ class Parse {
                 let t = String.new(s.length());
                 let i = Lex.string(s, t, i);
                 if (i < 0) {
-                    do LibOut.error("EOS while scanning string");
+                    do LibIO.error("EOS while scanning string");
                     return -1;
                 }
                 let arg = Symbol.new(null, STR, t);
@@ -472,7 +472,7 @@ class Parse {
         }
 
         while (Parse.cclass(Parse.getch(s, i)) = EOS) {
-            let s = IOBox.read(PS2);
+            let s = LibIO.read(PS2);
             let i = Str.lskip(s, 32, 0);
             if (~(Parse.cclass(Parse.getch(s, i)) = END)) {
                 let cmdlin = Symbol.new(s, CMDLIN, null);

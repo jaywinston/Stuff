@@ -1,26 +1,29 @@
-class LibOut {
+class LibIO {
 
     static boolean noerr;
     static Array argv;
-    static String cfstring, sfstring;
+    static String cerrfs, serrfs;  /* error format strings */
     static Struct que;
+    static IOBox term;
 
 
     function void init() {
         let noerr = true;
         let argv = Array.new(1);
-        let cfstring = "unexpected token: %C";
-        let sfstring = "unexpected token: %S";
+        let cerrfs = "unexpected token: %C";
+        let serrfs = "unexpected token: %S";
         let que = Struct.new();
+        let term = IOBox.new(2, 1, 20, 30, 23, Str.MAXLEN());
         return;
     }
 
 
     function void dispose() {
         do argv.dispose();
-        do cfstring.dispose();
-        do sfstring.dispose();
+        do cerrfs.dispose();
+        do serrfs.dispose();
         do que.dispose();
+        do term.dispose();
         return;
     }
 
@@ -61,15 +64,32 @@ class LibOut {
 
     function void cerr(char c) {
         let argv[0] = c;
-        do que.put(Str.format(cfstring, argv));
+        do que.put(Str.format(cerrfs, argv));
         return;
     }
 
 
     function void serr(String s) {
         let argv[0] = s;
-        do que.put(Str.format(sfstring, argv));
+        do que.put(Str.format(serrfs, argv));
         return;
+    }
+
+
+    function void echo(String s) {
+        do term.echo(s);
+        return;
+    }
+
+
+    function void print(String s) {
+        do term.print(s);
+        return;
+    }
+
+
+    function String read(String ps) {
+        return term.read(ps);
     }
 
 }

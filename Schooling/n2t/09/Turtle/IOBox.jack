@@ -1,56 +1,57 @@
 class IOBox {
 
-    static int BUFSIZ, MAXLEN;
-    static int bp, rp;
-    static Array linbuf;
-    static TextBox tb;
+    field int BUFSIZ, MAXLEN;
+    field int bp, rp;
+    field Array LINBUF;
+    field TextBox tb;
 
 
-    function void init(int i, int j, int h, int w, int maxlen) {
+    constructor IOBox new(int i, int j, int h, int w,
+                          int bufferSize, int maxlen) {
 
-        let BUFSIZ = 23;
+        let BUFSIZ = bufferSize;
         let MAXLEN = maxlen;
-        let linbuf = Array.new(BUFSIZ);
+        let LINBUF = Array.new(BUFSIZ);
         let bp = 0;
         while (bp < BUFSIZ) {
-            let linbuf[bp] = String.new(MAXLEN);  /* for memory diagnostics */
+            let LINBUF[bp] = String.new(MAXLEN);  /* for memory diagnostics */
             let bp = bp + 1;
         }
         let bp = 0;
         let tb = TextBox.new(i, j, h, w);
 
-        return;
+        return this;
     }
 
 
-    function void dispose() {
+    method void dispose() {
         var int i;
         var String s;
 
         let i = 0;
         while (i < BUFSIZ) {
-            let s = linbuf[i];
+            let s = LINBUF[i];
             do s.dispose();
             let i = i + 1;
         }
-        do linbuf.dispose();
+        do LINBUF.dispose();
         do tb.dispose();
 
         return;
     }
 
 
-    function String read(String ps) {
+    method String read(String ps) {
         var char c;
         var String s;
 
         do tb.puts(ps);
         let rp = bp;
 
-        let s = linbuf[bp];
+        let s = LINBUF[bp];
         do s.dispose();
         let s = String.new(MAXLEN);
-        let linbuf[bp] = s;
+        let LINBUF[bp] = s;
 
         let c = 0;
         while (~(c = 128)) {
@@ -72,17 +73,17 @@ class IOBox {
                 do s.eraseLastChar();
                 do tb.putc(c);
             } else { if (c = 131) {
-                let s = IOBox.recall(-1);
+                let s = recall(-1);
             } else { if (c = 133) {
-                let s = IOBox.recall(1);
+                let s = recall(1);
             }}}}
         }
 
         if (~(rp = bp)) {
-            let s = linbuf[bp];
+            let s = LINBUF[bp];
             do s.dispose();
-            let s = linbuf[rp];
-            let linbuf[bp] = IOBox.strdup(s);
+            let s = LINBUF[rp];
+            let LINBUF[bp] = strdup(s);
         }
 
         if (s.length() > 0) {
@@ -99,12 +100,12 @@ class IOBox {
     }
 
 
-    function String recall(int step) {
+    method String recall(int step) {
         var int i;
         var String s;
 
-        /* clear current string from screen from end */
-        let s = linbuf[rp];
+        /* backspace over current string, overwriting with blanks */
+        let s = LINBUF[rp];
         let i = 0;
         while (i < s.length()) {
             do tb.putc(32);
@@ -113,6 +114,13 @@ class IOBox {
             let i = i + 1;
         }
 
+        if (step < 0) {
+            let s = negrec(step);
+        } else {
+            let s = posrec(step);
+        }
+
+/* ##TEST##
         if ( (rp=(BUFSIZ-1)) & (step>0) ) {
             let rp = 0;
         } else { if ( (rp=0) & (step<0) ) {
@@ -121,10 +129,10 @@ class IOBox {
             let rp = rp + step;
         }}
 
-        let s = linbuf[rp];
+        let s = LINBUF[rp];
 
         /* prevent stepping into unwritten buf slots, only non empty strings
-           are written to the buffer so an empty string indicates unwritten */
+           are written to the buffer so an empty string indicates unwritten * /
         if ( (s.length()=0) & ~(rp=bp) ) {
             if ( (rp=(BUFSIZ-1)) & (step<0) ) {
                 let rp = 0;
@@ -133,8 +141,9 @@ class IOBox {
             } else {
                 let rp = rp - step;
             }}
-            let s = linbuf[rp];
+            let s = LINBUF[rp];
         }
+END ##TEST## */
 
         do tb.puts(s);
 
@@ -142,19 +151,53 @@ class IOBox {
     }
 
 
-    function void print(String s) {
+    method String negrec(int step) {
+        var String s;
+
+        let rp = rp + step;
+        if (rp < 0) {
+            let rp = BUFSIZ + rp;
+        }
+
+        let s = LINBUF[rp];
+
+        if ( (s.length()=0) & ~(rp=bp) ) {
+        }
+
+        return s;
+    }
+
+
+    method String posrec(int step) {
+        var String s;
+
+        let rp = rp + step;
+        if (~(rp <  BUFSIZ)) {
+            let rp = rp - BUFSIZ;
+        }
+
+        let s = LINBUF[rp];
+
+        if ( (s.length()=0) & ~(rp=bp) ) {
+        }
+
+        return s;
+    }
+
+
+    method void print(String s) {
         do tb.puts(s);
         return;
     }
 
 
-    function void echo(String s) {
+    method void echo(String s) {
         do tb.prints(s);
         return;
     }
 
 
-    function String strdup(String s) {
+    method String strdup(String s) {
         var int i;
         var String t;
 
