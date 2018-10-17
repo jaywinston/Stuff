@@ -48,11 +48,33 @@ class Parse {
 
         let CTAB = Array.new(128);
 
-        let i = 32;
+        let i = 0;
         while (i < 128) {
+            let CTAB[i] = 0;
+            let i = i + 1;
+        }
+
+        let i = 65;
+        while (i < 90) {
             let CTAB[i] = 16384;
             let i = i + 1;
         }
+
+        let i = 97;
+        while (i < 122) {
+            let CTAB[i] = 16384;
+            let i = i + 1;
+        }
+
+/*
+lexing tests alnums, are these worth it?
+        let CTAB[ 35] = 16384;  // #
+        let CTAB[ 36] = 16384;  // $
+        let CTAB[ 46] = 16384;  // .
+        let CTAB[ 63] = 16384;  // ?
+        let CTAB[ 64] = 16384;  // @
+        let CTAB[ 95] = 16384;  // _
+*/
 
         let i = 48;
         while (i < 58) {
@@ -60,26 +82,26 @@ class Parse {
             let i = i + 1;
         }
  
-        let CTAB[123] =   64;  // {
-        let CTAB[ 40] =   80;  // (
-        let CTAB[ 41] =   81;  // )
-        let CTAB[ 38] =   89;  // &
-        let CTAB[124] =   89;  // |
-        let CTAB[ 61] =   90;  // =
-        let CTAB[ 33] =   91;  // !
-        let CTAB[ 60] =   91;  // <
-        let CTAB[ 62] =   91;  // >
-        let CTAB[ 43] =   92;  // +
-        let CTAB[ 45] =   92;  // -
-        let CTAB[126] =   92;  // ~
-        let CTAB[ 37] =   93;  // %
-        let CTAB[ 42] =   93;  // *
-        let CTAB[ 47] =   93;  // /
-        let CTAB[ 44] =   96;  // ,
-        let CTAB[125] =  128;  // }
-        let CTAB[ 34] =  256;  // "
-        let CTAB[ 32] = 2048;  //  
-        let CTAB[  0] = 4096;  // EOS
+        let CTAB[123] =    64;  // {
+        let CTAB[ 40] =    80;  // (
+        let CTAB[ 41] =    81;  // )
+        let CTAB[ 38] =    89;  // &
+        let CTAB[124] =    89;  // |
+        let CTAB[ 61] =    90;  // =
+        let CTAB[ 33] =    91;  // !
+        let CTAB[ 60] =    91;  // <
+        let CTAB[ 62] =    91;  // >
+        let CTAB[ 43] =    92;  // +
+        let CTAB[ 45] =    92;  // -
+        let CTAB[126] =    92;  // ~
+        let CTAB[ 37] =    93;  // %
+        let CTAB[ 42] =    93;  // *
+        let CTAB[ 47] =    93;  // /
+        let CTAB[ 44] =    96;  // ,
+        let CTAB[125] =   128;  // }
+        let CTAB[ 34] =   256;  // "
+        let CTAB[ 32] =  2048;  //  
+        let CTAB[  0] =  4096;  // EOS
 
         let EQ = Parse.cclass(61);
         let EQOP = Parse.cclass(60);
@@ -213,7 +235,7 @@ class Parse {
                     let next = Symbol.new(t, SYM, null);
                 }
             } else {
-                do LibIO.error("unexpected token");
+                do LibIO.error("illegal character");
                 return -1;
             }}}}}
 

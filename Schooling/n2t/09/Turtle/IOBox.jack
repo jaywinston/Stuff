@@ -1,7 +1,7 @@
 class IOBox {
 
     field int BUFSIZ, MAXLEN;
-    field int bp, rp;
+    field int bp;//, rp;
     field Array LINBUF;
     field TextBox tb;
 
@@ -36,6 +36,7 @@ class IOBox {
         }
         do LINBUF.dispose();
         do tb.dispose();
+        do Memory.dealloc(this);
 
         return;
     }
@@ -43,9 +44,10 @@ class IOBox {
 
     method String read(String ps) {
         var char c;
+        var int rp;
         var String s;
 
-        do tb.puts(ps);
+        do tb.print(ps);
         let rp = bp;
 
         let s = LINBUF[bp];
@@ -58,6 +60,7 @@ class IOBox {
             do tb.putc(0);      /* show cursor */
             do tb.backspace();  /* next char overwrites cursor */
 
+            /* for control of where to echo read char */
             let c = Keyboard.keyPressed();
             while (c = 0) {
                 let c = Keyboard.keyPressed();
@@ -73,9 +76,11 @@ class IOBox {
                 do s.eraseLastChar();
                 do tb.putc(c);
             } else { if (c = 131) {
-                let s = recall(-1);
+                let rp = recall(-1, rp);
+                let s = LINBUF[rp];
             } else { if (c = 133) {
-                let s = recall(1);
+                let rp = recall(1, rp);
+                let s = LINBUF[rp];
             }}}}
         }
 
@@ -100,58 +105,30 @@ class IOBox {
     }
 
 
-    method String recall(int step) {
+    method String recall(int step, int rp) {
         var int i;
         var String s;
 
-        /* backspace over current string, overwriting with blanks */
         let s = LINBUF[rp];
         let i = 0;
         while (i < s.length()) {
-            do tb.putc(32);
-            do tb.backspace();
-            do tb.backspace();
+            do tb.putc(129);
             let i = i + 1;
         }
 
         if (step < 0) {
-            let s = negrec(step);
+            let rp = negrec(step, rp);
         } else {
-            let s = posrec(step);
+            let rp = posrec(step, rp);
         }
 
-/* ##TEST##
-        if ( (rp=(BUFSIZ-1)) & (step>0) ) {
-            let rp = 0;
-        } else { if ( (rp=0) & (step<0) ) {
-            let rp = BUFSIZ - 1;
-        } else {
-            let rp = rp + step;
-        }}
+        do tb.print(LINBUF[rp]);
 
-        let s = LINBUF[rp];
-
-        /* prevent stepping into unwritten buf slots, only non empty strings
-           are written to the buffer so an empty string indicates unwritten * /
-        if ( (s.length()=0) & ~(rp=bp) ) {
-            if ( (rp=(BUFSIZ-1)) & (step<0) ) {
-                let rp = 0;
-            } else { if ( (rp=0) & (step>0) ) {
-                let rp = BUFSIZ - 1;
-            } else {
-                let rp = rp - step;
-            }}
-            let s = LINBUF[rp];
-        }
-END ##TEST## */
-
-        do tb.puts(s);
-
-        return s;
+        return rp;
     }
 
 
-    method String negrec(int step) {
+    method String negrec(int step, int rp) {
         var String s;
 
         let rp = rp + step;
@@ -162,13 +139,17 @@ END ##TEST## */
         let s = LINBUF[rp];
 
         if ( (s.length()=0) & ~(rp=bp) ) {
+            let rp = rp - step;
+            if (~(rp < BUFSIZ)) {
+                let rp = rp - BUFSIZ;
+            }
         }
 
-        return s;
+        return rp;
     }
 
 
-    method String posrec(int step) {
+    method String posrec(int step, int rp) {
         var String s;
 
         let rp = rp + step;
@@ -179,20 +160,24 @@ END ##TEST## */
         let s = LINBUF[rp];
 
         if ( (s.length()=0) & ~(rp=bp) ) {
+            let rp = rp - step;
+            if (rp < 0) {
+                let rp = BUFSIZ + rp;
+            }
         }
 
-        return s;
+        return rp;
     }
 
 
     method void print(String s) {
-        do tb.puts(s);
+        do tb.print(s);
         return;
     }
 
 
     method void echo(String s) {
-        do tb.prints(s);
+        do tb.echo(s);
         return;
     }
 

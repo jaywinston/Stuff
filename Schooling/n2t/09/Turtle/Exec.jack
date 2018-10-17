@@ -522,8 +522,13 @@ class Exec {
 
         do Eval.arg(arg);
 
+        if (~(arg.meta() = STR)) {
+            do LibIO.error("exec print: expected string");
+            return;
+        }
+
         do Exec.hideAll();
-        do tb.puts(arg.data());
+        do tb.print(arg.data());
         do Exec.showAll();
 
         do Exec.try(arg.next());

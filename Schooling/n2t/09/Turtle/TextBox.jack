@@ -121,7 +121,7 @@ class TextBox {
         return;
     }
 
-    method void puts(String s) {
+    method void print(String s) {
         var int i, len;
 
         let len = s.length();
@@ -134,7 +134,7 @@ class TextBox {
         return;
     }
 
-    method void prints(String s) {
+    method void echo(String s) {
         var int i;
 
         do Output.moveCursor(row, col);
@@ -144,7 +144,7 @@ class TextBox {
             let i = i + 1;
         }
 
-        do puts(s);
+        do print(s);
         do newline();
 
         return;
