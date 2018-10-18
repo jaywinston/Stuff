@@ -5,6 +5,7 @@ class Struct {
 
     static int VAL, NEXT, NODESIZ;
 
+    field int length;
     field Array head, tail;
 
 
@@ -20,6 +21,7 @@ class Struct {
         let tail = Array.new(NODESIZ);
         let tail[NEXT] = null;
         let head = tail;
+        let length = 0;
         return this;
     }
 
@@ -42,6 +44,7 @@ class Struct {
         let tail[NEXT] = node;
         let tail[VAL] = val;
         let tail = node;
+        let length = length + 1;
 
         return;
     }
@@ -54,6 +57,7 @@ class Struct {
         let node[VAL] = val;
         let node[NEXT] = head;
         let head = node;
+        let length = length + 1;
 
         return;
     }
@@ -71,6 +75,110 @@ class Struct {
         let head = head[NEXT];
         let val = node[VAL];
         do node.dispose();
+        let length = length - 1;
+
+        return val;
+    }
+
+
+    method int _nth(int i) {
+        var Array p;
+
+        if (i < 0) {
+            return -1;
+        }
+
+        if (~(i < length)) {
+            return -1;
+        }
+
+        let p = head;
+        while (i > 0) {
+            let p = p[NEXT];
+            let i = i - 1;
+        }
+
+        return p;
+    }
+
+
+    method int nth(int i) {
+        var Array p;
+
+        let p = _nth(i);
+        /* todo: err check */
+
+        return p[VAL];
+    }
+
+
+    method void setnth(int i, int val) {
+        var Array p;
+
+        let p = _nth(i);
+        /* todo: err check */
+        let p[VAL] = val;
+
+        return;
+    }
+
+
+    method void insert(int i, int val) {
+        var Array node, p;
+
+        if (i < 0) {
+            return;
+        }
+
+        if (i = 0) {
+            do push(val);
+            return;
+        }
+
+        if (i = length) {
+            do append(val);
+            return;
+        }
+
+        if (i > length) {
+            return;
+        }
+
+        let node = Array.new(NODESIZ);
+        let p = _nth(i-1);
+        /* todo: err check */
+        let node[VAL] = val;
+        let node[NEXT] = p[NEXT];
+        let p[NEXT] = node;
+        let length = length + 1;
+
+        return;
+    }
+
+
+    method int remove(int i) {
+        var int val;
+        var Array p, q;
+
+        if (i < 0) {
+            return 0;
+        }
+
+        if (i = 0) {
+            return pop();
+        }
+
+        if (~(i < length)) {
+            return 0;
+        }
+
+        let p = _nth(i-1);
+        /* todo: err check */
+        let q = p[NEXT];
+        let p[NEXT] = q[NEXT];
+        let val = q[VAL];
+        do q.dispose();
+        let length = length - 1;
 
         return val;
     }
@@ -88,6 +196,11 @@ class Struct {
 
     method boolean has() {
         return ~(head[NEXT] = null);
+    }
+
+
+    method int length() {
+        return length;
     }
 
 }

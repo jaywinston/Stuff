@@ -1,3 +1,4 @@
+/* depends on Symbol.jack, Struct.jack */
 class HashTable {
 
     field int HASHSIZ;
@@ -11,7 +12,7 @@ class HashTable {
         let table = Array.new(HASHSIZ);
         let i = 0;
         while (i < HASHSIZ) {
-            let table[i] = null;
+            let table[i] = Struct.new();
             let i = i + 1;
         }
 
@@ -36,24 +37,43 @@ class HashTable {
     }
 
 
-    method Symbol lookup(String s) {
+    method int _lookup(String s) {
+        var int i;
+        var Struct b;
         var Symbol p;
 
-        let p = table[hash(s)];
-        while (~(p = null)) {
+        let b = table[hash(s)];
+        let i = 0;
+        while (i < b.length()) {
+            let p = b.nth(i);
             if (HashTable.streq(s, p.name())) {
-                return p;
+                return i;
             }
-            let p = p.next();
+            let i = i + 1;
         }
 
-        return null;
+        return -1;
+    }
+
+
+    method Symbol lookup(String s) {
+        var int i;
+        var Struct b;
+
+        let i = _lookup(s);
+        if (i < 0) {
+            return null;
+        }
+        let b = table[hash(s)];
+
+        return b.nth(i);
     }
 
 
     method void install(String name, int type, int val) {
         var int hashval;
         var String s;
+        var Struct b;
         var Symbol p;
 
         let p = lookup(name);
@@ -61,14 +81,24 @@ class HashTable {
         if (p = null) {
             let p = Symbol.new(name, type, val);
             let hashval = hash(name);
-            do p.setNext(table[hashval]);
-            let table[hashval] = p;
+            let b = table[hashval];
+            do b.push(p);
         } else {
             do p.setData(val);
             do p.setMeta(type);
         }
 
         return;
+    }
+
+
+    method Symbol delete(String name) {
+        var int i;
+        var Struct b;
+
+        let b = table[hash(name)];
+
+        return b.remove(i);
     }
 
 
@@ -120,5 +150,6 @@ class HashTable {
 
         return true;
     }
+
 }
 

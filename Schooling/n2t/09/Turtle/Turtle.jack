@@ -6,6 +6,7 @@ class Turtle {
 
     field boolean _pendown;
     field int direction, _x, _y;
+    field Array target;
     field Vector v;
     field ScreenArea sa;
 
@@ -21,6 +22,8 @@ class Turtle {
         let _x = x;
         let _y = y;
         let direction = setDirection(d);
+        let target = Array.new(2);
+        let target[0] = -1;
         let v = Vector.new();
         let sa = ScreenArea.new(TLEN*8, TLEN*8);
         let _pendown = false;
@@ -111,19 +114,19 @@ class Turtle {
     }
 
 
-    method int forward(int l) {
+    method Array aim(int l) {
+        do v.calculate(l, direction);
+        let target[0] = _x + v.re();
+        let target[1] = _y - v.im();
+        return target;
+    }
+
+
+    method Array forward(int l) {
         var int x, y;
 
-        if (l < 0) {
-            return -1;  // error: won't go backwards
-        }
-
-        do v.calculate(l, direction);
-        let x = _x + v.re();
-        let y = _y - v.im();
-
-        if ( ((x<left) | (x>right)) | ((y<top) | (y>bottom)) ) {
-            return -2;  // error: target beyond boundary
+        if (target[0] = -1) {
+            do aim(l);
         }
 
         do hide();
@@ -133,12 +136,13 @@ class Turtle {
             do Screen.drawLine(_x, _y, x, y);
         }
 
-        let _x = x;
-        let _y = y;
+        let _x = target[0];
+        let _y = target[1];
+        let target[0] = -1;
 
         do show();
 
-        return l;
+        return target;
     }
 
 

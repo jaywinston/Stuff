@@ -113,10 +113,12 @@ class Exec {
     function void clear() {
         var Turtle tt;
 
-        let tt = turtles.data(); // todo: need get tail of turtles first?
-        do tt.dispose();
+        let tt = t;
+        let t = turtles.data(); // todo: need get tail of turtles first?
+        do t.dispose();
         do tb.clear();
         do turtles.setData(Exec.defaultTurtle());
+        let t = tt;
 
         return;
     }
@@ -131,6 +133,7 @@ class Exec {
             if (LibIO.noerr()) {
                 do Exec.enqueue(ret);
             }
+            do LibSym.destroyList(ret);
         }
 
         /* Error messages are queued. */
@@ -388,20 +391,24 @@ class Exec {
 
 
     function void doForward(Symbol arg) {
-        var int errno;  // ##TEMP##
+        var Array target;
 
         do Eval.arg(arg);
 
-        let errno = t.forward(arg.data());  // ##TEMP##
-
-        if (errno = -1) {
+        if (arg.data() < 0) {
             do LibIO.error("won't go backwards");
+            return;
         }
 
-        if (errno = -2) {
+        let target = t.aim(arg.data());
+
+        if ( ((target[0] < left) | (target[0] > right))
+                | ((target[1] < top) | (target[1] > bottom)) ) {
             do LibIO.error("target beyond boundary");
+            return;
         }
 
+        do t.forward(arg.data());
 
         do Exec.try(arg.next());
 
