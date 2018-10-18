@@ -81,23 +81,23 @@ class Exec {
 
         do Exec.installKW("MV",128);  // ##DB##
 
-        do Exec.installKW("ASSIGN",    ASSIGN);
-        do Exec.installKW("CLEAR",     CLEAR);
-        do Exec.installKW("DIR",       DIR);
-        do Exec.installKW("DISPOSE",   DISPOSE);
-        do Exec.installKW("FORWARD",   FORWARD);
-        do Exec.installKW("FUNCTION",  FUNCTION);
-        do Exec.installKW("IF",        IF);
-        do Exec.installKW("PENDOWN",   PENDOWN);
-        do Exec.installKW("PENUP",     PENUP);
-        do Exec.installKW("POSX",      POSX);
-        do Exec.installKW("POSY",      POSY);
-        do Exec.installKW("PRINT",     PRINT);
-        do Exec.installKW("REPEAT",    REPEAT);
-        do Exec.installKW("TURNLEFT",  TURNLEFT);
+        do Exec.installKW("ASSIGN", ASSIGN);
+        do Exec.installKW("CLEAR", CLEAR);
+        do Exec.installKW("DIR", DIR);
+        do Exec.installKW("DISPOSE", DISPOSE);
+        do Exec.installKW("FORWARD", FORWARD);
+        do Exec.installKW("FUNCTION", FUNCTION);
+        do Exec.installKW("IF", IF);
+        do Exec.installKW("PENDOWN", PENDOWN);
+        do Exec.installKW("PENUP", PENUP);
+        do Exec.installKW("POSX", POSX);
+        do Exec.installKW("POSY", POSY);
+        do Exec.installKW("PRINT", PRINT);
+        do Exec.installKW("REPEAT", REPEAT);
+        do Exec.installKW("TURNLEFT", TURNLEFT);
         do Exec.installKW("TURNRIGHT", TURNRIGHT);
-        do Exec.installKW("TURTLE",    TURTLE);
-        do Exec.installKW("QUIT",      QUIT);
+        do Exec.installKW("TURTLE", TURTLE);
+        do Exec.installKW("QUIT", QUIT);
 
         return;
     }

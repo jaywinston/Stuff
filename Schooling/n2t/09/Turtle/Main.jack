@@ -16,6 +16,7 @@ class Main {
         do Vector.init();
         do Struct.init();
         do LibIO.init();
+        do Lex.init();
         do Parse.init();
         do LibSym.init();
         do Eval.init();

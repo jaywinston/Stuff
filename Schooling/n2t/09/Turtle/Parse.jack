@@ -1,114 +1,20 @@
-// CTAB is an array of size 128.  It is used as something of a hashtable
-// in that it is indexed by a character.  Its values are a bitmap of the
-// character's type.  That bitmap is also used to implement arithmetic
-// operator precedence.  Most types are one-bit values.  Block types
-// and integer types have subtypes.  Block types are used by LibSym
-// list functions to recurse on the symbol's data.  Integer types are
-// used to announce an integer expression tree and afterwards, are masked
-// and used for arithmetic operator precedence.
-// 
-// The bitmap is:
-//   32768 16384 8192 4096 2048 1024 512 256 128  64  32  16   8   4   2   1
-//       |     |    |    |    |    |   |   |   |   |   |   |   |   |   |   |
-//  unused     |    |    |    |    |   |   |   |   |   |   |   |   |   |   |
-//  symbol token    |    |    |    |   |   |   |   |   |   |   |   |   |   |
-//      integer token    |    |    |   |   |   |   |   |   |   |   |   |   |
-//                     EOS    |    |   |   |   |   |   |   |   |   |   |   |
-//              blank character    |   |   |   |   |   |   |   |   |   |   |
-//                            unused   |   |   |   |   |   |   |   |   |   |
-//                                unused   |   |   |   |   |   |   |   |   |
-//                            string literal   |   |   |   |   |   |   |   |
-//                                     block end   |   |   |   |   |   |   |
-//                                             block   |   |   |   |   |   |
-//                                                 |\ /   /|   |   |   |   |
-//                                   string expression   / |   |   |   |   |
-//                                                 \    /  |   |   |   |   |
-//                                    integer expression   |   |   |   |   |
-//                                            unary operator   |   |   |   |
-//                                               binary operator   |   |   |
-//                                                                  \  |  /
-//                                                     opreator precedance
-//
-// String expressions are calls to the format function.
-// Integer expressions are compound expressions i.e. including one or
-// more operators.
-
 class Parse {
 
     static int EQ, EQOP, BLANK, DELIM, BLOCK, END, EOS, CMDLIN, INT, COMMA,
                 INTEX, OP, STR, STREX, SYM, UOP, LPAREN, RPAREN;
     static int CLASSMASK;
-    static Array CTAB;
     static String PS1, PS2;
     static Symbol ARGV;
 
 
     function void init() {
-        var int i;
 
-        let CTAB = Array.new(128);
-
-        let i = 0;
-        while (i < 128) {
-            let CTAB[i] = 0;
-            let i = i + 1;
-        }
-
-        let i = 65;
-        while (i < 90) {
-            let CTAB[i] = 16384;
-            let i = i + 1;
-        }
-
-        let i = 97;
-        while (i < 122) {
-            let CTAB[i] = 16384;
-            let i = i + 1;
-        }
-
-/*
-lexing tests alnums, are these worth it?
-        let CTAB[ 35] = 16384;  // #
-        let CTAB[ 36] = 16384;  // $
-        let CTAB[ 46] = 16384;  // .
-        let CTAB[ 63] = 16384;  // ?
-        let CTAB[ 64] = 16384;  // @
-        let CTAB[ 95] = 16384;  // _
-*/
-
-        let i = 48;
-        while (i < 58) {
-            let CTAB[i] = 8192;
-            let i = i + 1;
-        }
- 
-        let CTAB[123] =    64;  // {
-        let CTAB[ 40] =    80;  // (
-        let CTAB[ 41] =    81;  // )
-        let CTAB[ 38] =    89;  // &
-        let CTAB[124] =    89;  // |
-        let CTAB[ 61] =    90;  // =
-        let CTAB[ 33] =    91;  // !
-        let CTAB[ 60] =    91;  // <
-        let CTAB[ 62] =    91;  // >
-        let CTAB[ 43] =    92;  // +
-        let CTAB[ 45] =    92;  // -
-        let CTAB[126] =    92;  // ~
-        let CTAB[ 37] =    93;  // %
-        let CTAB[ 42] =    93;  // *
-        let CTAB[ 47] =    93;  // /
-        let CTAB[ 44] =    96;  // ,
-        let CTAB[125] =   128;  // }
-        let CTAB[ 34] =   256;  // "
-        let CTAB[ 32] =  2048;  //  
-        let CTAB[  0] =  4096;  // EOS
-
-        let EQ = Parse.cclass(61);
-        let EQOP = Parse.cclass(60);
-        let BLANK = Parse.cclass(32);
+        let EQ = Lex.cclass(61);
+        let EQOP = Lex.cclass(60);
+        let BLANK = Lex.cclass(32);
         let BLOCK = LibSym.BLOCK();
-        let END = Parse.cclass(125);
-        let EOS = Parse.cclass(0);
+        let END = Lex.cclass(125);
+        let EOS = Lex.cclass(0);
         let CMDLIN = LibSym.CMDLIN();
         let INT = LibSym.INT();
         let INTEX = LibSym.INTEX();
@@ -118,8 +24,8 @@ lexing tests alnums, are these worth it?
         let COMMA = STREX & ~BLOCK;
         let SYM = LibSym.SYM();
         let UOP = LibSym.UOP();
-        let LPAREN = Parse.cclass(40);
-        let RPAREN = Parse.cclass(41);
+        let LPAREN = Lex.cclass(40);
+        let RPAREN = Lex.cclass(41);
 
         let CLASSMASK = -16;
 
@@ -133,15 +39,15 @@ lexing tests alnums, are these worth it?
 
 
     function void dispose() {
-        do CTAB.dispose();
         do PS1.dispose();
         do PS2.dispose();
-        do ARGV.dispose();
+        do LibSym.destroyList(ARGV);
         return;
     }
 
 
     function Symbol next() {
+        var String s;
 
         do ARGV.setData(null);
 
@@ -150,20 +56,15 @@ lexing tests alnums, are these worth it?
             return null;
         }
 
+        let s = ARGV.tag();
+        do s.dispose();
+
         return ARGV.data();
     }
 
 
-    function char getch(String s, int i) {
-        if (~(i < s.length())) {
-            return 0;
-        }
-        return s.charAt(i);
-    }
-
-
-    function int cclass(char c) {
-        return CTAB[c];
+    function int cclass(String s, int i) {
+        return Lex.cclass(Lex.getch(s, i));
     }
 
 
@@ -191,7 +92,7 @@ lexing tests alnums, are these worth it?
         }
 
         let i = Str.lskip(s, 32, i);
-        let cclass = Parse.cclass(Parse.getch(s, i)) & CLASSMASK;
+        let cclass = Parse.cclass(s, i) & CLASSMASK;
         while (~(cclass = EOS)) {
 
             if (cclass = END) {
@@ -218,6 +119,7 @@ lexing tests alnums, are these worth it?
                 let t = String.new(s.length());
                 let i = Lex.string(s, t, i);
                 if (i < 0) {
+                    do Parse.mkpackage(argv, t);
                     do LibIO.error("EOS while scanning string");
                     return -1;
                 }
@@ -225,9 +127,8 @@ lexing tests alnums, are these worth it?
             } else { if (cclass = SYM) {
                 let t = String.new(s.length());
                 let i = Lex.token(s, t, i);
-                /* assignment? */
-                if ( (Parse.cclass(Parse.getch(s, i)) = EQ)
-                        & (~(Parse.cclass(Parse.getch(s, i-1)) = EQOP)) ) {
+                if ( (Parse.cclass(s, i) = EQ)  /* assignment? */
+                        & (~(Parse.cclass(s, i-1) = EQOP)) ) {
                     let next = Symbol.new("ASSIGN", SYM, null);
                     do next.append(Symbol.new(t, SYM, null));
                     let i = i + 1;
@@ -243,7 +144,7 @@ lexing tests alnums, are these worth it?
                 return i;
             }
 
-            let cclass = Parse.cclass(Parse.getch(s, i)) & CLASSMASK;
+            let cclass = Parse.cclass(s, i) & CLASSMASK;
             if (cclass = INTEX) {
                 let extok = Symbol.new(null, INTEX, null);
                 do extok.append(next);
@@ -267,7 +168,7 @@ lexing tests alnums, are these worth it?
             do argv.append(next);
 
             let i = Str.lskip(s, 32, i);
-            let cclass = Parse.cclass(Parse.getch(s, i)) & CLASSMASK;
+            let cclass = Parse.cclass(s, i) & CLASSMASK;
         }
 
         do Parse.mkpackage(argv, s);
@@ -288,7 +189,7 @@ lexing tests alnums, are these worth it?
 
         let stack = Symbol.new(null, null, null);
         let uop = queue.next() = 0;
-        let cclass = Parse.cclass(Parse.getch(s, i));
+        let cclass = Parse.cclass(s, i);
 
         /* todo: should END be in exit cond? */
         while ( (cclass & ((BLANK|COMMA)|(END|EOS))) = 0 ) {
@@ -330,15 +231,15 @@ lexing tests alnums, are these worth it?
                 if (uop) {
                     let objbuf = Symbol.new(null, UOP, op);
                 } else {
-                    let objbuf = Symbol.new(null, Parse.cclass(op)&15, op);
+                    let objbuf = Symbol.new(null, Lex.cclass(op)&15, op);
                     if (i < s.length()) {
-                        if ( ((Parse.cclass(op)=EQ) | (Parse.cclass(op)=EQOP))
-                                & (Parse.cclass(Parse.getch(s, i))=EQ) ) {
+                        if ( ((Lex.cclass(op)=EQ) | (Lex.cclass(op)=EQOP))
+                                & (Parse.cclass(s, i)=EQ) ) {
                             do objbuf.setData((op*100) + 61);
                             let i = i + 1;
                         }
                     }
-                    /* pop higher equal ops to queue */
+                    /* pop higher/equal ops to queue */
                     while ( ~(stack.meta()<objbuf.meta())
                             & ~(stack.meta()=LPAREN) ) {
                         let stackbuf = stack;
@@ -375,7 +276,7 @@ lexing tests alnums, are these worth it?
                 let i = i + 1;
             }}}}
 
-            let cclass = Parse.cclass(Parse.getch(s, i));
+            let cclass = Parse.cclass(s, i);
         }
 
         /* pop ops to queue */
@@ -408,14 +309,30 @@ lexing tests alnums, are these worth it?
         var String t;
         var Symbol arg, intex;
 
+        if ( (s=null) | (next=null) ) {
+            return -1;
+        }
+
+        let arg = next.next();
+        if (arg = null) {
+            return -1;
+        }
+
+        if (~(arg.meta() = STR)) {
+            do LibIO.error("no format string given");
+            return -1;
+        }
+
+        let arg = null;
+
         if ( (i<0) | ~(i<s.length()) ) {
             return -1;
         }
 
-        while (Parse.cclass(Parse.getch(s, i)) = STREX) {
+        while (Parse.cclass(s, i) = STREX) {
 
             let i = i + 1;
-            let cclass = Parse.cclass(Parse.getch(s, i)) & CLASSMASK;
+            let cclass = Parse.cclass(s, i) & CLASSMASK;
 
             if (cclass = BLOCK) {
                 let arg = Symbol.new(null, BLOCK, null);
@@ -436,6 +353,7 @@ lexing tests alnums, are these worth it?
                 let t = String.new(s.length());
                 let i = Lex.string(s, t, i);
                 if (i < 0) {
+                    do Parse.mkpackage(next, t);
                     do LibIO.error("EOS while scanning string");
                     return -1;
                 }
@@ -450,7 +368,7 @@ lexing tests alnums, are these worth it?
                 return i;
             }
 
-            if ( (Parse.cclass(Parse.getch(s, i))&CLASSMASK) = INTEX) {
+            if ( (Parse.cclass(s, i)&CLASSMASK) = INTEX) {
                 let intex = Symbol.new(null, INTEX, null);
                 do intex.append(arg);
                 let i = Parse.intex(s, intex, i);
@@ -481,7 +399,7 @@ lexing tests alnums, are these worth it?
 
         let i = Str.lskip(s, 32, i+1);
 
-        if ( (Parse.cclass(Parse.getch(s, i))&(END|EOS)) = 0 ) {
+        if ( (Parse.cclass(s, i)&(END|EOS)) = 0 ) {
             let cmdlin = Symbol.new(null, CMDLIN, null);
             let i = Parse.cmdlin(s, cmdlin, i);
             let s = cmdlin.tag();
@@ -493,17 +411,18 @@ lexing tests alnums, are these worth it?
             return i;
         }
 
-        while (Parse.cclass(Parse.getch(s, i)) = EOS) {
+        while (Parse.cclass(s, i) = EOS) {
             let s = LibIO.read(PS2);
             let i = Str.lskip(s, 32, 0);
-            if (~(Parse.cclass(Parse.getch(s, i)) = END)) {
+            if (~(Parse.cclass(s, i) = END)) {
                 let cmdlin = Symbol.new(s, CMDLIN, null);
                 let i = Parse.cmdlin(s, cmdlin, 0);
-                if (i < 0) {
-                    return i;
-                }
                 let s = cmdlin.tag();
                 do cmdlin.setTag(null);
+                if (i < 0) {
+                    do Parse.mkpackage(cmdlin, s);
+                    return i;
+                }
                 do block.append(cmdlin);
             }
         }

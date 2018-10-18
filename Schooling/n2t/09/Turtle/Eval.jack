@@ -36,7 +36,7 @@ class Eval {
             } else {
                 let p = Eval.arg(LibSym.copySym(queue));
                 if (~(p.meta() = INT)) {
-                    do LibIO.error("expected integer");  // ##DB##
+                    do LibIO.error("expected integer");
                     do LibSym.destroyList(stack);
                     do LibSym.destroySym(p);
                     return 0;
@@ -65,7 +65,7 @@ class Eval {
         do Eval.arg(fstrex);
 
         if (~(fstrex.meta() = STR)) {
-            do LibIO.error("expected string");  // ##DB##
+            do LibIO.error("expected string");
             return null;
         }
 
@@ -85,17 +85,17 @@ class Eval {
             if (fspec) {
                 if ((c=68) | (c=83)) {
                     if (argp = null) {
-                        do LibIO.error("fstrex: got null");  // ##DB##
+                        do LibIO.error("fstrex: got null");
                         do argv.dispose();
                         return "";
                     }
                     do Eval.arg(argp);
                     if ( (c=68) & ~(argp.meta()=INT) ) {
-                        do LibIO.error("fstrex: expected int");  // ##DB##
+                        do LibIO.error("fstrex: expected int");
                         do argv.dispose();
                         return "";
                     } else { if ( (c=83) & ~(argp.meta()=STR) ) {
-                        do LibIO.error("fstrex: expected str");  // ##DB##
+                        do LibIO.error("fstrex: expected str");
                         do argv.dispose();
                         return "";
                     }}
@@ -147,7 +147,7 @@ class Eval {
         let p = Eval.lookup(sym.tag());
 
         if (p = null) {
-            do LibIO.error("undefined symbol");  // ##DB##
+            do LibIO.error("undefined symbol");
             return;
         }
 
@@ -216,7 +216,7 @@ class Eval {
         if (op =  45) { return -n;          }
         if (op = 126) { return ~n;          }
 
-        do LibIO.error("unrecognized operator");  // ##DB##
+        do LibIO.error("unrecognized operator");
         return 0;
     }
 
@@ -224,7 +224,7 @@ class Eval {
     function int operate(int m, int n, int op) {
 
         if ( ((op=47) | (op=37)) & (n=0) ) {
-            do LibIO.error("division by zero");  // ##DB##
+            do LibIO.error("division by zero");
             return 0;
         }
 
@@ -244,7 +244,7 @@ class Eval {
         if (op = 6061) { return  (m<n) | (m=n); }
         if (op = 6261) { return  (m>n) | (m=n); }
 
-        do LibIO.error("unrecognized operator");  // ##DB##
+        do LibIO.error("unrecognized operator");
         return 0;
     }
 
