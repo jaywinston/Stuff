@@ -19,9 +19,9 @@ class Lex {
 //  unused     |    |    |    |    |   |   |   |   |   |   |   |   |   |   |
 //  symbol token    |    |    |    |   |   |   |   |   |   |   |   |   |   |
 //      integer token    |    |    |   |   |   |   |   |   |   |   |   |   |
-//                     EOS    |    |   |   |   |   |   |   |   |   |   |   |
-//              blank character    |   |   |   |   |   |   |   |   |   |   |
-//                            unused   |   |   |   |   |   |   |   |   |   |
+//         blank character    |    |   |   |   |   |   |   |   |   |   |   |
+//                          EOS    |   |   |   |   |   |   |   |   |   |   |  
+//                     illegal index   |   |   |   |   |   |   |   |   |   |
 //                                unused   |   |   |   |   |   |   |   |   |
 //                            string literal   |   |   |   |   |   |   |   |
 //                                     block end   |   |   |   |   |   |   |
@@ -45,7 +45,7 @@ class Lex {
     function void init() {
         var int i;
 
-        let CTAB = Array.new(128);
+        let CTAB = Array.new(154);
 
         let i = 0;
         while (i < 128) {
@@ -83,8 +83,9 @@ class Lex {
         let CTAB[ 44] =    96;  // ,
         let CTAB[125] =   128;  // }
         let CTAB[ 34] =   256;  // "
-        let CTAB[ 32] =  2048;  //  
-        let CTAB[  0] =  4096;  // EOS
+        let CTAB[153] =  1024;  // illegal index
+        let CTAB[152] =  2048;  // EOS
+        let CTAB[ 32] =  4096;  //  
 
         return;
     }
@@ -97,9 +98,15 @@ class Lex {
 
 
     function char getch(String s, int i) {
-        if (~(i < s.length()) | (i<0) ) {
-            return 0;
+
+        if (i < 0) {
+            return 153;
         }
+
+        if (~(i < s.length())) {
+            return 152;
+        }
+
         return s.charAt(i);
     }
 
@@ -110,16 +117,14 @@ class Lex {
 
 
     function int token(String s, String t, int i) {
-        var char c, loc;
+        var char c;
+        var int MASK;
 
-        if (i < 0) {
-            return i;
-        }
+        let MASK = Lex.cclass(65) | Lex.cclass(48);
 
         while (i < s.length()) {
-            let c = s.charAt(i);
-            let loc = c | 32;
-            if (~( ((c>47) & (c<58)) | ((loc>96) & (loc<123)) )) {
+            let c = Lex.getch(s, i);
+            if ( (Lex.cclass(c)&MASK) = 0 ) {
                 return i;
             }
             do t.appendChar(c);
@@ -162,4 +167,6 @@ class Lex {
         return -1;  /* EOS while scanning for quote */
     }
 
+
+    function int EOS() { return CTAB[152]; }
 }

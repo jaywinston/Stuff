@@ -15,10 +15,10 @@ class LibSym {
       let STR    = Lex.cclass(34);          // 256
       let INT    = Lex.cclass(48);          // 8192
       let SYM    = Lex.cclass(65);          // 16384
-      let OP     = Lex.cclass(38)-1 & ~INTEX;   // 8
-      let UOP    = Lex.cclass(126) & (~BLOCK & ~OP);   // 16
+      let OP     = Lex.cclass(38)-1 & ~INTEX;         // 8
+      let UOP    = Lex.cclass(126) & (~BLOCK & ~OP);  // 16
 
-        return;
+      return;
     }
 
 
@@ -106,12 +106,55 @@ class LibSym {
     }
 
 
+    function void _destroySym(Symbol sym) {
+        var int tclass;
+        var String s;
+
+        if (sym = null) {
+            return;
+        }
+
+        let s = sym.tag();
+
+        if (~(s = null)) {
+            do s.dispose();
+        }
+
+        let tclass = LibSym.typeClass(sym);
+
+        if (tclass = LibSym.STR()) {
+            let s = sym.data();
+            do s.dispose();
+        } else { if (tclass = LibSym.BLOCK()) {
+            do LibSym._destroyList(sym.data());
+        }}
+
+        do sym.dispose();
+
+        return;
+    }
+
+
+    function void _destroyList(Struct list) {
+        var Symbol p;
+
+        while (list.length() > 0) {
+            let p = list.pop();
+            do LibSym._destroySym(p);
+        }
+
+        do list.dispose();
+
+        return;
+    }
+
+
     function void destroyHashTable(HashTable ht) {
         var int i;
 
         let i = 0;
         while (i < ht.hashSize()) {
-            do LibSym.destroyList(ht.bucket(i));
+            do LibSym._destroyList(ht.bucket(i));
             let i = i + 1;
         }
 
