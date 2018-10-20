@@ -1,6 +1,5 @@
 /**
  * Returns the index of the character immediately beyond the end of the token. 
- * On error, returns length of input string plus one.
  */
 class Lex {
 
@@ -39,13 +38,21 @@ class Lex {
 // Integer expressions are compound expressions i.e. including one or
 // more operators.
 
+    static int HACK_CHARSET_SIZE;
+    static int EOS_MAP, NOLGL_MAP;
+    static int TOKEN_MASK;
     static Array CTAB;
 
 
     function void init() {
         var int i;
 
-        let CTAB = Array.new(154);
+        let HACK_CHARSET_SIZE = 152;
+
+        let EOS_MAP = HACK_CHARSET_SIZE;
+        let NOLGL_MAP = HACK_CHARSET_SIZE + 1;
+
+        let CTAB = Array.new(HACK_CHARSET_SIZE + 2);
 
         let i = 0;
         while (i < 128) {
@@ -83,9 +90,12 @@ class Lex {
         let CTAB[ 44] =    96;  // ,
         let CTAB[125] =   128;  // }
         let CTAB[ 34] =   256;  // "
-        let CTAB[153] =  1024;  // illegal index
-        let CTAB[152] =  2048;  // EOS
         let CTAB[ 32] =  4096;  //  
+
+        let CTAB[NOLGL_MAP] = 1024;  // illegal index
+        let CTAB[  EOS_MAP] = 2048;  // EOS
+
+        let TOKEN_MASK = CTAB[65] | CTAB[48];
 
         return;
     }
@@ -99,12 +109,12 @@ class Lex {
 
     function char getch(String s, int i) {
 
-        if (i < 0) {
-            return 153;
+        if ( (i<0) | (i>s.length()) ) {
+            return NOLGL_MAP;
         }
 
-        if (~(i < s.length())) {
-            return 152;
+        if (i = s.length()) {
+            return EOS_MAP;
         }
 
         return s.charAt(i);
@@ -118,13 +128,10 @@ class Lex {
 
     function int token(String s, String t, int i) {
         var char c;
-        var int MASK;
-
-        let MASK = Lex.cclass(65) | Lex.cclass(48);
 
         while (i < s.length()) {
             let c = Lex.getch(s, i);
-            if ( (Lex.cclass(c)&MASK) = 0 ) {
+            if ( (Lex.cclass(c)&TOKEN_MASK) = 0 ) {
                 return i;
             }
             do t.appendChar(c);
@@ -149,10 +156,10 @@ class Lex {
             }
 
             if (c = 92) {
-                if ( (i+2) = s.length() ) {  /* EOS while scanning for quote */
-                    return -1;
-                }
                 let i = i + 1;
+                if ( (i = s.length()) | ((i+1) = s.length()) ) {
+                    return -1;  /* EOS while scanning for quote */
+                }
                 let c = s.charAt(i);
                 if (c = 78) {
                     let c = 128;
@@ -168,5 +175,6 @@ class Lex {
     }
 
 
-    function int EOS() { return CTAB[152]; }
+    function int EOS() { return CTAB[EOS_MAP]; }
+
 }
