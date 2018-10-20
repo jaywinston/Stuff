@@ -123,7 +123,6 @@ class Turtle {
 
 
     method Array forward(int l) {
-        var int x, y;
 
         if (target[0] = -1) {
             do aim(l);
@@ -133,7 +132,7 @@ class Turtle {
 
         if (_pendown) {
             do Screen.setColor(true);
-            do Screen.drawLine(_x, _y, x, y);
+            do Screen.drawLine(_x, _y, target[0], target[1]);
         }
 
         let _x = target[0];
