@@ -108,15 +108,17 @@ class IOBox {
 
 
     method int recall(int step, int rp) {
-        var int i;
+        var int l;
         var String s;
 
         let s = LINBUF[rp];
-        let i = 0;
-        while (i < s.length()) {
+        let l = s.length();
+        while (l > 0) {
             do tb.putc(129);
-            let i = i + 1;
+            let l = l - 1;
         }
+
+        let rp = rp + step;
 
         if (step < 0) {
             let rp = negrec(step, rp);
@@ -130,10 +132,9 @@ class IOBox {
     }
 
 
-    method String negrec(int step, int rp) {
+    method int negrec(int step, int rp) {
         var String s;
 
-        let rp = rp + step;
         if (rp < 0) {
             let rp = BUFSIZ + rp;
         }
@@ -150,16 +151,14 @@ class IOBox {
     }
 
 
-    method String posrec(int step, int rp) {
+    method int posrec(int step, int rp) {
         var String s;
 
-        let rp = rp + step;
         if (~(rp <  BUFSIZ)) {
             let rp = rp - BUFSIZ;
         }
 
         let s = LINBUF[rp];
-
         if ( (s.length()=0) & ~(rp=bp) ) {
             let rp = rp - step;
             if (rp < 0) {
@@ -196,4 +195,5 @@ class IOBox {
 
         return t;
     }
+
 }
