@@ -1,7 +1,7 @@
 class IOBox {
 
     field int BUFSIZ, MAXLEN;
-    field int bp;//, rp;
+    field int bp;
     field Array LINBUF;
     field TextBox tb;
 
@@ -60,7 +60,7 @@ class IOBox {
             do tb.putc(0);      /* show cursor */
             do tb.backspace();  /* next char overwrites cursor */
 
-            /* for control of where to echo read char */
+            /* control where read char is echoed */
             let c = Keyboard.keyPressed();
             while (c = 0) {
                 let c = Keyboard.keyPressed();
@@ -72,9 +72,11 @@ class IOBox {
                     do s.appendChar(c);
                     do tb.putc(c);
                 }
-            } else { if ( (c=129) & (s.length()>0) ) {
-                do s.eraseLastChar();
-                do tb.putc(c);
+            } else { if (c = 129) {
+                if  (s.length() > 0) {
+                    do s.eraseLastChar();
+                    do tb.putc(c);
+                }
             } else { if (c = 131) {
                 let rp = recall(-1, rp);
                 let s = LINBUF[rp];
@@ -87,8 +89,8 @@ class IOBox {
         if (~(rp = bp)) {
             let s = LINBUF[bp];
             do s.dispose();
-            let s = LINBUF[rp];
-            let LINBUF[bp] = strdup(s);
+            let s = strdup(LINBUF[rp]);
+            let LINBUF[bp] = s;
         }
 
         if (s.length() > 0) {
@@ -105,7 +107,7 @@ class IOBox {
     }
 
 
-    method String recall(int step, int rp) {
+    method int recall(int step, int rp) {
         var int i;
         var String s;
 
@@ -137,7 +139,6 @@ class IOBox {
         }
 
         let s = LINBUF[rp];
-
         if ( (s.length()=0) & ~(rp=bp) ) {
             let rp = rp - step;
             if (~(rp < BUFSIZ)) {
