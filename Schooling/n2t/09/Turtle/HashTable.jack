@@ -1,4 +1,4 @@
-/* depends on Symbol.jack, Struct.jack */
+/* depends on Symbol.jack, Collection.jack */
 class HashTable {
 
     field int HASHSIZ;
@@ -12,7 +12,7 @@ class HashTable {
         let table = Array.new(HASHSIZ);
         let i = 0;
         while (i < HASHSIZ) {
-            let table[i] = Struct.new();
+            let table[i] = Collection.new();
             let i = i + 1;
         }
 
@@ -39,7 +39,7 @@ class HashTable {
 
     method int _lookup(String s) {
         var int i;
-        var Struct b;
+        var Collection b;
         var Symbol p;
 
         let b = table[hash(s)];
@@ -58,7 +58,7 @@ class HashTable {
 
     method Symbol lookup(String s) {
         var int i;
-        var Struct b;
+        var Collection b;
 
         let i = _lookup(s);
         if (i < 0) {
@@ -73,7 +73,7 @@ class HashTable {
     method void install(String name, int type, int val) {
         var int hashval;
         var String s;
-        var Struct b;
+        var Collection b;
         var Symbol p;
 
         let p = lookup(name);
@@ -94,7 +94,7 @@ class HashTable {
 
     method Symbol delete(String name) {
         var int i;
-        var Struct b;
+        var Collection b;
 
         let b = table[hash(name)];
 

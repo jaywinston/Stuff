@@ -135,7 +135,7 @@ class LibSym {
     }
 
 
-    function void _destroyList(Struct list) {
+    function void _destroyList(Collection list) {
         var Symbol p;
 
         while (list.length() > 0) {

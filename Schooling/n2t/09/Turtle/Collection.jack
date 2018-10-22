@@ -1,7 +1,7 @@
 // a general data structure with methods to implement stack, or queue
 /* todo: support list */
 
-class Struct {
+class Collection {
 
     static int VAL, NEXT, NODESIZ;
 
@@ -17,7 +17,7 @@ class Struct {
     }
 
 
-    constructor Struct new() {
+    constructor Collection new() {
         let tail = Array.new(NODESIZ);
         let tail[NEXT] = null;
         let head = tail;

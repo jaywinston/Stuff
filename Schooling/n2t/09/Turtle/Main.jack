@@ -14,7 +14,7 @@ class Main {
         do Screen.drawLine(0, 13, 509, 13);
 
         do Vector.init();
-        do Struct.init();
+        do Collection.init();
         do LibIO.init();
         do Lex.init();
         do Parse.init();

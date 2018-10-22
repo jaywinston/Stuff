@@ -3,7 +3,7 @@ class LibIO {
     static boolean noerr;
     static Array argv;
     static String cerrfs, serrfs;  /* error format strings */
-    static Struct que;
+    static Collection que;
     static IOBox term;
 
 
@@ -12,7 +12,7 @@ class LibIO {
         let argv = Array.new(1);
         let cerrfs = "unexpected token: %C";
         let serrfs = "unexpected token: %S";
-        let que = Struct.new();
+        let que = Collection.new();
         let term = IOBox.new(2, 1, 20, 30, 23, Str.MAXLEN());
         return;
     }
