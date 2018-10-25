@@ -47,7 +47,6 @@ class Parse {
 
 
     function Symbol next() {
-        var String s;
 
         do ARGV.setData(null);
 
@@ -56,8 +55,7 @@ class Parse {
             return null;
         }
 
-        let s = ARGV.tag();
-        do s.dispose();
+        do ARGV.setTag(null);
 
         return ARGV.data();
     }
