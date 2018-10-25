@@ -194,21 +194,19 @@ class LibSym {
                                                               // see Lex.init()
     function int CMD       () { return  1;                    }
     function int TTL       () { return  2;                    }
-    function int OP        () { return  (Lex.cclass(38)-1)
-                                           & ~LibSym.INTEX(); }  // 8
-    function int UOP       () { return  Lex.cclass(126)
-                                           & (~LibSym.BLOCK()
-                                              & ~LibSym.OP()); }  // 16
+    function int OP        () { return OP; } /* (Lex.cclass(38)-1)
+                                           & ~LibSym.INTEX(); } */ // 8
+    function int UOP       () { return UOP; }
 
     /* block type-class */
-    function int BLOCK     () { return Lex.cclass(123);       }  // 64
-    function int CMDLIN    () { return Lex.cclass(123) + 1;   }  // 65
-    function int FUNC      () { return Lex.cclass(123) + 2;   }  // 66
-    function int INTEX     () { return Lex.cclass(40);        }  // 80
-    function int STREX     () { return Lex.cclass(44);        }  // 96
+    function int BLOCK     () { return BLOCK;       }  // 64
+    function int CMDLIN    () { return BLOCK + 1;   }  // 65
+    function int FUNC      () { return BLOCK + 2;   }  // 66
+    function int INTEX     () { return INTEX;        }  // 80
+    function int STREX     () { return STREX;        }  // 96
 
-    function int STR       () { return Lex.cclass(34);        }  // 256
-    function int INT       () { return Lex.cclass(48);        }  // 8192
-    function int SYM       () { return Lex.cclass(65);        }  // 16384
+    function int STR       () { return STR;        }  // 256
+    function int INT       () { return INT;        }  // 8192
+    function int SYM       () { return SYM;        }  // 16384
 
 }
