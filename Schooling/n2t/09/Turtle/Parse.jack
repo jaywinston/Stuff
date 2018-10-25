@@ -1,7 +1,7 @@
 class Parse {
 
     static int EQ, EQOP, BLANK, DELIM, BLOCK, END, EOS, CMDLIN, INT, COMMA,
-                INTEX, OP, STR, STREX, SYM, UOP, LPAREN, RPAREN;
+                INTEX, OP, STR, STREX, SYM, UOP, LPAREN, RPAREN, NOLGL;
     static int CLASSMASK;
     static String PS1, PS2;
     static Symbol ARGV;
@@ -26,6 +26,7 @@ class Parse {
         let UOP = LibSym.UOP();
         let LPAREN = Lex.cclass(40);
         let RPAREN = Lex.cclass(41);
+        let NOLGL = Lex.NOLGL();
 
         let CLASSMASK = -16;
 
@@ -85,13 +86,20 @@ class Parse {
         var String t;
         var Symbol extok, next;
 
+/*
         if ( (i<0) | ~(i<s.length()) ) {
             return -1;
         }
+*/
 
         let i = Str.lskip(s, 32, i);
         let cclass = Parse.cclass(s, i) & CLASSMASK;
         while (~(cclass = EOS)) {
+
+            if (cclass = NOLGL) {
+                do Parse.mkpackage(argv, s);
+                return -1;
+            }
 
             if (cclass = END) {
                 do Parse.mkpackage(argv, s);
@@ -139,9 +147,11 @@ class Parse {
                 return -1;
             }}}}}
 
+/*
             if (i < 0) {
                 return i;
             }
+*/
 
             let cclass = Parse.cclass(s, i) & CLASSMASK;
             if (cclass = INTEX) {
@@ -159,11 +169,12 @@ class Parse {
                 do extok.setTag(null);
                 let next = extok;
             }}
-
+/*
             if (i < 0) {
                 do Parse.mkpackage(argv, s);
                 return i;
             }
+*/
 
             do argv.append(next);
 
@@ -398,7 +409,6 @@ class Parse {
         }
 
         let i = Str.lskip(s, 32, i+1);
-
         if ( (Parse.cclass(s, i)&(END|EOS)) = 0 ) {
             let cmdlin = Symbol.new(null, CMDLIN, null);
             let i = Parse.cmdlin(s, cmdlin, i);
