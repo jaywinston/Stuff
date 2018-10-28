@@ -16,9 +16,9 @@
 //         blank character    |    |   |   |   |   |   |   |   |   |   |   |
 //                          EOS    |   |   |   |   |   |   |   |   |   |   |  
 //                     illegal index   |   |   |   |   |   |   |   |   |   |
-//                                unused   |   |   |   |   |   |   |   |   |
+//                                  list   |   |   |   |   |   |   |   |   |
 //                            string literal   |   |   |   |   |   |   |   |
-//                                     block end   |   |   |   |   |   |   |
+//                                           end   |   |   |   |   |   |   |
 //                                             block   |   |   |   |   |   |
 //                                                 |\ /   /|   |   |   |   |
 //                                   string expression   / |   |   |   |   |
@@ -88,8 +88,10 @@ class Lex {
         let CTAB[ 42] =    93;  // *
         let CTAB[ 47] =    93;  // /
         let CTAB[ 44] =    96;  // ,
-        let CTAB[125] =   128;  // }
+        let CTAB[125] =   192;  // }
         let CTAB[ 34] =   256;  // "
+        let CTAB[ 91] =   512;  // [
+        let CTAB[ 93] =   640;  // ]
         let CTAB[ 32] =  4096;  //  
 
         let CTAB[NOLGL_MAP] = 1024;  // illegal index

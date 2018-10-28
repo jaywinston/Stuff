@@ -1,7 +1,7 @@
 class LibSym {
 
-    static int CMD, TTL, BLOCK, CMDLIN, FUNC, INTEX, STREX, STR, INT, SYM,
-               OP, UOP;
+    static int CMD, TTL, BLOCK, CMDLIN, FUNC, INTEX, LIST, STREX, STR, INT,
+               SYM, OP, UOP;
 
     function void init() {
 
@@ -15,7 +15,7 @@ class LibSym {
       let STR    = Lex.cclass(34);          // 256
       let INT    = Lex.cclass(48);          // 8192
       let SYM    = Lex.cclass(65);          // 16384
-      let OP     = Lex.cclass(38)-1 & ~INTEX;         // 8
+      let OP     = (Lex.cclass(38)-1) & ~INTEX;         // 8
       let UOP    = Lex.cclass(126) & (~BLOCK & ~OP);  // 16
 
       return;
@@ -191,22 +191,22 @@ class LibSym {
         return sym.meta() & (LibSym.STR() | LibSym.BLOCK());
     }
 
-                                                              // see Lex.init()
-    function int CMD       () { return  1;                    }
-    function int TTL       () { return  2;                    }
-    function int OP        () { return OP; } /* (Lex.cclass(38)-1)
-                                           & ~LibSym.INTEX(); } */ // 8
-    function int UOP       () { return UOP; }
+                                              // see Lex.init()
+    function int CMD() { return CMD; }
+    function int TTL() { return TTL; }
+    function int OP() { return OP; }
+    function int UOP() { return UOP; }
 
     /* block type-class */
-    function int BLOCK     () { return BLOCK;       }  // 64
-    function int CMDLIN    () { return BLOCK + 1;   }  // 65
-    function int FUNC      () { return BLOCK + 2;   }  // 66
-    function int INTEX     () { return INTEX;        }  // 80
-    function int STREX     () { return STREX;        }  // 96
+    function int LIST() { return LIST; }
+    function int BLOCK() { return BLOCK; }    // 64
+    function int CMDLIN() { return CMDLIN; }  // 65
+    function int FUNC() { return FUNC; }      // 66
+    function int INTEX() { return INTEX; }    // 80
+    function int STREX() { return STREX; }    // 96
 
-    function int STR       () { return STR;        }  // 256
-    function int INT       () { return INT;        }  // 8192
-    function int SYM       () { return SYM;        }  // 16384
+    function int STR() { return STR; }        // 256
+    function int INT() { return INT; }        // 8192
+    function int SYM() { return SYM; }        // 16384
 
 }
