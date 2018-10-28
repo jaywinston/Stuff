@@ -72,7 +72,7 @@ class Lex {
             let i = i + 1;
         }
  
-        let CTAB[123] =    64;  // {
+        let CTAB[ 91] =    64;  // [
         let CTAB[ 40] =    80;  // (
         let CTAB[ 41] =    81;  // )
         let CTAB[ 38] =    89;  // &
@@ -88,10 +88,10 @@ class Lex {
         let CTAB[ 42] =    93;  // *
         let CTAB[ 47] =    93;  // /
         let CTAB[ 44] =    96;  // ,
-        let CTAB[125] =   192;  // }
+        let CTAB[123] =   192;  // {
         let CTAB[ 34] =   256;  // "
-        let CTAB[ 91] =   512;  // [
-        let CTAB[ 93] =   640;  // ]
+        let CTAB[ 93] =   320;  // ]
+        let CTAB[125] =   448;  // }
         let CTAB[ 32] =  4096;  //  
 
         let CTAB[NOLGL_MAP] = 1024;  // illegal index

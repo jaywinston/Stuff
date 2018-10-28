@@ -1,7 +1,7 @@
 class Exec {
 
     static int bottom, left, right, top;
-    static int CMD, CMDLIN, FUNC, INT, STR, TTL;
+    static int CMD, CMDLIN, FUNC, INT, LIST, STR, TTL;
     static int ASSIGN, BLOCK, CLEAR, DIR, DISPOSE, FORWARD, FUNCTION, IF,
         PENDOWN, PENUP, POSX, POSY, PRINT, REPEAT, TURNLEFT, TURNRIGHT,
         TURTLE, QUIT;
@@ -58,6 +58,7 @@ class Exec {
         let CMDLIN  = LibSym.CMDLIN();
         let FUNC    = LibSym.FUNC();
         let INT     = LibSym.INT();
+        let LIST    = LibSym.LIST();
         let STR     = LibSym.STR();
         let TTL     = LibSym.TTL();
 
@@ -646,19 +647,48 @@ class Exec {
 
 
     function void enqueue(Symbol sym) {
+        var Array a;
         var String s;
+        var Collection list;
+        var Symbol p;
 
         if (sym = null) {
             return;
         }
 
+        let a = Array.new(1);
         if (sym.meta() = STR) {
-            do LibIO.put(sym.data());
+            let s = "'%S'";
+            let a[0] = sym.data();
+            do LibIO.put(Str.format(s, a));
+            do s.dispose();
         } else { if (sym.meta() = INT) {
             let s = String.new(6);
             do s.setInt(sym.data());
             do LibIO.put(s);
-        }}
+        } else { if (sym.meta() = LIST) {
+            let list = sym.data();
+            do LibIO.put("[");
+            while (list.length() > 0) {
+                let p = Eval.arg(list.pop());
+                if (p.meta() = INT) {
+                    let s = " %D";
+                    let a[0] = p.data();
+                    do LibIO.put(Str.format(s, a));
+                    do s.dispose();
+                } else { if (p.meta() = STR) {
+                    let s = " '%S'";
+                    let a[0] = p.data();
+                    do LibIO.put(Str.format(s, a));
+                    do s.dispose();
+                } else { if (p.meta() = LIST) {
+                    do Exec.enqueue(p.data());
+                }}}
+            }
+            do LibIO.put("]");
+            do s.dispose();
+        }}}
+        do a.dispose();
 
         do Exec.try(sym.next());
 

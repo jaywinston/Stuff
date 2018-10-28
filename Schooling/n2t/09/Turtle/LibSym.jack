@@ -7,6 +7,7 @@ class LibSym {
 
       let CMD    = 1;                    
       let TTL    = 2;                    
+      let LIST   = Lex.cclass(91);          // 64
       let BLOCK  = Lex.cclass(123);         // 64
       let CMDLIN = Lex.cclass(123) + 1;     // 65
       let FUNC   = Lex.cclass(123) + 2;     // 66
@@ -15,7 +16,7 @@ class LibSym {
       let STR    = Lex.cclass(34);          // 256
       let INT    = Lex.cclass(48);          // 8192
       let SYM    = Lex.cclass(65);          // 16384
-      let OP     = (Lex.cclass(38)-1) & ~INTEX;         // 8
+      let OP     = (Lex.cclass(38)-1) & ~INTEX;       // 8
       let UOP    = Lex.cclass(126) & (~BLOCK & ~OP);  // 16
 
       return;
@@ -188,10 +189,9 @@ class LibSym {
 
 
     function int typeClass(Symbol sym) {
-        return sym.meta() & (LibSym.STR() | LibSym.BLOCK());
+        return sym.meta() & (LibSym.STR() | LibSym.LIST());
     }
 
-                                              // see Lex.init()
     function int CMD() { return CMD; }
     function int TTL() { return TTL; }
     function int OP() { return OP; }
@@ -199,14 +199,14 @@ class LibSym {
 
     /* block type-class */
     function int LIST() { return LIST; }
-    function int BLOCK() { return BLOCK; }    // 64
-    function int CMDLIN() { return CMDLIN; }  // 65
-    function int FUNC() { return FUNC; }      // 66
-    function int INTEX() { return INTEX; }    // 80
-    function int STREX() { return STREX; }    // 96
+    function int BLOCK() { return BLOCK; }
+    function int CMDLIN() { return CMDLIN; }
+    function int FUNC() { return FUNC; }
+    function int INTEX() { return INTEX; }
+    function int STREX() { return STREX; }
 
-    function int STR() { return STR; }        // 256
-    function int INT() { return INT; }        // 8192
-    function int SYM() { return SYM; }        // 16384
+    function int STR() { return STR; }
+    function int INT() { return INT; }
+    function int SYM() { return SYM; }
 
 }

@@ -109,13 +109,16 @@ class Parse {
                 return i;
             }
 
-            if (cclass = BLOCK) {
+            if (cclass = LIST) {
+                let next = Symbol.new(null, LIST, null);
+                let i = Parse.list(s, next, i);
+                let s = next.tag();
+                do next.setTag(null);
+            } else { if (cclass = BLOCK) {
                 let next = Symbol.new(null, BLOCK, null);
                 let i = Parse.block(s, next, i);
                 let s = next.tag();
                 do next.setTag(null);
-            } else { if (cclass = LIST) {
-                /* todo: parse list */
             } else { if (cclass = INT) {
                 let t = String.new(s.length());
                 let i = Lex.token(s, t, i);
@@ -445,6 +448,29 @@ class Parse {
         do Parse.mkpackage(block, s);
 
         return i + 1;
+    }
+
+
+    /* temporary! */
+    function int list(String s, Symbol next, int i) {
+        var Collection list;
+        var Symbol p,q;
+
+        let list = Collection.new();
+        let i = Parse.cmdlin(s, next, i+1);
+        let s = next.tag();
+        do next.setTag(null);
+        let p = next.data();
+        while (~(p = null)) {
+            let q = p.next();
+            do p.setNext(null);
+            do list.append(p);
+            let p = q;
+        }
+        do next.setNext(list);
+        do Parse.mkpackage(next, s);
+
+        return i;
     }
 
 }
