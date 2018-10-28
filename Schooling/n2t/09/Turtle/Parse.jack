@@ -28,8 +28,8 @@ class Parse {
         let LPAREN = Lex.cclass(40);
         let RPAREN = Lex.cclass(41);
         let NOLGL = Lex.NOLGL();
-        let LIST = Lex.cclass(93);
-        let LEND = Lex.cclass(95);
+        let LIST = Lex.cclass(91);
+        let LEND = Lex.cclass(93);
 
         let CLASSMASK = -16;
 
