@@ -1,7 +1,8 @@
 class Parse {
 
-    static int EQ, EQOP, BLANK, DELIM, BLOCK, END, EOS, CMDLIN, INT, COMMA,
-                INTEX, OP, STR, STREX, SYM, UOP, LPAREN, RPAREN, NOLGL;
+    static int EQ, EQOP, BLANK, DELIM, BLOCK, BEND, EOS, CMDLIN, INT, COMMA,
+                INTEX, OP, STR, STREX, SYM, UOP, LPAREN, RPAREN, NOLGL,
+                LIST, LEND;
     static int CLASSMASK;
     static String PS1, PS2;
     static Symbol ARGV;
@@ -13,7 +14,7 @@ class Parse {
         let EQOP = Lex.cclass(60);
         let BLANK = Lex.cclass(32);
         let BLOCK = LibSym.BLOCK();
-        let END = Lex.cclass(125);
+        let BEND = Lex.cclass(125);
         let EOS = Lex.EOS();
         let CMDLIN = LibSym.CMDLIN();
         let INT = LibSym.INT();
@@ -27,6 +28,8 @@ class Parse {
         let LPAREN = Lex.cclass(40);
         let RPAREN = Lex.cclass(41);
         let NOLGL = Lex.NOLGL();
+        let LIST = Lex.cclass(93);
+        let LEND = Lex.cclass(95);
 
         let CLASSMASK = -16;
 
@@ -101,7 +104,7 @@ class Parse {
                 return -1;
             }
 
-            if (cclass = END) {
+            if ( (cclass=BEND) | (cclass=LEND) ) {
                 do Parse.mkpackage(argv, s);
                 return i;
             }
@@ -111,6 +114,8 @@ class Parse {
                 let i = Parse.block(s, next, i);
                 let s = next.tag();
                 do next.setTag(null);
+            } else { if (cclass = LIST) {
+                /* todo: parse list */
             } else { if (cclass = INT) {
                 let t = String.new(s.length());
                 let i = Lex.token(s, t, i);
@@ -145,7 +150,7 @@ class Parse {
                 do Parse.mkpackage(argv, s);
                 do LibIO.error("illegal character");
                 return -1;
-            }}}}}
+            }}}}}}
 
 /*
             if (i < 0) {
@@ -202,8 +207,8 @@ class Parse {
         let uop = queue.next() = 0;
         let cclass = Parse.cclass(s, i);
 
-        /* todo: should END be in exit cond? */
-        while ( (cclass & ((BLANK|COMMA)|(END|EOS))) = 0 ) {
+        /* todo: should BEND be in exit cond? */
+        while ( (cclass & ((BLANK|COMMA)|(BEND|EOS))) = 0 ) {
 
             if ( (cclass=INT) | ((cclass=SYM) | (cclass=BLOCK)) ) {
                 if (cclass = INT) {
@@ -409,7 +414,7 @@ class Parse {
         }
 
         let i = Str.lskip(s, 32, i+1);
-        if ( (Parse.cclass(s, i)&(END|EOS)) = 0 ) {
+        if ( (Parse.cclass(s, i)&(BEND|EOS)) = 0 ) {
             let cmdlin = Symbol.new(null, CMDLIN, null);
             let i = Parse.cmdlin(s, cmdlin, i);
             let s = cmdlin.tag();
@@ -424,7 +429,7 @@ class Parse {
         while (Parse.cclass(s, i) = EOS) {
             let s = LibIO.read(PS2);
             let i = Str.lskip(s, 32, 0);
-            if (~(Parse.cclass(s, i) = END)) {
+            if (~(Parse.cclass(s, i) = BEND)) {
                 let cmdlin = Symbol.new(s, CMDLIN, null);
                 let i = Parse.cmdlin(s, cmdlin, 0);
                 let s = cmdlin.tag();
