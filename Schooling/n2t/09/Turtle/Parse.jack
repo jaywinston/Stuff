@@ -59,8 +59,6 @@ class Parse {
             return null;
         }
 
-        do ARGV.setTag(null);
-
         return ARGV.data();
     }
 
@@ -88,12 +86,6 @@ class Parse {
         var int cclass;
         var String t;
         var Symbol extok, next;
-
-/*
-        if ( (i<0) | ~(i<s.length()) ) {
-            return -1;
-        }
-*/
 
         let i = Str.lskip(s, 32, i);
         let cclass = Parse.cclass(s, i) & CLASSMASK;
@@ -141,7 +133,7 @@ class Parse {
             } else { if (cclass = SYM) {
                 let t = String.new(s.length());
                 let i = Lex.token(s, t, i);
-                if ( (Parse.cclass(s, i) = EQ)  /* assignment? */
+                if ( (Parse.cclass(s, i) = EQ)
                         & (~(Parse.cclass(s, i-1) = EQOP)) ) {
                     let next = Symbol.new("ASSIGN", SYM, null);
                     do next.append(Symbol.new(t, SYM, null));
@@ -154,12 +146,6 @@ class Parse {
                 do LibIO.error("illegal character");
                 return -1;
             }}}}}}
-
-/*
-            if (i < 0) {
-                return i;
-            }
-*/
 
             let cclass = Parse.cclass(s, i) & CLASSMASK;
             if (cclass = INTEX) {
@@ -177,12 +163,6 @@ class Parse {
                 do extok.setTag(null);
                 let next = extok;
             }}
-/*
-            if (i < 0) {
-                do Parse.mkpackage(argv, s);
-                return i;
-            }
-*/
 
             do argv.append(next);
 
@@ -198,7 +178,7 @@ class Parse {
 
     function int intex(String s, Symbol queue, int i) {
         var boolean uop;
-        var int cclass, op;
+        var int MASK, cclass, op;
         var String t;
         var Symbol objbuf, stack, stackbuf;
 
@@ -206,12 +186,13 @@ class Parse {
             return -1;
         }
 
+        /* todo: should END be in exit cond? */
+        let MASK  = ((BLANK|COMMA)|(BEND|LEND))|EOS;
         let stack = Symbol.new(null, null, null);
         let uop = queue.next() = 0;
         let cclass = Parse.cclass(s, i);
 
-        /* todo: should BEND be in exit cond? */
-        while ( (cclass & ((BLANK|COMMA)|(BEND|EOS))) = 0 ) {
+        while ( (cclass&MASK) = 0 ) {
 
             if ( (cclass=INT) | ((cclass=SYM) | (cclass=BLOCK)) ) {
                 if (cclass = INT) {
@@ -220,7 +201,7 @@ class Parse {
                     let objbuf = Symbol.new(null, INT, t.intValue());
                     do t.dispose();
                 } else { if (cclass = SYM) {
-                    let t = String.new(5);
+                    let t = String.new(s.length());
                     let i = Lex.token(s, t, i);
                     let objbuf = Symbol.new(t, SYM, null);
                 } else { if (cclass = BLOCK) {
