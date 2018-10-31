@@ -102,10 +102,9 @@ class Parse {
             }
 
             if (cclass = LIST) {
-                let next = Symbol.new(null, LIST, null);
-                let i = Parse.list(s, next, i);
-                let s = next.tag();
-                do next.setTag(null);
+                do LibIO.error("not implemented");
+                do Parse.mkpackage(argv, s);
+                return -1;
             } else { if (cclass = BLOCK) {
                 let next = Symbol.new(null, BLOCK, null);
                 let i = Parse.block(s, next, i);
@@ -186,7 +185,6 @@ class Parse {
             return -1;
         }
 
-        /* todo: should END be in exit cond? */
         let MASK  = ((BLANK|COMMA)|(BEND|LEND))|EOS;
         let stack = Symbol.new(null, null, null);
         let uop = queue.next() = 0;
@@ -429,29 +427,6 @@ class Parse {
         do Parse.mkpackage(block, s);
 
         return i + 1;
-    }
-
-
-    /* temporary! */
-    function int list(String s, Symbol next, int i) {
-        var Collection list;
-        var Symbol p,q;
-
-        let list = Collection.new();
-        let i = Parse.cmdlin(s, next, i+1);
-        let s = next.tag();
-        do next.setTag(null);
-        let p = next.data();
-        while (~(p = null)) {
-            let q = p.next();
-            do p.setNext(null);
-            do list.append(p);
-            let p = q;
-        }
-        do next.setNext(list);
-        do Parse.mkpackage(next, s);
-
-        return i;
     }
 
 }
