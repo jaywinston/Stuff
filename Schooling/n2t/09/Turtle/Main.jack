@@ -38,7 +38,7 @@ class Main {
         while (running) {
             let argv = Parse.next();
             do Exec.try(argv);
-            do LibSym.destroyList(argv);
+            do LibSym.destroySymbol(argv.data());
         }
 
         return;

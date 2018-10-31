@@ -47,15 +47,16 @@ class Parse {
 
 
     function Symbol next() {
-        var collection argv;
+        var Symbol argv;
 
-        let argv = Collection.new();
+        let argv = Symbol.new(null, null, null);
 
         if (Parse.cmdlin(LibIO.read(PS1), argv, 0) < 0) {
-            do LibSym._destroyList(argv);
+            do LibSym.destroySymbol(argv);
             return null;
         }
 
+        return argv;
     }
 
 
@@ -78,7 +79,7 @@ class Parse {
     }
 
 
-    function int cmdlin(String s, Symbol argv, int i) {
+    function int cmdlin(String s, Collection argv, int i) {
         var int cclass;
         var String t;
         var Symbol extok, next;
@@ -88,18 +89,18 @@ class Parse {
         while (~(cclass = EOS)) {
 
             if (cclass = NOLGL) {
-                do Parse.mkpackage(argv, s);
+                do argv.push(s);
                 return -1;
             }
 
             if ( (cclass=BEND) | (cclass=LEND) ) {
-                do Parse.mkpackage(argv, s);
+                do argv.push(s);
                 return i;
             }
 
             if (cclass = LIST) {
                 do LibIO.error("not implemented");
-                do Parse.mkpackage(argv, s);
+                do argv.push(s);
                 return -1;
             } else { if (cclass = BLOCK) {
                 let next = Symbol.new(null, BLOCK, null);
@@ -171,7 +172,7 @@ class Parse {
     }
 
 
-    function int intex(String s, Symbol queue, int i) {
+    function int intex(String s, Collection queue, int i) {
         var boolean uop;
         var int MASK, cclass, op;
         var String t;
@@ -298,7 +299,7 @@ class Parse {
     }
 
 
-    function int strex(String s, Symbol next, int i) {
+    function int strex(String s, Collection next, int i) {
         var int cclass;
         var String t;
         var Symbol arg, intex;
@@ -384,7 +385,7 @@ class Parse {
     }
 
 
-    function int block(String s, Symbol block, int i) {
+    function int block(String s, Collection block, int i) {
         var Symbol cmdlin;
 
         if ( (i<0) | ~(i<s.length()) ) {
