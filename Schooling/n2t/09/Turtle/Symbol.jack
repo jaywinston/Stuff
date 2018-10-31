@@ -2,23 +2,20 @@
 
 class Symbol {
 
-    field int _meta, _data;
-    field String _name, _tag;
-    field Symbol _next;
+    field int meta, data;
+    field String tag;
 
-    constructor Symbol new(String name, int meta, int data) {
-        let _name = name;
-        let _tag  = name;
-        let _meta = meta;
-        let _data = data;
-        let _next = null;
+    constructor Symbol new(String t, int m, int d) {
+        let tag  = t;
+        let meta = m;
+        let data = d;
         return this;
     }
 
     method void dispose() {
         var String s;
 
-        let s = _name;
+        let s = tag;
         if (~(s = null)) {
             do s.dispose();
         }
@@ -28,62 +25,31 @@ class Symbol {
         return;
     }
 
-    /* todo: change to tag() */
     method int tag() {
-        return _name;
-    }
-
-    method int name() {
-        return _name;
+        return tag;
     }
 
     method int meta() {
-        return _meta;
+        return meta;
     }
 
     method int data() {
-        return _data;
-    }
-
-    method int next() {
-        return _next;
+        return data;
     }
 
     method void setTag(int tag) {
-        let _name = tag;
+        let tag = tag;
         return;
     }
 
-    method void setName(int name) {
-        let _name = name;
-        return;
-    }
 
     method void setMeta(int meta) {
-        let _meta = meta;
+        let meta = meta;
         return;
     }
 
     method void setData(int data) {
-        let _data = data;
-        return;
-    }
-
-    method void setNext(int next) {
-        let _next = next;
-        return;
-    }
-
-    method void append(Symbol o) {
-        var Symbol p;
-
-        let p = this;
-        while (~(p.next() = null)) {
-            let p = p.next();
-        }
-
-        do p.setNext(o);
-
+        let data = data;
         return;
     }
 

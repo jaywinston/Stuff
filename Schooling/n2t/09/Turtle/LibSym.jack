@@ -24,20 +24,20 @@ class LibSym {
 
 
     function Symbol copySym(Symbol sym) {
-        var int tclass;
+        var int type;
 
         if (sym = null) {
             return null;
         }
 
-        let tclass = LibSym.typeClass(sym) & 320;
+        let type = sym.meta() & (LIST|STR);
 
-        if (tclass = LibSym.STR()) {
+        if (type = STR) {
             return Symbol.new(Str.dup(sym.tag()), sym.meta(),
                               Str.dup(sym.data()));
         }
 
-        if (tclass = LibSym.BLOCK()) {
+        if (type = LIST) {
             return Symbol.new(Str.dup(sym.tag()), sym.meta(),
                               LibSym.copyList(sym.data()));
         }
@@ -46,19 +46,15 @@ class LibSym {
     }
 
 
-    function Symbol copyList(Symbol sym) {
-        var Symbol new;
+    function Collection copyList(Collection list) {
+        var int i;
+        var Collection new;
 
-        if (sym = null) {
-            return null;
-        }
-
-        let new = LibSym.copySym(sym);
-
-        let sym = sym.next();
-        while (~(sym = null)) {
-            do new.append(LibSym.copySym(sym));
-            let sym = sym.next();
+        let new = Collection.new();
+        let i = 0;
+        while (i < list.length()) {
+            do new.append(LibSym.copySym(list.nth(i)));
+            let i = i + 1;
         }
 
         return new;
@@ -66,7 +62,7 @@ class LibSym {
 
 
     function void destroySym(Symbol sym) {
-        var int tclass;
+        var int type;
         var String s;
 
         if (sym = null) {
@@ -79,55 +75,13 @@ class LibSym {
             do s.dispose();
         }
 
-        let tclass = LibSym.typeClass(sym);
+        let type = sym.meta() & (LIST|STR);
 
-        if (tclass = LibSym.STR()) {
-            let s = sym.data();
-            do s.dispose();
-        } else { if (tclass = LibSym.BLOCK()) {
+        if (type = LIST) {
             do LibSym.destroyList(sym.data());
-        }}
-
-        do sym.dispose();
-
-        return;
-    }
-
-
-    function void destroyList(Symbol sym) {
-        var Symbol next;
-
-        while (~(sym = null)) {
-            let next = sym.next();
-            do LibSym.destroySym(sym);
-            let sym = next;
-        }
-
-        return;
-    }
-
-
-    function void _destroySym(Symbol sym) {
-        var int tclass;
-        var String s;
-
-        if (sym = null) {
-            return;
-        }
-
-        let s = sym.tag();
-
-        if (~(s = null)) {
-            do s.dispose();
-        }
-
-        let tclass = LibSym.typeClass(sym);
-
-        if (tclass = LibSym.STR()) {
+        } else { if (type = STR) {
             let s = sym.data();
             do s.dispose();
-        } else { if (tclass = LibSym.BLOCK()) {
-            do LibSym._destroyList(sym.data());
         }}
 
         do sym.dispose();
@@ -136,12 +90,10 @@ class LibSym {
     }
 
 
-    function void _destroyList(Collection list) {
-        var Symbol p;
+    function void destroyList(Collection list) {
 
         while (list.length() > 0) {
-            let p = list.pop();
-            do LibSym._destroySym(p);
+            do LibSym.destroySym(list.pop());
         }
 
         do list.dispose();
@@ -155,7 +107,7 @@ class LibSym {
 
         let i = 0;
         while (i < ht.hashSize()) {
-            do LibSym._destroyList(ht.bucket(i));
+            do LibSym.destroyList(ht.bucket(i));
             let i = i + 1;
         }
 
@@ -174,11 +126,11 @@ class LibSym {
         if (p = null) {
             do ht.install(Str.dup(name), type, value);
         } else {
-            if (p.meta() = LibSym.STR()) {
+            if (p.meta() = FUNC) {
+                do LibSym.destroyList(p.data());
+            } else { if (p.meta() = STR) {
                 let s = p.data();
                 do s.dispose();
-            } else { if (p.meta() = LibSym.FUNC()) {
-                do LibSym.destroyList(p.data());
             }}
             do p.setMeta(type);
             do p.setData(value);
@@ -188,23 +140,16 @@ class LibSym {
     }
 
 
-    function int typeClass(Symbol sym) {
-        return sym.meta() & (LibSym.STR() | LibSym.LIST());
-    }
-
     function int CMD() { return CMD; }
     function int TTL() { return TTL; }
     function int OP() { return OP; }
     function int UOP() { return UOP; }
-
-    /* block type-class */
     function int LIST() { return LIST; }
     function int BLOCK() { return BLOCK; }
     function int CMDLIN() { return CMDLIN; }
     function int FUNC() { return FUNC; }
     function int INTEX() { return INTEX; }
     function int STREX() { return STREX; }
-
     function int STR() { return STR; }
     function int INT() { return INT; }
     function int SYM() { return SYM; }
