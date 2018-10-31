@@ -90,8 +90,8 @@ class Lex {
         let CTAB[ 44] =    96;  // ,
         let CTAB[123] =   192;  // {
         let CTAB[ 34] =   256;  // "
-        let CTAB[ 93] =   320;  // ]
-        let CTAB[125] =   448;  // }
+        let CTAB[ 93] =   128;  // ]
+        let CTAB[125] =   384;  // }
         let CTAB[ 32] =  4096;  //  
 
         let CTAB[NOLGL_MAP] = 1024;  // illegal index
