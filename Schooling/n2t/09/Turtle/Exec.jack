@@ -327,13 +327,7 @@ class Exec {
 
 
     function Symbol dir(Symbol arg) {
-        var Symbol p;
-
-        let p = Symbol.new(null, INT, t.direction());
-
-        do Exec.try(arg);
-
-        return p;
+        return Symbol.new(null, INT, t.direction());
     }
 
 
@@ -386,8 +380,6 @@ class Exec {
         do tt.dispose();
         do Eval.install(arg.name(), null, null);
 
-        do Exec.try(arg.next());
-
         return;
     }
 
@@ -411,8 +403,6 @@ class Exec {
         }
 
         do t.forward(arg.data());
-
-        do Exec.try(arg.next());
 
         return;
     }
@@ -480,44 +470,24 @@ class Exec {
 
 
     function void doPendown(Symbol arg) {
-
         do t.pendown();
-
-        do Exec.try(arg);
-
         return;
     }
 
 
     function void doPenup(Symbol arg) {
-
         do t.penup();
-
-        do Exec.try(arg);
-
         return;
     }
 
 
     function Symbol posx(Symbol arg) {
-        var int x;
-
-        let x = t.x() - ((left+right)/2);
-
-        do Exec.try(arg);
-
-        return Symbol.new(null, INT, x);
+        return Symbol.new(null, INT, t.x() - ((left+right)/2));
     }
 
 
     function Symbol posy(Symbol arg) {
-        var int y;
-
-        let y = -(t.y() - ((top+bottom)/2));
-
-        do Exec.try(arg);
-
-        return Symbol.new(null, INT, y);
+        return Symbol.new(null, INT, -(t.y() - ((top+bottom)/2)));
     }
 
 
@@ -538,8 +508,6 @@ class Exec {
         do Exec.hideAll();
         do tb.print(arg.data());
         do Exec.showAll();
-
-        do Exec.try(arg.next());
 
         return;
     }
@@ -621,28 +589,23 @@ class Exec {
 
 
     function void doTurnleft(Symbol arg) {
-
         do Eval.arg(arg);
         do t.turnleft(arg.data());
-        do Exec.try(arg.next());
-
         return;
     }
 
 
     function void doTurnright(Symbol arg) {
-
         do Eval.arg(arg);
         do t.turnright(arg.data());
-        do Exec.try(arg.next());
-
         return;
     }
 
 
-    function void doQuit(Symbol arg) {
+    /* todo: fix this */
+    function Symbol doQuit(Symbol arg) {
         do Main.stop();
-        return;
+        return Symbol.new(null, CMD, QUIT);
     }
 
 

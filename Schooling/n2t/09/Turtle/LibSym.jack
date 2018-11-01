@@ -5,21 +5,19 @@ class LibSym {
 
     function void init() {
 
-      let CMD    = 1;                    
-      let TTL    = 2;                    
-      let LIST   = Lex.cclass(91);          // 64
-      let BLOCK  = Lex.cclass(123);         // 64
-      let CMDLIN = Lex.cclass(123) + 1;     // 65
-      let FUNC   = Lex.cclass(123) + 2;     // 66
-      let INTEX  = Lex.cclass(40);          // 80
-      let STREX  = Lex.cclass(44);          // 96
-      let STR    = Lex.cclass(34);          // 256
-      let INT    = Lex.cclass(48);          // 8192
-      let SYM    = Lex.cclass(65);          // 16384
-      let OP     = (Lex.cclass(38)-1) & ~INTEX;       // 8
-      let UOP    = Lex.cclass(126) & (~BLOCK & ~OP);  // 16
+        let LIST   = Lex.cclass(91);          // 64
+        let BLOCK  = Lex.cclass(123);         // 64
+        let CMDLIN = Lex.cclass(123) + 1;     // 65
+        let FUNC   = Lex.cclass(123) + 2;     // 66
+        let INTEX  = Lex.cclass(40);          // 80
+        let STREX  = Lex.cclass(44);          // 96
+        let STR    = Lex.cclass(34);          // 256
+        let INT    = Lex.cclass(48);          // 8192
+        let SYM    = Lex.cclass(65);          // 16384
+        let OP     = (Lex.cclass(38)-1) & ~INTEX;       // 8
+        let UOP    = Lex.cclass(126) & (~BLOCK & ~OP);  // 16
 
-      return;
+        return;
     }
 
 
