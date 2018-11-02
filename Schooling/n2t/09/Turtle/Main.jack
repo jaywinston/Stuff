@@ -1,6 +1,8 @@
 class Main {
 
     static boolean running;
+    static int QUIT;
+    static int INT, STR;
 
 
     function void main() {
@@ -22,6 +24,10 @@ class Main {
         do Eval.init();
         do Exec.init(2, 32, 20, 31);
 
+        let QUIT = Exec.QUIT();
+        let INT = LibSym.INT();
+        let STR = LibSym.STR();
+
         do Main.run();
 
         // todo: disposes
@@ -31,29 +37,31 @@ class Main {
 
 
     function void run() {
-        var Symbol argv;
+        var Collection argv;
+        var Symbol syscall;
 
         let running = true;
 
         while (running) {
             let argv = Parse.next();
-            do Main.try(argv);
-            do LibSym.destroySymbol(argv);
+            let syscall = Main.try(argv);
+            let running = syscall.data() = QUIT;
+            do syscall.dispose();
+            do LibSym.destroyList(argv);
         }
 
         return;
     }
 
 
-    function void try(Symbol argv) {
+    function Symbol try(Collection argv) {
         var String s;
         var Symbol ret;
 
         if (LibIO.noerr()) {  /* This is the check for parse errors. */
             let ret = Exec.exec(argv);
-            do LibIO.fixBorders();
             if (LibIO.noerr()) {
-                do Exec.enqueue(ret);
+                do Main.enqueue(ret);
             }
             do LibSym.destroyList(ret);
         }
@@ -67,12 +75,36 @@ class Main {
             do s.dispose();
         }
 
-        return;
+        return ret;
     }
 
 
-    function void stop() {
-        let running = false;
+    function void enqueue(Symbol sym) {
+        var Array a;
+        var String s;
+        var Collection list;
+        var Symbol p;
+
+        if (sym = null) {
+            return;
+        }
+
+        let a = Array.new(1);
+
+        if (sym.meta() = STR) {
+            let s = "'%S'";
+            let a[0] = sym.data();
+            do LibIO.put(Str.format(s, a));
+            do s.dispose();
+        } else { if (sym.meta() = INT) {
+            let s = String.new(6);
+            do s.setInt(sym.data());
+            do LibIO.put(s);
+            do s.dispose();
+        }}
+
+        do a.dispose();
+
         return;
     }
 

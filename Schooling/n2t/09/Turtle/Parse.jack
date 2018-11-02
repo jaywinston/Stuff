@@ -5,6 +5,7 @@ class Parse {
                 LIST, LEND;
     static int CLASSMASK;
     static String PS1, PS2;
+    static Symbol ARGV;
 
 
     function void init() {
@@ -35,6 +36,7 @@ class Parse {
         let PS1 = ">";
         let PS2 = "|";
 
+        let ARGV = Symbbol.new(null, null, null);
         return;
     }
 
@@ -42,24 +44,14 @@ class Parse {
     function void dispose() {
         do PS1.dispose();
         do PS2.dispose();
+        do LibSym.destroySymbol(ARGV);
         return;
     }
 
 
-    function Symbol next() {
-        var Symbol argv;
-
-        let argv = Symbol.new(null, null, null);
-
-        if (Parse.cmdlin(LibIO.read(PS1), argv, 0) < 0) {
-            do argv.setTag(null);
-            do LibSym.destroySymbol(argv);
-            return null;
-        }
-
-        do argv.setTag(null);
-
-        return argv;
+    function Collection next() {
+        do Parse.cmdlin(LibIO.read(PS1), ARGV, 0)
+        return ARGV.data();
     }
 
 
