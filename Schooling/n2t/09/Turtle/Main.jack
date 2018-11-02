@@ -37,8 +37,34 @@ class Main {
 
         while (running) {
             let argv = Parse.next();
-            do Exec.try(argv);
-            do LibSym.destroySymbol(argv.data());
+            do Main.try(argv);
+            do LibSym.destroySymbol(argv);
+        }
+
+        return;
+    }
+
+
+    function void try(Symbol argv) {
+        var String s;
+        var Symbol ret;
+
+        if (LibIO.noerr()) {  /* This is the check for parse errors. */
+            let ret = Exec.exec(argv);
+            do LibIO.fixBorders();
+            if (LibIO.noerr()) {
+                do Exec.enqueue(ret);
+            }
+            do LibSym.destroyList(ret);
+        }
+
+        /* Error messages are queued. */
+        do LibIO.clearerr();
+
+        while (LibIO.isqueued()) {
+            let s = LibIO.get();
+            do LibIO.echo(s);
+            do s.dispose();
         }
 
         return;

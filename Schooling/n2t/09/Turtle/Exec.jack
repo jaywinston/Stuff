@@ -53,14 +53,14 @@ class Exec {
     function void initKWs() {
         var int i;
 
-        let BLOCK   = LibSym.BLOCK();
-        let CMD     = LibSym.CMD();
-        let CMDLIN  = LibSym.CMDLIN();
-        let FUNC    = LibSym.FUNC();
-        let INT     = LibSym.INT();
-        let LIST    = LibSym.LIST();
-        let STR     = LibSym.STR();
-        let TTL     = LibSym.TTL();
+        let BLOCK = LibSym.BLOCK();
+        let CMD = LibSym.CMD();
+        let CMDLIN = LibSym.CMDLIN();
+        let FUNC = LibSym.FUNC();
+        let INT = LibSym.INT();
+        let LIST = LibSym.LIST();
+        let STR = LibSym.STR();
+        let TTL = LibSym.TTL();
 
         let ASSIGN    =  1;
         let CLEAR     =  2;
@@ -120,32 +120,6 @@ class Exec {
         do tb.clear();
         do turtles.setData(Exec.defaultTurtle());
         let t = tt;
-
-        return;
-    }
-
-
-    function void try(Symbol argv) {
-        var String s;
-        var Symbol ret;
-
-        if (LibIO.noerr()) {  /* This is the check for parse errors. */
-            let ret = Exec.exec(argv);
-            do Exec.fixBorders();
-            if (LibIO.noerr()) {
-                do Exec.enqueue(ret);
-            }
-            do LibSym.destroyList(ret);
-        }
-
-        /* Error messages are queued. */
-        do LibIO.clearerr();
-
-        while (LibIO.has()) {
-            let s = LibIO.get();
-            do LibIO.echo(s);
-            do s.dispose();
-        }
 
         return;
     }
@@ -655,16 +629,6 @@ class Exec {
 
         do Exec.try(sym.next());
 
-        return;
-    }
-
-
-    function void fixBorders() {
-        do Screen.setColor(false);
-        do Screen.drawRectangle(249, 14, 511, 19);
-        do Screen.drawRectangle(249, 14, 253, 244);
-        do Screen.drawRectangle(249, 244, 511, 248);
-        do Screen.drawRectangle(505, 14, 511, 248);
         return;
     }
 

@@ -29,7 +29,7 @@ class LibIO {
 
 
     function void put(int msg) {
-        do que.put(msg);
+        do que.append(msg);
         return;
     }
 
@@ -39,8 +39,8 @@ class LibIO {
     }
 
 
-    function boolean has() {
-        return que.has();
+    function boolean isqueued() {
+        return que.length() > 0;
     }
 
 
@@ -90,6 +90,16 @@ class LibIO {
 
     function String read(String ps) {
         return term.read(ps);
+    }
+
+
+    function void fixBorders() {
+        do Screen.setColor(false);
+        do Screen.drawRectangle(249, 14, 511, 19);
+        do Screen.drawRectangle(249, 14, 253, 244);
+        do Screen.drawRectangle(249, 244, 511, 248);
+        do Screen.drawRectangle(505, 14, 511, 248);
+        return;
     }
 
 }
