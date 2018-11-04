@@ -1,104 +1,22 @@
-// CTAB is an array of size 128.  It is used as something of a hashtable
-// in that it is indexed by a character.  Its values are a bitmap of the
-// character's type.  That bitmap is also used to implement arithmetic
-// operator precedence.  Most types are one-bit values.  Block types
-// and integer types have subtypes.  Block types are used by LibSym
-// list functions to recurse on the symbol's data.  Integer types are
-// used to announce an integer expression tree and afterwards, are masked
-// and used for arithmetic operator precedence.
-// 
-// The bitmap is:
-//   32768 16384 8192 4096 2048 1024 512 256 128  64  32  16   8   4   2   1
-//       |     |    |    |    |    |   |   |   |   |   |   |   |   |   |   |
-//  unused     |    |    |    |    |   |   |   |   |   |   |   |   |   |   |
-//  symbol token    |    |    |    |   |   |   |   |   |   |   |   |   |   |
-//      integer token    |    |    |   |   |   |   |   |   |   |   |   |   |
-//         blank character    |    |   |   |   |   |   |   |   |   |   |   |
-//                          EOS    |   |   |   |   |   |   |   |   |   |   |  
-//                     illegal index   |   |   |   |   |   |   |   |   |   |
-//                                  list   |   |   |   |   |   |   |   |   |
-//                            string literal   |   |   |   |   |   |   |   |
-//                                           end   |   |   |   |   |   |   |
-//                                             block   |   |   |   |   |   |
-//                                                 |\ /   /|   |   |   |   |
-//                                   string expression   / |   |   |   |   |
-//                                                 \    /  |   |   |   |   |
-//                                    integer expression   |   |   |   |   |
-//                                            unary operator   |   |   |   |
-//                                               binary operator   |   |   |
-//                                                                  \  |  /
-//                                                     opreator precedance
-//
-// String expressions are calls to the format function.
-// Integer expressions are compound expressions i.e. including one or
-// more operators.
-
 /**
  * Returns the index of the character immediately beyond the end of the token. 
  */
 class Lex {
 
-    static int HACK_CHARSET_SIZE;
-    static int EOS_MAP, NOLGL_MAP;
+    static char STRING_DLM, NOLGL_MAP, EOS_MAP;
     static int TOKEN_MASK;
     static Array CTAB;
 
 
-    function void init() {
-        var int i;
-
-        let HACK_CHARSET_SIZE = 152;
-
-        let EOS_MAP = HACK_CHARSET_SIZE;
-        let NOLGL_MAP = HACK_CHARSET_SIZE + 1;
-
-        let CTAB = Array.new(HACK_CHARSET_SIZE + 2);
-
-        let i = 0;
-        while (i < 128) {
-            let CTAB[i] = 0;
-            let i = i + 1;
-        }
-
-        let i = 32;
-        while (i < 127) {
-            let CTAB[i] = 16384;
-            let i = i + 1;
-        }
-
-        let i = 48;
-        while (i < 58) {
-            let CTAB[i] = 8192;
-            let i = i + 1;
-        }
- 
-        let CTAB[ 91] =    64;  // [
-        let CTAB[ 40] =    80;  // (
-        let CTAB[ 41] =    81;  // )
-        let CTAB[ 38] =    89;  // &
-        let CTAB[124] =    89;  // |
-        let CTAB[ 61] =    90;  // =
-        let CTAB[ 33] =    91;  // !
-        let CTAB[ 60] =    91;  // <
-        let CTAB[ 62] =    91;  // >
-        let CTAB[ 43] =    92;  // +
-        let CTAB[ 45] =    92;  // -
-        let CTAB[126] =    92;  // ~
-        let CTAB[ 37] =    93;  // %
-        let CTAB[ 42] =    93;  // *
-        let CTAB[ 47] =    93;  // /
-        let CTAB[ 44] =    96;  // ,
-        let CTAB[123] =   192;  // {
-        let CTAB[ 34] =   256;  // "
-        let CTAB[ 93] =   128;  // ]
-        let CTAB[125] =   384;  // }
-        let CTAB[ 32] =  4096;  //  
-
-        let CTAB[NOLGL_MAP] = 1024;  // illegal index
-        let CTAB[  EOS_MAP] = 2048;  // EOS
-
-        let TOKEN_MASK = CTAB[65] | CTAB[48];
-
+    /**
+     * ctab is a table mapping characters to bitmaps
+     */
+    function void init(Array ctab, int tm, char sdlm, char nolgl, char eos) {
+        let CTAB = ctab;
+        let TOKEN_MASK = tm;
+        let STRING_DLM = sdlm;
+        let NOLGL_MAP = nolgl;
+        let EOS_MAP = eos;
         return;
     }
 
@@ -153,7 +71,7 @@ class Lex {
 
             let c = s.charAt(i);
 
-            if (c = 34) {  /* success */
+            if (c = STRING_DLM) {  /* success */
                 return i + 1;  /* discard right quote */
             }
 

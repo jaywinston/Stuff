@@ -1,9 +1,54 @@
+// CTAB is an array of size 128.  It is used as something of a hashtable
+// in that it is indexed by a character.  Its values are a bitmap of the
+// character's type.  That bitmap is also used to implement arithmetic
+// operator precedence.  Most types are one-bit values.  Block types
+// and integer types have subtypes.  Block types are used by LibSym
+// list functions to recurse on the symbol's data.  Integer types are
+// used to announce an integer expression tree and afterwards, are masked
+// and used for arithmetic operator precedence.
+// 
+// The bitmap is:
+//   32768 16384 8192 4096 2048 1024 512 256 128  64  32  16   8   4   2   1
+//       |     |    |    |    |    |   |   |   |   |   |   |   |   |   |   |
+//  unused     |    |    |    |    |   |   |   |   |   |   |   |   |   |   |
+//  symbol token    |    |    |    |   |   |   |   |   |   |   |   |   |   |
+//      integer token    |    |    |   |   |   |   |   |   |   |   |   |   |
+//          string literal    |    |   |   |   |   |   |   |   |   |   |   |
+//                  white space    |   |   |   |   |   |   |   |   |   |   |  
+//                               EOS   |   |   |   |   |   |   |   |   |   |
+//                         illegal index   |   |   |   |   |   |   |   |   |
+//                                       end   |   |   |   |   |   |   |   |
+//                                                 |   |   |   |   |   |   |
+//                                                 |   |   |   |   |   |   |
+//                                                 |   |   |   |   |   |   |
+//                                                 |   |   |   |   |   |   |
+//                                                 |   |   |   |   |   |   |
+//                                              list   |   |   |   |   |   |
+//                                                 block   |   |   |   |   |
+//                                         string expression   |   |   |   |
+//                                 integer expression / operator   |   |   |
+//                                                                  \  |  /
+//                                                    operation precedance
+//
+// String expressions are calls to the format function.
+// Integer expressions are compound expressions i.e. including one or
+// more operators.
+
 class LibSym {
 
     static int CMD, TTL, BLOCK, CMDLIN, FUNC, INTEX, LIST, STREX, STR, INT,
                SYM, OP, UOP;
+    static int HACK_CHARSET_SIZE, EOS_MAP, NOLGL_MAP, CLASSMASK;
+
 
     function void init() {
+
+        /* magic numbers! */
+        let HACK_CHARSET_SIZE = 152;
+        let CLASSMASK = -8;
+
+        let EOS_MAP = HACK_CHARSET_SIZE;
+        let NOLGL_MAP = HACK_CHARSET_SIZE + 1;
 
         let LIST   = Lex.cclass(91);          // 64
         let BLOCK  = Lex.cclass(123);         // 64
@@ -19,6 +64,64 @@ class LibSym {
 
         return;
     }
+
+
+    function Array ctab() {
+        var int i;
+        var Array ctab;
+
+        let ctab = Array.new(HACK_CHARSET_SIZE + 2);
+
+        let i = 0;
+        while (i < 128) {
+            let ctab[i] = 0;
+            let i = i + 1;
+        }
+
+        let i = 32;
+        while (i < 127) {
+            let ctab[i] = 16384;
+            let i = i + 1;
+        }
+
+        let i = 48;
+        while (i < 58) {
+            let ctab[i] = 8192;
+            let i = i + 1;
+        }
+ 
+        let ctab[ 91] =   128;  // [
+        let ctab[ 40] =   144;  // (
+        let ctab[ 38] =    89;  // &
+        let ctab[124] =    89;  // |
+        let ctab[ 61] =    90;  // =
+        let ctab[ 33] =    91;  // !
+        let ctab[ 60] =    91;  // <
+        let ctab[ 62] =    91;  // >
+        let ctab[ 43] =   152;  // +
+        let ctab[ 45] =   152;  // -
+        let ctab[126] =   152;  // ~
+        let ctab[ 37] =   153;  // %
+        let ctab[ 42] =   153;  // *
+        let ctab[ 47] =   153;  // /
+        let ctab[ 44] =   160;  // ,
+        let ctab[123] =   192;  // {
+        let ctab[ 93] =   256;  // ]
+        let ctab[125] =   768;  // }
+        let ctab[ 41] =  1280;  // )
+        let ctab[ 32] =  2048;  //  
+        let ctab[ 34] =  4096;  // "
+
+        let ctab[NOLGL_MAP] =  512;  // illegal index
+        let ctab[  EOS_MAP] = 1024;  // EOS
+
+        return ctab;
+    }
+
+
+    function int TOKENMASK() { return CTAB[65] | CTAB[48]; }
+    function int CHARSETSIZE() { return HACK_CHARSET_SIZE; }
+    function int CLASSMASK() { return CLASSMASK; }
 
 
     function Symbol copySym(Symbol sym) {

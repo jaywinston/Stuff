@@ -18,8 +18,9 @@ class Main {
         do Vector.init();
         do Collection.init();
         do LibIO.init();
-        do Lex.init();
         do LibSym.init();
+        do Lex.init(LibSym.ctab(), LibSym.TOKENMASK(), 34,
+            LibSym.CHARSETSIZE()+1, LibSym.CHARSETSIZE());
         do Parse.init();
         do Eval.init();
         do Exec.init(2, 32, 20, 31);
