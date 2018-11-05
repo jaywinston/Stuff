@@ -3,7 +3,7 @@ class Parse {
     static int EQ, EQOP, BLANK, DELIM, BLOCK, BEND, EOS, CMDLIN, INT, COMMA,
                 INTEX, OP, STR, STREX, SYM, UOP, LPAREN, RPAREN, NOLGL,
                 LIST, LEND;
-    static int CLASSMASK;
+    static int CLASSMASK, OPMASK;
     static String PS1, PS2;
     static Symbol ARGV;
 
@@ -32,6 +32,7 @@ class Parse {
         let LEND = Lex.cclass(93);
 
         let CLASSMASK = LibSym.CLASSMASK();
+        let OPMASK = ~CLASSMASK;
 
         let PS1 = ">";
         let PS2 = "|";
@@ -50,7 +51,7 @@ class Parse {
 
 
     function Collection next() {
-        do Parse.cmdlin(LibIO.read(PS1), ARGV, 0)
+        do Parse.cmdlin(LibIO.read(PS1), ARGV, 0);
         return ARGV.data();
     }
 
@@ -186,7 +187,7 @@ class Parse {
         let MASK  = ((BLANK|COMMA)|(BEND|LEND))|EOS;
         let queue = Collection.new();
         let stack = Collection.new();
-        do stack.append(Symbol.new(null, null, null));
+        do stack.push(Symbol.new(null, null, null));
         if (pointer.data() = null) {
             let uop = true;
         } else {
@@ -200,7 +201,7 @@ class Parse {
             if (cclass = NOLGL) {
                 do LibSym.destroyList(stack);
                 return Parse.package(pointer, queue, s, -1);
-            )
+            }
 
             if ( (cclass=INT) | ((cclass=SYM) | (cclass=BLOCK)) ) {
                 if (cclass = INT) {
@@ -233,7 +234,7 @@ class Parse {
                 if (uop) {
                     let objbuf = Symbol.new(null, UOP, op);
                 } else {
-                    let objbuf = Symbol.new(null, Lex.cclass(op)&15, op);
+                    let objbuf = Symbol.new(null, Lex.cclass(op)&OPMASK, op);
                     if ( ((Lex.cclass(op)&EQ)=EQ) & (Parse.cclass(s, i)=EQ) ) {
                         do objbuf.setData((op*100) + 61);
                         let i = i + 1;
@@ -282,7 +283,7 @@ class Parse {
         }
 
         /* pop ops to queue */
-        while (stack.length() > 0)) {
+        while (stack.length() > 0) {
             if (stack.meta() = LPAREN) {
                 do LibIO.error("mismatched parentheses");
                 do LibSym.destroyList(stack);
@@ -305,7 +306,7 @@ class Parse {
     function int strex(String s, Symbol pointer, int i) {
         var int cclass;
         var String t;
-        var Symbol arg, intex;
+        var Symbol arg, intex, next;
 
         if ( (s=null) | (next=null) ) {
             return -1;
@@ -351,9 +352,8 @@ class Parse {
                 let t = String.new(s.length());
                 let i = Lex.string(s, t, i);
                 if (i < 0) {
-                    do Parse.mkpackage(next, t);
                     do LibIO.error("EOS while scanning string");
-                    return -1;
+                    return Parse.package(pointer, next, t, -1);
                 }
                 let arg = Symbol.new(null, STR, t);
             } else { if (cclass = SYM) {
@@ -382,18 +382,19 @@ class Parse {
             do next.append(arg);
         }
 
-        do Parse.mkpackage(next, s);
-
-        return i;
+        return Parse.package(pointer, next, s, i);
     }
 
 
     function int block(String s, Symbol pointer, int i) {
+        var Collection block;
         var Symbol cmdlin;
 
         if ( (i<0) | ~(i<s.length()) ) {
             return -1;
         }
+
+        let block = Collection.new();
 
         let i = Str.lskip(s, 32, i+1);
         if ( (Parse.cclass(s, i)&(BEND|EOS)) = 0 ) {
@@ -414,17 +415,15 @@ class Parse {
             if (~(Parse.cclass(s, i) = BEND)) {
                 let cmdlin = Symbol.new(s, CMDLIN, null);
                 let i = Parse.cmdlin(s, cmdlin, 0);
-                let s = cmdlin.tag();
-                do cmdlin.setTag(null);
-                if (i < 0) {
-                    do Parse.mkpackage(cmdlin, s);
-                    return i;
-                }
+                let s = Parse.tag(cmdlin);
                 do block.append(cmdlin);
+                if (i < 0) {
+                    return Parse.package(pointer, block, s, -1);
+                }
             }
         }
 
-        do Parse.mkpackage(block, s);
+        do Parse.package(pointer, block, s, i);
 
         return i + 1;
     }
