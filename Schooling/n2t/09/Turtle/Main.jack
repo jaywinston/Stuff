@@ -19,8 +19,14 @@ class Main {
         do Collection.init();
         do LibIO.init();
         do LibSym.init();
-        do Lex.init(LibSym.ctab(), LibSym.TOKENMASK(), 34,
-            LibSym.CHARSETSIZE()+1, LibSym.CHARSETSIZE());
+        do Lex.init(
+            LibSym.ctab(),
+            LibSym.TOKENMASK(),
+            34,
+            92,
+            LibIO.etab(),
+            LibSym.CHARSETSIZE(),
+            LibSym.CHARSETSIZE()+1);
         do Parse.init();
         do Eval.init();
         do Exec.init(2, 32, 20, 31);

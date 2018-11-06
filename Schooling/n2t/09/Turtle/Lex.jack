@@ -3,20 +3,23 @@
  */
 class Lex {
 
-    static char STRING_DLM, NOLGL_MAP, EOS_MAP;
+    static char ESC, NEWLINE, STRING_DLM, NOLGL_MAP, EOS_MAP;
     static int TOKEN_MASK;
-    static Array CTAB;
+    static Array CTAB, ESCTAB;
 
 
     /**
      * ctab is a table mapping characters to bitmaps
      */
-    function void init(Array ctab, int tm, char sdlm, char nolgl, char eos) {
+    function void init(Array ctab, int tm, char sdlm, char esc, Array etab,
+                       char eos, char nolgl) {
         let CTAB = ctab;
         let TOKEN_MASK = tm;
         let STRING_DLM = sdlm;
-        let NOLGL_MAP = nolgl;
+        let ESC = esc;
+        let ESCTAB = etab;
         let EOS_MAP = eos;
+        let NOLGL_MAP = nolgl;
         return;
     }
 
@@ -75,15 +78,12 @@ class Lex {
                 return i + 1;  /* discard right quote */
             }
 
-            if (c = 92) {
+            if (c = ESC) {
                 let i = i + 1;
-                if ( (i = s.length()) | ((i+1) = s.length()) ) {
+                if (~(i < s.length())) {
                     return -1;  /* EOS while scanning for quote */
                 }
-                let c = s.charAt(i);
-                if (c = 78) {
-                    let c = 128;
-                }
+                let c = Lex.escape(s.charAt(i));
             }
 
             do t.appendChar(c);
@@ -92,6 +92,23 @@ class Lex {
         }
 
         return -1;  /* EOS while scanning for quote */
+    }
+
+
+    function char escape(char c) {
+        var int i;
+        var Array et;
+
+        let i = 0;
+        while (~(ESCTAB[i] = null)) {
+            let et = ESCTAB[i];
+            if (et[0] = c) {
+                let c = et[1];
+            }
+            let i = i + 1;
+        }
+
+        return c;
     }
 
 

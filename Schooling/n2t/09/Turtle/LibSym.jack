@@ -11,24 +11,20 @@
 //   32768 16384 8192 4096 2048 1024 512 256 128  64  32  16   8   4   2   1
 //       |     |    |    |    |    |   |   |   |   |   |   |   |   |   |   |
 //  unused     |    |    |    |    |   |   |   |   |   |   |   |   |   |   |
-//  symbol token    |    |    |    |   |   |   |   |   |   |   |   |   |   |
-//      integer token    |    |    |   |   |   |   |   |   |   |   |   |   |
-//          string literal    |    |   |   |   |   |   |   |   |   |   |   |
-//                  white space    |   |   |   |   |   |   |   |   |   |   |  
-//                               EOS   |   |   |   |   |   |   |   |   |   |
-//                         illegal index   |   |   |   |   |   |   |   |   |
-//                                       end   |   |   |   |   |   |   |   |
-//                                                 |   |   |   |   |   |   |
-//                                                 |   |   |   |   |   |   |
-//                                                 |   |   |   |   |   |   |
-//                                                 |   |   |   |   |   |   |
-//                                                 |   |   |   |   |   |   |
-//                                              list   |   |   |   |   |   |
-//                                                 block   |   |   |   |   |
-//                                         string expression   |   |   |   |
+// illegal index    |    |    |    |   |   |   |   |   |   |   |   |   |   |
+//       symbol token    |    |    |   |   |   |   |   |   |   |   |   |   |
+//           integer token    |    |   |   |   |   |   |   |   |   |   |   |
+//               string literal    |   |   |   |   |   |   |   |   |   |   |
+//                             block   |   |   |   |   |   |   |   |   |   |  
+//                                unused   |   |   |   |   |   |   |   |   |
+//                                    unused   |   |   |   |   |   |   |   |
+//                                        unused   |   |   |   |   |   |   |
+//                                       white space   |   |   |   |   |   |
+//                                                   end   |   |   |   |   |
+//                                                      list   |   |   |   |
 //                                 integer expression / operator   |   |   |
-//                                                                  \  |  /
-//                                                    operation precedance
+//                                                                 |   |   |
+//                                                                 site use
 //
 // String expressions are calls to the format function.
 // Integer expressions are compound expressions i.e. including one or
@@ -42,6 +38,7 @@ class LibSym {
 
 
     function void init() {
+        var Array ctab;
 
         /* magic numbers! */
         let HACK_CHARSET_SIZE = 152;
@@ -50,17 +47,23 @@ class LibSym {
         let EOS_MAP = HACK_CHARSET_SIZE;
         let NOLGL_MAP = HACK_CHARSET_SIZE + 1;
 
-        let LIST   = Lex.cclass(91);          // 64
-        let BLOCK  = Lex.cclass(123);         // 64
-        let CMDLIN = Lex.cclass(123) + 1;     // 65
-        let FUNC   = Lex.cclass(123) + 2;     // 66
-        let INTEX  = Lex.cclass(40);          // 80
-        let STREX  = Lex.cclass(44);          // 96
-        let STR    = Lex.cclass(34);          // 256
-        let INT    = Lex.cclass(48);          // 8192
-        let SYM    = Lex.cclass(65);          // 16384
-        let OP     = (Lex.cclass(38)-1) & ~INTEX;       // 8
-        let UOP    = Lex.cclass(126) & (~BLOCK & ~OP);  // 16
+        let ctab = LibSym.ctab();
+
+        let CMD = 1;
+        let TTL = 2;
+        let LIST = ctab[91];
+        let CMDLIN = LIST + 1;
+        let FUNC = LIST + 2;
+        let BLOCK = ctab[123];
+        let SYM = ctab[65];
+        let INT = ctab[48];
+        let INTEX = ctab[40];
+        let OP = INTEX & ~LIST;
+        let UOP = ~CLASSMASK;
+        let STR = ctab[34];
+        let STREX = ctab[44];
+
+        do ctab.dispose();
 
         return;
     }
@@ -80,40 +83,40 @@ class LibSym {
 
         let i = 32;
         while (i < 127) {
-            let ctab[i] = 16384;
+            let ctab[i] = 8192;
             let i = i + 1;
         }
 
         let i = 48;
         while (i < 58) {
-            let ctab[i] = 8192;
+            let ctab[i] = 4096;
             let i = i + 1;
         }
  
-        let ctab[ 91] =   128;  // [
-        let ctab[ 40] =   144;  // (
-        let ctab[ 38] =    89;  // &
-        let ctab[124] =    89;  // |
-        let ctab[ 61] =    90;  // =
-        let ctab[ 33] =    91;  // !
-        let ctab[ 60] =    91;  // <
-        let ctab[ 62] =    91;  // >
-        let ctab[ 43] =   152;  // +
-        let ctab[ 45] =   152;  // -
-        let ctab[126] =   152;  // ~
-        let ctab[ 37] =   153;  // %
-        let ctab[ 42] =   153;  // *
-        let ctab[ 47] =   153;  // /
-        let ctab[ 44] =   160;  // ,
-        let ctab[123] =   192;  // {
-        let ctab[ 93] =   256;  // ]
-        let ctab[125] =   768;  // }
-        let ctab[ 41] =  1280;  // )
-        let ctab[ 32] =  2048;  //  
-        let ctab[ 34] =  4096;  // "
+        let ctab[ 91] =    16;  // [
+        let ctab[ 40] =    24;  // (
+        let ctab[ 38] =    25;  // &
+        let ctab[124] =    25;  // |
+        let ctab[ 61] =    26;  // =
+        let ctab[ 33] =    26;  // !
+        let ctab[ 60] =    26;  // <
+        let ctab[ 62] =    26;  // >
+        let ctab[ 43] =    27;  // +
+        let ctab[ 45] =    27;  // -
+        let ctab[126] =    27;  // ~
+        let ctab[ 37] =    28;  // %
+        let ctab[ 42] =    28;  // *
+        let ctab[ 47] =    28;  // /
+        let ctab[ 93] =    32;  // ]
+        let ctab[ 41] =    40;  // )
+        let ctab[ 32] =    64;  //  
+        let ctab[123] =  1040;  // {
+        let ctab[125] =  1056;  // }
+        let ctab[ 34] =  2048;  // "
+        let ctab[ 44] =  2064;  // ,
 
-        let ctab[NOLGL_MAP] =  512;  // illegal index
-        let ctab[  EOS_MAP] = 1024;  // EOS
+        let ctab[  EOS_MAP] =  8224;  // EOS
+        let ctab[NOLGL_MAP] = 16384;  // illegal index
 
         return ctab;
     }
@@ -165,25 +168,24 @@ class LibSym {
     function void destroySym(Symbol sym) {
         var int type;
         var String s;
+        var Turtle t;
 
         if (sym = null) {
             return;
         }
 
-        let s = sym.tag();
+        /* OP is here to disambiguate TTL */
+        let type = sym.meta() & ((LIST|STR)|(OP|TTL));
 
-        if (~(s = null)) {
-            do s.dispose();
-        }
-
-        let type = sym.meta() & (LIST|STR);
-
-        if (type = LIST) {
+        if ( (type&LIST) = LIST ) {  /* STREX == LIST | STR */
             do LibSym.destroyList(sym.data());
         } else { if (type = STR) {
             let s = sym.data();
             do s.dispose();
-        }}
+        } else { if (type = TTL) {
+            let t = sym.data();
+            do t.dispose();
+        }}}
 
         do sym.dispose();
 

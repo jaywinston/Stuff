@@ -183,10 +183,6 @@ class Parse {
         var Collection stack, queue;
         var Symbol objbuf, stackbuf;
 
-        if ( (i<0) | ~(i<s.length()) ) {
-            return -1;
-        }
-
         let DLM  = (BLANK | COMMA) | (END | EOS);
         let queue = Collection.new();
         let stack = Collection.new();
@@ -206,7 +202,46 @@ class Parse {
                 return Parse.package(pointer, queue, s, -1);
             }
 
-            if ( (cclass=INT) | ((cclass=SYM) | (cclass=BLOCK)) ) {
+            if (cclass = LPAREN) {
+                do stack.push(Symbol.new(null, LPAREN, null));
+                let uop = true;
+                let i = i + 1;
+            } else { if (cclass = RPAREN) {
+                let stackbuf = stack.nth(0);
+                while (~(stackbuf.meta() = LPAREN)) {
+                    if (stackbuf.meta() = null) {
+                        do LibIO.error("mismatched parentheses");
+                        do LibSym.destroyList(stack);
+                        return Parse.package(pointer, queue, s, -1);
+                    }
+                    do queue.append(stack.pop());
+                    let stackbuf = stack.nth(0);
+                }
+                do stackbuf.dispose();
+                let uop = false;
+                let i = i + 1;
+            } else { if ( (cclass&OP) = OP ) {
+                let op = s.charAt(i);
+                let i = i + 1;
+                if (uop) {
+                    let objbuf = Symbol.new(null, UOP, op);
+                } else {
+                    let objbuf = Symbol.new(null, cclass&OPMASK, op);
+                    if (Parse.cclass(s, i) = EQ) {
+                        do objbuf.setData((op*100) + 61);
+                        let i = i + 1;
+                    }
+                    /* pop higher/equal ops to queue */
+                    let stackbuf = stack.nth(0);
+                    while ( ~(stackbuf.meta()<objbuf.meta())
+                            & ~(stackbuf.meta()=LPAREN) ) {
+                        do queue.append(stack.pop());
+                        let stackbuf = stack.nth(0);
+                    }
+                    let uop = true;
+                }
+                do stack.push(objbuf);
+            } else {
                 if (cclass = INT) {
                     let t = String.new(5);
                     let i = Lex.token(s, t, i);
@@ -230,52 +265,7 @@ class Parse {
                 }
 
                 let uop = false;
-
-            } else { if ( (cclass&OP) = OP ) {
-                let op = s.charAt(i);
-                let i = i + 1;
-                if (uop) {
-                    let objbuf = Symbol.new(null, UOP, op);
-                } else {
-                    let objbuf = Symbol.new(null, cclass&OPMASK, op);
-                    if ( ((Lex.cclass(op)&EQ)=EQ) & (Parse.cclass(s, i)=EQ) ) {
-                        do objbuf.setData((op*100) + 61);
-                        let i = i + 1;
-                    }
-                    /* pop higher/equal ops to queue */
-                    let stackbuf = stack.nth(0);
-                    while ( ~(stackbuf.meta()<objbuf.meta())
-                            & ~(stackbuf.meta()=LPAREN) ) {
-                        do queue.append(stack.pop());
-                        let stackbuf = stack.nth(0);
-                    }
-                    let uop = true;
-                }
-                do stack.push(objbuf);
-            } else { if (cclass = LPAREN) {
-                do stack.push(Symbol.new(null, LPAREN, null));
-                let uop = true;
-                let i = i + 1;
-            } else { if (cclass = RPAREN) {
-                if (stack.length() = 0) { /* mismatched parens */
-                    do LibIO.error("mismatched parentheses");
-                    do LibSym.destroyList(stack);
-                    return Parse.package(pointer, queue, s, -1);
-                }
-                let stackbuf = stack.nth(0);
-                while (~(stackbuf.meta() = LPAREN)) {
-                    if (stack.length() = 1) {
-                        do LibIO.error("mismatched parentheses");
-                        do LibSym.destroyList(stack);
-                        return Parse.package(pointer, queue, s, -1);
-                    }
-                    do queue.append(stack.pop());
-                    let stackbuf = stack.nth(0);
-                }
-                do stackbuf.dispose();
-                let uop = false;
-                let i = i + 1;
-            }}}}
+            }}}
 
             let cclass = Parse.cclass(s, i);
         }

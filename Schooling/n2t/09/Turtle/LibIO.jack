@@ -102,4 +102,24 @@ class LibIO {
         return;
     }
 
+
+    function Array etab() {
+        var int i;
+        var Array et, ct;
+
+        let et = Array.new(2);  /* magic number! */
+        let i = 0;
+
+        /* NEWLINE */
+        let ct = Array.new(2);
+        let ct[0] = 78;
+        let ct[1] = 128;
+        let et[i] = ct;
+        let i = i + 1;
+
+        let et[i] = null;
+
+        return et;
+    }
+
 }
