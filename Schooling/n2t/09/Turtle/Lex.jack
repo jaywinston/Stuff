@@ -4,17 +4,15 @@
 class Lex {
 
     static char ESC, NEWLINE, STRING_DLM, NOLGL_MAP, EOS_MAP;
-    static int TOKEN_MASK;
     static Array CTAB, ESCTAB;
 
 
     /**
      * ctab is a table mapping characters to bitmaps
      */
-    function void init(Array ctab, int tm, char sdlm, char esc, Array etab,
+    function void init(Array ctab, char sdlm, char esc, Array etab,
                        char eos, char nolgl) {
         let CTAB = ctab;
-        let TOKEN_MASK = tm;
         let STRING_DLM = sdlm;
         let ESC = esc;
         let ESCTAB = etab;
@@ -49,12 +47,12 @@ class Lex {
     }
 
 
-    function int token(String s, String t, int i) {
+    function int token(String s, String t, int mask, int i) {
         var char c;
 
         while (i < s.length()) {
             let c = Lex.getch(s, i);
-            if ( (Lex.cclass(c)&TOKEN_MASK) = 0 ) {
+            if ( (Lex.cclass(c)&mask) = 0 ) {
                 return i;
             }
             do t.appendChar(c);

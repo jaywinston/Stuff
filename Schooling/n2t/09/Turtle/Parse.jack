@@ -118,7 +118,7 @@ class Parse {
                 let s = Parse.tag(next);
             } else { if (cclass = INT) {
                 let t = String.new(s.length());
-                let i = Lex.token(s, t, i);
+                let i = Lex.token(s, t, TOKENMASK, i);
                 let next = Symbol.new(null, INT, t.intValue());
                 do t.dispose();
             } else { if (cclass = INTEX) {
@@ -136,7 +136,7 @@ class Parse {
                 let next = Symbol.new(null, STR, t);
             } else { if (cclass = SYM) {
                 let t = String.new(s.length());
-                let i = Lex.token(s, t, i);
+                let i = Lex.token(s, t, TOKENMASK, i);
                 let next = Symbol.new(t, SYM, null);
             } else {
                 do LibIO.error("illegal character");
@@ -244,12 +244,12 @@ class Parse {
             } else {
                 if (cclass = INT) {
                     let t = String.new(5);
-                    let i = Lex.token(s, t, i);
+                    let i = Lex.token(s, t, TOKENMASK, i);
                     do queue.append(Symbol.new(null, INT, t.intValue()));
                     do t.dispose();
                 } else { if (cclass = SYM) {
                     let t = String.new(s.length());
-                    let i = Lex.token(s, t, i);
+                    let i = Lex.token(s, t, TOKENMASK, i);
                     do queue.append(Symbol.new(t, SYM, null));
                 } else { if (cclass = BLOCK) {
                     let objbuf = Symbol.new(null, BLOCK, null);
@@ -323,7 +323,7 @@ class Parse {
                 do arg.setTag(null);
             } else { if (cclass = INT) {
                 let t = String.new(s.length());
-                let i = Lex.token(s, t, i);
+                let i = Lex.token(s, t, TOKENMASK, i);
                 let arg = Symbol.new(null, INT, t.intValue());
                 do t.dispose();
             } else { if (cclass = INTEX) {
@@ -341,7 +341,7 @@ class Parse {
                 let arg = Symbol.new(null, STR, t);
             } else { if (cclass = SYM) {
                 let t = String.new(s.length());
-                let i = Lex.token(s, t, i);
+                let i = Lex.token(s, t, TOKENMASK, i);
                 let arg = Symbol.new(t, SYM, null);
             }}}}}
 
