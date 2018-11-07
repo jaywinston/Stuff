@@ -1,56 +1,26 @@
 class Exec {
 
-    static int bottom, left, right, top;
-    static int CMD, CMDLIN, FUNC, INT, LIST, STR, TTL;
-    static int ASSIGN, BLOCK, CLEAR, DIR, DISPOSE, FORWARD, FUNCTION, IF,
-        PENDOWN, PENUP, POSX, POSY, PRINT, REPEAT, TURNLEFT, TURNRIGHT,
-        TURTLE, QUIT;
-    static Collection turtles;
-    static Turtle t;
+    static int BLOCK, CMD, CMDLIN, FUNC, INT, LIST, STR;
+    static int ASSIGN, FUNCTION, IF, REPEAT, QUIT;
+    static String IFS, ELSES;
 
 
     function void init() {
-        var Array b;
-        var int i, j, h, w;
-
-        let b = LibIO.boundaries();
-        let i = b[0];
-        let j = b[1];
-        let h = b[2];
-        let w = b[3];
-        let top = i * 11;
-        let left = j * 8;
-        let bottom = (i+h) * 11;
-        let right = (j+w) * 8;
-        let t = Exec.defaultTurtle();
-        let turtles = Collection.new(null, null, t);
-        do turtles.append(t);
-
+        let IFS = "IF";
+        let ELSES = "ELSE";
         do Exec.initKWs();
-
         return;
     }
 
 
     function void kill() {
-        while (turtles.length() > 0)) {
-            let t = turtles.pop();
-            do t.dispose();
-        }
-        do turtles.dispose();
+        do IFS.dispose();
+        do ELSES.dispose();
         return;
     }
 
 
-    function Turtle defaultTurtle() {
-        return Turtle.new(left + ((right-left)/2),
-                          top + ((bottom-top)/2),
-                          90);
-    }
-
-
     function void initKWs() {
-        var int i;
 
         let BLOCK = LibSym.BLOCK();
         let CMD = LibSym.CMD();
@@ -59,64 +29,20 @@ class Exec {
         let INT = LibSym.INT();
         let LIST = LibSym.LIST();
         let STR = LibSym.STR();
-        let TTL = LibSym.TTL();
 
-        let ASSIGN    =  1;
-        let CLEAR     =  2;
-        let DIR       =  3;
-        let DISPOSE   =  4;
-        let FORWARD   =  5;
-        let FUNCTION  =  6;
-        let IF        =  7;
-        let PENDOWN   =  8;
-        let PENUP     =  9;
-        let POSX      = 10;
-        let POSY      = 11;
-        let PRINT     = 12;
-        let REPEAT    = 13;
-        let TURNLEFT  = 14;
-        let TURNRIGHT = 15;
-        let TURTLE    = 16;
-        let QUIT      = 17;
+        let ASSIGN   = 1;
+        let FUNCTION = 2;
+        let IF       = 3;
+        let REPEAT   = 4;
+        let QUIT     = 5;
 
-        do Exec.installKW("MV",128);  // ##DB##
+        do Eval.install("MV", CMD,128);  // ##DB##
 
-        do Exec.installKW("ASSIGN", ASSIGN);
-        do Exec.installKW("CLEAR", CLEAR);
-        do Exec.installKW("DIR", DIR);
-        do Exec.installKW("DISPOSE", DISPOSE);
-        do Exec.installKW("FORWARD", FORWARD);
-        do Exec.installKW("FUNCTION", FUNCTION);
-        do Exec.installKW("IF", IF);
-        do Exec.installKW("PENDOWN", PENDOWN);
-        do Exec.installKW("PENUP", PENUP);
-        do Exec.installKW("POSX", POSX);
-        do Exec.installKW("POSY", POSY);
-        do Exec.installKW("PRINT", PRINT);
-        do Exec.installKW("REPEAT", REPEAT);
-        do Exec.installKW("TURNLEFT", TURNLEFT);
-        do Exec.installKW("TURNRIGHT", TURNRIGHT);
-        do Exec.installKW("TURTLE", TURTLE);
-        do Exec.installKW("QUIT", QUIT);
-
-        return;
-    }
-
-
-    function void installKW(String name, int val) {
-        do Eval.install(name, CMD, val);
-        do name.dispose();
-        return;
-    }
-
-
-    function void clear() {
-        var Turtle tt;  /* temp turtle */
-
-        let tt = turtles.nth(0);
-        do tt.dispose();
-        do LibIO.clear();
-        do turtles.setnth(0, Exec.defaultTurtle());
+        do Eval.install("ASSIGN", CMD, ASSIGN);
+        do Eval.install("FUNCTION", CMD, FUNCTION);
+        do Eval.install("IF", CMD, IF);
+        do Eval.install("REPEAT", CMD, REPEAT);
+        do Eval.install("QUIT", CMD, QUIT);
 
         return;
     }
@@ -125,7 +51,6 @@ class Exec {
     function Symbol cmdlin(Collection argv) {
         var int cmd;
         var Symbol arg, ret;
-        var Turtle tt;
 
         let arg = argv.pop();
 
@@ -143,43 +68,19 @@ class Exec {
 
         do Eval.arg(arg);
 
-        if (arg.meta() = TTL) {
-            let tt = t;
-            let t = arg.data();
-            let ret = Exec.exec(argv);
-            let t = tt;
-            do argv.dispose();
-            return ret;
-        }
-
         if   (arg.meta() = FUNC) { return Exec.call(argv);             }
         if (~(arg.meta() = CMD)) { return argv;                        }
 
         let cmd = argv.data();
 
-        if (cmd = TURTLE) { return Exec.newTurtle(argv.next());         }
-        if (cmd = DIR)    { return Exec.dir(argv.next());               }
-        if (cmd = POSX)   { return Exec.posx(argv.next());              }
-        if (cmd = POSY)   { return Exec.posy(argv.next());              }
-
         if (cmd = ASSIGN)           { do Exec.doAssign(argv.next());    }
-        else { if (cmd = CLEAR)     { do Exec.doClear(argv.next());     }
-        else { if (cmd = DISPOSE)   { do Exec.doDispose(argv.next());   }
-        else { if (cmd = FORWARD)   { do Exec.doForward(argv.next());   }
         else { if (cmd = FUNCTION)  { do Exec.doFunction(argv.next());  }
         else { if (cmd = IF)        { do Exec.doIf(argv.next());        }
-        else { if (cmd = PENDOWN)   { do Exec.doPendown(argv.next());   }
-        else { if (cmd = PENUP)     { do Exec.doPenup(argv.next());     }
-        else { if (cmd = PRINT)     { do Exec.doPrint(argv.next());     }
         else { if (cmd = REPEAT)    { do Exec.doRepeat(argv.next());    }
-        else { if (cmd = TURNLEFT)  { do Exec.doTurnleft(argv.next());  }
-        else { if (cmd = TURNRIGHT) { do Exec.doTurnright(argv.next()); }
         else { if (cmd = QUIT)      { do Exec.doQuit(argv.next());      }
-        }}}}}}}}}}}}
+        }}}}
 
         if (cmd=128) {do DB.mv();}  // ##DB##
-
-        do LibIO.fixCanvas();
 
         return null;
     }
@@ -208,7 +109,7 @@ class Exec {
             let arg = arg.next();
         }
 
-        let ret = Exec.exec(argv.data());
+        let ret = Exec.cmdlin(argv.data());
 
         do Eval.dropScope();
         do fargv.dispose();
@@ -231,43 +132,11 @@ class Exec {
 
         let cmdlin = block.data();
         while (~(cmdlin.next() = null)) {
-            do Exec.try(cmdlin.data());
+            do Exec.cmdlin(cmdlin.data());
             let cmdlin = cmdlin.next();
         }
 
-        return Exec.exec(cmdlin.data());
-    }
-
-
-    function Symbol newTurtle(Symbol argv) {
-        var int d, x, y;
-        var Symbol p;
-
-        if (argv = null) {
-            let p = Symbol.new(null, TTL, Exec.defaultTurtle());
-            do turtles.append(Symbol.new(null, TTL, p.data()));
-            return p;
-        }
-
-        do Eval.arg(argv);
-        let x = argv.data() + left;
-        let argv = argv.next();
-
-        do Eval.arg(argv);
-        let y = argv.data() + top;
-        let argv = argv.next();
-
-        do Eval.arg(argv);
-        let d = argv.data();
-
-        let p = Symbol.new(null, TTL,
-                           Turtle.new(x, y, d, top, left, bottom, right));
-
-        do turtles.append(p);
-
-        do Exec.try(argv.next());
-
-        return p;
+        return Exec.cmdlin(cmdlin.data());
     }
 
 
@@ -276,114 +145,7 @@ class Exec {
 
         let val = Eval.arg(arg.next());
         do Eval.install(arg.tag(), val.meta(), val.data());
-        do Exec.try(val.next());
-
-        return;
-    }
-
-
-    function void doClear(Symbol arg) {
-
-        do Exec.clear();
-        do Exec.refreshTurtles();
-        do Exec.try(arg);
-
-        return;
-    }
-
-
-    function void refreshTurtles() {
-        var Symbol tp;
-        var Turtle tt;
-
-        let tp = turtles.next();
-        while (~(tp = null)) {
-            let tt = tp.data();
-            do tt.show();
-            let tp = tp.next();
-        }
-
-        return;
-    }
-
-
-    function Symbol dir(Symbol arg) {
-        return Symbol.new(null, INT, t.direction());
-    }
-
-
-    function void doDispose(Symbol arg) {
-        var boolean continue;
-        var Symbol p;
-        var Symbol np, pp, tp;  // next, previous, turtle pointers
-        var Turtle tt;
-
-        if (arg = null) {
-            /* todo: error */
-            return;
-        }
-
-        if (turtles.next() = null) {
-            /* todo: not sure, analyze this */
-            return;
-        }
-
-        do Eval.arg(arg);
-
-        if (arg.data() = null) {
-            /* todo: error */
-            return;
-        }
-
-        let tp = null;
-
-        let p = turtles;
-        while (~(p = null)) {
-            let np = p.next();
-            if (~(np = null)) {
-                if (np.data() = arg.data()) {
-                    let tp = np;
-                    let pp = p;
-                }
-            }
-            let p = p.next();
-        }
-
-        if (tp = null) {
-            /* todo: not sure, analyze this */
-            return;
-        }
-
-        let np = tp.next();
-        do pp.setNext(np);
-
-        let tt = arg.data();
-        do tt.dispose();
-        do Eval.install(arg.name(), null, null);
-
-        return;
-    }
-
-
-    function void doForward(Symbol arg) {
-        var Array target;
-
-        do Eval.arg(arg);
-
-        if (arg.data() < 0) {
-            do LibIO.error("won't go backwards");
-            return;
-        }
-
-        let target = t.aim(arg.data());
-
-        if ( ((target[0] < left) | (target[0] > right))
-                | ((target[1] < top) | (target[1] > bottom)) ) {
-            do LibIO.error("target beyond boundary");
-            return;
-        }
-
-        do t.forward(arg.data());
+        do Exec.cmdlin(val.next());
 
         return;
     }
@@ -410,9 +172,9 @@ class Exec {
         do Eval.arg(arg);
 
         if (~(arg.data() = 0)) {
-            do Exec.try(arg.next());
+            do Exec.cmdlin(arg.next());
         } else { if (~(elsep = null)) {
-            do Exec.try(elsep.next());
+            do Exec.cmdlin(elsep.next());
         }}
 
         return;
@@ -421,106 +183,23 @@ class Exec {
 
     function Symbol elsePointer(Symbol argv) {
         var int nif;
-        var String IFS, ELSES;
         var Symbol argp;
-
-        let IFS = "IF";
-        let ELSES = "ELSE";
 
         let argp = argv.next();
         while (~(argp = null)) {
-            if (HashTable.streq(ELSES, argp.name())) {
+            if (Str.eq(ELSES, argp.name())) {
                 if (nif = 0) {
-                    do IFS.dispose();
-                    do ELSES.dispose();
                     return argp;
                 } else {
                     let nif = nif - 1;
                 }
-            } else { if (HashTable.streq(IFS, argp.name())) {
+            } else { if (Str.eq(IFS, argp.name())) {
                 let nif = nif + 1;
             }}
             let argp = argp.next();
         }
 
-        do IFS.dispose();
-        do ELSES.dispose();
-
         return null;
-    }
-
-
-    function void doPendown(Symbol arg) {
-        do t.pendown();
-        return;
-    }
-
-
-    function void doPenup(Symbol arg) {
-        do t.penup();
-        return;
-    }
-
-
-    function Symbol posx(Symbol arg) {
-        return Symbol.new(null, INT, t.x() - ((left+right)/2));
-    }
-
-
-    function Symbol posy(Symbol arg) {
-        return Symbol.new(null, INT, -(t.y() - ((top+bottom)/2)));
-    }
-
-
-    function void doPrint(Symbol arg) {
-
-        if (tb.set(t.y()/11, (t.x()/8)+1) = 1) {
-            do LibIO.error("illegal cursor coordinate");
-            return;
-        }
-
-        do Eval.arg(arg);
-
-        if (~(arg.meta() = STR)) {
-            do LibIO.error("exec print: expected string");
-            return;
-        }
-
-        do Exec.hideAll();
-        do tb.print(arg.data());
-        do Exec.showAll();
-
-        return;
-    }
-
-
-    function void hideAll() {
-        var Symbol tp;
-        var Turtle tt;
-
-        let tp = turtles;
-        while (~(tp = null)) {
-            let tt = tp.data();
-            do tt.hide();
-            let tp = tp.next();
-        }
-
-        return;
-    }
-
-
-    function void showAll() {
-        var Symbol tp;
-        var Turtle tt;
-
-        let tp = turtles;
-        while (~(tp = null)) {
-            let tt = tp.data();
-            do tt.show();
-            let tp = tp.next();
-        }
-
-        return;
     }
 
 
@@ -540,7 +219,7 @@ class Exec {
         let i = arg.data();
         while (i > 0) {
             let cmdp = LibSym.copyList(arg.next());
-            do Exec.try(cmdp);
+            do Exec.cmdlin(cmdp);
             do LibSym.destroyList(cmdp);
             let i = i - 1;
         }
@@ -558,27 +237,13 @@ class Exec {
         do LibSym.destroyList(condp);
         while (~(condition = 0)) {
             let cmdp = LibSym.copyList(arg.next());
-            do Exec.try(cmdp);
+            do Exec.cmdlin(cmdp);
             do LibSym.destroyList(cmdp);
             let condp = Eval.arg(LibSym.copySym(arg));
             let condition = condp.data();
             do LibSym.destroyList(condp);
         }
 
-        return;
-    }
-
-
-    function void doTurnleft(Symbol arg) {
-        do Eval.arg(arg);
-        do t.turnleft(arg.data());
-        return;
-    }
-
-
-    function void doTurnright(Symbol arg) {
-        do Eval.arg(arg);
-        do t.turnright(arg.data());
         return;
     }
 

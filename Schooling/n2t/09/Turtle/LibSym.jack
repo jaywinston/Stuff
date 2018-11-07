@@ -32,8 +32,8 @@
 
 class LibSym {
 
-    static int CMD, TTL, BLOCK, CMDLIN, FUNC, INTEX, LIST, STREX, STR, INT,
-               SYM, OP, UOP;
+    static int BIN, CMD, TTL, BLOCK, CMDLIN, FUNC, INTEX, LIST, STREX, STR,
+        INT, SYM, OP, UOP;
     static int HACK_CHARSET_SIZE, EOS_MAP, NOLGL_MAP, CLASSMASK;
 
 
@@ -50,7 +50,8 @@ class LibSym {
         let ctab = LibSym.ctab();
 
         let CMD = 1;
-        let TTL = 2;
+        let BIN = 2;
+        let TTL = 3;
         let LIST = ctab[91];
         let CMDLIN = LIST + 1;
         let FUNC = LIST + 2;
@@ -232,6 +233,7 @@ class LibSym {
 
     function int CHARSETSIZE() { return HACK_CHARSET_SIZE; }
     function int CLASSMASK() { return CLASSMASK; }
+    function int BIN() { return BIN; }
     function int CMD() { return CMD; }
     function int TTL() { return TTL; }
     function int OP() { return OP; }

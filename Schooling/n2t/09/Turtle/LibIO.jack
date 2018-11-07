@@ -92,11 +92,12 @@ class LibIO {
     }
 
 
-    function void print(String s, int i, int j) {
+    function int print(String s, int i, int j) {
         if (canvas.set(i, j) = 0) {
             do canvas.print(s);
+            return 0;
         }
-        return;
+        return 1;
     }
 
 
