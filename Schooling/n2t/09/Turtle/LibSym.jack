@@ -15,8 +15,8 @@
 //       symbol token    |    |    |   |   |   |   |   |   |   |   |   |   |
 //           integer token    |    |   |   |   |   |   |   |   |   |   |   |
 //               string literal    |   |   |   |   |   |   |   |   |   |   |
-//                             block   |   |   |   |   |   |   |   |   |   |  
-//                                unused   |   |   |   |   |   |   |   |   |
+//                     string format   |   |   |   |   |   |   |   |   |   |  
+//                                 block   |   |   |   |   |   |   |   |   |
 //                                    unused   |   |   |   |   |   |   |   |
 //                                        unused   |   |   |   |   |   |   |
 //                                       white space   |   |   |   |   |   |
@@ -110,21 +110,16 @@ class LibSym {
         let ctab[ 93] =    32;  // ]
         let ctab[ 41] =    40;  // )
         let ctab[ 32] =    64;  //  
-        let ctab[123] =  1040;  // {
-        let ctab[125] =  1056;  // }
+        let ctab[123] =   528;  // {
+        let ctab[125] =   544;  // }
+        let ctab[ 44] =  1040;  // ,
         let ctab[ 34] =  2048;  // "
-        let ctab[ 44] =  2064;  // ,
 
         let ctab[  EOS_MAP] =  8224;  // EOS
         let ctab[NOLGL_MAP] = 16384;  // illegal index
 
         return ctab;
     }
-
-
-    function int TOKENMASK() { return CTAB[65] | CTAB[48]; }
-    function int CHARSETSIZE() { return HACK_CHARSET_SIZE; }
-    function int CLASSMASK() { return CLASSMASK; }
 
 
     function Symbol copySym(Symbol sym) {
@@ -168,24 +163,19 @@ class LibSym {
     function void destroySym(Symbol sym) {
         var int type;
         var String s;
-        var Turtle t;
 
         if (sym = null) {
             return;
         }
 
-        /* OP is here to disambiguate TTL */
-        let type = sym.meta() & ((LIST|STR)|(OP|TTL));
+        let type = sym.meta() & (LIST|STR);
 
-        if ( (type&LIST) = LIST ) {  /* STREX == LIST | STR */
+        if ( type = LIST ) {
             do LibSym.destroyList(sym.data());
         } else { if (type = STR) {
             let s = sym.data();
             do s.dispose();
-        } else { if (type = TTL) {
-            let t = sym.data();
-            do t.dispose();
-        }}}
+        }}
 
         do sym.dispose();
 
@@ -194,13 +184,10 @@ class LibSym {
 
 
     function void destroyList(Collection list) {
-
         while (list.length() > 0) {
             do LibSym.destroySym(list.pop());
         }
-
         do list.dispose();
-
         return;
     }
 
@@ -243,6 +230,8 @@ class LibSym {
     }
 
 
+    function int CHARSETSIZE() { return HACK_CHARSET_SIZE; }
+    function int CLASSMASK() { return CLASSMASK; }
     function int CMD() { return CMD; }
     function int TTL() { return TTL; }
     function int OP() { return OP; }
