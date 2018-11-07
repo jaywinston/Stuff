@@ -3,7 +3,7 @@ class Parse {
     static int EQ, EQOP, BLANK, DELIM, BLOCK, BEND, EOS, CMDLIN, INT, COMMA,
                 INTEX, OP, STR, STREX, SYM, UOP, LPAREN, RPAREN, NOLGL,
                 LIST, LEND, END;
-    static int CLASSMASK, OPMASK;
+    static int CLASSMASK, OPMASK, TOKENMASK;
     static String PS1, PS2;
     static Symbol ARGV;
 
@@ -11,7 +11,6 @@ class Parse {
     function void init() {
 
         let EQ = Lex.cclass(61);
-        let EQOP = Lex.cclass(60);
         let BLANK = Lex.cclass(32);
         let BLOCK = LibSym.BLOCK();
         let BEND = Lex.cclass(125);
@@ -34,6 +33,7 @@ class Parse {
 
         let CLASSMASK = LibSym.CLASSMASK();
         let OPMASK = ~CLASSMASK;
+        let TOKENMASK = SYM | INT;
 
         let PS1 = ">";
         let PS2 = "|";
@@ -144,6 +144,17 @@ class Parse {
             }}}}}}
 
             let cclass = Parse.cclass(s, i) & CLASSMASK;
+
+            if (cclass = LIST) {
+                do LibIO.error("not implemented");
+                return Parse.package(pointer, argv, s, -1);
+            }
+
+            if ( (cclass=EQ) & ~(Parse.cclass(s, i+1)=EQ) ) {
+                do argv.append(Symbol.new("ASSIGN", SYM, null));
+                let i = i + 1;
+            }
+
             if (cclass = INTEX) {
                 let next = Symbol.new(null, INTEX, next);
                 let i = Parse.intex(s, next, i);
@@ -152,20 +163,7 @@ class Parse {
                 let next = Symbol.new(null, STREX, next);
                 let i = Parse.strex(s, next, i);
                 let s = Parse.tag(next);
-            } else { if (cclass = LIST) {
-                // maybe some day
-                // let next = Symbol.new(null, INDEX, next);
-                // let i = Parse.index(s, next, i);
-                // let s = Parse.tag(next);
-                // let cclass = Parse.cclass(s, i) & CLASSMASK;
-                do LibIO.error("not implemented");
-                return Parse.package(pointer, argv, s, -1);
-            }}}
-
-            if ( (cclass=EQ) & ~((Parse.cclass(s, i-1)&OP) = OP) ) {
-                do argv.append(Symbol.new("ASSIGN", SYM, null));
-                let i = i + 1;
-            }
+            }}
 
             do argv.append(next);
 
@@ -181,7 +179,7 @@ class Parse {
         var int DLM, cclass, op;
         var String t;
         var Collection stack, queue;
-        var Symbol objbuf, stackbuf;
+        var Symbol token, stkp;
 
         let DLM  = (BLANK | COMMA) | (END | EOS);
         let queue = Collection.new();
@@ -207,40 +205,40 @@ class Parse {
                 let uop = true;
                 let i = i + 1;
             } else { if (cclass = RPAREN) {
-                let stackbuf = stack.nth(0);
-                while (~(stackbuf.meta() = LPAREN)) {
-                    if (stackbuf.meta() = null) {
+                let stkp = stack.nth(0);
+                while (~(stkp.meta() = LPAREN)) {
+                    if (stkp.meta() = null) {
                         do LibIO.error("mismatched parentheses");
                         do LibSym.destroyList(stack);
                         return Parse.package(pointer, queue, s, -1);
                     }
                     do queue.append(stack.pop());
-                    let stackbuf = stack.nth(0);
+                    let stkp = stack.nth(0);
                 }
-                do stackbuf.dispose();
+                do stkp.dispose();
                 let uop = false;
                 let i = i + 1;
             } else { if ( (cclass&OP) = OP ) {
                 let op = s.charAt(i);
                 let i = i + 1;
-                if (uop) {
-                    let objbuf = Symbol.new(null, UOP, op);
+                if (uop) {  /* I don't love this. */
+                    let token = Symbol.new(null, UOP, op);
                 } else {
-                    let objbuf = Symbol.new(null, cclass&OPMASK, op);
+                    let token = Symbol.new(null, cclass&OPMASK, op);
                     if (Parse.cclass(s, i) = EQ) {
-                        do objbuf.setData((op*100) + 61);
+                        do token.setData((op*100) + 61);
                         let i = i + 1;
                     }
                     /* pop higher/equal ops to queue */
-                    let stackbuf = stack.nth(0);
-                    while ( ~(stackbuf.meta()<objbuf.meta())
-                            & ~(stackbuf.meta()=LPAREN) ) {
+                    let stkp = stack.nth(0);
+                    while ( ~(stkp.meta()<token.meta())
+                            /* & ~(stkp.meta()=LPAREN) */ ) {
                         do queue.append(stack.pop());
-                        let stackbuf = stack.nth(0);
+                        let stkp = stack.nth(0);
                     }
                     let uop = true;
                 }
-                do stack.push(objbuf);
+                do stack.push(token);
             } else {
                 if (cclass = INT) {
                     let t = String.new(5);
@@ -252,16 +250,16 @@ class Parse {
                     let i = Lex.token(s, t, TOKENMASK, i);
                     do queue.append(Symbol.new(t, SYM, null));
                 } else { if (cclass = BLOCK) {
-                    let objbuf = Symbol.new(null, BLOCK, null);
-                    let i = Parse.block(s, objbuf, i);
-                    let s = Parse.tag(objbuf);
-                    do queue.append(objbuf);
+                    let token = Symbol.new(null, BLOCK, null);
+                    let i = Parse.block(s, token, i);
+                    let s = Parse.tag(token);
+                    do queue.append(token);
                 }}}
 
-                let objbuf = stack.nth(0);
-                while ( (objbuf.meta()&OP) = OP) {
+                let stkp = stack.nth(0);
+                while (stkp.meta() = UOP) {
                     do queue.append(stack.pop());
-                    let objbuf = stack.nth(0);
+                    let stkp = stack.nth(0);
                 }
 
                 let uop = false;
@@ -271,13 +269,15 @@ class Parse {
         }
 
         /* pop ops to queue */
-        while (stack.length() > 1) {
-            if (stack.meta() = LPAREN) {
+        let stkp = stack.nth(0);
+        while (~(stkp.meta() = null)) {
+            if (stkp.meta() = LPAREN) {
                 do LibIO.error("mismatched parentheses");
                 do LibSym.destroyList(stack);
                 return Parse.package(pointer, queue, s, -1);
             }
             do queue.append(stack.pop());
+            let stkp = stack.nth(0);
         }
 
         do LibSym.destroyList(stack);
@@ -289,26 +289,16 @@ class Parse {
     function int strex(String s, Symbol pointer, int i) {
         var int cclass;
         var String t;
+        var Collection argv;
         var Symbol arg, intex, next;
 
-        if ( (s=null) | (next=null) ) {
-            return -1;
-        }
-
-        let arg = next.next();
-        if (arg = null) {
-            return -1;
-        }
+        let arg = pointer.data();
+        let argv = Collection.new();
+        do argv.append(arg);
 
         if (~(arg.meta() = STR)) {
-            do LibIO.error("no format string given");
-            return -1;
-        }
-
-        let arg = null;
-
-        if ( (i<0) | ~(i<s.length()) ) {
-            return -1;
+            do LibIO.error("format string not found");
+            return Parse.package(pointer, argv, s, -1);
         }
 
         while (Parse.cclass(s, i) = STREX) {
@@ -316,11 +306,15 @@ class Parse {
             let i = i + 1;
             let cclass = Parse.cclass(s, i) & CLASSMASK;
 
+            if (cclass = NOLGL) {
+                do LibIO.error("strex: illegal index");
+                return Parse.package(pointer, argv, s, -1);
+            }
+
             if (cclass = BLOCK) {
                 let arg = Symbol.new(null, BLOCK, null);
                 let i = Parse.block(s, arg, i);
-                let s = arg.tag();
-                do arg.setTag(null);
+                let s = Parse.tag(arg);
             } else { if (cclass = INT) {
                 let t = String.new(s.length());
                 let i = Lex.token(s, t, TOKENMASK, i);
@@ -329,14 +323,14 @@ class Parse {
             } else { if (cclass = INTEX) {
                 let arg = Symbol.new(null, INTEX, null);
                 let i = Parse.intex(s, arg, i);
-                let s = arg.tag();
-                do arg.setTag(null);
+                let s = Parse.tag(arg);
             } else { if (cclass = STR) {
                 let t = String.new(s.length());
                 let i = Lex.string(s, t, i);
                 if (i < 0) {
                     do LibIO.error("EOS while scanning string");
-                    return Parse.package(pointer, next, t, -1);
+                    do t.dispose();
+                    return Parse.package(pointer, next, s, -1);
                 }
                 let arg = Symbol.new(null, STR, t);
             } else { if (cclass = SYM) {
@@ -345,27 +339,16 @@ class Parse {
                 let arg = Symbol.new(t, SYM, null);
             }}}}}
 
-            if (i < 0) {
-                return i;
-            }
-
             if ( (Parse.cclass(s, i)&CLASSMASK) = INTEX) {
-                let intex = Symbol.new(null, INTEX, null);
-                do intex.append(arg);
+                let arg = Symbol.new(null, INTEX, arg);
                 let i = Parse.intex(s, intex, i);
-                let s = intex.tag();
-                do intex.setTag(null);
-                let arg = intex;
+                let s = Parse.tag(arg);
             }
 
-            if (i < 0) {
-                return i;
-            }
-
-            do next.append(arg);
+            do argv.append(arg);
         }
 
-        return Parse.package(pointer, next, s, i);
+        return Parse.package(pointer, argv, s, i);
     }
 
 
@@ -373,23 +356,15 @@ class Parse {
         var Collection block;
         var Symbol cmdlin;
 
-        if ( (i<0) | ~(i<s.length()) ) {
-            return -1;
-        }
-
         let block = Collection.new();
 
         let i = Str.lskip(s, 32, i+1);
+
         if ( (Parse.cclass(s, i)&(BEND|EOS)) = 0 ) {
             let cmdlin = Symbol.new(null, CMDLIN, null);
             let i = Parse.cmdlin(s, cmdlin, i);
-            let s = cmdlin.tag();
-            do cmdlin.setTag(null);
+            let s = Parse.tag(cmdlin);
             do block.append(cmdlin);
-        }
-
-        if (i < 0) {
-            return i;
         }
 
         while (Parse.cclass(s, i) = EOS) {
@@ -406,9 +381,7 @@ class Parse {
             }
         }
 
-        do Parse.package(pointer, block, s, i);
-
-        return i + 1;
+        return Parse.package(pointer, block, s, i+1);
     }
 
 }
