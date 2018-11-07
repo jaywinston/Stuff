@@ -1,4 +1,3 @@
-/* depends on Symbol.jack, Collection.jack */
 class HashTable {
 
     field int HASHSIZ;
@@ -27,7 +26,7 @@ class HashTable {
         let i = 0;
         while (i < HASHSIZ) {
             let b = table[i];
-            do d.dispose();
+            do b.dispose();
             let i = i + 1;
         }
 
@@ -48,51 +47,65 @@ class HashTable {
     }
 
 
-    method int _lookup(String s) {
+    method Array _lookup(String s) {
         var int i;
+        var Array a;
         var Collection b;
         var Symbol p;
 
         let b = table[hash(s)];
+        let a = Array.new(2);
+        let a[0] = b;
+
         let i = 0;
         while (i < b.length()) {
             let p = b.nth(i);
-            if (HashTable.streq(s, p.name())) {
-                return i;
+            if (Str.eq(s, p.name())) {
+                let a[1] = i;
+                return a;
             }
             let i = i + 1;
         }
 
-        return -1;
+        let a[1] = -1;
+
+        return a;
     }
 
 
     method Symbol lookup(String s) {
         var int i;
+        var Array a;
         var Collection b;
 
-        let i = _lookup(s);
+        let a = _lookup(s);
+        let b = a[0];
+        let i = a[1];
+        do a.dispose();
 
         if (i < 0) {
             return null;
         }
-
-        let b = table[hash(s)];
 
         return b.nth(i);
     }
 
 
     method void install(String name, int type, int val) {
+        var int i;
+        var Array a;
         var Collection b;
         var Symbol p;
 
-        let p = lookup(name);
+        let a = _lookup(name);
+        let b = a[0];
+        let i = a[1];
+        do a.dispose();
 
-        if (p = null) {
-            let b = table[hash(name)];
+        if (i < 0) {
             do b.push(Symbol.new(name, type, val));
         } else {
+            let p = b.nth(i);
             do p.setData(val);
             do p.setMeta(type);
         }
@@ -103,10 +116,13 @@ class HashTable {
 
     method Symbol delete(String name) {
         var int i;
+        var Array a;
         var Collection b;
 
-        let b = table[hash(name)];
-        let i = _lookup(name);
+        let a = _lookup(name);
+        let b = a[0];
+        let i = a[1];
+        do a.dispose();
 
         if (i < 0) {
             return null;
@@ -138,32 +154,4 @@ class HashTable {
         return n - (q*HASHSIZ);
     }
 
-
-    function boolean streq(String s, String t) {
-        var int i;
-
-        if (s = t) {
-            return true;
-        }
-
-        if ( (s=null) | (t=null) ) {
-            return false;
-        }
-
-        if (~(s.length() = t.length())) {
-            return false;
-        }
-
-        let i = 0;
-        while (i < s.length()) {
-            if (~(s.charAt(i) = t.charAt(i))) {
-                return false;
-            }
-            let i = i + 1;
-        }
-
-        return true;
-    }
-
 }
-

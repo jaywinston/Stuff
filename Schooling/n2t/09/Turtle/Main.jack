@@ -15,6 +15,7 @@ class Main {
         do Screen.setColor(true);
         do Screen.drawLine(0, 13, 509, 13);
 
+        do Turtle.init(2);
         do Vector.init();
         do Collection.init();
         do LibIO.init();

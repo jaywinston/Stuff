@@ -1,32 +1,30 @@
-// depends on Vector.jack
 class Turtle {
 
     static int TLEN;
-    static int top, left, bottom, right;
 
-    field boolean _pendown;
-    field int direction, _x, _y;
+    field boolean pendown;
+    field int direction, x, y;
     field Array target;
     field Vector v;
     field ScreenArea sa;
 
 
-    constructor Turtle new(int x, int y, int d, int t, int l, int b, int r) {
-        let TLEN = 2;
-        /* todo: validate boundaries */
-        let top = t;
-        let left = l;
-        let bottom = b;
-        let right = r;
+    function void init(int tlen) {
+        let TLEN = tlen;
+        return;
+    }
+
+
+    constructor Turtle new(int ix, int iy, int d) {
         /* todo: validate coordinates */
-        let _x = x;
-        let _y = y;
+        let x = ix;
+        let y = iy;
         let direction = setDirection(d);
         let target = Array.new(2);
         let target[0] = -1;
         let v = Vector.new();
         let sa = ScreenArea.new(TLEN*8, TLEN*8);
-        let _pendown = false;
+        let pendown = false;
         do show();
         return this;
     }
@@ -36,6 +34,7 @@ class Turtle {
         do hide();
         do v.dispose();
         do sa.dispose();
+        do target.dispose();
         do Memory.deAlloc(this);
         return;
     }
@@ -56,34 +55,37 @@ class Turtle {
 
 
     method int x() {
-        return _x;
+        return x;
     }
 
 
     method int y() {
-        return _y;
+        return y;
     }
 
 
     method void drawTurtle(boolean color) {
-        var int i, l, x, y;
+        var int x1, y1;
 
         do Screen.setColor(color);
+
+        do Screen.drawCircle(x, y, TLEN);
+
         do v.calculate(TLEN*3, direction);
-        let x = _x + v.re();
-        let y = _y - v.im();
-        do Screen.drawCircle(_x, _y, TLEN);
+        let x1 = x + v.re();
+        let y1 = y - v.im();
+
         do v.calculate(TLEN*5, direction+20);
-        do Screen.drawLine(x, y, x-v.re(), y+v.im());
+        do Screen.drawLine(x1, y1, x1-v.re(), y1+v.im());
         do v.calculate(TLEN*5, direction-20);
-        do Screen.drawLine(x, y, x-v.re(), y+v.im());
+        do Screen.drawLine(x1, y1, x1-v.re(), y1+v.im());
 
         return;
     }
 
 
     method void show() {
-        do sa.copy(_x-(TLEN*4), _y-(TLEN*4));
+        do sa.copy(x-(TLEN*4), y-(TLEN*4));
         do drawTurtle(true);
         return;
     }
@@ -116,8 +118,8 @@ class Turtle {
 
     method Array aim(int l) {
         do v.calculate(l, direction);
-        let target[0] = _x + v.re();
-        let target[1] = _y - v.im();
+        let target[0] = x + v.re();
+        let target[1] = y - v.im();
         return target;
     }
 
@@ -130,13 +132,13 @@ class Turtle {
 
         do hide();
 
-        if (_pendown) {
+        if (pendown) {
             do Screen.setColor(true);
-            do Screen.drawLine(_x, _y, target[0], target[1]);
+            do Screen.drawLine(x, y, target[0], target[1]);
         }
 
-        let _x = target[0];
-        let _y = target[1];
+        let x = target[0];
+        let y = target[1];
         let target[0] = -1;
 
         do show();
@@ -146,13 +148,13 @@ class Turtle {
 
 
     method void penup() {
-        let _pendown = false;
+        let pendown = false;
         return;
     }
 
 
     method void pendown() {
-        let _pendown = true;
+        let pendown = true;
         return;
     }
 

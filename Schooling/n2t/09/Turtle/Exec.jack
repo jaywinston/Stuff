@@ -46,7 +46,7 @@ class Exec {
     function Turtle defaultTurtle() {
         return Turtle.new(left + ((right-left)/2),
                           top + ((bottom-top)/2),
-                          90, top, left, bottom, right);
+                          90);
     }
 
 

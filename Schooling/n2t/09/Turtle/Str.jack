@@ -6,6 +6,33 @@ class Str {
     }
 
 
+
+    function boolean eq(String s, String t) {
+        var int i;
+
+        if (s = t) {
+            return true;
+        }
+
+        if ( (s=null) | (t=null) ) {
+            return false;
+        }
+
+        if (~(s.length() = t.length())) {
+            return false;
+        }
+
+        let i = 0;
+        while (i < s.length()) {
+            if (~(s.charAt(i) = t.charAt(i))) {
+                return false;
+            }
+            let i = i + 1;
+        }
+
+        return true;
+    }
+
     function String format(String f, Array arg) {
         var boolean continue;
         var char c;
