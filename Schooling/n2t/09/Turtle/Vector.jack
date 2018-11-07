@@ -1,70 +1,43 @@
 class Vector {
 
-    field int _re, _im;
-    static Array trigv;
+    static Array SINTAB;  /* see init below */
+
+    field int re, im;
+
 
     constructor Vector new() {
         return this;
     }
 
+
     method Vector calculate(int m, int a) {
-        let _re = (m*Vector.cos(a)) / 100;
-        let _im = (m*Vector.sin(a)) / 100;
+        let re = (m*Vector.cos(a)) / 100;
+        let im = (m*Vector.sin(a)) / 100;
         return this;
     }
+
 
     method void dispose() {
         do Memory.deAlloc(this);
         return;
     }
 
+
     method int re() {
-        return _re;
+        return re;
     }
+
 
     method int im() {
-        return _im;
+        return im;
     }
 
-    function void init() {
 
-        let trigv = Array.new(91);
-
-/*                          populate trig table                             */
-let trigv[0] = 0; let trigv[1] = 2; let trigv[2] = 3; let trigv[3] = 5;
-let trigv[4] = 7; let trigv[5] = 9; let trigv[6] = 10; let trigv[7] = 12;
-let trigv[8] = 14; let trigv[9] = 16; let trigv[10] = 17; let trigv[11] = 19;
-let trigv[12] = 21; let trigv[13] = 22; let trigv[14] = 24; let trigv[15] = 26;
-let trigv[16] = 28; let trigv[17] = 29; let trigv[18] = 31; let trigv[19] = 33;
-let trigv[20] = 34; let trigv[21] = 36; let trigv[22] = 37; let trigv[23] = 39;
-let trigv[24] = 41; let trigv[25] = 42; let trigv[26] = 44; let trigv[27] = 45;
-let trigv[28] = 47; let trigv[29] = 48; let trigv[30] = 50; let trigv[31] = 52;
-let trigv[32] = 53; let trigv[33] = 54; let trigv[34] = 56; let trigv[35] = 57;
-let trigv[36] = 59; let trigv[37] = 60; let trigv[38] = 62; let trigv[39] = 63;
-let trigv[40] = 64; let trigv[41] = 66; let trigv[42] = 67; let trigv[43] = 68;
-let trigv[44] = 69; let trigv[45] = 71; let trigv[46] = 72; let trigv[47] = 73;
-let trigv[48] = 74; let trigv[49] = 75; let trigv[50] = 77; let trigv[51] = 78;
-let trigv[52] = 79; let trigv[53] = 80; let trigv[54] = 81; let trigv[55] = 82;
-let trigv[56] = 83; let trigv[57] = 84; let trigv[58] = 85; let trigv[59] = 86;
-let trigv[60] = 87; let trigv[61] = 87; let trigv[62] = 88; let trigv[63] = 89;
-let trigv[64] = 90; let trigv[65] = 91; let trigv[66] = 91; let trigv[67] = 92;
-let trigv[68] = 93; let trigv[69] = 93; let trigv[70] = 94; let trigv[71] = 95;
-let trigv[72] = 95; let trigv[73] = 96; let trigv[74] = 96; let trigv[75] = 97;
-let trigv[76] = 97; let trigv[77] = 97; let trigv[78] = 98; let trigv[79] = 98;
-let trigv[80] = 98; let trigv[81] = 99; let trigv[82] = 99; let trigv[83] = 99;
-let trigv[84] = 99; let trigv[85] = 100; let trigv[86] = 100;
-let trigv[87] = 100; let trigv[88] = 100; let trigv[89] = 100;
-let trigv[90] = 100;
-/*                          end trig table                                  */
-
-        return;
-    }
-
-/**
- * These functions provide access to trigonometric values multiplied by 100.
- * The idea is to use the value and then divide by 100.  This is close enough
- * for my needs here.  The user must call Vector.init() before use.
- */
+    /* These functions return trigonometric values multiplied by 100.
+     * The idea is to use the value and then divide by 100.  This is
+     * close enough for my needs here.  Vector.init() must be called
+     * at least once before use.
+     */
     function int sin(int a) {
         var boolean neg;
 
@@ -87,15 +60,17 @@ let trigv[90] = 100;
         }
 
         if (neg) {
-            return -trigv[a];
-        } else {
-            return trigv[a];
+            return -SINTAB[a];
         }
+
+        return SINTAB[a];
     }
+
 
     function int cos(int a) {
         return Vector.sin(a+90);
     }
+
 
     function int mod(int n, int d) {
         var int q;
@@ -103,6 +78,48 @@ let trigv[90] = 100;
         let q = n / d;
 
         return n - (q*d);
+    }
+
+
+    function void init() {
+        let SINTAB = Array.new(91);
+                         /* populate sine table */
+        let SINTAB[0] = 0; let SINTAB[1] = 2; let SINTAB[2] = 3;
+        let SINTAB[3] = 5; let SINTAB[11] = 19; let SINTAB[12] = 21;
+        let SINTAB[13] = 22; let SINTAB[14] = 24; let SINTAB[15] = 26;
+        let SINTAB[16] = 28; let SINTAB[17] = 29; let SINTAB[18] = 31;
+        let SINTAB[19] = 33; let SINTAB[20] = 34; let SINTAB[21] = 36;
+        let SINTAB[22] = 37; let SINTAB[23] = 39; let SINTAB[24] = 41;
+        let SINTAB[25] = 42; let SINTAB[26] = 44; let SINTAB[27] = 45;
+        let SINTAB[28] = 47; let SINTAB[29] = 48; let SINTAB[30] = 50;
+        let SINTAB[31] = 52; let SINTAB[32] = 53; let SINTAB[33] = 54;
+        let SINTAB[34] = 56; let SINTAB[35] = 57; let SINTAB[36] = 59;
+        let SINTAB[37] = 60; let SINTAB[38] = 62; let SINTAB[39] = 63;
+        let SINTAB[40] = 64; let SINTAB[41] = 66; let SINTAB[42] = 67;
+        let SINTAB[43] = 68; let SINTAB[44] = 69; let SINTAB[45] = 71;
+        let SINTAB[46] = 72; let SINTAB[47] = 73; let SINTAB[48] = 74;
+        let SINTAB[49] = 75; let SINTAB[50] = 77; let SINTAB[51] = 78;
+        let SINTAB[52] = 79; let SINTAB[53] = 80; let SINTAB[54] = 81;
+        let SINTAB[55] = 82; let SINTAB[56] = 83; let SINTAB[57] = 84;
+        let SINTAB[58] = 85; let SINTAB[59] = 86; let SINTAB[60] = 87;
+        let SINTAB[61] = 87; let SINTAB[62] = 88; let SINTAB[63] = 89;
+        let SINTAB[64] = 90; let SINTAB[65] = 91; let SINTAB[66] = 91;
+        let SINTAB[67] = 92; let SINTAB[68] = 93; let SINTAB[69] = 93;
+        let SINTAB[70] = 94; let SINTAB[71] = 95; let SINTAB[72] = 95;
+        let SINTAB[73] = 96; let SINTAB[74] = 96; let SINTAB[75] = 97;
+        let SINTAB[76] = 97; let SINTAB[77] = 97; let SINTAB[78] = 98;
+        let SINTAB[79] = 98; let SINTAB[80] = 98; let SINTAB[81] = 99;
+        let SINTAB[82] = 99; let SINTAB[83] = 99; let SINTAB[84] = 99;
+        let SINTAB[85] = 100; let SINTAB[86] = 100; let SINTAB[87] = 100;
+        let SINTAB[88] = 100; let SINTAB[89] = 100; let SINTAB[90] = 100;
+                         /* end sine table */
+        return;
+    }
+
+
+    function void kill() {
+        do SINTAB.dispose();
+        return;
     }
 
 }
