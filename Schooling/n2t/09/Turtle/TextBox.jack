@@ -3,6 +3,7 @@ class TextBox {
     field int row, col;
     field int left, right, top, bottom;
 
+
     constructor TextBox new(int i, int j, int h, int w) {
 
         let left = j;
@@ -17,6 +18,7 @@ class TextBox {
 
         return this;
     }
+
 
     method void dispose() {
         do Memory.dealloc(this);
@@ -87,6 +89,7 @@ class TextBox {
         return;
     }
 
+
     method void reset() {
         do clear();
         let row = top;
@@ -94,15 +97,16 @@ class TextBox {
         return;
     }
 
+
     method void putc(int c) {
 
         if (col = right) {
             do newline();
-            /* The vm emulator insists on an extra column to the right. */
+            /* The vm emulator insists on an extra column to the right. 
             if (right < 64)  {
                 do Screen.setColor(true);
                 do Screen.drawLine(right*8, top*11, right*8, bottom*11);
-            }
+            } ##DB## */
         }
 
         do Output.moveCursor(row, col);
@@ -121,6 +125,7 @@ class TextBox {
         return;
     }
 
+
     method void print(String s) {
         var int i, len;
 
@@ -134,10 +139,12 @@ class TextBox {
         return;
     }
 
+
     method void echo(String s) {
         var int i;
 
         do Output.moveCursor(row, col);
+
         let i = col;
         while (i < right) {
             do Output.printChar(32);
@@ -150,7 +157,9 @@ class TextBox {
         return;
     }
 
+
     method void newline() {
+
         let col = left;
         let row = row + 1;
 
@@ -162,14 +171,17 @@ class TextBox {
         return;
     }
 
+
     method void backspace() {
 
         if ( (col=left) & (row>top) ) {
             let col = right - 1;
             let row = row - 1;
             if (left > 0)  {
+/* ##DB##
                 do Screen.setColor(true);
                 do Screen.drawLine((left*8)-2, top*11, (left*8)-2, bottom*11);
+END##DB## */
             }
         } else {
             let col = col - 1;
@@ -177,6 +189,7 @@ class TextBox {
 
         return;
     }
+
 
     method void scroll() {
         var boolean odd;
