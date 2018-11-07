@@ -103,7 +103,7 @@ class Lex {
         while (~(ESCTAB[i] = null)) {
             let et = ESCTAB[i];
             if (et[0] = c) {
-                let c = et[1];
+                return et[1];
             }
             let i = i + 1;
         }
