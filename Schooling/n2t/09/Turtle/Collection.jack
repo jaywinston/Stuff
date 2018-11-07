@@ -1,5 +1,4 @@
 // a general data structure with methods to implement stack, or queue
-/* todo: support list */
 
 class Collection {
 
@@ -84,11 +83,7 @@ class Collection {
     method int _nth(int i) {
         var Array p;
 
-        if (i < 0) {
-            return -1;
-        }
-
-        if (~(i < length)) {
+        if ( (i<0) | ~(i<length) ) {
             return -1;
         }
 
@@ -181,16 +176,6 @@ class Collection {
         let length = length - 1;
 
         return val;
-    }
-
-
-    method int put(int val) {
-        return append(val);
-    }
-
-
-    method int get() {
-        return pop();
     }
 
 

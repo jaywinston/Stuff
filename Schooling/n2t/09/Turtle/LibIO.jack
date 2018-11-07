@@ -1,28 +1,44 @@
 class LibIO {
 
     static boolean noerr;
-    static Array argv;
+    static Array B, argv;
     static String cerrfs, serrfs;  /* error format strings */
     static Collection que;
+    static TextBox canvas;
     static IOBox term;
 
 
     function void init() {
+        let B = Array.new(4);
+        /* magic numbers! */
+        let B[0] = 2;
+        let B[1] = 32;
+        let B[2] = 20;
+        let B[3] = 31;
         let noerr = true;
         let argv = Array.new(1);
         let cerrfs = "unexpected token: %C";
         let serrfs = "unexpected token: %S";
         let que = Collection.new();
+        let canvas = TextBox.new(B[0], B[1], B[2], B[3]);
+        /* magic numbers! */
         let term = IOBox.new(2, 1, 20, 30, 23, Str.MAXLEN());
         return;
     }
 
 
-    function void dispose() {
+    function Array boundaries() {
+        return B;
+    }
+
+
+    function void kill() {
+        do B.dispose();
         do argv.dispose();
         do cerrfs.dispose();
         do serrfs.dispose();
         do que.dispose();
+        do canvas.dispose();
         do term.dispose();
         return;
     }
@@ -35,7 +51,7 @@ class LibIO {
 
 
     function int get() {
-        return que.get();
+        return que.pop();
     }
 
 
@@ -45,14 +61,9 @@ class LibIO {
 
 
     function void error(String s) {
-        do que.put(s);
+        do que.append(s);
         let noerr = false;
         return;
-    }
-
-
-    function boolean noerr() {
-        return noerr;
     }
 
 
@@ -62,16 +73,29 @@ class LibIO {
     }
 
 
+    function boolean noerr() {
+        return noerr;
+    }
+
+
     function void cerr(char c) {
         let argv[0] = c;
-        do que.put(Str.format(cerrfs, argv));
+        do que.append(Str.format(cerrfs, argv));
         return;
     }
 
 
     function void serr(String s) {
         let argv[0] = s;
-        do que.put(Str.format(serrfs, argv));
+        do que.append(Str.format(serrfs, argv));
+        return;
+    }
+
+
+    function void print(String s, int i, int j) {
+        if (canvas.set(i, j) = 0) {
+            do canvas.print(s);
+        }
         return;
     }
 
@@ -82,18 +106,19 @@ class LibIO {
     }
 
 
-    function void print(String s) {
-        do term.print(s);
-        return;
-    }
-
-
     function String read(String ps) {
         return term.read(ps);
     }
 
 
-    function void fixBorders() {
+    function void clear() {
+        do term.clear();
+        do canvas.clear();
+        return;
+    }
+
+
+    function void fixCanvas() {
         do Screen.setColor(false);
         do Screen.drawRectangle(249, 14, 511, 19);
         do Screen.drawRectangle(249, 14, 253, 244);
@@ -103,7 +128,12 @@ class LibIO {
     }
 
 
-    function Array etab() {
+    function void fixTerm() {
+        return;
+    }
+
+
+    function Array esctab() {
         var int i;
         var Array et, ct;
 

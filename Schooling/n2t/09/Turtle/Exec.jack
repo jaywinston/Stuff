@@ -5,20 +5,26 @@ class Exec {
     static int ASSIGN, BLOCK, CLEAR, DIR, DISPOSE, FORWARD, FUNCTION, IF,
         PENDOWN, PENUP, POSX, POSY, PRINT, REPEAT, TURNLEFT, TURNRIGHT,
         TURTLE, QUIT;
-    static TextBox tb;
-    static Symbol turtles;
+    static Collection turtles;
     static Turtle t;
 
 
-    function void init(int i, int j, int h, int w) {
+    function void init() {
+        var Array b;
+        var int i, j, h, w;
 
-        let tb = TextBox.new(i, j, h, w);
+        let b = LibIO.boundaries();
+        let i = b[0];
+        let j = b[1];
+        let h = b[2];
+        let w = b[3];
         let top = i * 11;
         let left = j * 8;
         let bottom = (i+h) * 11;
         let right = (j+w) * 8;
         let t = Exec.defaultTurtle();
-        let turtles = Symbol.new(null, null, t);
+        let turtles = Collection.new(null, null, t);
+        do turtles.append(t);
 
         do Exec.initKWs();
 
@@ -26,19 +32,12 @@ class Exec {
     }
 
 
-    function void dispose() {
-        var Symbol np;
-
-        do tb.dispose();
-
-        while (~(turtles = null)) {
-            let np = turtles.next();
-            let t = turtles.data();
+    function void kill() {
+        while (turtles.length() > 0)) {
+            let t = turtles.pop();
             do t.dispose();
-            do turtles.dispose();
-            let turtles = np;
         }
-
+        do turtles.dispose();
         return;
     }
 
@@ -112,44 +111,49 @@ class Exec {
 
 
     function void clear() {
-        var Turtle tt;
+        var Turtle tt;  /* temp turtle */
 
-        let tt = t;
-        let t = turtles.data(); // todo: need get tail of turtles first?
-        do t.dispose();
-        do tb.clear();
-        do turtles.setData(Exec.defaultTurtle());
-        let t = tt;
+        let tt = turtles.nth(0);
+        do tt.dispose();
+        do LibIO.clear();
+        do turtles.setnth(0, Exec.defaultTurtle());
 
         return;
     }
 
 
-    function Symbol exec(Symbol argv) {
+    function Symbol cmdlin(Collection argv) {
         var int cmd;
-        var Symbol ret;
+        var Symbol arg, ret;
         var Turtle tt;
 
-        if (argv = null) {
+        let arg = argv.pop();
+
+        if (arg = null) {
+            do argv.dispose();
             return null;
         }
 
-        if (argv.meta() = BLOCK)  { return Exec.block(argv);   }
-        if (argv.meta() = CMDLIN) { return Exec.exec(argv.data()); }
+        if (arg.meta() = BLOCK)  {
+            let ret = Exec.block(arg.data());
+            do arg.dispose();
+        }
 
-        do Eval.arg(argv);
+        if (arg.meta() = CMDLIN) { return Exec.cmdlin(arg.data()); }
 
-        if (argv.meta() = TTL) {
+        do Eval.arg(arg);
+
+        if (arg.meta() = TTL) {
             let tt = t;
-            let t = argv.data();
-            let ret = Exec.exec(argv.next());
+            let t = arg.data();
+            let ret = Exec.exec(argv);
             let t = tt;
             do argv.dispose();
             return ret;
         }
 
-        if   (argv.meta() = FUNC) { return Exec.call(argv);             }
-        if (~(argv.meta() = CMD)) { return argv;                        }
+        if   (arg.meta() = FUNC) { return Exec.call(argv);             }
+        if (~(arg.meta() = CMD)) { return argv;                        }
 
         let cmd = argv.data();
 
@@ -175,7 +179,7 @@ class Exec {
 
         if (cmd=128) {do DB.mv();}  // ##DB##
 
-        do LibIO.fixBorders();
+        do LibIO.fixCanvas();
 
         return null;
     }

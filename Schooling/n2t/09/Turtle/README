@@ -5,7 +5,7 @@ cmdline:
     arglist
 
 assgn:
-    lvalue '=' expression
+    lvalue '=' word
 
 lvalue:
     name
@@ -26,12 +26,12 @@ namchar:
     '[^-~<>=!"|&+*/%{}() [:cntrl:]]'
 
 indexexpr:
-    '[' expression ']'
+    '[' word ']'
 
-expression:
+word:
+    lvalue
     stringexpr
-    blockexpr
-    symbolexpr
+    block
     intexpr
 
 stringexpr:
@@ -63,8 +63,15 @@ formatspec:
     '[%DCS]'
 
 farglist:
-    expression
-    expression ',' farglist
+    word
+    word ',' farglist
+
+block:
+    '{' cmdlist '}
+
+cmdlist:
+    cmdlin
+    cmdlin '\n' cmdlist
 
 intexpr:
     logicexpr
@@ -86,10 +93,10 @@ mulexpr:
     term mulop mulexpr
 
 term:
-    name
+    block
+    lvalue
     intterm
     parenterm
-    block
 
 intterm:
     intchar
@@ -100,13 +107,6 @@ intchar:
 
 parenterm:
     '(' intexpr ')
-
-block:
-    '{' cmdlist '}
-
-cmdlist:
-    cmdlin
-    cmdlin '\n' cmdlist
 
 logop:
     [&|]
