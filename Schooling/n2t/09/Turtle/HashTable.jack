@@ -60,7 +60,7 @@ class HashTable {
         let i = 0;
         while (i < b.length()) {
             let p = b.nth(i);
-            if (Str.eq(s, p.name())) {
+            if (Str.eq(s, p.tag())) {
                 let a[1] = i;
                 return a;
             }

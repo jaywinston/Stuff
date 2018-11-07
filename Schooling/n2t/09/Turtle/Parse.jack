@@ -47,7 +47,7 @@ class Parse {
     function void dispose() {
         do PS1.dispose();
         do PS2.dispose();
-        do LibSym.destroySymbol(ARGV);
+        do LibSym.destroySym(ARGV);
         return;
     }
 

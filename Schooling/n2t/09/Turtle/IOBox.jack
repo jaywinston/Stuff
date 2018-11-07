@@ -196,4 +196,10 @@ class IOBox {
         return t;
     }
 
+
+    method void clear() {
+        do tb.clear();
+        return;
+    }
+
 }

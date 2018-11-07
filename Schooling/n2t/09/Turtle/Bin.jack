@@ -1,10 +1,9 @@
 class Bin {
 
     static int bottom, left, right, top;
-    static int BIN, INT, STR, TTL;
-    static int CLEAR, DIR, DISPOSE, FORWARD, PENDOWN, PENUP, POSX, POSY, PRINT,
-        TURNLEFT, TURNRIGHT, TURTLE;
-    static Collection turtles;
+    static int BIN, INT, STR;
+    static int CLEAR, DIR, FORWARD, PENDOWN, PENUP, POSX, POSY, PRINT,
+        TURNLEFT, TURNRIGHT;
     static Turtle t;
 
 
@@ -24,14 +23,10 @@ class Bin {
         let BIN = LibSym.BIN();
         let INT = LibSym.INT();
         let STR = LibSym.STR();
-        let TTL = LibSym.TTL();
-        let turtles = Collection.new(null, null, t);
-        let t = Bin.defaultTurtle();
-        do turtles.append(t);
+        let t = Bin.turtle();
 
         let CLEAR     =  1;
         let DIR       =  2;
-        let DISPOSE   =  3;
         let FORWARD   =  4;
         let PENDOWN   =  5;
         let PENUP     =  6;
@@ -40,11 +35,9 @@ class Bin {
         let PRINT     =  9;
         let TURNLEFT  = 10;
         let TURNRIGHT = 11;
-        let TURTLE    = 12;
 
         do Eval.install("CLEAR", BIN, CLEAR);
         do Eval.install("DIR", BIN, DIR);
-        do Eval.install("DISPOSE", BIN, DISPOSE);
         do Eval.install("FORWARD", BIN, FORWARD);
         do Eval.install("PENDOWN", BIN, PENDOWN);
         do Eval.install("PENUP", BIN, PENUP);
@@ -53,13 +46,12 @@ class Bin {
         do Eval.install("PRINT", BIN, PRINT);
         do Eval.install("TURNLEFT", BIN, TURNLEFT);
         do Eval.install("TURNRIGHT", BIN, TURNRIGHT);
-        do Eval.install("TURTLE", BIN, TURTLE);
 
         return;
     }
 
 
-    function Turtle defaultTurtle() {
+    function Turtle turtle() {
         return Turtle.new(left + ((right-left)/2),
                           top + ((bottom-top)/2),
                           90);
@@ -67,34 +59,19 @@ class Bin {
 
 
     function Symbol exec(int cmd, Collection argv) {
-/* kill this?
-        var Turtle tt;
 
-        if (arg.meta() = TTL) {
-            let tt = t;
-            let t = arg.data();
-            let ret = Exec.cmdlin(argv);
-            let t = tt;
-            do argv.dispose();
-            return ret;
-        }
-*/
-
-
-        if (cmd = TURTLE) { return Bin.newTurtle(argv.next());         }
         if (cmd = DIR)    { return Bin.dir(argv.next());               }
         if (cmd = POSX)   { return Bin.posx(argv.next());              }
         if (cmd = POSY)   { return Bin.posy(argv.next());              }
 
         if (cmd = CLEAR)            { do Bin.doClear(argv.next());     }
-        else { if (cmd = DISPOSE)   { do Bin.doDispose(argv.next());   }
         else { if (cmd = FORWARD)   { do Bin.doForward(argv.next());   }
         else { if (cmd = PENDOWN)   { do Bin.doPendown(argv.next());   }
         else { if (cmd = PENUP)     { do Bin.doPenup(argv.next());     }
         else { if (cmd = PRINT)     { do Bin.doPrint(argv.next());     }
         else { if (cmd = TURNLEFT)  { do Bin.doTurnleft(argv.next());  }
         else { if (cmd = TURNRIGHT) { do Bin.doTurnright(argv.next()); }
-        }}}}}}}
+        }}}}}}
 
         do LibIO.fixCanvas();
 
@@ -102,125 +79,15 @@ class Bin {
     }
 
 
-    function Symbol newTurtle(Symbol argv) {
-        var int d, x, y;
-        var Symbol p;
-
-        if (argv = null) {
-            let p = Symbol.new(null, TTL, Bin.defaultTurtle());
-            do turtles.append(Symbol.new(null, TTL, p.data()));
-            return p;
-        }
-
-        do Eval.arg(argv);
-        let x = argv.data() + left;
-        let argv = argv.next();
-
-        do Eval.arg(argv);
-        let y = argv.data() + top;
-        let argv = argv.next();
-
-        do Eval.arg(argv);
-        let d = argv.data();
-
-        let p = Symbol.new(null, TTL,
-                           Turtle.new(x, y, d, top, left, bottom, right));
-
-        do turtles.append(p);
-
-        return p;
-    }
-
-
     function void doClear(Symbol arg) {
-        do Bin.clear();
-        do Bin.refreshTurtles();
-        return;
-    }
-
-
-    function void clear() {
-        var Turtle tt;  /* temp turtle */
-
-        let tt = turtles.nth(0);
-        do tt.dispose();
+        do t.dispose();
         do LibIO.clear();
-        do turtles.setnth(0, Bin.defaultTurtle());
-
-        return;
-    }
-
-
-    function void refreshTurtles() {
-        var Symbol tp;
-        var Turtle tt;
-
-        let tp = turtles.next();
-        while (~(tp = null)) {
-            let tt = tp.data();
-            do tt.show();
-            let tp = tp.next();
-        }
-
         return;
     }
 
 
     function Symbol dir(Symbol arg) {
         return Symbol.new(null, INT, t.direction());
-    }
-
-
-    function void doDispose(Symbol arg) {
-        var boolean continue;
-        var Symbol p;
-        var Symbol np, pp, tp;  // next, previous, turtle pointers
-        var Turtle tt;
-
-        if (arg = null) {
-            /* todo: error */
-            return;
-        }
-
-        if (turtles.next() = null) {
-            /* todo: not sure, analyze this */
-            return;
-        }
-
-        do Eval.arg(arg);
-
-        if (arg.data() = null) {
-            /* todo: error */
-            return;
-        }
-
-        let tp = null;
-
-        let p = turtles;
-        while (~(p = null)) {
-            let np = p.next();
-            if (~(np = null)) {
-                if (np.data() = arg.data()) {
-                    let tp = np;
-                    let pp = p;
-                }
-            }
-            let p = p.next();
-        }
-
-        if (tp = null) {
-            /* todo: not sure, analyze this */
-            return;
-        }
-
-        let np = tp.next();
-        do pp.setNext(np);
-
-        let tt = arg.data();
-        do tt.dispose();
-        do Eval.install(arg.name(), null, null);
-
-        return;
     }
 
 

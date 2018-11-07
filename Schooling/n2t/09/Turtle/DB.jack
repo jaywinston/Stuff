@@ -42,6 +42,7 @@ class DB {
     }
 
 
+/*
     function void print(Symbol p, int c1, int r1) {
         var int c, r, l;
         var Array a;
@@ -119,6 +120,7 @@ class DB {
 
         return;
     }
+*/
 
 
     function void pause() {
