@@ -25,16 +25,16 @@ class Bin {
         let STR = LibSym.STR();
         let t = Bin.turtle();
 
-        let CLEAR     =  1;
-        let DIR       =  2;
-        let FORWARD   =  4;
-        let PENDOWN   =  5;
-        let PENUP     =  6;
-        let POSX      =  7;
-        let POSY      =  8;
-        let PRINT     =  9;
-        let TURNLEFT  = 10;
-        let TURNRIGHT = 11;
+        let CLEAR     = 0;
+        let DIR       = 1;
+        let FORWARD   = 2;
+        let PENDOWN   = 3;
+        let PENUP     = 4;
+        let POSX      = 5;
+        let POSY      = 6;
+        let PRINT     = 7;
+        let TURNLEFT  = 8;
+        let TURNRIGHT = 9;
 
         do Eval.install("CLEAR", BIN, CLEAR);
         do Eval.install("DIR", BIN, DIR);
@@ -60,33 +60,30 @@ class Bin {
 
     function Symbol exec(int cmd, Collection argv) {
 
-        if (cmd = DIR)    { return Bin.dir(argv.next());               }
-        if (cmd = POSX)   { return Bin.posx(argv.next());              }
-        if (cmd = POSY)   { return Bin.posy(argv.next());              }
-
-        if (cmd = CLEAR)            { do Bin.doClear(argv.next());     }
-        else { if (cmd = FORWARD)   { do Bin.doForward(argv.next());   }
-        else { if (cmd = PENDOWN)   { do Bin.doPendown(argv.next());   }
-        else { if (cmd = PENUP)     { do Bin.doPenup(argv.next());     }
-        else { if (cmd = PRINT)     { do Bin.doPrint(argv.next());     }
-        else { if (cmd = TURNLEFT)  { do Bin.doTurnleft(argv.next());  }
-        else { if (cmd = TURNRIGHT) { do Bin.doTurnright(argv.next()); }
-        }}}}}}
-
-        do LibIO.fixCanvas();
+        if (cmd = DIR)       { return Bin.dir();                   }
+        if (cmd = POSX)      { return Bin.posx();                  }
+        if (cmd = POSY)      { return Bin.posy();                  }
+        if (cmd = CLEAR)     { return Bin.doClear();               }
+        if (cmd = FORWARD)   { return Bin.doForward(argv.pop());   }
+        if (cmd = PENDOWN)   { return Bin.doPendown();             }
+        if (cmd = PENUP)     { return Bin.doPenup();               }
+        if (cmd = PRINT)     { return Bin.doPrint(argv.pop());     }
+        if (cmd = TURNLEFT)  { return Bin.doTurnleft(argv.pop());  }
+        if (cmd = TURNRIGHT) { return Bin.doTurnright(argv.pop()); }
 
         return null;
     }
 
 
-    function void doClear(Symbol arg) {
+    function void doClear() {
         do t.dispose();
         do LibIO.clear();
+        let t = Bin.turtle();
         return;
     }
 
 
-    function Symbol dir(Symbol arg) {
+    function Symbol dir() {
         return Symbol.new(null, INT, t.direction());
     }
 
@@ -115,24 +112,24 @@ class Bin {
     }
 
 
-    function void doPendown(Symbol arg) {
+    function void doPendown() {
         do t.pendown();
         return;
     }
 
 
-    function void doPenup(Symbol arg) {
+    function void doPenup() {
         do t.penup();
         return;
     }
 
 
-    function Symbol posx(Symbol arg) {
+    function Symbol posx() {
         return Symbol.new(null, INT, t.x() - ((left+right)/2));
     }
 
 
-    function Symbol posy(Symbol arg) {
+    function Symbol posy() {
         return Symbol.new(null, INT, -(t.y() - ((top+bottom)/2)));
     }
 
@@ -146,41 +143,11 @@ class Bin {
             return;
         }
 
-        do Bin.hideAll();
+        do t.hide();
         if (LibIO.print(arg.data(), t.y()/11, (t.x()/8)+1) = 1) {
             do LibIO.error("illegal cursor coordinate");
         }
-        do Bin.showAll();
-
-        return;
-    }
-
-
-    function void hideAll() {
-        var int i;
-        var Turtle tt;
-
-        let i = 0;
-        while (i < turtle.length()) {
-            let tt = turtles.nth(i);
-            do tt.hide();
-            let i = i + 1;
-        }
-
-        return;
-    }
-
-
-    function void showAll() {
-        var int i;
-        var Turtle tt;
-
-        let i = 0;
-        while (i < turtle.length()) {
-            let tt = turtles.nth(i);
-            do tt.show();
-            let i = i + 1;
-        }
+        do t.show();
 
         return;
     }
@@ -198,7 +165,5 @@ class Bin {
         do t.turnright(arg.data());
         return;
     }
-
-
 
 }

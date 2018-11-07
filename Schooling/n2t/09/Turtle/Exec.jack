@@ -1,6 +1,6 @@
 class Exec {
 
-    static int BLOCK, CMD, CMDLIN, FUNC, INT, LIST, STR;
+    static int BIN, BLOCK, CMD, CMDLIN, FUNC, INT, LIST, STR;
     static int ASSIGN, FUNCTION, IF, REPEAT, QUIT;
     static String IFS, ELSES;
 
@@ -22,6 +22,7 @@ class Exec {
 
     function void initKWs() {
 
+        let BIN = LibSym.BIN();
         let BLOCK = LibSym.BLOCK();
         let CMD = LibSym.CMD();
         let CMDLIN = LibSym.CMDLIN();
@@ -68,16 +69,22 @@ class Exec {
 
         do Eval.arg(arg);
 
-        if   (arg.meta() = FUNC) { return Exec.call(argv);             }
-        if (~(arg.meta() = CMD)) { return argv;                        }
+        if (arg.meta() = FUNC) { return Exec.call(argv); }
 
-        let cmd = argv.data();
+        if (arg.meta() = BIN) {
+            let ret = Bin.exec(arg.data(), argv);
+            do LibIO.fixCanvas();
+        }
 
-        if (cmd = ASSIGN)           { do Exec.doAssign(argv.next());    }
-        else { if (cmd = FUNCTION)  { do Exec.doFunction(argv.next());  }
-        else { if (cmd = IF)        { do Exec.doIf(argv.next());        }
-        else { if (cmd = REPEAT)    { do Exec.doRepeat(argv.next());    }
-        else { if (cmd = QUIT)      { do Exec.doQuit(argv.next());      }
+        if (~(arg.meta() = CMD)) { return argv; }
+
+        let cmd = arg.data();
+
+        if (cmd = ASSIGN)           { do Exec.doAssign(argv);    }
+        else { if (cmd = FUNCTION)  { do Exec.doFunction(argv);  }
+        else { if (cmd = IF)        { do Exec.doIf(argv);        }
+        else { if (cmd = REPEAT)    { do Exec.doRepeat(argv);    }
+        else { if (cmd = QUIT)      { do Exec.doQuit(argv);      }
         }}}}
 
         if (cmd=128) {do DB.mv();}  // ##DB##
