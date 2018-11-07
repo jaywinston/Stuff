@@ -36,7 +36,7 @@ expression:
 
 stringexpr:
     formatstring
-    formatstring farglist
+    formatstring ',' farglist
 
 formatstring:
     '"' text '"'
@@ -46,16 +46,15 @@ text:
     textchar text
 
 textchar:
-    '[^\%"[:cntrl:]]'
+    '[^"\[:cntrl:]]'
     escseq
     formatseq
 
 escseq:
-    '\'
-    escspec
+    '\' escspec
 
 escspec:
-    '[\N"]'
+    '[N"\]'
 
 formatseq:
     '%' formatspec
@@ -65,22 +64,18 @@ formatspec:
 
 farglist:
     expression
-    expression space farglist
-
-space:
-    ' '
-    ' ' space
+    expression ',' farglist
 
 intexpr:
     logicexpr
 
 logicexpr:
-    equalityexpr
-    equalityexpr logop logicexpr
+    eqexpr
+    eqexpr logop logicexpr
 
-equalityexpr:
+eqexpr:
     addexpr
-    addexpr eqop equalityexpr
+    addexpr eqop eqexpr
 
 addexpr:
     mulexpr
@@ -128,4 +123,8 @@ mulop:
 arglist:
     word
     word space arglist
+
+space:
+    ' '
+    ' ' space
 
