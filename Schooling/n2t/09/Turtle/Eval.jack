@@ -1,7 +1,7 @@
 class Eval {
 
     static int BLOCK, FUNC, INT, INTEX, OP, STR, STREX, SYM, UOP;
-    static Symbol symtab;
+    static Collection symtab;
 
 
     function void init() {
@@ -14,31 +14,41 @@ class Eval {
         let STREX = LibSym.STREX();
         let SYM = LibSym.SYM();
         let UOP = LibSym.UOP();
-        let symtab = Symbol.new(null, null, HashTable.new(15));
+        let symtab = Collection.new();
+        do symtab.append(HashTable.new(15));
         return;
     }
 
 
-    function int integer(Symbol queue) {
+    function int integer(Collection queue) {
         var int n;
-        var Symbol p, stack;
-        var Symbol np;
+        var Collection stack;
+        var Symbol p1, p2, p3;
 
-        while (~(queue = null)) {
-            if ( (queue.meta()&OP) = OP) {
-                let np = stack;
-                let stack = stack.next();
-                do stack.setData(Eval.operate(stack.data(), np.data(),
-                                              queue.data()));
-                do np.dispose();
-            } else { if (queue.meta() = UOP) {
-                do stack.setData(Eval.uoperate(stack.data(), queue.data()));
+        let queue = arg.data();
+        let stack = Collection.new();
+
+        while (queue.length() > 0) {
+
+            let p1 = queue.pop();
+
+            if ( (p1.meta()&OP) = OP) {
+                let p2 = stack.pop();
+                let p3 = stack.pop();
+                let n = Eval.operate(p3.data(), p2.data(), p1.data());
+                do p1.dispose();
+                do p2.dispose();
+                do p3.dispose();
+            } else { if (p1.meta() = UOP) {
+                let p2 = stack.nth(0);
+                do p2.setData(Eval.uoperate(p2.data(), p1.data()));
+                do p1.dispose();
             } else {
-                let p = Eval.arg(LibSym.copySym(queue));
-                if (~(p.meta() = INT)) {
+/* ### left off here ### */
+                let p1 = Eval.arg(LibSym.copySym(queue));
+                if (~(p1.meta() = INT)) {
                     do LibIO.error("expected integer");
                     do LibSym.destroyList(stack);
-                    do LibSym.destroySym(p);
                     return 0;
                 }
                 do p.setNext(stack);
