@@ -1,11 +1,14 @@
 class Exec {
 
-    static int BIN, BLOCK, CMD, CMDLIN, FUNC, INT, LIST, STR;
+    static int BIN, BLOCK, CMD, CMDLIN, FUNC, INT, LIST, STR, SYS;
     static int ASSIGN, FUNCTION, IF, REPEAT, QUIT;
-    static String IFS, ELSES;
+    static Array FARGV;
+    static String ARGVFS, IFS, ELSES;
 
 
     function void init() {
+        let FARGV = Array.new(1);
+        let FARGVS = "%D";
         let IFS = "IF";
         let ELSES = "ELSE";
         do Exec.initKWs();
@@ -14,6 +17,7 @@ class Exec {
 
 
     function void kill() {
+        do ARGVFS.dispose();
         do IFS.dispose();
         do ELSES.dispose();
         return;
@@ -30,6 +34,7 @@ class Exec {
         let INT = LibSym.INT();
         let LIST = LibSym.LIST();
         let STR = LibSym.STR();
+        let SYS = LibSym.SYS();
 
         let ASSIGN   = 1;
         let FUNCTION = 2;
@@ -73,7 +78,6 @@ class Exec {
 
         if (arg.meta() = BIN) {
             let ret = Bin.exec(arg.data(), argv);
-            do LibIO.fixCanvas();
         }
 
         if (~(arg.meta() = CMD)) { return argv; }
@@ -94,22 +98,20 @@ class Exec {
 
 
     function Symbol call(Symbol argv) {
-        var int n;
+        var int fargi;
         var Array fargv;
         var String argname, fstr;
         var Symbol arg, ret;
 
         do Eval.pushScope(3);
 
-        let fargv = Array.new(1);
-        let fstr = "$%D";
-        let n = 0;
+        let fargi = 0;
 
         let arg = argv.next();
         while (~(arg = null)) {
-            let n = n + 1;
-            let fargv[0] = n;
-            let argname = Str.format(fstr, fargv);
+            let fargi = fargi + 1;
+            let FARGV[0] = fargi;
+            let argname = Str.format(FARGVS, FARGV);
             do Eval.arg(arg);
             do Eval.install(argname, arg.meta(), arg.data());
             do argname.dispose();
@@ -119,8 +121,6 @@ class Exec {
         let ret = Exec.cmdlin(argv.data());
 
         do Eval.dropScope();
-        do fargv.dispose();
-        do fstr.dispose();
 
         return ret;
     }

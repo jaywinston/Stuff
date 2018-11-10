@@ -60,22 +60,24 @@ class Bin {
 
     function Symbol exec(int cmd, Collection argv) {
 
-        if (cmd = DIR)       { return Bin.dir();                   }
-        if (cmd = POSX)      { return Bin.posx();                  }
-        if (cmd = POSY)      { return Bin.posy();                  }
-        if (cmd = CLEAR)     { return Bin.doClear();               }
-        if (cmd = FORWARD)   { return Bin.doForward(argv.pop());   }
-        if (cmd = PENDOWN)   { return Bin.doPendown();             }
-        if (cmd = PENUP)     { return Bin.doPenup();               }
-        if (cmd = PRINT)     { return Bin.doPrint(argv.pop());     }
-        if (cmd = TURNLEFT)  { return Bin.doTurnleft(argv.pop());  }
-        if (cmd = TURNRIGHT) { return Bin.doTurnright(argv.pop()); }
+        if (cmd = DIR)       { return Bin.dir();                 }
+        if (cmd = POSX)      { return Bin.posx();                }
+        if (cmd = POSY)      { return Bin.posy();                }
+        if (cmd = CLEAR)     { return Bin.clear();               }
+        if (cmd = FORWARD)   { return Bin.forward(argv.pop());   }
+        if (cmd = PENDOWN)   { return Bin.pendown();             }
+        if (cmd = PENUP)     { return Bin.penup();               }
+        if (cmd = PRINT)     { return Bin.print(argv.pop());     }
+        if (cmd = TURNLEFT)  { return Bin.turnleft(argv.pop());  }
+        if (cmd = TURNRIGHT) { return Bin.turnright(argv.pop()); }
+
+        do LibIO.fixCanvas();
 
         return null;
     }
 
 
-    function void doClear() {
+    function void clear() {
         do t.dispose();
         do LibIO.clear();
         let t = Bin.turtle();
@@ -88,7 +90,7 @@ class Bin {
     }
 
 
-    function void doForward(Symbol arg) {
+    function void forward(Symbol arg) {
         var Array target;
 
         do Eval.arg(arg);
@@ -101,7 +103,7 @@ class Bin {
         let target = t.aim(arg.data());
 
         if ( ((target[0] < left) | (target[0] > right))
-                | ((target[1] < top) | (target[1] > bottom)) ) {
+             | ((target[1] < top) | (target[1] > bottom)) ) {
             do LibIO.error("target beyond boundary");
             return;
         }
@@ -112,13 +114,13 @@ class Bin {
     }
 
 
-    function void doPendown() {
+    function void pendown() {
         do t.pendown();
         return;
     }
 
 
-    function void doPenup() {
+    function void penup() {
         do t.penup();
         return;
     }
@@ -134,33 +136,35 @@ class Bin {
     }
 
 
-    function void doPrint(Symbol arg) {
+    function void print(Symbol arg) {
 
         do Eval.arg(arg);
 
         if (~(arg.meta() = STR)) {
-            do LibIO.error("exec print: expected string");
+            do LibIO.error("won't print that");
             return;
         }
 
         do t.hide();
+
         if (LibIO.print(arg.data(), t.y()/11, (t.x()/8)+1) = 1) {
             do LibIO.error("illegal cursor coordinate");
         }
+
         do t.show();
 
         return;
     }
 
 
-    function void doTurnleft(Symbol arg) {
+    function void turnleft(Symbol arg) {
         do Eval.arg(arg);
         do t.turnleft(arg.data());
         return;
     }
 
 
-    function void doTurnright(Symbol arg) {
+    function void turnright(Symbol arg) {
         do Eval.arg(arg);
         do t.turnright(arg.data());
         return;
