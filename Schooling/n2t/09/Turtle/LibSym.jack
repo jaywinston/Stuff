@@ -33,7 +33,7 @@
 class LibSym {
 
     static int BIN, CMD, TTL, BLOCK, CMDLIN, FUNC, INTEX, LIST, STREX, STR,
-        INT, SYM, OP, UOP;
+        INT, SYM, SYS, OP, UOP;
     static int HACK_CHARSET_SIZE, EOS_MAP, NOLGL_MAP, CLASSMASK;
 
 
@@ -51,7 +51,8 @@ class LibSym {
 
         let CMD = 1;
         let BIN = 2;
-        let TTL = 3;
+        let SYS = 3;
+        let TTL = 4;
         let LIST = ctab[91];
         let CMDLIN = LIST + 1;
         let FUNC = LIST + 2;

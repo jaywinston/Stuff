@@ -2,7 +2,7 @@ class Main {
 
     static boolean running;
     static int QUIT;
-    static int INT, STR;
+    static int INT, STR, SYS;
 
 
     function void main() {
@@ -34,6 +34,7 @@ class Main {
         let QUIT = Exec.QUIT();
         let INT = LibSym.INT();
         let STR = LibSym.STR();
+        let SYS = LibSym.SYS();
 
         do Main.run();
 
@@ -50,23 +51,23 @@ class Main {
         let running = true;
 
         while (running) {
-            let argv = Parse.next();
             let syscall = Main.try(argv);
             let running = syscall.data() = QUIT;
             do syscall.dispose();
-            do LibSym.destroyList(argv);
         }
 
         return;
     }
 
 
-    function Symbol try(Collection argv) {
+    function Symbol try() {
         var String s;
-        var Symbol ret;
+        var Symbol argv, syscall;
 
-        if (LibIO.noerr()) {  /* This is the check for parse errors. */
-            let ret = Exec.cmdlin(argv);
+        let argv = Parse.next();
+
+        if (LibIO.noerr()) {
+            let syscall = Exec.cmdlin(argv);
             if (LibIO.noerr()) {
                 do Main.enqueue(ret);
             }
@@ -107,7 +108,6 @@ class Main {
             let s = String.new(6);
             do s.setInt(sym.data());
             do LibIO.put(s);
-            do s.dispose();
         }}
 
         do a.dispose();
