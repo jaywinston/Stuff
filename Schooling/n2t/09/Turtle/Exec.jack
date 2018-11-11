@@ -7,24 +7,11 @@ class Exec {
 
 
     function void init() {
+
         let FARGV = Array.new(1);
         let FARGVS = "%D";
         let IFS = "IF";
         let ELSES = "ELSE";
-        do Exec.initKWs();
-        return;
-    }
-
-
-    function void kill() {
-        do ARGVFS.dispose();
-        do IFS.dispose();
-        do ELSES.dispose();
-        return;
-    }
-
-
-    function void initKWs() {
 
         let BIN = LibSym.BIN();
         let BLOCK = LibSym.BLOCK();
@@ -54,6 +41,15 @@ class Exec {
     }
 
 
+    function void kill() {
+        do FARGV.dispose();
+        do ARGVFS.dispose();
+        do IFS.dispose();
+        do ELSES.dispose();
+        return;
+    }
+
+
     function Symbol cmdlin(Collection argv) {
         var int cmd;
         var Symbol arg, ret;
@@ -61,26 +57,17 @@ class Exec {
         let arg = argv.pop();
 
         if (arg = null) {
-            do argv.dispose();
             return null;
         }
 
-        if (arg.meta() = BLOCK)  {
-            let ret = Exec.block(arg.data());
-            do arg.dispose();
-        }
-
-        if (arg.meta() = CMDLIN) { return Exec.cmdlin(arg.data()); }
+        if (arg.meta() = BLOCK)         { let ret = Exec.block(arg.data());  }
+        else { if (arg.meta() = CMDLIN) { let ret = Exec.cmdlin(arg.data()); }}
 
         do Eval.arg(arg);
 
-        if (arg.meta() = FUNC) { return Exec.call(argv); }
-
-        if (arg.meta() = BIN) {
-            let ret = Bin.exec(arg.data(), argv);
-        }
-
-        if (~(arg.meta() = CMD)) { return argv; }
+        if (arg.meta() = FUNC) { let ret = Exec.call(argv);            }
+        if (arg.meta() = BIN)  { let ret = Bin.exec(arg.data(), argv); }
+        if (~(arg.meta() = CMD)) { return arg; }
 
         let cmd = arg.data();
 
@@ -92,6 +79,8 @@ class Exec {
         }}}}
 
         if (cmd=128) {do DB.mv();}  // ##DB##
+
+        do arg.dispose();
 
         return null;
     }

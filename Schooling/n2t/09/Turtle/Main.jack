@@ -3,6 +3,8 @@ class Main {
     static boolean running;
     static int QUIT;
     static int INT, STR, SYS;
+    static Array FARGV;
+    static String FSSTR, FDSTR;
 
 
     function void main() {
@@ -35,6 +37,9 @@ class Main {
         let INT = LibSym.INT();
         let STR = LibSym.STR();
         let SYS = LibSym.SYS();
+        let FARGV = Array.new(1);
+        let FSSTR = "'%S'";
+        let FDSTR = "%D";
 
         do Main.run();
 
@@ -62,12 +67,12 @@ class Main {
 
     function Symbol try() {
         var String s;
-        var Symbol argv, syscall;
+        var Symbol argv, ret;
 
         let argv = Parse.next();
 
         if (LibIO.noerr()) {
-            let syscall = Exec.cmdlin(argv);
+            let ret = Exec.cmdlin(argv);
             if (LibIO.noerr()) {
                 do Main.enqueue(ret);
             }
@@ -83,34 +88,23 @@ class Main {
             do s.dispose();
         }
 
-        return ret;
+        return syscall;
     }
 
 
     function void enqueue(Symbol sym) {
-        var Array a;
-        var String s;
-        var Collection list;
-        var Symbol p;
 
         if (sym = null) {
             return;
         }
 
-        let a = Array.new(1);
+        let FARGV[0] = sym.data();
 
         if (sym.meta() = STR) {
-            let s = "'%S'";
-            let a[0] = sym.data();
-            do LibIO.put(Str.format(s, a));
-            do s.dispose();
+            do LibIO.put(Str.format(FSSTR, a));
         } else { if (sym.meta() = INT) {
-            let s = String.new(6);
-            do s.setInt(sym.data());
-            do LibIO.put(s);
+            do LibIO.put(Str.format(FDSTR, a));
         }}
-
-        do a.dispose();
 
         return;
     }
