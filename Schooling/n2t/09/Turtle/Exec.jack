@@ -51,7 +51,6 @@ class Exec {
 
 
     function Symbol cmdlin(Collection argv) {
-        var int cmd;
         var Symbol arg, ret;
 
         let arg = argv.pop();
@@ -60,27 +59,39 @@ class Exec {
             return null;
         }
 
-        if (arg.meta() = BLOCK)         { let ret = Exec.block(arg.data());  }
-        else { if (arg.meta() = CMDLIN) { let ret = Exec.cmdlin(arg.data()); }}
-
         do Eval.arg(arg);
 
-        if (arg.meta() = FUNC) { let ret = Exec.call(argv);            }
-        if (arg.meta() = BIN)  { let ret = Bin.exec(arg.data(), argv); }
-        if (~(arg.meta() = CMD)) { return arg; }
+        if (arg.meta() = BIN) {
+            return Bin.exec(arg, argv);
+        }
+
+        if (arg.meta() = CMD) {
+            return Exec.cmd(arg, argv);
+        }
+
+        if (arg.meta() = FUNC) {
+            return Exec.call(arg, argv);
+        }
+
+        return arg;
+    }
+
+
+    function Symbol cmd(Symbol arg, Collection argv) {
+        var int cmd;
 
         let cmd = arg.data();
 
-        if (cmd = ASSIGN)           { do Exec.doAssign(argv);    }
-        else { if (cmd = FUNCTION)  { do Exec.doFunction(argv);  }
-        else { if (cmd = IF)        { do Exec.doIf(argv);        }
-        else { if (cmd = REPEAT)    { do Exec.doRepeat(argv);    }
-        else { if (cmd = QUIT)      { do Exec.doQuit(argv);      }
+        do arg.dispose();
+
+        if (cmd = ASSIGN)          { return Exec.doAssign(argv);   }
+        else { if (cmd = FUNCTION) { return Exec.doFunction(argv); }
+        else { if (cmd = IF)       { return Exec.doIf(argv);       }
+        else { if (cmd = REPEAT)   { return Exec.doRepeat(argv);   }
+        else { if (cmd = QUIT)     { return Exec.doQuit(argv);     }
         }}}}
 
         if (cmd=128) {do DB.mv();}  // ##DB##
-
-        do arg.dispose();
 
         return null;
     }

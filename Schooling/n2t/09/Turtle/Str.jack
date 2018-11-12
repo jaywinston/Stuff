@@ -2,9 +2,8 @@ class Str {
 
 
     function int MAXLEN() {
-        return 64;
+        return 64;  /* magic number! */
     }
-
 
 
     function boolean eq(String s, String t) {
