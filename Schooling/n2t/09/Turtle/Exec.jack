@@ -97,14 +97,14 @@ class Exec {
     }
 
 
-    function Symbol call(Symbol argv) {
+    function Symbol call(Symbol arg, Collection argv) {
         var int fargi;
         var Array fargv;
         var String argname, fstr;
         var Symbol arg, ret;
 
-        do Eval.pushScope(3);
-
+        do Eval.pushScope(3, argv);
+/*
         let fargi = 0;
 
         let arg = argv.next();
@@ -118,9 +118,10 @@ class Exec {
             let arg = arg.next();
         }
 
-        let ret = Exec.cmdlin(argv.data());
-
+*/
+        let ret = Exec.cmdlin(arg.data());
         do Eval.dropScope();
+        do LibSym.destroySym(arg);
 
         return ret;
     }
