@@ -2,14 +2,15 @@ class Exec {
 
     static int BIN, BLOCK, CMD, CMDLIN, FUNC, INT, LIST, STR, SYS;
     static int ASSIGN, FUNCTION, IF, REPEAT, QUIT;
-    static Array FARGV;
-    static String ARGVFS, IFS, ELSES;
+    //static Array FARGV;
+    //static String ARGVFS;
+    static String IFS, ELSES;
 
 
     function void init() {
 
-        let FARGV = Array.new(1);
-        let FARGVS = "%D";
+        //let FARGV = Array.new(1);
+        //let ARGVFS = "%D";
         let IFS = "IF";
         let ELSES = "ELSE";
 
@@ -128,7 +129,8 @@ class Exec {
 
 
     function Symbol block(Symbol block) {
-        var Symbol cmdlin;
+        var Collection cmdlist;
+        var Symbol ret;
 
         if (block = null) {
             return null;
@@ -138,41 +140,58 @@ class Exec {
             return null;
         }
 
-        let cmdlin = block.data();
-        while (~(cmdlin.next() = null)) {
-            do Exec.cmdlin(cmdlin.data());
-            let cmdlin = cmdlin.next();
+        let cmdlist = block.data();
+        do block.dispose();
+
+        let ret = Exec.cmdlin(cmdlist.pop());
+        while (cmdlist.length() > 0) {
+            do LibSym.destroySym(ret);
+            let ret = Exec.cmdlin(cmdlist.pop());
         }
 
-        return Exec.cmdlin(cmdlin.data());
+        do cmdlist.dispose();
+
+        return ret;
     }
 
 
-    function void doAssign(Symbol arg) {
-        var Symbol val;
+    function void doAssign(Collection argv) {
+        var String name;
+        var Symbol arg;
 
-        let val = Eval.arg(arg.next());
-        do Eval.install(arg.tag(), val.meta(), val.data());
-        do Exec.cmdlin(val.next());
+        let arg = argv.pop();
+        let name = arg.tag();
+        do arg.dispose();
+        let arg = Eval.arg(argv.pop());
+        do Eval.install(name, arg.meta(), arg.data());
+        do arg.dispose();
 
         return;
     }
 
 
-    function void doFunction(Symbol arg) {
+    function void doFunction(Collection argv) {
+        var Symbol arg;
+
+        let arg = argv.pop();
 
         if (arg = null) {
             do LibIO.error("no function name");
             return;
         }
 
-        do Eval.install(arg.tag(), FUNC, LibSym.copyList(arg.next()));
+        do Eval.install(arg.tag(), FUNC, LibSym.copyList(argv));
+
+        do arg.dispose();
+        while (argv.length() > 0) {
+            do LibSym.destroySym(argv.pop());
+        }
 
         return;
     }
 
 
-    function void doIf(Symbol arg) {
+    function void doIf(Collection argv) {
         var Symbol elsep;
 
         let elsep = Exec.elsePointer(arg);

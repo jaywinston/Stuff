@@ -36,7 +36,7 @@ class Main {
         let QUIT = Exec.QUIT();
         let INT = LibSym.INT();
         let STR = LibSym.STR();
-        let SYS = LibSym.SYS();
+        //let SYS = LibSym.SYS();
         let FARGV = Array.new(1);
         let FSSTR = "'%S'";
         let FDSTR = "%D";
@@ -51,27 +51,26 @@ class Main {
 
     function void run() {
         var Collection argv;
-        var Symbol syscall;
 
         let running = true;
 
         while (running) {
-            let syscall = Main.try(argv);
-            let running = syscall.data() = QUIT;
-            do syscall.dispose();
+            let argv = Parse.next();
+            while (argv.length()) {
+                do Main.try(argv);
+            }
+            do argv.dispose();
         }
 
         return;
     }
 
 
-    function Symbol try() {
+    function void try(Collection argv) {
         var String s;
-        var Symbol argv, ret;
+        var Symbol ret;
 
-        let argv = Parse.next();
-
-        if (LibIO.noerr()) {
+        if (LibIO.noerr()) {  /* This is the check for parse errors. */
             let ret = Exec.cmdlin(argv);
             if (LibIO.noerr()) {
                 do Main.enqueue(ret);
@@ -88,7 +87,7 @@ class Main {
             do s.dispose();
         }
 
-        return syscall;
+        return;
     }
 
 
@@ -101,9 +100,9 @@ class Main {
         let FARGV[0] = sym.data();
 
         if (sym.meta() = STR) {
-            do LibIO.put(Str.format(FSSTR, a));
+            do LibIO.put(Str.format(FSSTR, FARGV));
         } else { if (sym.meta() = INT) {
-            do LibIO.put(Str.format(FDSTR, a));
+            do LibIO.put(Str.format(FDSTR, FARGV));
         }}
 
         return;
