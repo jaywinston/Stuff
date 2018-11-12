@@ -32,6 +32,7 @@ class Str {
         return true;
     }
 
+
     function String format(String f, Array arg) {
         var boolean continue;
         var char c;
@@ -126,50 +127,6 @@ class Str {
     }
 
 
-    function int index(String s, String list, int i) {
-        var char c;
-        var int j;
-        var int sLen, listLen;
-
-        let sLen = s.length();
-        let listLen = list.length();
-
-        while (i < sLen) {
-            let c = s.charAt(i);
-            let j = 0;
-            while (j < listLen) {
-                if (c = list.charAt(j)) {
-                    return i;
-                }
-                let j = j + 1;
-            }
-            let i = i + 1;
-        }
-
-        return i;
-    }
-
-
-    function int tkn(String s, String t, String list, int i) {
-        var int j;
-
-        let j = i;
-
-        if (list = null) {
-            let i = s.length();
-        } else {
-            let i = Str.index(s, list, i);
-        }
-
-        while (j < i) {
-            do t.appendChar(s.charAt(j));
-            let j = j + 1;
-        }
-
-        return i;
-    }
-
-
     function void shift(String s, int off, int i) {
 
         if ( (s.length()=0) | (s.length()<off) ) {
@@ -203,17 +160,4 @@ class Str {
         return i;
     }
 
-
-    function void rstrip(String s, char c) {
-
-        while (s.length() > 0) {
-            if (~(s.charAt(s.length()-1) = c)) {
-                return;
-            }
-            do s.eraseLastChar();
-        }
-
-        return;
-    }
-       
 }
