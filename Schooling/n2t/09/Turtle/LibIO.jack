@@ -136,21 +136,29 @@ class LibIO {
 
     function Array esctab() {
         var int i;
-        var Array et, ct;
+        var Array et;
 
         let et = Array.new(2);  /* magic number! */
         let i = 0;
 
         /* NEWLINE */
-        let ct = Array.new(2);
-        let ct[0] = 78;
-        let ct[1] = 128;
-        let et[i] = ct;
+        let et[i] = LibIO.escseq(78, 128);
         let i = i + 1;
 
         let et[i] = null;
 
         return et;
+    }
+
+
+    function Array escseq(char e, char c) {
+        var Array esc;
+
+        let esc = Array.new(2);
+        let esc[0] = e;
+        let esc[1] = c;
+
+        return esc;
     }
 
 }

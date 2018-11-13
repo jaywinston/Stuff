@@ -1,6 +1,6 @@
 class Exec {
 
-    static int BIN, BLOCK, CMD, CMDLIN, FUNC, INT, LIST, STR, SYS;
+    static int BIN, BLOCK, CMD, CMDLIN, FUNC, INT, LIST, STR;
     static int ASSIGN, FUNCTION, IF, REPEAT, QUIT;
     //static Array FARGV;
     //static String ARGVFS;
@@ -22,7 +22,6 @@ class Exec {
         let INT = LibSym.INT();
         let LIST = LibSym.LIST();
         let STR = LibSym.STR();
-        let SYS = LibSym.SYS();
 
         let ASSIGN   = 1;
         let FUNCTION = 2;

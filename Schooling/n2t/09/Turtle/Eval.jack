@@ -1,6 +1,9 @@
 class Eval {
 
     static int BLOCK, FUNC, INT, INTEX, OP, STR, STREX, SYM, UOP;
+    static Array FSPECTAB, TYPETAB;
+    static Array FERRARGV;
+    static String FERRFS;
     static Collection scope, symtab;
 
 
@@ -14,15 +17,57 @@ class Eval {
         let STREX = LibSym.STREX();
         let SYM = LibSym.SYM();
         let UOP = LibSym.UOP();
+        let FSPECTAB = Eval.fspectab();
+        let TYPETAB = Eval.typetab();
+        let FERRFS = "expected format argument of type %S";
+        let FERRARGV = Array.new(1);
+        let scope = Collection.new();
         let symtab = Collection.new();
         do symtab.append(HashTable.new(15));
-        let scope = Collection.new();
         return;
     }
 
 
+    function Array fspectab() {
+        var int i;
+        var Array fspectab;
+
+        let fspectab = Array.new(3);  /* magic number! */
+        let i = 0;
+
+        let fspectab[i] = LibIO.escseq(68, INT);
+        let i = i + 1;
+
+        let fspectab[i] = LibIO.escseq(83, STR);
+        let i = i + 1;
+
+        let fspectab[i] = null;
+
+        return fspectab;
+    }
+
+
+    function Array typetab() {
+        var int i;
+        var Array typetab;
+
+        let typetab = Array.new(3);  /* magic number! */
+        let i = 0;
+
+        let typetab[i] = LibIO.escseq(INT, "INT");
+        let i = i + 1;
+
+        let typetab[i] = LibIO.escseq(STR, "STR");
+        let i = i + 1;
+
+        let typetab[i] = null;
+
+        return typetab;
+    }
+
+
     function int integer(Collection queue) {
-        var int n;
+        var int lo, ro, n;
         var Collection stack;
         var Symbol p1, p2, p3;
 
@@ -33,121 +78,116 @@ class Eval {
 
             let p1 = queue.pop();
 
-            if ( (p1.meta()&OP) = OP) {
-                let p2 = stack.pop();
-                let p3 = stack.pop();
-                let n = Eval.operate(p3.data(), p2.data(), p1.data());
-                do p1.dispose();
-                do p2.dispose();
-                do p3.dispose();
-            } else { if (p1.meta() = UOP) {
-                let p2 = stack.nth(0);
-                do p2.setData(Eval.uoperate(p2.data(), p1.data()));
-                do p1.dispose();
+            if (p1.meta() = UOP) {
+                do stack.push(Eval.uoperate(stack.pop(), p1.data()));
+            } else { if ( (p1.meta()&OP) = OP) {
+                let ro = stack.pop();
+                let lo = stack.pop();
+                do stack.push(Eval.operate(lo, ro, p1.data()));
             } else {
-/* ### left off here ### */
-                let p1 = Eval.arg(LibSym.copySym(queue));
+                do Eval.arg(p1);
                 if (~(p1.meta() = INT)) {
                     do LibIO.error("expected integer");
                     do LibSym.destroyList(stack);
+                    do LibSym.destroySym(p1);
                     return 0;
                 }
-                do p.setNext(stack);
-                let stack = p;
+                do stack.push(p1.data());
             }}
-            let queue = queue.next();
+
+            do p1.dispose();
         }
 
-        let n = stack.data();
+        let n = stack.pop();
+
+        if (stack.length() > 0) {
+            do LibIO.error("expected operator");
+        }
+
         do stack.dispose();
 
         return n;
     }
 
 
-    function String string(Symbol fstrex) {
+    function String string(Collection fstrex) {
         var boolean fspec;
         var char c;
         var int a, i;
+        var int type;
         var Array argv;
         var String s, t;
         var Symbol argp;
 
-        do Eval.arg(fstrex);
+        let argp = Eval.arg(fstrex.pop());
 
-        if (~(fstrex.meta() = STR)) {
+        if (~(argp.meta() = STR)) {
             do LibIO.error("expected string");
-            return null;
+            do LibSym.destroySym(argp);
+            return "";
         }
 
-        let s = fstrex.data();
+        let s = argp.data();
+        do argp.dispose();
 
         if (s.length() < 2) {
             return s;
         }
 
         let argv = Array.new(s.length()/2);
-        let argp = fstrex.next();
         let fspec = false;
         let a = 0;
         let i = 0;
         while (i < s.length()) {
             let c = s.charAt(i);
             if (fspec) {
-                if ((c=68) | (c=83)) {
-                    if (argp = null) {
-                        do LibIO.error("fstrex: got null");
-                        do argv.dispose();
-                        return "";
-                    }
-                    do Eval.arg(argp);
-                    if ( (c=68) & ~(argp.meta()=INT) ) {
-                        do LibIO.error("fstrex: expected int");
-                        do argv.dispose();
-                        return "";
-                    } else { if ( (c=83) & ~(argp.meta()=STR) ) {
-                        do LibIO.error("fstrex: expected str");
-                        do argv.dispose();
-                        return "";
-                    }}
-                    let argv[a] = argp.data();
-                    let a = a + 1;
-                    let argp = argp.next();
+                let argp = Eval.arg(argv.nth(a));
+                if (argp = null) {
+                    do LibIO.error("expected format argument");
+                    do LibSym.destroyList(argv);
+                    return "";
                 }
+                let type = Lex.escape(c, FSPECTAB);
+                if (~(argp.meta() = type)) {
+                    let FERRARGV[0] = Lex.escape(type, TYPETAB);
+                    do LibIO.error(Str.format(FERRFS, FERRARGV));
+                    do LibSym.destroyList(argv);
+                    do LibSym.destroySym(argp);
+                    return "";
+                }
+                let argv[a] = argp.data();
+                let a = a + 1;
                 let fspec = false;
-            } else { if (c = 37) {
+            } else { if (c = 37) {  /* magic number! interpreter esc char */
                 let fspec = true;
             }}
             let i = i + 1;
         }
 
-        let t = Str.format(s, argv);
-        do argv.dispose();
+        if (fspec) {
+            do LibIO.error("expected format specifier");
+            let t = "";
+        } else {
+            let t = Str.format(s, argv);
+        }
+
+        do LibSym.destroyList(argv);
+        do s.dispose();
 
         return t;
     }
 
 
     function void intex(Symbol intex) {
-        var int n;
-
-        let n = Eval.integer(intex.data());
-        do LibSym.destroyList(intex.data());
-        do intex.setData(n);
+        do intex.setData(Eval.integer(intex.data()));
         do intex.setMeta(INT);
-
         return;
     }
 
 
     function void strex(Symbol strex) {
-        var String s;
-
-        let s = Eval.string(strex.data());
-        do LibSym.destroyList(strex.data());
-        do strex.setData(s);
+        do strex.setData(Eval.string(strex.data()));
         do strex.setMeta(STR);
-
         return;
     }
 
@@ -333,7 +373,7 @@ class Eval {
 
 
     function void install(String name, int type, int value) {
-        do LibSym.install(symtab.data(), name, type, value);
+        do LibSym.install(symtab.nth(0), name, type, value);
         return;
     }
 

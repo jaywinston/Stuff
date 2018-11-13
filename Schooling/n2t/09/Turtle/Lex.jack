@@ -81,7 +81,7 @@ class Lex {
                 if (~(i < s.length())) {
                     return -1;  /* EOS while scanning for quote */
                 }
-                let c = Lex.escape(s.charAt(i));
+                let c = Lex.escape(s.charAt(i), ESCTAB);
             }
 
             do t.appendChar(c);
@@ -93,13 +93,13 @@ class Lex {
     }
 
 
-    function char escape(char c) {
+    function char escape(char c, Array etab) {
         var int i;
         var Array et;
 
         let i = 0;
-        while (~(ESCTAB[i] = null)) {
-            let et = ESCTAB[i];
+        while (~(etab[i] = null)) {
+            let et = etab[i];
             if (et[0] = c) {
                 return et[1];
             }
