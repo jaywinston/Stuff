@@ -35,6 +35,11 @@ class Collection {
     }
 
 
+    method int length() {
+        return length;
+    }
+
+
     method void append(int val) {
         var Array node;
 
@@ -179,13 +184,17 @@ class Collection {
     }
 
 
-    method boolean has() {
-        return ~(head[NEXT] = null);
-    }
+    method Collection slice(int i, int j) {
+        var Collction list, slice;
 
+        let list = this;
+        let slice = Collection.new();
+        while (i < j) {
+            do slice.append(list.nth(i));
+            let i = i + 1;
+        }
 
-    method int length() {
-        return length;
+        return slice;
     }
 
 }

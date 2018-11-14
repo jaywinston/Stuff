@@ -186,97 +186,132 @@ class Exec {
 
 
     function void doIf(Collection argv) {
-        var Symbol elsep;
+        var Collection elsev;
+        var Symbol arg;
 
-        let elsep = Exec.elsePointer(arg);
-
-        do Eval.arg(arg);
+        let arg = Eval.arg(argv.pop());
+        let elsev = Exec.elseVector(argv);
 
         if (~(arg.data() = 0)) {
-            do Exec.cmdlin(arg.next());
-        } else { if (~(elsep = null)) {
-            do Exec.cmdlin(elsep.next());
+            do Exec.cmdlin(argv);
+        } else { if (~(elsev = null)) {
+            do Exec.cmdlin(elsev);
         }}
+
+        do arg.dispose();
+        do LibSym.destroyList(argv);
+        do LibSym.destroyList(elsev);
 
         return;
     }
 
 
-    function Symbol elsePointer(Symbol argv) {
+    function Collection elseVector(Collection argv) {
+        var int i;
         var int nif;
-        var Symbol argp;
+        var Symbol arg;
 
-        let argp = argv.next();
-        while (~(argp = null)) {
-            if (Str.eq(ELSES, argp.tag())) {
+        let nif = 0;
+
+        let i = 0;
+        while (i < argv.length()) {
+            let arg = argv.nth(i);
+            if (Str.eq(ELSES, arg.tag())) {
                 if (nif = 0) {
-                    return argp;
+                    return Exec.elsev(argv, i);
+                } else { if (nif < 0) {
+                    do LibIO.error("extra 'ELSE' (todo: a better message)");
+                    return null;
                 } else {
                     let nif = nif - 1;
-                }
+                }}
             } else { if (Str.eq(IFS, argp.tag())) {
                 let nif = nif + 1;
             }}
-            let argp = argp.next();
+            let i = i + 1;
         }
 
         return null;
     }
 
 
-    function void doRepeat(Symbol arg) {
-        var int i;
-        var Symbol cmdp;
+    /* Collection.slice() would be easier to read but redundant to execute. */
+    function Collection elsev(Collection argv, int i) {
+        var Collection elsev;
+        var Symbol elsep;
 
-        do Eval.arg(arg);
+        let elsev = Collection.new();
+        while (argv.length() > i) {
+            do elsev.push(argv.remove(argv.length()-1));
+        }
+
+        let elsep = argv.remove(argv.length()-1);
+        do elsep.dispose();
+
+        return elsev;
+    }
+
+
+    function void doRepeat(Collection argv) {
+        var int i;
+        var Symbol arg, cmdp;
+
+        let arg = Eval.arg(argv.pop());
+
+        if (arg = null) {
+            /* todo: abort */
+            return;
+        }
 
         if ( (arg.meta()=CMD) & (arg.data()=IF) ) {
-            do Exec.doRepeatIf(arg.next());
+            do arg.dispose();
+            do Exec.doRepeatIf(argv);
             return;
         }
 
         /* todo: type check */
 
         let i = arg.data();
+        do arg.dispose();
         while (i > 0) {
-            let cmdp = LibSym.copyList(arg.next());
-            do Exec.cmdlin(cmdp);
-            do LibSym.destroyList(cmdp);
+            do LibSym.destroySym(
+                Main.enqueue(  /* syscall! */
+                    Exec.cmdlin(
+                        LibSym.copyList(argv))));
             let i = i - 1;
         }
 
+        do LibSym.destroyList(argv);
+
         return;
     }
 
 
-    function void doRepeatIf(Symbol arg) {
+    function void doRepeatIf(Collection argv) {
         var int condition;
-        var Symbol cmdp, condp;
+        var Symbol arg;
 
-        let condp = Eval.arg(LibSym.copySym(arg));
-        let condition = condp.data();
-        do LibSym.destroyList(condp);
+        let arg = argv.pop();
+
+        let condition = Eval.condition(arg);
         while (~(condition = 0)) {
-            let cmdp = LibSym.copyList(arg.next());
-            do Exec.cmdlin(cmdp);
-            do LibSym.destroyList(cmdp);
-            let condp = Eval.arg(LibSym.copySym(arg));
-            let condition = condp.data();
-            do LibSym.destroyList(condp);
+            do LibSym.destroySym(
+                Main.enqueue(  /* syscall! */
+                    Exec.cmdlin(
+                        LibSym.copyList(argv))));
+            let condition = Eval.condition(arg);
         }
 
+        do LibSym.destroyList(argv);
+        do LibSym.destroySym(arg);
+
         return;
     }
 
 
-    /* todo: fix this */
-    function Symbol doQuit(Symbol arg) {
-        return Symbol.new(null, CMD, QUIT);
-    }
-
-
-    function int QUIT() {
-        return QUIT;
+    function void doQuit(Symbol arg) {
+        do Main.quit();  /* syscall! */
+        return;
     }
 
 }

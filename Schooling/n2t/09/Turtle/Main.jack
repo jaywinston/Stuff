@@ -1,7 +1,6 @@
 class Main {
 
     static boolean running;
-    static int QUIT;
     static int INT, STR, SYS;
     static Array FARGV;
     static String FSSTR, FDSTR;
@@ -33,7 +32,6 @@ class Main {
         do Eval.init();
         do Exec.init();
 
-        let QUIT = Exec.QUIT();
         let INT = LibSym.INT();
         let STR = LibSym.STR();
         //let SYS = LibSym.SYS();
@@ -56,10 +54,10 @@ class Main {
 
         while (running) {
             let argv = Parse.next();
-            while (argv.length()) {
+            //while (argv.length() > 0) {
                 do Main.try(argv);
-            }
-            do argv.dispose();
+            //}
+            //do argv.dispose();
         }
 
         return;
@@ -91,10 +89,10 @@ class Main {
     }
 
 
-    function void enqueue(Symbol sym) {
+    function Symbol enqueue(Symbol sym) {
 
         if (sym = null) {
-            return;
+            return null;
         }
 
         let FARGV[0] = sym.data();
@@ -105,6 +103,12 @@ class Main {
             do LibIO.put(Str.format(FDSTR, FARGV));
         }}
 
+        return sym;
+    }
+
+
+    function void quit() {
+        let running = false;
         return;
     }
 

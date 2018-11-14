@@ -241,6 +241,22 @@ class Eval {
     }
 
 
+    function int condition(Symbol arg) {
+        var int c;
+        var Symbol cp;
+
+        let cp = Eval.arg(LibSym.copySym(arg));
+        if (cp = null) {
+            /* todo: error? */
+            return 0;
+        }
+        let c = cp.data();
+        do LibSym.destroySym(cp);
+
+        return c;
+    }
+
+
     function Symbol arg(Symbol arg) {
 
         if (arg = null) {
