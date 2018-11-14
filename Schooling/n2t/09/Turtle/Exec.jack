@@ -2,15 +2,11 @@ class Exec {
 
     static int BIN, BLOCK, CMD, CMDLIN, FUNC, INT, LIST, STR;
     static int ASSIGN, FUNCTION, IF, REPEAT, QUIT;
-    //static Array FARGV;
-    //static String ARGVFS;
     static String IFS, ELSES;
 
 
     function void init() {
 
-        //let FARGV = Array.new(1);
-        //let ARGVFS = "%D";
         let IFS = "IF";
         let ELSES = "ELSE";
 
@@ -42,8 +38,6 @@ class Exec {
 
 
     function void kill() {
-        do FARGV.dispose();
-        do ARGVFS.dispose();
         do IFS.dispose();
         do ELSES.dispose();
         return;
@@ -162,6 +156,9 @@ class Exec {
         let name = arg.tag();
         do arg.dispose();
         let arg = Eval.arg(argv.pop());
+        if (arg = null) {
+            /* todo: error */
+        }
         do Eval.install(name, arg.meta(), arg.data());
         do arg.dispose();
 
@@ -182,9 +179,7 @@ class Exec {
         do Eval.install(arg.tag(), FUNC, LibSym.copyList(argv));
 
         do arg.dispose();
-        while (argv.length() > 0) {
-            do LibSym.destroySym(argv.pop());
-        }
+        do LibSym.destroyList(argv);
 
         return;
     }

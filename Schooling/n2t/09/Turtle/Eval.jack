@@ -281,6 +281,7 @@ class Eval {
 
         if (op =  38) { return m & n; }
         if (op = 124) { return m | n; }
+        if (op =  94) { return ~(m&n) & (m|n); }
 
         if (op =  43) { return m + n; }
         if (op =  45) { return m - n; }
