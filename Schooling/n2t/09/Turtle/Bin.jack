@@ -71,8 +71,6 @@ class Bin {
         if (cmd = TURNLEFT)  { return Bin.turnleft(argv.pop());  }
         if (cmd = TURNRIGHT) { return Bin.turnright(argv.pop()); }
 
-        do LibIO.fixCanvas();
-
         return null;
     }
 
@@ -95,15 +93,27 @@ class Bin {
 
         do Eval.arg(arg);
 
+        if (arg = null) {
+            do LibIO.error("expected argument");
+            return;
+        }
+
+        if (~(arg.meta() = INT)) {
+            do LibIO.error("expected number");
+            do LibSym.destroySym(arg);
+            return;
+        }
+
         if (arg.data() < 0) {
             do LibIO.error("won't go backwards");
+            do arg.dispose();
             return;
         }
 
         let target = t.aim(arg.data());
 
         if ( ((target[0] < left) | (target[0] > right))
-             | ((target[1] < top) | (target[1] > bottom)) ) {
+                | ((target[1] < top) | (target[1] > bottom)) ) {
             do LibIO.error("target beyond boundary");
             return;
         }
@@ -140,6 +150,11 @@ class Bin {
 
         do Eval.arg(arg);
 
+        if (arg = null) {
+            do LibIO.error("expected argument");
+            return;
+        }
+
         if (~(arg.meta() = STR)) {
             do LibIO.error("won't print that");
             return;
@@ -158,15 +173,43 @@ class Bin {
 
 
     function void turnleft(Symbol arg) {
+
         do Eval.arg(arg);
-        do t.turnleft(arg.data());
+
+        if (arg = null) {
+            do LibIO.error("expected argument");
+            return;
+        }
+
+        if (arg.meta() = INT) {
+            do t.turnleft(arg.data());
+        } else {
+            do LibIO.error("expected number");
+        }
+
+        do LibSym.destroySym(arg);
+
         return;
     }
 
 
     function void turnright(Symbol arg) {
+
         do Eval.arg(arg);
-        do t.turnright(arg.data());
+
+        if (arg = null) {
+            do LibIO.error("expected argument");
+            return;
+        }
+
+        if (arg.meta() = INT) {
+            do t.turnright(arg.data());
+        } else {
+            do LibIO.error("expected number");
+        }
+
+        do LibSym.destroySym(arg);
+
         return;
     }
 

@@ -1,12 +1,37 @@
 class Main {
 
     static boolean running;
-    static int INT, STR, SYS;
+    static int INT, STR;
     static Array FARGV;
     static String FSSTR, FDSTR;
 
 
     function void main() {
+
+        do Main.init();
+
+        let INT = LibSym.INT();
+        let STR = LibSym.STR();
+
+        let FARGV = Array.new(1);
+        let FSSTR = "'%S'";
+        let FDSTR = "%D";
+
+        do Main.printBanner();
+
+        do Main.run();
+
+        do Main.killall();
+
+        do FARGV.dispose();
+        do FSSTR.dispose();
+        do FDSTR.dispose();
+
+        return;
+    }
+
+
+    function void printBanner() {
         var String banner;
 
         let banner = "Turtle 0.01";
@@ -16,8 +41,13 @@ class Main {
         do Screen.setColor(true);
         do Screen.drawLine(0, 13, 509, 13);
 
-        do Turtle.init(2);
+        return;
+    }
+
+
+    function void init() {
         do Vector.init();
+        do Turtle.init(2);
         do Collection.init();
         do LibIO.init();
         do LibSym.init();
@@ -30,19 +60,13 @@ class Main {
             LibSym.CHARSETSIZE()+1);
         do Parse.init();
         do Eval.init();
+        do Bin.init();
         do Exec.init();
+        return;
+    }
 
-        let INT = LibSym.INT();
-        let STR = LibSym.STR();
-        //let SYS = LibSym.SYS();
-        let FARGV = Array.new(1);
-        let FSSTR = "'%S'";
-        let FDSTR = "%D";
 
-        do Main.run();
-
-        // todo: disposes
-
+    function void killall() {
         return;
     }
 
@@ -57,7 +81,7 @@ class Main {
             //while (argv.length() > 0) {
                 do Main.try(argv);
             //}
-            //do argv.dispose();
+            do argv.dispose();
         }
 
         return;
@@ -66,14 +90,12 @@ class Main {
 
     function void try(Collection argv) {
         var String s;
-        var Symbol ret;
 
         if (LibIO.noerr()) {  /* This is the check for parse errors. */
-            let ret = Exec.cmdlin(argv);
-            if (LibIO.noerr()) {
-                do Main.enqueue(ret);
-            }
-            do LibSym.destroyList(ret);
+            do LibSym.destroySym(
+                Main.enqueue(
+                    Exec.cmdlin(argv)));
+            do LibIO.fixCanvas();
         }
 
         /* Error messages are queued. */
@@ -95,13 +117,15 @@ class Main {
             return null;
         }
 
-        let FARGV[0] = sym.data();
+        if (LibIO.noerr()) {
+            let FARGV[0] = sym.data();
 
-        if (sym.meta() = STR) {
-            do LibIO.put(Str.format(FSSTR, FARGV));
-        } else { if (sym.meta() = INT) {
-            do LibIO.put(Str.format(FDSTR, FARGV));
-        }}
+            if (sym.meta() = STR) {
+                do LibIO.put(Str.format(FSSTR, FARGV));
+            } else { if (sym.meta() = INT) {
+                do LibIO.put(Str.format(FDSTR, FARGV));
+            }}
+        }
 
         return sym;
     }

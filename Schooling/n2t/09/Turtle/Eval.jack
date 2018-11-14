@@ -19,7 +19,7 @@ class Eval {
         let UOP = LibSym.UOP();
         let FSPECTAB = Eval.fspectab();
         let TYPETAB = Eval.typetab();
-        let FERRFS = "expected format argument of type %S";
+        let FERRFS = "expected %S argument";
         let FERRARGV = Array.new(1);
         let scope = Collection.new();
         let symtab = Collection.new();
@@ -54,10 +54,10 @@ class Eval {
         let typetab = Array.new(3);  /* magic number! */
         let i = 0;
 
-        let typetab[i] = LibIO.escseq(INT, "INT");
+        let typetab[i] = LibIO.escseq(INT, "integer");
         let i = i + 1;
 
-        let typetab[i] = LibIO.escseq(STR, "STR");
+        let typetab[i] = LibIO.escseq(STR, "string");
         let i = i + 1;
 
         let typetab[i] = null;
@@ -67,11 +67,11 @@ class Eval {
 
 
     function int integer(Collection queue) {
-        var int lo, ro, n;
+        var int lo, ro;  /* left operand, right operand */
+        var int n;
         var Collection stack;
         var Symbol p1, p2, p3;
 
-        let queue = arg.data();
         let stack = Collection.new();
 
         while (queue.length() > 0) {
@@ -110,52 +110,62 @@ class Eval {
     }
 
 
-    function String string(Collection fstrex) {
+    function String string(Collection argv) {
         var boolean fspec;
         var char c;
         var int a, i;
         var int type;
-        var Array argv;
+        var Array fargv;
         var String s, t;
-        var Symbol argp;
+        var Symbol arg;
 
-        let argp = Eval.arg(fstrex.pop());
+        let arg = Eval.arg(argv.pop());
 
-        if (~(argp.meta() = STR)) {
-            do LibIO.error("expected string");
-            do LibSym.destroySym(argp);
+        if (~(arg.meta() = STR)) {
+            do LibIO.error("expected format string");
+            do LibSym.destroySym(arg);
             return "";
         }
 
-        let s = argp.data();
-        do argp.dispose();
+        let s = arg.data();
+        do arg.dispose();
 
         if (s.length() < 2) {
             return s;
         }
 
-        let argv = Array.new(s.length()/2);
+        let fargv = Array.new(s.length()/2);
         let fspec = false;
         let a = 0;
         let i = 0;
         while (i < s.length()) {
             let c = s.charAt(i);
             if (fspec) {
-                let argp = Eval.arg(argv.nth(a));
-                if (argp = null) {
+                let arg = Eval.arg(argv.nth(a));
+                if (arg = null) {
                     do LibIO.error("expected format argument");
-                    do LibSym.destroyList(argv);
+                    while (a > 0) {
+                        do LibSym.destroySym(argv.pop());
+                        let a = a - 1;
+                    }
+                    do fargv.dispose();
+                    do s.dispose();
                     return "";
                 }
                 let type = Lex.escape(c, FSPECTAB);
-                if (~(argp.meta() = type)) {
+                if (~(arg.meta() = type)) {
                     let FERRARGV[0] = Lex.escape(type, TYPETAB);
                     do LibIO.error(Str.format(FERRFS, FERRARGV));
-                    do LibSym.destroyList(argv);
-                    do LibSym.destroySym(argp);
+                    while (a > 0) {
+                        do LibSym.destroySym(argv.pop());
+                        let a = a - 1;
+                    }
+                    do LibSym.destroySym(arg);
+                    do fargv.dispose();
+                    do s.dispose();
                     return "";
                 }
-                let argv[a] = argp.data();
+                let fargv[a] = arg.data();
                 let a = a + 1;
                 let fspec = false;
             } else { if (c = 37) {  /* magic number! interpreter esc char */
@@ -171,7 +181,11 @@ class Eval {
             let t = Str.format(s, argv);
         }
 
-        do LibSym.destroyList(argv);
+        while (a > 0) {
+            do LibSym.destroySym(argv.pop());
+            let a = a - 1;
+        }
+        do fargv.dispose();
         do s.dispose();
 
         return t;
@@ -217,25 +231,24 @@ class Eval {
 
 
     function void block(Symbol block) {
-        var Symbol new, old;
+        var Symbol ret;
 
-        let old = block.data();
-        let new = Exec.block(block);
-        do LibSym.destroyList(old);
+        let ret = Exec.block(block);
+        do LibSym.destroySym(block);
 
-        if (new = null) {
+        if (ret = null) {
             do block.setData(null);
             do block.setMeta(null);
             return;
         }
 
-        if (new.meta() = STR) {
-            do block.setData(Str.dup(new.data()));
+        if (ret.meta() = STR) {
+            do block.setData(Str.dup(ret.data()));
         } else {
-            do block.setData(new.data());
+            do block.setData(ret.data());
         }
 
-        do block.setMeta(new.meta());
+        do block.setMeta(ret.meta());
 
         return;
     }

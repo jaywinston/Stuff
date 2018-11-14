@@ -45,38 +45,36 @@ class Exec {
 
 
     function Symbol cmdlin(Collection argv) {
-        var Symbol arg, ret;
+        var int cmd, type;
+        var Symbol arg;
 
-        let arg = argv.pop();
+        let arg = Eval.arg(argv.pop());
 
         if (arg = null) {
             return null;
         }
 
-        do Eval.arg(arg);
+        let cmd = arg.data();
+        let type = arg.meta();
+        do arg.dispose();
 
-        if (arg.meta() = BIN) {
-            return Bin.exec(arg, argv);
+        if (type = BIN) {
+            return Bin.exec(cmd, argv);
         }
 
-        if (arg.meta() = CMD) {
-            return Exec.cmd(arg, argv);
+        if (type = CMD) {
+            return Exec.cmd(cmd, argv);
         }
 
-        if (arg.meta() = FUNC) {
-            return Exec.call(arg, argv);
+        if (type = FUNC) {
+            return Exec.call(cmd, argv);
         }
 
         return arg;
     }
 
 
-    function Symbol cmd(Symbol arg, Collection argv) {
-        var int cmd;
-
-        let cmd = arg.data();
-
-        do arg.dispose();
+    function Symbol cmd(int cmd, Collection argv) {
 
         if (cmd = ASSIGN)          { return Exec.doAssign(argv);   }
         else { if (cmd = FUNCTION) { return Exec.doFunction(argv); }
@@ -91,31 +89,13 @@ class Exec {
     }
 
 
-    function Symbol call(Symbol arg, Collection argv) {
-        var int fargi;
-        var Array fargv;
-        var String argname, fstr;
-        var Symbol arg, ret;
+    function Symbol call(Collection func, Collection argv) {
+        var Symbol ret;
 
         do Eval.pushScope(3, argv);
-/*
-        let fargi = 0;
-
-        let arg = argv.next();
-        while (~(arg = null)) {
-            let fargi = fargi + 1;
-            let FARGV[0] = fargi;
-            let argname = Str.format(FARGVS, FARGV);
-            do Eval.arg(arg);
-            do Eval.install(argname, arg.meta(), arg.data());
-            do argname.dispose();
-            let arg = arg.next();
-        }
-
-*/
-        let ret = Exec.cmdlin(arg.data());
+        let ret = Exec.cmdlin(func);
         do Eval.dropScope();
-        do LibSym.destroySym(arg);
+        do LibSym.destroyList(func);
 
         return ret;
     }
@@ -129,22 +109,15 @@ class Exec {
             return null;
         }
 
-        if (block.data() = null) {
-            return null;
-        }
-
         let cmdlist = block.data();
-        do block.dispose();
 
-        let ret = Exec.cmdlin(cmdlist.pop());
-        while (cmdlist.length() > 0) {
-            do LibSym.destroySym(ret);
-            let ret = Exec.cmdlin(cmdlist.pop());
+        while (cmdlist.length() > 1) {
+            do LibSym.destroySym(
+                Main.enqueue(
+                    Exec.cmdlin(cmdlist.pop())));
         }
 
-        do cmdlist.dispose();
-
-        return ret;
+        return Exec.cmdlin(cmdlist.pop());
     }
 
 
@@ -157,7 +130,7 @@ class Exec {
         do arg.dispose();
         let arg = Eval.arg(argv.pop());
         if (arg = null) {
-            /* todo: error */
+            do LibIO.error("expected expression");
         }
         do Eval.install(name, arg.meta(), arg.data());
         do arg.dispose();

@@ -37,19 +37,19 @@ class Symbol {
         return data;
     }
 
-    method void setTag(int tag) {
-        let tag = tag;
+    method void setTag(int t) {
+        let tag = t;
         return;
     }
 
 
-    method void setMeta(int meta) {
-        let meta = meta;
+    method void setMeta(int m) {
+        let meta = m;
         return;
     }
 
-    method void setData(int data) {
-        let data = data;
+    method void setData(int d) {
+        let data = d;
         return;
     }
 
