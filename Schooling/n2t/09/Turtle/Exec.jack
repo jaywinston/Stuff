@@ -58,17 +58,9 @@ class Exec {
         let type = arg.meta();
         do arg.dispose();
 
-        if (type = BIN) {
-            return Bin.exec(cmd, argv);
-        }
-
-        if (type = CMD) {
-            return Exec.cmd(cmd, argv);
-        }
-
-        if (type = FUNC) {
-            return Exec.call(cmd, argv);
-        }
+        if (type = BIN)  { return Bin.exec(cmd, argv);  }
+        if (type = CMD)  { return Exec.cmd(cmd, argv);  }
+        if (type = FUNC) { return Exec.call(cmd, argv); }
 
         return arg;
     }
