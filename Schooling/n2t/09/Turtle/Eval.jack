@@ -1,3 +1,5 @@
+// Site use of the meta namespace is bit[0..2] to classify unary operator.
+
 class Eval {
 
     static int BLOCK, FUNC, INT, INTEX, OP, STR, STREX, SYM, UOP;
@@ -80,7 +82,7 @@ class Eval {
 
             if (p1.meta() = UOP) {
                 do stack.push(Eval.uoperate(stack.pop(), p1.data()));
-            } else { if ( (p1.meta()&OP) = OP) {
+            } else { if (p1.meta() = OP) {
                 let ro = stack.pop();
                 let lo = stack.pop();
                 do stack.push(Eval.operate(lo, ro, p1.data()));

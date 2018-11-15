@@ -8,16 +8,15 @@ class Main {
 
     function void main() {
 
+        do Main.printBanner();
+
         do Main.init();
 
         let INT = LibSym.INT();
         let STR = LibSym.STR();
-
         let FARGV = Array.new(1);
         let FSSTR = "'%S'";
         let FDSTR = "%D";
-
-        do Main.printBanner();
 
         do Main.run();
 
@@ -119,7 +118,6 @@ class Main {
 
         if (LibIO.noerr()) {
             let FARGV[0] = sym.data();
-
             if (sym.meta() = STR) {
                 do LibIO.put(Str.format(FSSTR, FARGV));
             } else { if (sym.meta() = INT) {

@@ -1,6 +1,8 @@
+// Site use of the "meta" namespace is bit[0] to classify executables.
+
 class Exec {
 
-    static int BIN, BLOCK, CMD, CMDLIN, FUNC, INT, LIST, STR;
+    static int BIN, BLOCK, CMD, CMDLIN, EXE, FUNC, INT, LIST, SITE, STR;
     static int ASSIGN, FUNCTION, IF, REPEAT, QUIT;
     static String IFS, ELSES;
 
@@ -14,9 +16,11 @@ class Exec {
         let BLOCK = LibSym.BLOCK();
         let CMD = LibSym.CMD();
         let CMDLIN = LibSym.CMDLIN();
+        let EXE = 1;  /* magic number! */
         let FUNC = LibSym.FUNC();
         let INT = LibSym.INT();
         let LIST = LibSym.LIST();
+        let SITE = LibSym.SITE() ;
         let STR = LibSym.STR();
 
         let ASSIGN   = 1;
@@ -54,6 +58,11 @@ class Exec {
             return null;
         }
 
+// todo: sort this out
+        if (~( (arg.meta()|SITE) = EXE )) {
+            return arg;
+        }
+
         let cmd = arg.data();
         let type = arg.meta();
         do arg.dispose();
@@ -62,7 +71,7 @@ class Exec {
         if (type = CMD)  { return Exec.cmd(cmd, argv);  }
         if (type = FUNC) { return Exec.call(cmd, argv); }
 
-        return arg;
+        return null;
     }
 
 

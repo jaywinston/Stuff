@@ -50,12 +50,10 @@ class LibSym {
         let ctab = LibSym.ctab();
 
         let CMD = 1;
-        let BIN = 2;
-        let SYS = 3;
-        let TTL = 4;
+        let BIN = 3;
         let LIST = ctab[91];
-        let CMDLIN = LIST + 1;
-        let FUNC = LIST + 2;
+        let FUNC = LIST + 1;
+        let CMDLIN = LIST + 2;
         let BLOCK = ctab[123];
         let SYM = ctab[65];
         let INT = ctab[48];
@@ -232,21 +230,21 @@ class LibSym {
     }
 
 
+    function int BIN() { return BIN; }
+    function int BLOCK() { return BLOCK; }
     function int CHARSETSIZE() { return HACK_CHARSET_SIZE; }
     function int CLASSMASK() { return CLASSMASK; }
-    function int BIN() { return BIN; }
     function int CMD() { return CMD; }
-    function int TTL() { return TTL; }
-    function int OP() { return OP; }
-    function int UOP() { return UOP; }
-    function int LIST() { return LIST; }
-    function int BLOCK() { return BLOCK; }
     function int CMDLIN() { return CMDLIN; }
     function int FUNC() { return FUNC; }
-    function int INTEX() { return INTEX; }
-    function int STREX() { return STREX; }
-    function int STR() { return STR; }
     function int INT() { return INT; }
+    function int INTEX() { return INTEX; }
+    function int LIST() { return LIST; }
+    function int OP() { return OP; }
+    function int SITE() { return CLASSMASK; }
+    function int STR() { return STR; }
+    function int STREX() { return STREX; }
     function int SYM() { return SYM; }
+    function int UOP() { return UOP; }
 
 }

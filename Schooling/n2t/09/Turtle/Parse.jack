@@ -1,3 +1,5 @@
+// Site use of the meta namespace is bit[0..2] to classify operator precedence.
+
 class Parse {
 
     static int BEND, BLANK, BLOCK, CMDLIN, COMMA, DELIM, END, EOS, EQ, INT,
@@ -237,6 +239,7 @@ class Parse {
                     let stkp = stack.nth(0);
                     while ( ~(stkp.meta()<token.meta())
                             /* & ~(stkp.meta()=LPAREN) */ ) {
+                        do stkp.setMeta(OP);
                         do queue.append(stack.pop());
                         let stkp = stack.nth(0);
                     }
