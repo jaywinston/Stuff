@@ -20,7 +20,7 @@ class Exec {
         let FUNC = LibSym.FUNC();
         let INT = LibSym.INT();
         let LIST = LibSym.LIST();
-        let SITE = LibSym.SITE() ;
+        let SITE = LibSym.SITE() | EXE;
         let STR = LibSym.STR();
 
         let ASSIGN   = 1;
@@ -48,18 +48,19 @@ class Exec {
     }
 
 
-    function Symbol cmdlin(Collection argv) {
+    function Symbol cmdlin(Symbol cmdlin) {
         var int cmd, type;
+        var Collection argv;
         var Symbol arg;
 
+        let argv = cmdlin.data();
         let arg = Eval.arg(argv.pop());
 
         if (arg = null) {
             return null;
         }
 
-// todo: sort this out
-        if (~( (arg.meta()|SITE) = EXE )) {
+        if (~( (arg.meta()&SITE) = EXE )) {
             return arg;
         }
 
@@ -104,7 +105,7 @@ class Exec {
 
     function Symbol block(Symbol block) {
         var Collection cmdlist;
-        var Symbol ret;
+        var Symbol cmd;
 
         if (block = null) {
             return null;

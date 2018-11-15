@@ -71,7 +71,7 @@ class Main {
 
 
     function void run() {
-        var Collection argv;
+        var Symbol argv;
 
         let running = true;
 
