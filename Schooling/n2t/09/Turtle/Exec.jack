@@ -48,22 +48,26 @@ class Exec {
     }
 
 
-    function Symbol cmdlin(Symbol cmdlin) {
-        var int cmd, type;
-        var Collection argv;
+    function Symbol cmdlin(Collection argv) {
         var Symbol arg;
 
-        let argv = cmdlin.data();
         let arg = Eval.arg(argv.pop());
 
         if (arg = null) {
             return null;
         }
 
-        if (~( (arg.meta()&SITE) = EXE )) {
-            return arg;
+        if ( (arg.meta()&SITE) = EXE ) {
+            return Exec.executable(arg, argv);
         }
 
+        return arg;
+    }
+
+
+    function Symbol executable(Symbol arg, Collection argv) {
+        var int cmd, type;
+        
         let cmd = arg.data();
         let type = arg.meta();
         do arg.dispose();
@@ -94,24 +98,21 @@ class Exec {
     function Symbol call(Collection func, Collection argv) {
         var Symbol ret;
 
-        do Eval.pushScope(3, argv);
+        do Eval.pushContext(argv);
         let ret = Exec.cmdlin(func);
-        do Eval.dropScope();
+        do Eval.dropContext();
         do LibSym.destroyList(func);
 
         return ret;
     }
 
 
-    function Symbol block(Symbol block) {
-        var Collection cmdlist;
+    function Symbol block(Collection cmdlist) {
         var Symbol cmd;
 
-        if (block = null) {
+        if (cmdlist = null) {  // ##TODO## might not need
             return null;
         }
-
-        let cmdlist = block.data();
 
         while (cmdlist.length() > 1) {
             do LibSym.destroySym(

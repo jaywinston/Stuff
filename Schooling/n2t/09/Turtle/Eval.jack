@@ -6,7 +6,8 @@ class Eval {
     static Array FSPECTAB, TYPETAB;
     static Array FERRARGV;
     static String FERRFS;
-    static Collection scope, symtab;
+    static Collection scope;
+    static HashTable symtab;
 
 
     function void init() {
@@ -24,8 +25,7 @@ class Eval {
         let FERRFS = "expected %S argument";
         let FERRARGV = Array.new(1);
         let scope = Collection.new();
-        let symtab = Collection.new();
-        do symtab.append(HashTable.new(15));
+        let symtab = HashTable.new(15);
         return;
     }
 
@@ -107,6 +107,7 @@ class Eval {
         }
 
         do stack.dispose();
+        do queue.dispose();
 
         return n;
     }
@@ -146,11 +147,7 @@ class Eval {
                 let arg = Eval.arg(argv.nth(a));
                 if (arg = null) {
                     do LibIO.error("expected format argument");
-                    while (a > 0) {
-                        do LibSym.destroySym(argv.pop());
-                        let a = a - 1;
-                    }
-                    do fargv.dispose();
+                    do LibSym.destroyList(argv);
                     do s.dispose();
                     return "";
                 }
@@ -158,12 +155,8 @@ class Eval {
                 if (~(arg.meta() = type)) {
                     let FERRARGV[0] = Lex.escape(type, TYPETAB);
                     do LibIO.error(Str.format(FERRFS, FERRARGV));
-                    while (a > 0) {
-                        do LibSym.destroySym(argv.pop());
-                        let a = a - 1;
-                    }
+                    do LibSym.destroyList(argv);
                     do LibSym.destroySym(arg);
-                    do fargv.dispose();
                     do s.dispose();
                     return "";
                 }
@@ -183,10 +176,7 @@ class Eval {
             let t = Str.format(s, argv);
         }
 
-        while (a > 0) {
-            do LibSym.destroySym(argv.pop());
-            let a = a - 1;
-        }
+        do LibSym.destroyList(argv);
         do fargv.dispose();
         do s.dispose();
 
@@ -235,8 +225,8 @@ class Eval {
     function void block(Symbol block) {
         var Symbol ret;
 
-        let ret = Exec.block(block);
-        do LibSym.destroySym(block);
+        let ret = Exec.block(block.data());
+        do LibSym.destroyList(block.data());
 
         if (ret = null) {
             do block.setData(null);
@@ -251,6 +241,8 @@ class Eval {
         }
 
         do block.setMeta(ret.meta());
+
+        do LibSym.destroySym(ret);
 
         return;
     }
@@ -312,7 +304,7 @@ class Eval {
 
         if (op =  38) { return m & n; }
         if (op = 124) { return m | n; }
-        if (op =  94) { return ~(m&n) & (m|n); }
+        if (op =  94) { return (m|n) & ~(m&n); }
 
         if (op =  43) { return m + n; }
         if (op =  45) { return m - n; }
@@ -332,29 +324,29 @@ class Eval {
     }
 
 
-    function void pushScope(int hsize, Collection argv) {
-        do symtab.push(HashTable.new(hsize));
-        do scope.push(argv);
+    function void pushContext(Collection argv) {
+        do context.push(argv);
         return;
     }
 
 
-    function void dropScope() {
-        do LibSym.destroyHashTable(symtab.pop());
-        do LibSym.destroyList(scope.pop());
+    function void dropContext() {
+        do LibSym.destroyList(context.pop());
         return;
     }
 
 
     function Symbol lookup(String s) {
-        var int i;
-        var HashTable table;
-        var Symbol sym;
+        //var int i;
+        //var HashTable table;
+        //var Symbol sym;
 
         if (Eval.isArg(s)) {
             return Eval.lookupArg(s);
         }
 
+        return symtab.lookup(s);
+/*
         let i = 0;
         while (i < symtab.length()) {
             let table = symtab.nth(i);
@@ -366,6 +358,7 @@ class Eval {
         }
 
         return null;
+*/
     }
 
 
@@ -384,7 +377,7 @@ class Eval {
         let i = 1;
         while (i < s.length()) {
             let c = s.charAt(i);
-            if (~( (c>47) & (c<58) )) {
+            if ( (c<48) | (c>57) ) {
                 return false;
             }
             let i = i + 1;
@@ -405,7 +398,7 @@ class Eval {
 
 
     function void install(String name, int type, int value) {
-        do LibSym.install(symtab.nth(0), name, type, value);
+        do LibSym.install(symtab/*.nth(0)*/, name, type, value);
         return;
     }
 
