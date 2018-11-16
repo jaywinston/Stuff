@@ -8,14 +8,14 @@ class Main {
 
     function void main() {
 
-        do Main.printBanner();
+        do Main.printBanner("Turtle 0.01");
 
         do Main.init();
 
         let INT = LibSym.INT();
         let STR = LibSym.STR();
         let FARGV = Array.new(1);
-        let FSSTR = "'%S'";
+        let FSSTR = "`%S'";
         let FDSTR = "%D";
 
         do Main.run();
@@ -30,15 +30,13 @@ class Main {
     }
 
 
-    function void printBanner() {
-        var String banner;
+    function void printBanner(String banner) {
 
-        let banner = "Turtle 0.01";
-        do Output.moveCursor(0, 23);
+        do Output.moveCursor(0, 23);  /* magic number!s */
         do Output.printString(banner);
         do banner.dispose();
         do Screen.setColor(true);
-        do Screen.drawLine(0, 13, 509, 13);
+        do Screen.drawLine(0, 13, 509, 13);  /* magic number!s */
 
         return;
     }
@@ -76,11 +74,12 @@ class Main {
         let running = true;
 
         while (running) {
-            let argv = Parse.next();
+            //let argv = Parse.next();
             //while (argv.length() > 0) {
-                do Main.try(argv);
+                do Main.try(null);
+                //do Main.try(argv);
             //}
-            do argv.dispose();
+            //do argv.dispose();
         }
 
         return;
@@ -90,12 +89,14 @@ class Main {
     function void try(Collection argv) {
         var String s;
 
-        if (LibIO.noerr()) {  /* This is the check for parse errors. */
+//        if (LibIO.noerr()) {  /* This is the check for parse errors. */
             do LibSym.destroySym(
                 Main.enqueue(
-                    Exec.cmdlin(argv)));
+                    Exec.cmdlin(
+                        Parse.next())));
+                    //Exec.cmdlin(argv)));
             do LibIO.fixCanvas();
-        }
+//        }
 
         /* Error messages are queued. */
         do LibIO.clearerr();

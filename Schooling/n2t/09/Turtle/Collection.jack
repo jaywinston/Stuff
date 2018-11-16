@@ -5,7 +5,7 @@ class Collection {
     static int VAL, NEXT, NODESIZ;
 
     field int length;
-    field Array head, tail;
+    field Array end, head, tail;
 
 
     function void init() {
@@ -18,7 +18,8 @@ class Collection {
 
     constructor Collection new() {
         let tail = Array.new(NODESIZ);
-        let tail[NEXT] = null;
+        let end = null;
+        let tail[NEXT] = end;
         let head = tail;
         let length = 0;
         return this;
@@ -26,7 +27,7 @@ class Collection {
 
 
     method void dispose() {
-        while (~(head = null)) {
+        while (~(head = end)) {
             let tail = head[NEXT];
             do head.dispose();
             let head = tail;
@@ -44,7 +45,7 @@ class Collection {
         var Array node;
 
         let node = Array.new(NODESIZ);
-        let node[NEXT] = null;
+        let node[NEXT] = end;
         let tail[NEXT] = node;
         let tail[VAL] = val;
         let tail = node;
@@ -71,8 +72,12 @@ class Collection {
         var int val;
         var Array node;
 
-        if (head[NEXT] = null) {
+        if (head[NEXT] = end) {
             return 0;
+        }
+
+        if (head = end) {
+            let end = null;
         }
 
         let node = head;
@@ -85,7 +90,7 @@ class Collection {
     }
 
 
-    method int _nth(int i) {
+    method Array _nth(int i) {
         var Array p;
 
         if ( (i<0) | ~(i<length) ) {

@@ -56,7 +56,7 @@ class Parse {
 
     function Collection next() {
         do Parse.cmdlin(LibIO.read(PS1), ARGV, 0);
-        return ARGV;
+        return ARGV.data();
     }
 
 
