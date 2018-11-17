@@ -2,7 +2,7 @@
 
 class Eval {
 
-    static int BLOCK, FUNC, INT, INTEX, OP, STR, STREX, SYM, UOP;
+    static int BLOCK, FUNC, GLOBL, INT, INTEX, OP, STR, STREX, SYM, UOP;
     static Array FSPECTAB, TYPETAB;
     static Array FERRARGV;
     static String FERRFS;
@@ -16,6 +16,7 @@ class Eval {
         let INT = LibSym.INT();
         let INTEX = LibSym.INTEX();
         let OP = LibSym.OP();
+        let GLOBL = ~LibSym.SITE();
         let STR = LibSym.STR();
         let STREX = LibSym.STREX();
         let SYM = LibSym.SYM();
@@ -37,10 +38,10 @@ class Eval {
         let fspectab = Array.new(3);  /* magic number! */
         let i = 0;
 
-        let fspectab[i] = LibIO.escseq(68, INT);
+        let fspectab[i] = LibIO.map(68, INT);
         let i = i + 1;
 
-        let fspectab[i] = LibIO.escseq(83, STR);
+        let fspectab[i] = LibIO.map(83, STR);
         let i = i + 1;
 
         let fspectab[i] = null;
@@ -56,10 +57,10 @@ class Eval {
         let typetab = Array.new(3);  /* magic number! */
         let i = 0;
 
-        let typetab[i] = LibIO.escseq(INT, "integer");
+        let typetab[i] = LibIO.map(INT, "integer");
         let i = i + 1;
 
-        let typetab[i] = LibIO.escseq(STR, "string");
+        let typetab[i] = LibIO.map(STR, "string");
         let i = i + 1;
 
         let typetab[i] = null;
@@ -69,35 +70,36 @@ class Eval {
 
 
     function int integer(Collection queue) {
-        var int lo, ro;  /* left operand, right operand */
+        var int lo, ro;  /* left, right operand */
         var int n;
         var Collection stack;
-        var Symbol p1, p2, p3;
+        var Symbol tok;
 
         let stack = Collection.new();
 
         while (queue.length() > 0) {
 
-            let p1 = queue.pop();
+            let tok = queue.pop();
 
-            if (p1.meta() = UOP) {
-                do stack.push(Eval.uoperate(stack.pop(), p1.data()));
-            } else { if (p1.meta() = OP) {
+            if (tok.meta() = UOP) {
+                do stack.push(Eval.uoperate(stack.pop(), tok.data()));
+            } else { if ( (tok.meta()&GLOBL) = OP) {
                 let ro = stack.pop();
                 let lo = stack.pop();
-                do stack.push(Eval.operate(lo, ro, p1.data()));
+                do stack.push(Eval.operate(lo, ro, tok.data()));
             } else {
-                do Eval.arg(p1);
-                if (~(p1.meta() = INT)) {
+                do Eval.arg(tok);
+                if (~(tok.meta() = INT)) {
                     do LibIO.error("expected integer");
                     do LibSym.destroyList(stack);
-                    do LibSym.destroySym(p1);
+                    do LibSym.destroyList(queue);
+                    do LibSym.destroySym(tok);
                     return 0;
                 }
-                do stack.push(p1.data());
+                do stack.push(tok.data());
             }}
 
-            do p1.dispose();
+            do tok.dispose();
         }
 
         let n = stack.pop();
@@ -124,8 +126,15 @@ class Eval {
 
         let arg = Eval.arg(argv.pop());
 
+        if (arg = null) {
+            do LibIO.error("expected format string");
+            do LibSym.destroyList(argv);
+            return "";
+        }
+
         if (~(arg.meta() = STR)) {
             do LibIO.error("expected format string");
+            do LibSym.destroyList(argv);
             do LibSym.destroySym(arg);
             return "";
         }
@@ -156,7 +165,6 @@ class Eval {
                     let FERRARGV[0] = Lex.escape(type, TYPETAB);
                     do LibIO.error(Str.format(FERRFS, FERRARGV));
                     do LibSym.destroyList(argv);
-                    do LibSym.destroySym(arg);
                     do s.dispose();
                     return "";
                 }
@@ -173,7 +181,7 @@ class Eval {
             do LibIO.error("expected format specifier");
             let t = "";
         } else {
-            let t = Str.format(s, argv);
+            let t = Str.format(s, fargv);
         }
 
         do LibSym.destroyList(argv);

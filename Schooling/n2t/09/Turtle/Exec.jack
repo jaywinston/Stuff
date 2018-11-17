@@ -20,7 +20,7 @@ class Exec {
         let FUNC = LibSym.FUNC();
         let INT = LibSym.INT();
         let LIST = LibSym.LIST();
-        let SITE = LibSym.SITE() | EXE;
+        let SITE = ~LibSym.SITE() | EXE;
         let STR = LibSym.STR();
 
         let ASSIGN   = 1;

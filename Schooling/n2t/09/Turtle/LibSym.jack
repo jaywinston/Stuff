@@ -34,15 +34,15 @@ class LibSym {
 
     static int BIN, CMD, TTL, BLOCK, CMDLIN, FUNC, INTEX, LIST, STREX, STR,
         INT, SYM, SYS, OP, UOP;
-    static int HACK_CHARSET_SIZE, EOS_MAP, NOLGL_MAP, CLASSMASK;
+    static int HACK_CHARSET_SIZE, EOS_MAP, NOLGL_MAP, SITE;
 
 
     function void init() {
         var Array ctab;
 
-        /* magic numbers! */
+        /* magic number!s */
         let HACK_CHARSET_SIZE = 152;
-        let CLASSMASK = -8;
+        let SITE = 7;
 
         let EOS_MAP = HACK_CHARSET_SIZE;
         let NOLGL_MAP = HACK_CHARSET_SIZE + 1;
@@ -59,7 +59,7 @@ class LibSym {
         let INT = ctab[48];
         let INTEX = ctab[40];
         let OP = INTEX & ~LIST;
-        let UOP = ~CLASSMASK;
+        let UOP = OP | ~SITE;
         let STR = ctab[34];
         let STREX = ctab[44];
 
@@ -97,6 +97,7 @@ class LibSym {
         let ctab[ 40] =    24;  // (
         let ctab[ 38] =    25;  // &
         let ctab[124] =    25;  // |
+        let ctab[ 94] =    25;  // ^
         let ctab[ 61] =    26;  // =
         let ctab[ 33] =    26;  // !
         let ctab[ 60] =    26;  // <
@@ -107,8 +108,8 @@ class LibSym {
         let ctab[ 37] =    28;  // %
         let ctab[ 42] =    28;  // *
         let ctab[ 47] =    28;  // /
+        let ctab[ 41] =    29;  // )
         let ctab[ 93] =    32;  // ]
-        let ctab[ 41] =    40;  // )
         let ctab[ 32] =    64;  //  
         let ctab[123] =   528;  // {
         let ctab[125] =   544;  // }
@@ -233,7 +234,6 @@ class LibSym {
     function int BIN() { return BIN; }
     function int BLOCK() { return BLOCK; }
     function int CHARSETSIZE() { return HACK_CHARSET_SIZE; }
-    function int CLASSMASK() { return CLASSMASK; }
     function int CMD() { return CMD; }
     function int CMDLIN() { return CMDLIN; }
     function int FUNC() { return FUNC; }
@@ -241,7 +241,7 @@ class LibSym {
     function int INTEX() { return INTEX; }
     function int LIST() { return LIST; }
     function int OP() { return OP; }
-    function int SITE() { return CLASSMASK; }
+    function int SITE() { return SITE; }
     function int STR() { return STR; }
     function int STREX() { return STREX; }
     function int SYM() { return SYM; }
