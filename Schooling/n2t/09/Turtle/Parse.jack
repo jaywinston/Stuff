@@ -33,7 +33,7 @@ class Parse {
         let UOP = LibSym.UOP();
 
         let GLOBL = ~LibSym.SITE();
-        let SITE = OP | LibSym.SITE();
+        let SITE = OP;  // todo: site or op?
         let TOKENMASK = SYM | INT;
 
         let PS1 = ">";
@@ -223,7 +223,7 @@ class Parse {
                 do top.dispose();
                 let uop = false;
                 let i = i + 1;
-            } else { if ( (cc&GLOBL) = OP ) {
+            } else { if ( (cc&SITE) = OP ) {
                 let op = s.charAt(i);
                 let i = i + 1;
                 if (uop) {  /* I don't love this. */
