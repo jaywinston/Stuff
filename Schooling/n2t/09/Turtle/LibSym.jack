@@ -18,8 +18,8 @@
 //                     string format   |   |   |   |   |   |   |   |   |   |  
 //                                 block   |   |   |   |   |   |   |   |   |
 //                                    unused   |   |   |   |   |   |   |   |
-//                                        unused   |   |   |   |   |   |   |
-//                                       white space   |   |   |   |   |   |
+//                                   white space   |   |   |   |   |   |   |
+//                                             index   |   |   |   |   |   |
 //                                                   end   |   |   |   |   |
 //                                                      list   |   |   |   |
 //                                 integer expression / operator   |   |   |
@@ -32,8 +32,8 @@
 
 class LibSym {
 
-    static int BIN, CMD, TTL, BLOCK, CMDLIN, FUNC, INTEX, LIST, STREX, STR,
-        INT, SYM, SYS, OP, UOP;
+    static int BIN, BLOCK, CMD, CMDLIN, FUNC, INDEX, INT, INTEX, LIST, OP,
+        STR, STREX, SYM, UOP;
     static int HACK_CHARSET_SIZE, EOS_MAP, NOLGL_MAP, SITE;
 
 
@@ -47,23 +47,27 @@ class LibSym {
         let EOS_MAP = HACK_CHARSET_SIZE;
         let NOLGL_MAP = HACK_CHARSET_SIZE + 1;
 
-        let ctab = LibSym.ctab();
-
         let CMD = 1;
         let BIN = 3;
-        let LIST = ctab[91];
-        let FUNC = LIST + 1;
-        let CMDLIN = LIST + 2;
+
+        let ctab = LibSym.ctab();
+
         let BLOCK = ctab[123];
-        let SYM = ctab[65];
+        let INDEX = ctab[46];
         let INT = ctab[48];
         let INTEX = ctab[40];
-        let OP = INTEX & ~LIST;
-        let UOP = OP | ~SITE;
+        let LIST = ctab[91];
         let STR = ctab[34];
         let STREX = ctab[44];
+        let SYM = ctab[65];
 
         do ctab.dispose();
+
+        let FUNC = LIST + 1;
+        let CMDLIN = LIST + 2;
+
+        let OP = INTEX & ~LIST;
+        let UOP = OP | SITE;
 
         return;
     }
@@ -81,11 +85,19 @@ class LibSym {
             let i = i + 1;
         }
 
-        let i = 32;
-        while (i < 127) {
+        let i = 65;
+        while (i < 90) {
             let ctab[i] = 8192;
             let i = i + 1;
         }
+
+        let i = 97;
+        while (i < 122) {
+            let ctab[i] = 8192;
+            let i = i + 1;
+        }
+
+        let ctab[36] = 8192; // $
 
         let i = 48;
         while (i < 58) {
@@ -110,7 +122,8 @@ class LibSym {
         let ctab[ 47] =    28;  // /
         let ctab[ 41] =    29;  // )
         let ctab[ 93] =    32;  // ]
-        let ctab[ 32] =    64;  //  
+        let ctab[ 46] =    64;  // .
+        let ctab[ 32] =   128;  //  
         let ctab[123] =   528;  // {
         let ctab[125] =   544;  // }
         let ctab[ 44] =  1040;  // ,
