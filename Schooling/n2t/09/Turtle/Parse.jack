@@ -218,6 +218,7 @@ class Parse {
                         do LibSym.destroyList(stack);
                         return Parse.package(intex, queue, s, -1);
                     }
+                    do top.setMeta(OP);
                     do queue.append(stack.pop());
                     let top = stack.nth(0);
                 }
@@ -284,6 +285,7 @@ class Parse {
                 do LibSym.destroyList(stack);
                 return Parse.package(intex, queue, s, -1);
             }
+            do top.setMeta(OP);
             do queue.append(stack.pop());
             let top = stack.nth(0);
         }
