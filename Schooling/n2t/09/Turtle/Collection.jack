@@ -202,4 +202,14 @@ class Collection {
         return slice;
     }
 
+
+    method void extend(Collection c) {
+        var Array p;
+
+        do append(c._nth(0));
+        let tail = c._nth(c.length()-1);
+        let end = tail[NEXT];
+        return;
+    }
+
 }

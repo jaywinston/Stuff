@@ -171,7 +171,9 @@ class Parse {
 
             do cmdlin.append(word);
 
-            let i = Str.lskip(s, 32, i);
+            if (i > -1) {  /* don't like this */
+                let i = Str.lskip(s, 32, i);
+            }
 
             let cc = Parse.cclass(s, i) & GLOBL;
         }

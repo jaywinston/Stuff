@@ -286,7 +286,7 @@ class Exec {
 
 
     function void doQuit(Symbol arg) {
-        do Main.quit();  /* syscall! */
+        do Main.stop();  /* syscall! */
         return;
     }
 
