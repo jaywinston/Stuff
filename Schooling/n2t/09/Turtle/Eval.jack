@@ -207,9 +207,12 @@ class Eval {
 
 
     function void sym(Symbol sym) {
+        var String tag;
         var Symbol p;
 
-        let p = Eval.lookup(sym.tag());
+        let tag = p.data();
+        let p = Eval.lookup(tag);
+        do tag.dispose();
 
         if (p = null) {
             do LibIO.error("undefined symbol");

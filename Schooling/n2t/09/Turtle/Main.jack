@@ -130,7 +130,7 @@ class Main {
     }
 
 
-    function void quit() {
+    function void stop() {
         let running = false;
         return;
     }

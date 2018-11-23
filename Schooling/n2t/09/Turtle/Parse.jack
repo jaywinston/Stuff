@@ -92,61 +92,69 @@ class Parse {
     }
 
 
+    function int word(String s, Symbol word, int i) {
+        var int cc;
+        var String t;
+
+        if (i < 0) {
+            do word.setTag(s);
+            return i;
+        }
+
+        let i = Str.lskip(s, 32, i);
+        let cc = Parse.cclass(s, i);
+
+        if (cc = LIST) {
+            do LibIO.error("not implemented");
+            return -1;
+        } else { if (cc = BLOCK) {
+            do word.setMeta(BLOCK);
+            let i = Parse.block(s, word, i);
+            let s = Parse.tag(word);
+        } else { if (cc = INT) {
+            let t = String.new(s.length()-i);
+            let i = Lex.token(s, t, TOKENMASK, i);
+            do word.setMeta(INT);
+            do word.setData(t.intValue());
+            do t.dispose();
+        } else { if (cc = STR) {
+            let t = String.new(s.length()-i);
+            let i = Lex.string(s, t, i);
+            if (i < 0) {
+                do LibIO.error("EOS while scanning string");
+                do t.dispose();
+                return -1;
+            }
+            do word.setMeta(STR);
+            do word.setData(t);
+        } else { if (cc = SYM) {
+            let t = String.new(s.length());
+            let i = Lex.token(s, t, TOKENMASK, i);
+            do word.setMeta(SYM);
+            do word.setData(t);
+        } else {
+            do LibIO.error("illegal character");
+            return -1;
+        }}}}}
+
+        do word.setTag(s);
+
+        return i;
+    }
+
+
     function int cmdlin(String s, Symbol argv, int i) {
+        var int DLM;
         var int cc;
         var String t;
         var Collection cmdlin;
         var Symbol word;
 
+        let DLM = EOS | (END | NOLGL);
         let cmdlin = Collection.new();
 
-        let i = Str.lskip(s, 32, i);
-        let cc = Parse.cclass(s, i) & GLOBL;
-        while (~(cc = EOS)) {
-
-            if (cc = NOLGL) {
-                return Parse.package(argv, cmdlin, s, -1);
-            }
-
-            if ( (cc&END) = END ) {
-                return Parse.package(argv, cmdlin, s, i);
-            }
-
-            if (cc = LIST) {
-                do LibIO.error("not implemented");
-                return Parse.package(argv, cmdlin, s, -1);
-            } else { if (cc = BLOCK) {
-                let word = Symbol.new(null, BLOCK, null);
-                let i = Parse.block(s, word, i);
-                let s = Parse.tag(word);
-            } else { if (cc = INT) {
-                let t = String.new(s.length());
-                let i = Lex.token(s, t, TOKENMASK, i);
-                let word = Symbol.new(null, INT, t.intValue());
-                do t.dispose();
-            } else { if (cc = INTEX) {
-                let word = Symbol.new(null, INTEX, null);
-                let i = Parse.intex(s, word, i);
-                let s = Parse.tag(word);
-            } else { if (cc = STR) {
-                let t = String.new(s.length());
-                let i = Lex.string(s, t, i);
-                if (i < 0) {
-                    do LibIO.error("EOS while scanning string");
-                    do t.dispose();
-                    return Parse.package(argv, cmdlin, s, -1);
-                }
-                let word = Symbol.new(null, STR, t);
-            } else { if (cc = SYM) {
-                let t = String.new(s.length());
-                let i = Lex.token(s, t, TOKENMASK, i);
-                let word = Symbol.new(t, SYM, null);
-            } else {
-                do LibIO.error("illegal character");
-                return Parse.package(argv, cmdlin, s, -1);
-            }}}}}}
-
-            let cc = Parse.cclass(s, i);
+        let cc = 0;  // one iteration for naught; i don't love it
+        while ( (cc&DLM) = 0 ) {
 
             if (cc = INDEX) {
                 do LibIO.error("not implemented");
@@ -169,12 +177,10 @@ class Parse {
                 let s = Parse.tag(word);
             }}
 
+            let word = Symbol.new(null, null, null);
             do cmdlin.append(word);
-
-            if (i > -1) {  /* don't like this */
-                let i = Str.lskip(s, 32, i);
-            }
-
+            let i = Parse.word(s, word, i);
+            let s = Parse.tag(word);
             let cc = Parse.cclass(s, i) & GLOBL;
         }
 
@@ -193,11 +199,12 @@ class Parse {
         let queue = Collection.new();
         let stack = Collection.new();
         do stack.push(Symbol.new(null, null, null));
-        if (intex.data() = null) {
+        let token = intex.data();
+        if (token.meta() = null) {
             let uop = true;
         } else {
             let uop = false;
-            do queue.append(intex.data());
+            do queue.append(token);
         }
 
         let cc = Parse.cclass(s, i);
@@ -388,6 +395,12 @@ class Parse {
         }
 
         return -1;
+    }
+
+
+    function int list(String s, Symbol p, int i) {
+        do p.setMeta(LIST);
+        return i;
     }
 
 }
