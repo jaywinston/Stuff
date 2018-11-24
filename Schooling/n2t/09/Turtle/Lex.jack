@@ -95,15 +95,13 @@ class Lex {
 
     function char escape(char c, Array etab) {
         var int i;
-        var Array et;
 
         let i = 0;
         while (~(etab[i] = null)) {
-            let et = etab[i];
-            if (et[0] = c) {
-                return et[1];
+            if (etab[i] = c) {
+                return etab[i+1];
             }
-            let i = i + 1;
+            let i = i + 2;
         }
 
         return c;

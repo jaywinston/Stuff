@@ -54,8 +54,13 @@ class Parse {
     }
 
 
+    function String input(String ps) {
+        return LibIO.read(ps);
+    }
+
+
     function Collection next() {
-        do Parse.cmdlin(LibIO.read(PS1), ARGV, 0);
+        do Parse.cmdlin(Parse.input(PS1), ARGV, 0);
         return ARGV.data();
     }
 
@@ -258,21 +263,10 @@ class Parse {
                 }
                 do stack.push(token);
             } else {
-                if (cc = INT) {
-                    let t = String.new(5);
-                    let i = Lex.token(s, t, TOKENMASK, i);
-                    do queue.append(Symbol.new(null, INT, t.intValue()));
-                    do t.dispose();
-                } else { if (cc = SYM) {
-                    let t = String.new(s.length());
-                    let i = Lex.token(s, t, TOKENMASK, i);
-                    do queue.append(Symbol.new(t, SYM, null));
-                } else { if (cc = BLOCK) {
-                    let token = Symbol.new(null, BLOCK, null);
-                    let i = Parse.block(s, token, i);
-                    let s = Parse.tag(token);
-                    do queue.append(token);
-                }}}
+                let token = Symbol.new(null, null, null);
+                let i = Parse.word(s, token, i);
+                let s = Parse.tag(token);
+                do queue.append(token);
 
                 let top = stack.nth(0);
                 while (top.meta() = UOP) {
@@ -315,48 +309,18 @@ class Parse {
         let argv = Collection.new();
         do argv.append(arg);
 
-        if (~(arg.meta() = STR)) {
-            do LibIO.error("format string not found");
-            return Parse.package(strex, argv, s, -1);
-        }
-
         while (Parse.cclass(s, i) = STREX) {
 
             let i = i + 1;
             let cc = Parse.cclass(s, i) & GLOBL;
 
             if (cc = NOLGL) {
-                do LibIO.error("strex: illegal index");
                 return Parse.package(strex, argv, s, -1);
             }
 
-            if (cc = BLOCK) {
-                let arg = Symbol.new(null, BLOCK, null);
-                let i = Parse.block(s, arg, i);
-                let s = Parse.tag(arg);
-            } else { if (cc = INT) {
-                let t = String.new(s.length());
-                let i = Lex.token(s, t, TOKENMASK, i);
-                let arg = Symbol.new(null, INT, t.intValue());
-                do t.dispose();
-            } else { if (cc = INTEX) {
-                let arg = Symbol.new(null, INTEX, null);
-                let i = Parse.intex(s, arg, i);
-                let s = Parse.tag(arg);
-            } else { if (cc = STR) {
-                let t = String.new(s.length());
-                let i = Lex.string(s, t, i);
-                if (i < 0) {
-                    do LibIO.error("EOS while scanning string");
-                    do t.dispose();
-                    return Parse.package(strex, next, s, -1);
-                }
-                let arg = Symbol.new(null, STR, t);
-            } else { if (cc = SYM) {
-                let t = String.new(s.length());
-                let i = Lex.token(s, t, TOKENMASK, i);
-                let arg = Symbol.new(t, SYM, null);
-            }}}}}
+            let arg = Symbol.new(null, null, null);
+            let i = Parse.word(s, arg, i);
+            let s = Parse.tag(arg);
 
             if ( (Parse.cclass(s, i)&GLOBL) = INTEX ) {
                 let arg = Symbol.new(null, INTEX, arg);
@@ -390,7 +354,7 @@ class Parse {
             if (cc = NOLGL) {
                 return Parse.package(argv, block, s, -1);
             }
-            let s = LibIO.read(PS2);
+            let s = Parse.input(PS2);
             let i = 0;
         }
 
@@ -399,7 +363,6 @@ class Parse {
 
 
     function int list(String s, Symbol p, int i) {
-        do p.setMeta(LIST);
         return i;
     }
 

@@ -35,14 +35,16 @@ class Eval {
         var int i;
         var Array fspectab;
 
-        let fspectab = Array.new(3);  /* magic number! */
+        let fspectab = Array.new(5);  /* magic number! */
         let i = 0;
 
-        let fspectab[i] = LibIO.map(68, INT);
-        let i = i + 1;
+        let fspectab[i] = 68;
+        let fspectab[i+1] = INT;
+        let i = i + 2;
 
-        let fspectab[i] = LibIO.map(83, STR);
-        let i = i + 1;
+        let fspectab[i] = 83;
+        let fspectab[i+1] = STR;
+        let i = i + 2;
 
         let fspectab[i] = null;
 
@@ -54,14 +56,16 @@ class Eval {
         var int i;
         var Array typetab;
 
-        let typetab = Array.new(3);  /* magic number! */
+        let typetab = Array.new(5);  /* magic number! */
         let i = 0;
 
-        let typetab[i] = LibIO.map(INT, "integer");
-        let i = i + 1;
+        let typetab[i] = INT;
+        let typetab[i+1] = "integer";
+        let i = i + 2;
 
-        let typetab[i] = LibIO.map(STR, "string");
-        let i = i + 1;
+        let typetab[i] = STR;
+        let typetab[i+1] = "string";
+        let i = i + 2;
 
         let typetab[i] = null;
 

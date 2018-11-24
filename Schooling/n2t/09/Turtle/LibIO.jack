@@ -1,7 +1,8 @@
 class LibIO {
 
     static boolean noerr;
-    static Array B, argv;
+    static Array B;  /* boundaries */
+    static Array argv;
     static String cerrfs, serrfs;  /* error format strings */
     static Collection que;
     static TextBox canvas;
@@ -9,8 +10,8 @@ class LibIO {
 
 
     function void init() {
+        /* magic number!s */
         let B = Array.new(4);
-        /* magic numbers! */
         let B[0] = 2;
         let B[1] = 32;
         let B[2] = 20;
@@ -21,14 +22,9 @@ class LibIO {
         let serrfs = "unexpected token: %S";
         let que = Collection.new();
         let canvas = TextBox.new(B[0], B[1], B[2], B[3]);
-        /* magic numbers! */
+        /* magic number!s */
         let term = IOBox.new(2, 1, 20, 30, 23, Str.MAXLEN());
         return;
-    }
-
-
-    function Array boundaries() {
-        return B;
     }
 
 
@@ -138,12 +134,13 @@ class LibIO {
         var int i;
         var Array et;
 
-        let et = Array.new(2);  /* magic number! */
+        let et = Array.new(3);  /* magic number! */
         let i = 0;
 
         /* NEWLINE */
-        let et[i] = LibIO.map(78, 128);
-        let i = i + 1;
+        let et[i] = 78;
+        let et[i+1] = 128;
+        let i = i + 2;
 
         let et[i] = null;
 
@@ -151,14 +148,8 @@ class LibIO {
     }
 
 
-    function Array map(char e, char c) {
-        var Array esc;
-
-        let esc = Array.new(2);
-        let esc[0] = e;
-        let esc[1] = c;
-
-        return esc;
+    function Array boundaries() {
+        return B;
     }
 
 }

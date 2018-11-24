@@ -1,6 +1,6 @@
 Grammar:
 
-cmdline:
+cmdlin:
     assgn
     arglist
 
@@ -16,22 +16,23 @@ name:
     namstart namend
 
 namstart:
-    '[^-~<>=!"|&+*/%{}() [:cntrl:][:digit:]]'
+    '[[:alpha:]$]'
 
 namend:
     namchar
     namchar namend
 
 namchar:
-    '[^-~<>=!"|&+*/%{}() [:cntrl:]]'
+    '[[:alpha:][:digit:]$]'
 
 indexexpr:
-    '[' word ']'
+    '.' word
 
 word:
     lvalue
     stringexpr
     block
+    list
     intexpr
 
 stringexpr:
@@ -60,7 +61,7 @@ formatseq:
     '%' formatspec
 
 formatspec:
-    '[%DCS]'
+    '[%DS]'
 
 farglist:
     word
@@ -73,12 +74,16 @@ cmdlist:
     cmdlin
     cmdlin '\n' cmdlist
 
-intexpr:
-    logicexpr
+list:
+    '[' cmdlist ']'
 
-logicexpr:
+intexpr:
+    bitexpr
+    uop bitexpr
+
+bitexpr:
     eqexpr
-    eqexpr logop logicexpr
+    eqexpr bitop bitexpr
 
 eqexpr:
     addexpr
@@ -106,9 +111,12 @@ intchar:
     [[:digit:]]
 
 parenterm:
-    '(' intexpr ')
+    '(' intexpr ')'
 
-logop:
+uop:
+    [~-+]
+
+bitop:
     [&|]
 
 eqop:
