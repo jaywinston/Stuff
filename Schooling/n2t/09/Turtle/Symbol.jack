@@ -13,11 +13,9 @@ class Symbol {
     }
 
     method void dispose() {
-        var String s;
 
-        let s = tag;
-        if (~(s = null)) {
-            do s.dispose();
+        if (~(tag = null)) {
+            do tag.dispose();
         }
 
         do Memory.deAlloc(this);

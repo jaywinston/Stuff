@@ -87,7 +87,7 @@ class Eval {
 
             if (tok.meta() = UOP) {
                 do stack.push(Eval.uoperate(stack.pop(), tok.data()));
-            } else { if ( (tok.meta()&GLOBL) = OP) {
+            } else { if ( (tok.meta()&OP) = OP) {
                 let ro = stack.pop();
                 let lo = stack.pop();
                 do stack.push(Eval.operate(lo, ro, tok.data()));

@@ -102,11 +102,11 @@ class Parse {
         var String t;
 
         let i = Str.lskip(s, 32, i);
-        let cc = Parse.cclass(s, i);
+        let cc = Parse.cclass(s, i) & GLOBL;
 
         if (cc = LIST) {
             do LibIO.error("not implemented");
-            return -1;
+            let i = -1;
         } else { if (cc = BLOCK) {
             do word.setMeta(BLOCK);
             let i = Parse.block(s, word, i);
@@ -117,8 +117,8 @@ class Parse {
             do word.setMeta(INT);
             do word.setData(t.intValue());
             do t.dispose();
-        } else { if ( (cc&ARTEX) = ARTEX ) {
-            let word = Symbol.new(null, ARTEX, word);
+        } else { if (cc = ARTEX) {
+            do word.setMeta(ARTEX);
             let i = Parse.artex(s, word, i);
             let s = Parse.tag(word);
         } else { if (cc = STR) {
@@ -167,17 +167,17 @@ class Parse {
             if (cc = INDEX) {
                 do LibIO.error("not implemented");
                 return Parse.package(argv, cmdlin, s, -1);
-                // will be: let cc = Parse.cclass(s, i) & GLOBL;
+                // willbe: let cc = Parse.cclass(s, i) & GLOBL;
             }
 
             if ( (cc=EQ) &
                    ~((Parse.cclass(s, i+1)=EQ) | (Parse.cclass(s, i-1)=EQ)) ) {
                 do cmdlin.append(Symbol.new("ASSIGN", SYM, null));
                 let i = i + 1;
-                let cc = Parse.cclass(s, i);
+                let cc = Parse.cclass(s, i) & GLOBL;
             }
 
-            if ( (cc&ARTEX) = ARTEX ) {
+            if (cc = ARTEX) {
                 let word = Symbol.new(null, ARTEX, word);
                 let i = Parse.artex(s, word, i);
                 let s = Parse.tag(word);
@@ -205,8 +205,7 @@ class Parse {
         let queue = Collection.new();
         let stack = Collection.new();
         do stack.push(Symbol.new(null, null, null));
-        let token = artex.data();
-        if (token.meta() = null) {
+        if (artex.data() = null) {
             let uop = true;
         } else {
             let uop = false;
@@ -326,7 +325,7 @@ class Parse {
                 // will be: let cc = Parse.cclass(s, i) & GLOBL;
             }
 
-            if ( (cc&GLOBL) = ARTEX ) {
+            if (cc = ARTEX) {
                 let arg = Symbol.new(null, ARTEX, arg);
                 let i = Parse.artex(s, artex, i);
                 let s = Parse.tag(arg);
@@ -340,17 +339,26 @@ class Parse {
 
 
     function int block(String s, Symbol argv, int i) {
+        var boolean newline;
         var int cc;
-        var Collection block;
+        var Collection block, linehead;
         var Symbol cmdlin;
 
+        let newline = true;
         let block = Collection.new();
         let i = i + 1;
         while (true) {
             let cmdlin = Symbol.new(null, CMDLIN, null);
             let i = Parse.cmdlin(s, cmdlin, i);
             let s = Parse.tag(cmdlin);
-            do block.append(cmdlin);
+            if (newline) {
+                do block.append(cmdlin);
+            } else {
+                let linehead = block.nth(-1);
+                do linehead.extend(cmdlin.data());
+                do cmdlin.setData(linehead);
+                let newline = true;
+            }
             let cc = Parse.cclass(s, i);
             if (cc = BEND) {
                 return Parse.package(argv, block, s, i+1);
@@ -358,11 +366,16 @@ class Parse {
             if (cc = NOLGL) {
                 return Parse.package(argv, block, s, -1);
             }
-            let s = Parse.input(PS2);
-            let i = 0;
+            if (cc = EOS) {
+                let s = Parse.input(PS2);
+                let i = 0;
+            } else {
+                let newline = false;
+                let i = i + 1;
+            }
         }
 
-        return -1;
+        return 0;
     }
 
 

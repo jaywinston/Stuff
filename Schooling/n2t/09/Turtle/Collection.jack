@@ -1,4 +1,4 @@
-// a general data structure with methods to implement stack, or queue
+// a general data structure with methods to implement stack, queue, or list
 
 class Collection {
 
@@ -110,7 +110,11 @@ class Collection {
     method int nth(int i) {
         var Array p;
 
-        let p = _nth(i);
+        if (i < 0) {
+            let p = _nth(length+i);
+        } else {
+            let p = _nth(i);
+        }
         /* todo: err check */
 
         return p[VAL];
@@ -204,11 +208,14 @@ class Collection {
 
 
     method void extend(Collection c) {
-        let tail[VAL] = c.nth(0);
-        let tail[NEXT] = c._nth(1);
-        let tail = c._nth(c.length()-1);
+        var Array p;
+
+        let p = _nth(length-1);
+        let p[NEXT] = c._nth(0);
+        let tail = c._nth(c.length());
         let end = tail[NEXT];
         let length = length + c.length();
+
         return;
     }
 
