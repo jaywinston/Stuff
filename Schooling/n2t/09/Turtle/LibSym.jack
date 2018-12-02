@@ -32,8 +32,8 @@
 
 class LibSym {
 
-    static int BIN, BLOCK, CMD, CMDLIN, FUNC, INDEX, INT, INTEX, LIST, OP,
-        STR, STREX, SYM, UOP;
+    static int BIN, BLOCK, CMD, CMDLIN, FUNC, INDEX, INT, ARTEX, LIST, OP,
+        STR, FMTEX, SYM, UOP;
     static int HACK_CHARSET_SIZE, EOS_MAP, NOLGL_MAP, SITE;
 
 
@@ -55,10 +55,10 @@ class LibSym {
         let BLOCK = ctab[123];
         let INDEX = ctab[46];
         let INT = ctab[48];
-        let INTEX = ctab[40];
+        let ARTEX = ctab[40];
         let LIST = ctab[91];
         let STR = ctab[34];
-        let STREX = ctab[44];
+        let FMTEX = ctab[44];
         let SYM = ctab[65];
 
         do ctab.dispose();
@@ -66,7 +66,7 @@ class LibSym {
         let FUNC = LIST + 1;
         let CMDLIN = LIST + 2;
 
-        let OP = INTEX & ~LIST;
+        let OP = ARTEX & ~LIST;
         let UOP = OP | SITE;
 
         return;
@@ -251,12 +251,12 @@ class LibSym {
     function int CMDLIN() { return CMDLIN; }
     function int FUNC() { return FUNC; }
     function int INT() { return INT; }
-    function int INTEX() { return INTEX; }
+    function int ARTEX() { return ARTEX; }
     function int LIST() { return LIST; }
     function int OP() { return OP; }
     function int SITE() { return SITE; }
     function int STR() { return STR; }
-    function int STREX() { return STREX; }
+    function int FMTEX() { return FMTEX; }
     function int SYM() { return SYM; }
     function int UOP() { return UOP; }
 

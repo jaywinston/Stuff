@@ -3,7 +3,7 @@
 class Parse {
 
     static int BEND, BLANK, BLOCK, CMDLIN, COMMA, DELIM, END, EOS, EQ, INDEX,
-            INT, INTEX, LEND, LIST, LPAREN, NOLGL, OP, RPAREN, STR, STREX, SYM,
+            INT, ARTEX, LEND, LIST, LPAREN, NOLGL, OP, RPAREN, STR, FMTEX, SYM,
             UOP;
     static int GLOBL, SITE, TOKENMASK;
     static String PS1, PS2;
@@ -16,12 +16,12 @@ class Parse {
         let BLANK = Lex.cclass(32);
         let BLOCK = LibSym.BLOCK();
         let CMDLIN = LibSym.CMDLIN();
-        let COMMA = STREX & ~BLOCK;
+        let COMMA = FMTEX & ~BLOCK;
         let END = Lex.cclass(93);
         let EOS = Lex.EOS();
         let EQ = Lex.cclass(61);
         let INT = LibSym.INT();
-        let INTEX = LibSym.INTEX();
+        let ARTEX = LibSym.ARTEX();
         let LEND = END;
         let LIST = Lex.cclass(91);
         let LPAREN = Lex.cclass(40);
@@ -29,7 +29,7 @@ class Parse {
         let OP = LibSym.OP();
         let RPAREN = Lex.cclass(41);
         let STR = LibSym.STR();
-        let STREX = LibSym.STREX();
+        let FMTEX = LibSym.FMTEX();
         let SYM = LibSym.SYM();
         let UOP = LibSym.UOP();
 
@@ -97,14 +97,9 @@ class Parse {
     }
 
 
-    function int word(String s, Symbol word, int i) {
+    function int simple(String s, Symbol word, int i) {
         var int cc;
         var String t;
-
-        if (i < 0) {
-            do word.setTag(s);
-            return i;
-        }
 
         let i = Str.lskip(s, 32, i);
         let cc = Parse.cclass(s, i);
@@ -122,13 +117,15 @@ class Parse {
             do word.setMeta(INT);
             do word.setData(t.intValue());
             do t.dispose();
+        } else { if ( (cc&ARTEX) = ARTEX ) {
+            let word = Symbol.new(null, ARTEX, word);
+            let i = Parse.artex(s, word, i);
+            let s = Parse.tag(word);
         } else { if (cc = STR) {
             let t = String.new(s.length()-i);
             let i = Lex.string(s, t, i);
             if (i < 0) {
                 do LibIO.error("EOS while scanning string");
-                do t.dispose();
-                return -1;
             }
             do word.setMeta(STR);
             do word.setData(t);
@@ -139,8 +136,8 @@ class Parse {
             do word.setData(t);
         } else {
             do LibIO.error("illegal character");
-            return -1;
-        }}}}}
+            let i = -1;
+        }}}}}}
 
         do word.setTag(s);
 
@@ -158,34 +155,38 @@ class Parse {
         let DLM = EOS | (END | NOLGL);
         let cmdlin = Collection.new();
 
-        let cc = 0;  // one iteration for naught; i don't love it
+        let cc = 0;
         while ( (cc&DLM) = 0 ) {
+
+            let word = Symbol.new(null, null, null);
+            do cmdlin.append(word);
+            let i = Parse.simple(s, word, i);
+            let s = Parse.tag(word);
+            let cc = Parse.cclass(s, i) & GLOBL;
 
             if (cc = INDEX) {
                 do LibIO.error("not implemented");
                 return Parse.package(argv, cmdlin, s, -1);
+                // will be: let cc = Parse.cclass(s, i) & GLOBL;
             }
 
-            if ( (cc=EQ) & ~(Parse.cclass(s, i+1)=EQ) ) {
+            if ( (cc=EQ) &
+                   ~((Parse.cclass(s, i+1)=EQ) | (Parse.cclass(s, i-1)=EQ)) ) {
                 do cmdlin.append(Symbol.new("ASSIGN", SYM, null));
                 let i = i + 1;
                 let cc = Parse.cclass(s, i);
             }
 
-            if ( (cc&INTEX) = INTEX ) {
-                let word = Symbol.new(null, INTEX, word);
-                let i = Parse.intex(s, word, i);
+            if ( (cc&ARTEX) = ARTEX ) {
+                let word = Symbol.new(null, ARTEX, word);
+                let i = Parse.artex(s, word, i);
                 let s = Parse.tag(word);
-            } else { if (cc = STREX) {
-                let word = Symbol.new(null, STREX, word);
-                let i = Parse.strex(s, word, i);
+            } else { if (cc = FMTEX) {
+                let word = Symbol.new(null, FMTEX, word);
+                let i = Parse.fmtex(s, word, i);
                 let s = Parse.tag(word);
             }}
 
-            let word = Symbol.new(null, null, null);
-            do cmdlin.append(word);
-            let i = Parse.word(s, word, i);
-            let s = Parse.tag(word);
             let cc = Parse.cclass(s, i) & GLOBL;
         }
 
@@ -193,7 +194,7 @@ class Parse {
     }
 
 
-    function int intex(String s, Symbol intex, int i) {
+    function int artex(String s, Symbol artex, int i) {
         var boolean uop;
         var int DLM, cc, op;
         var String t;
@@ -204,7 +205,7 @@ class Parse {
         let queue = Collection.new();
         let stack = Collection.new();
         do stack.push(Symbol.new(null, null, null));
-        let token = intex.data();
+        let token = artex.data();
         if (token.meta() = null) {
             let uop = true;
         } else {
@@ -217,7 +218,7 @@ class Parse {
 
             if (cc = NOLGL) {
                 do LibSym.destroyList(stack);
-                return Parse.package(intex, queue, s, -1);
+                return Parse.package(artex, queue, s, -1);
             }
 
             if (cc = LPAREN) {
@@ -230,7 +231,7 @@ class Parse {
                     if (top.meta() = null) {
                         do LibIO.error("mismatched parentheses");
                         do LibSym.destroyList(stack);
-                        return Parse.package(intex, queue, s, -1);
+                        return Parse.package(artex, queue, s, -1);
                     }
                     do top.setMeta(OP);
                     do queue.append(stack.pop());
@@ -264,7 +265,7 @@ class Parse {
                 do stack.push(token);
             } else {
                 let token = Symbol.new(null, null, null);
-                let i = Parse.word(s, token, i);
+                let i = Parse.simple(s, token, i);
                 let s = Parse.tag(token);
                 do queue.append(token);
 
@@ -286,7 +287,7 @@ class Parse {
             if (top.meta() = LPAREN) {
                 do LibIO.error("mismatched parentheses");
                 do LibSym.destroyList(stack);
-                return Parse.package(intex, queue, s, -1);
+                return Parse.package(artex, queue, s, -1);
             }
             do top.setMeta(OP);
             do queue.append(stack.pop());
@@ -295,43 +296,46 @@ class Parse {
 
         do LibSym.destroyList(stack);
 
-        return Parse.package(intex, queue, s, i);
+        return Parse.package(artex, queue, s, i);
     }
 
 
-    function int strex(String s, Symbol strex, int i) {
+    function int fmtex(String s, Symbol fmtex, int i) {
         var int cc;
         var String t;
         var Collection argv;
-        var Symbol arg, intex, next;
+        var Symbol arg, artex, next;
 
-        let arg = strex.data();
         let argv = Collection.new();
-        do argv.append(arg);
+        do argv.append(fmtex.data());
 
-        while (Parse.cclass(s, i) = STREX) {
+        while (Parse.cclass(s, i) = FMTEX) {
 
-            let i = i + 1;
+            let arg = Symbol.new(null, null, null);
+            let i = Parse.simple(s, arg, i+1);
+            let s = Parse.tag(arg);
             let cc = Parse.cclass(s, i) & GLOBL;
 
             if (cc = NOLGL) {
-                return Parse.package(strex, argv, s, -1);
+                return Parse.package(fmtex, argv, s, -1);
             }
 
-            let arg = Symbol.new(null, null, null);
-            let i = Parse.word(s, arg, i);
-            let s = Parse.tag(arg);
+            if (cc = INDEX) {
+                do LibIO.error("not implemented");
+                return Parse.package(fmtex, argv, s, -1);
+                // will be: let cc = Parse.cclass(s, i) & GLOBL;
+            }
 
-            if ( (Parse.cclass(s, i)&GLOBL) = INTEX ) {
-                let arg = Symbol.new(null, INTEX, arg);
-                let i = Parse.intex(s, intex, i);
+            if ( (cc&GLOBL) = ARTEX ) {
+                let arg = Symbol.new(null, ARTEX, arg);
+                let i = Parse.artex(s, artex, i);
                 let s = Parse.tag(arg);
             }
 
             do argv.append(arg);
         }
 
-        return Parse.package(strex, argv, s, i);
+        return Parse.package(fmtex, argv, s, i);
     }
 
 
@@ -363,6 +367,11 @@ class Parse {
 
 
     function int list(String s, Symbol p, int i) {
+        return i;
+    }
+
+
+    function int index(String s, Symbol p, int i) {
         return i;
     }
 

@@ -2,7 +2,7 @@
 
 class Eval {
 
-    static int BLOCK, FUNC, GLOBL, INT, INTEX, OP, STR, STREX, SYM, UOP;
+    static int BLOCK, FUNC, GLOBL, INT, ARTEX, OP, STR, FMTEX, SYM, UOP;
     static Array FSPECTAB, TYPETAB;
     static Array FERRARGV;
     static String FERRFS;
@@ -14,11 +14,11 @@ class Eval {
         let BLOCK = LibSym.BLOCK();
         let FUNC = LibSym.FUNC();
         let INT = LibSym.INT();
-        let INTEX = LibSym.INTEX();
+        let ARTEX = LibSym.ARTEX();
         let OP = LibSym.OP();
         let GLOBL = ~LibSym.SITE();
         let STR = LibSym.STR();
-        let STREX = LibSym.STREX();
+        let FMTEX = LibSym.FMTEX();
         let SYM = LibSym.SYM();
         let UOP = LibSym.UOP();
         let FSPECTAB = Eval.fspectab();
@@ -196,16 +196,16 @@ class Eval {
     }
 
 
-    function void intex(Symbol intex) {
-        do intex.setData(Eval.integer(intex.data()));
-        do intex.setMeta(INT);
+    function void artex(Symbol artex) {
+        do artex.setData(Eval.integer(artex.data()));
+        do artex.setMeta(INT);
         return;
     }
 
 
-    function void strex(Symbol strex) {
-        do strex.setData(Eval.string(strex.data()));
-        do strex.setMeta(STR);
+    function void fmtex(Symbol fmtex) {
+        do fmtex.setData(Eval.string(fmtex.data()));
+        do fmtex.setMeta(STR);
         return;
     }
 
@@ -287,10 +287,10 @@ class Eval {
 
         if (arg.meta() = SYM) {
             do Eval.sym(arg);
-        } else { if (arg.meta() = INTEX) {
-            do Eval.intex(arg);
-        } else { if (arg.meta() = STREX) {
-            do Eval.strex(arg);
+        } else { if (arg.meta() = ARTEX) {
+            do Eval.artex(arg);
+        } else { if (arg.meta() = FMTEX) {
+            do Eval.fmtex(arg);
         } else { if (arg.meta() = BLOCK) {
             do Eval.block(arg);
         }}}}

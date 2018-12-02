@@ -150,6 +150,10 @@ class Str {
 
     function int lskip(String s, char c, int i) {
 
+        if (i < 0) {
+            return i;
+        }
+
         while (i < s.length()) {
             if (~(s.charAt(i) = c)) {
                 return i;
