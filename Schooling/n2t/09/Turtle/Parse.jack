@@ -159,7 +159,6 @@ class Parse {
         while ( (cc&DLM) = 0 ) {
 
             let word = Symbol.new(null, null, null);
-            do cmdlin.append(word);
             let i = Parse.simple(s, word, i);
             let s = Parse.tag(word);
             let cc = Parse.cclass(s, i) & GLOBL;
@@ -186,6 +185,8 @@ class Parse {
                 let i = Parse.fmtex(s, word, i);
                 let s = Parse.tag(word);
             }}
+
+            do cmdlin.append(word);
 
             let cc = Parse.cclass(s, i) & GLOBL;
         }

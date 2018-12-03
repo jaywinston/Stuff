@@ -63,7 +63,7 @@ class Main {
     }
 
 
-    function void killall() {
+    function void killall() {  // todo: this
         return;
     }
 
