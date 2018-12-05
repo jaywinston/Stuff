@@ -151,7 +151,7 @@ class Bin {
         do Eval.arg(arg);
 
         if (arg = null) {
-            do LibIO.error("expected argument");
+            do LibIO.error("can't print that");
             return;
         }
 
@@ -162,8 +162,7 @@ class Bin {
 
         do t.hide();
 
-do DB.dbi(t.x()/8+1);
-        if (LibIO.print(arg.data(), t.y()/11, (t.x()/8)+1) = 1) {
+        if (LibIO.print(arg.data(), (t.y()-top)/11, ((t.x()-left)/8)) = 1) {
             do LibIO.error("illegal cursor coordinate");
         }
 

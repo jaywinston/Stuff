@@ -165,7 +165,7 @@ class Parse {
             let word = Symbol.new(null, null, null);
             let i = Parse.simple(s, word, i);
             let s = Parse.tag(word);
-            let cc = Parse.cclass(s, i) & GLOBL;
+            let cc = Parse.cclass(s, i);
 
             if (cc = INDEX) {
                 do LibIO.error("not implemented");
@@ -174,13 +174,14 @@ class Parse {
             }
 
             if ( (cc=EQ) &
-                   ~((Parse.cclass(s, i+1)=EQ) | (Parse.cclass(s, i-1)=EQ)) ) {
-                do cmdlin.append(Symbol.new("ASSIGN", SYM, null));
+                    ~(((Parse.cclass(s, i+1)&OP)=OP)
+                    | ((Parse.cclass(s, i-1)&OP)=OP)) ) {
+                do cmdlin.append(Symbol.new(null, SYM, "ASSIGN"));
                 let i = i + 1;
                 let cc = Parse.cclass(s, i) & GLOBL;
             }
 
-            if (cc = ARTEX) {
+            if ( (cc&GLOBL) = ARTEX ) {
                 let word = Symbol.new(null, ARTEX, word);
                 let i = Parse.artex(s, word, i);
                 let s = Parse.tag(word);

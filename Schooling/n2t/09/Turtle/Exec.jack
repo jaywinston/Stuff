@@ -2,7 +2,7 @@
 
 class Exec {
 
-    static int BIN, BLOCK, CMD, CMDLIN, EXE, FUNC, INT, LIST, SITE, STR;
+    static int BIN, BLOCK, CMD, CMDLIN, EXE, FUNC, INT, LIST, SITE, STR, SYM;
     static int ASSIGN, FUNCTION, IF, REPEAT, QUIT;
     static String IFS, ELSES;
 
@@ -22,6 +22,7 @@ class Exec {
         let LIST = LibSym.LIST();
         let SITE = ~LibSym.SITE() | EXE;
         let STR = LibSym.STR();
+        let SYM = LibSym.SYM();
 
         let ASSIGN   = 1;
         let FUNCTION = 2;
@@ -61,7 +62,7 @@ class Exec {
             return null;
         }
 
-        if ( (arg.meta()&SITE) = EXE ) {
+        if ( (arg.meta()&EXE) = EXE ) {
             return Exec.executable(arg, argv);
         }
 
@@ -136,12 +137,26 @@ class Exec {
         var Symbol arg;
 
         let arg = argv.pop();
-        let name = arg.tag();
+
+        if (arg = null) {
+            do LibIO.error("expected lvalue; need a better name for this");
+            return;
+        }
+
+        if (~(arg.meta() = SYM)) {
+            do LibIO.error("won't assign to that");
+            return;
+        }
+
+        let name = arg.data();
         do arg.dispose();
+
         let arg = Eval.arg(argv.pop());
         if (arg = null) {
             do LibIO.error("expected expression");
+            return;
         }
+
         do Eval.install(name, arg.meta(), arg.data());
         do arg.dispose();
 
@@ -150,6 +165,7 @@ class Exec {
 
 
     function void doFunction(Collection argv) {
+        var String name;
         var Symbol arg;
 
         let arg = argv.pop();
@@ -159,9 +175,19 @@ class Exec {
             return;
         }
 
-        do Eval.install(arg.tag(), FUNC, LibSym.copyList(argv));
+        if (~(arg.meta() = SYM)) {
+            do LibIO.error("no function name");
+            return;
+        }
+
+        let name = arg.data();
 
         do arg.dispose();
+
+        do Eval.install(name, FUNC, LibSym.copyList(argv));
+
+        do name.dispose();
+
         do LibSym.destroyList(argv);
 
         return;
