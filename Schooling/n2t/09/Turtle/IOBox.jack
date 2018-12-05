@@ -199,6 +199,7 @@ class IOBox {
 
     method void clear() {
         do tb.clear();
+        do tb.set(0, 0);
         return;
     }
 

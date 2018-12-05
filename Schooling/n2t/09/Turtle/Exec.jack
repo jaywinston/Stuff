@@ -51,6 +51,10 @@ class Exec {
     function Symbol cmdlin(Collection argv) {
         var Symbol arg;
 
+        if (argv = null) {
+            return null;
+        }
+
         let arg = Eval.arg(argv.pop());
 
         if (arg = null) {
@@ -108,19 +112,22 @@ class Exec {
 
 
     function Symbol block(Collection cmdlist) {
-        var Symbol cmd;
+        var Symbol cmdlin;
 
-        if (cmdlist = null) {  // ##TODO## might not need
+        if (cmdlist = null) {  // todo: might not need
             return null;
         }
 
         while (cmdlist.length() > 1) {
+            let cmdlin = cmdlist.pop();
             do LibSym.destroySym(
                 Main.enqueue(
-                    Exec.cmdlin(cmdlist.pop())));
+                    Exec.cmdlin(cmdlin.data())));
         }
 
-        return Exec.cmdlin(cmdlist.pop());
+        let cmdlin = cmdlist.pop();
+
+        return Exec.cmdlin(cmdlin.data());
     }
 
 

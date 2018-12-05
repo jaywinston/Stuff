@@ -125,11 +125,6 @@ class LibIO {
     }
 
 
-    function void fixTerm() {
-        return;
-    }
-
-
     function Array esctab() {
         var int i;
         var Array et;

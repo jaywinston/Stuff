@@ -28,12 +28,12 @@ class TextBox {
 
     method int set(int i, int j) {
 
-        if ( ((i<top) | (i>bottom)) | ((j<left) | (j>right)) ) {
+        if ( ((i<0) | (i>(bottom-top))) | ((j<0) | (j>(right-left))) ) {
             return 1;
         }
 
-        let row = i;
-        let col = j;
+        let row = top + i;
+        let col = left + j;
 
         return 0;
     }

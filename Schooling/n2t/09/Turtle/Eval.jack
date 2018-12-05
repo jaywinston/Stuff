@@ -197,8 +197,15 @@ class Eval {
 
 
     function void artex(Symbol artex) {
-        do artex.setData(Eval.integer(artex.data()));
-        do artex.setMeta(INT);
+        var Collection q;
+
+        let q = artex.data();
+        if (q.length() = 0) {
+            do artex.setMeta(null);
+        } else {
+            do artex.setData(Eval.integer(artex.data()));
+            do artex.setMeta(INT);
+        }
         return;
     }
 
@@ -214,7 +221,7 @@ class Eval {
         var String tag;
         var Symbol p;
 
-        let tag = p.data();
+        let tag = sym.data();
         let p = Eval.lookup(tag);
         do tag.dispose();
 
@@ -244,7 +251,6 @@ class Eval {
         do LibSym.destroyList(block.data());
 
         if (ret = null) {
-            do block.setData(null);
             do block.setMeta(null);
             return;
         }

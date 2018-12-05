@@ -152,10 +152,14 @@ class Parse {
         var Collection cmdlin;
         var Symbol word;
 
-        let DLM = EOS | (END | NOLGL);
+        if (s.length() = 0) {
+            return Parse.package(argv, 0, s, 0);
+        }
+
+        let DLM = END | NOLGL;
         let cmdlin = Collection.new();
 
-        let cc = 0;
+        let cc = Parse.cclass(s, i) & GLOBL;
         while ( (cc&DLM) = 0 ) {
 
             let word = Symbol.new(null, null, null);
@@ -210,7 +214,7 @@ class Parse {
             let uop = true;
         } else {
             let uop = false;
-            do queue.append(token);
+            do queue.append(artex.data());
         }
 
         let cc = Parse.cclass(s, i);
@@ -226,7 +230,7 @@ class Parse {
                 let uop = true;
                 let i = i + 1;
             } else { if (cc = RPAREN) {
-                let top = stack.nth(0);
+                let top = stack.pop();
                 while (~(top.meta() = LPAREN)) {
                     if (top.meta() = null) {
                         do LibIO.error("mismatched parentheses");
@@ -234,11 +238,10 @@ class Parse {
                         return Parse.package(artex, queue, s, -1);
                     }
                     do top.setMeta(OP);
-                    do queue.append(stack.pop());
-                    let top = stack.nth(0);
+                    do queue.append(top);
+                    let top = stack.pop();
                 }
                 do top.dispose();
-                do stack.pop();
                 let uop = false;
                 let i = i + 1;
             } else { if ( (cc&OP) = OP ) {
@@ -345,21 +348,13 @@ class Parse {
         var Collection block, linehead;
         var Symbol cmdlin;
 
-        let newline = true;
         let block = Collection.new();
         let i = i + 1;
         while (true) {
             let cmdlin = Symbol.new(null, CMDLIN, null);
             let i = Parse.cmdlin(s, cmdlin, i);
             let s = Parse.tag(cmdlin);
-            if (newline) {
-                do block.append(cmdlin);
-            } else {
-                let linehead = block.nth(-1);
-                do linehead.extend(cmdlin.data());
-                do cmdlin.setData(linehead);
-                let newline = true;
-            }
+            do block.append(cmdlin);
             let cc = Parse.cclass(s, i);
             if (cc = BEND) {
                 return Parse.package(argv, block, s, i+1);
@@ -367,13 +362,8 @@ class Parse {
             if (cc = NOLGL) {
                 return Parse.package(argv, block, s, -1);
             }
-            if (cc = EOS) {
-                let s = Parse.input(PS2);
-                let i = 0;
-            } else {
-                let newline = false;
-                let i = i + 1;
-            }
+            let s = Parse.input(PS2);
+            let i = 0;
         }
 
         return 0;
