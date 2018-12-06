@@ -113,6 +113,7 @@ class Exec {
 
 
     function Symbol block(Collection cmdlist) {
+        var Collection ret;
         var Symbol cmdlin;
 
         if (cmdlist = null) {  // todo: might not need
@@ -127,8 +128,16 @@ class Exec {
         }
 
         let cmdlin = cmdlist.pop();
+        do cmdlist.dispose();
 
-        return Exec.cmdlin(cmdlin.data());
+        if (cmdlin = null) {
+            return null;
+        }
+
+        let ret = cmdlin.data();
+        do cmdlin.dispose();
+
+        return Exec.cmdlin(ret);
     }
 
 

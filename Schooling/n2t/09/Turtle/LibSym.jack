@@ -85,42 +85,22 @@ class LibSym {
             let i = i + 1;
         }
 
-        let i = 65;
-        while (i < 90) {
-            let ctab[i] = 8192;
-            let i = i + 1;
-        }
-
-        let i = 97;
-        while (i < 122) {
-            let ctab[i] = 8192;
-            let i = i + 1;
-        }
-
-        let ctab[36] = 8192; // $
-
-        let i = 48;
-        while (i < 58) {
-            let ctab[i] = 4096;
-            let i = i + 1;
-        }
- 
         let ctab[ 91] =    16;  // [
         let ctab[ 40] =    24;  // (
         let ctab[ 38] =    25;  // &
         let ctab[124] =    25;  // |
         let ctab[ 94] =    25;  // ^
         let ctab[ 61] =    26;  // =
-        let ctab[ 33] =    26;  // !
-        let ctab[ 60] =    26;  // <
-        let ctab[ 62] =    26;  // >
-        let ctab[ 43] =    27;  // +
-        let ctab[ 45] =    27;  // -
-        let ctab[126] =    27;  // ~
-        let ctab[ 37] =    28;  // %
-        let ctab[ 42] =    28;  // *
-        let ctab[ 47] =    28;  // /
-        let ctab[ 41] =    29;  // )
+        let ctab[ 33] =    27;  // !
+        let ctab[ 60] =    27;  // <
+        let ctab[ 62] =    27;  // >
+        let ctab[ 43] =    28;  // +
+        let ctab[ 45] =    28;  // -
+        let ctab[126] =    28;  // ~
+        let ctab[ 37] =    29;  // %
+        let ctab[ 42] =    29;  // *
+        let ctab[ 47] =    29;  // /
+        let ctab[ 41] =    30;  // )
         let ctab[ 93] =    32;  // ]
         let ctab[ 46] =    64;  // .
         let ctab[ 32] =   128;  //  
@@ -132,6 +112,26 @@ class LibSym {
         let ctab[  EOS_MAP] =  8224;  // EOS
         let ctab[NOLGL_MAP] = 16384;  // illegal index
 
+        let i = 65;
+        while (i < 90) {
+            let ctab[i] = 8192 | ctab[34];
+            let i = i + 1;
+        }
+
+        let i = 97;
+        while (i < 122) {
+            let ctab[i] = 8192 | ctab[34];
+            let i = i + 1;
+        }
+
+        let ctab[36] = 8192 | ctab[34]; // $
+
+        let i = 48;
+        while (i < 58) {
+            let ctab[i] = 4096;
+            let i = i + 1;
+        }
+ 
         return ctab;
     }
 
