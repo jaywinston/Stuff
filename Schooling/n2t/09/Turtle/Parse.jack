@@ -196,6 +196,11 @@ class Parse {
             let cc = Parse.cclass(s, i) & GLOBL;
         }
 
+        if (cmdlin.length() = 0) {
+            do cmdlin.dispose();
+            let cmdlin = null;
+        }
+
         return Parse.package(argv, cmdlin, s, i);
     }
 
@@ -350,12 +355,20 @@ class Parse {
         var Symbol cmdlin;
 
         let block = Collection.new();
+
         let i = i + 1;
         while (true) {
+
             let cmdlin = Symbol.new(null, CMDLIN, null);
             let i = Parse.cmdlin(s, cmdlin, i);
             let s = Parse.tag(cmdlin);
-            do block.append(cmdlin);
+
+            if (cmdlin.data() = null) {
+                do cmdlin.dispose();
+            } else {
+                do block.append(cmdlin);
+            }
+
             let cc = Parse.cclass(s, i);
             if (cc = BEND) {
                 return Parse.package(argv, block, s, i+1);
@@ -363,6 +376,7 @@ class Parse {
             if (cc = NOLGL) {
                 return Parse.package(argv, block, s, -1);
             }
+
             let s = Parse.input(PS2);
             let i = 0;
         }

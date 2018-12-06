@@ -284,7 +284,7 @@ class Eval {
             return null;
         }
 
-        if (arg.meta() = SYM)   { return Eval.sym(arg); }
+        if (arg.meta() = SYM)   { return Eval.sym(arg);   }
         if (arg.meta() = ARTEX) { return Eval.artex(arg); }
         if (arg.meta() = FMTEX) { return Eval.fmtex(arg); }
         if (arg.meta() = BLOCK) { return Eval.block(arg); }
