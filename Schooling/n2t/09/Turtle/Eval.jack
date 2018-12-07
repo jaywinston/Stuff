@@ -210,25 +210,18 @@ class Eval {
     }
 
 
-    function Symbol artex(Symbol artex) {
-        var Collection q;
+    function Symbol arg(Symbol arg) {
 
-        let q = artex.data();
-        if (q.length() = 0) {
-            do artex.setMeta(null);
-        } else {
-            do artex.setData(Eval.arithmeticExpression(artex.data()));
-            do artex.setMeta(INT);
+        if (arg = null) {
+            return null;
         }
 
-        return artex;
-    }
+        if (arg.meta() = SYM)   { return Eval.sym(arg);   }
+        if (arg.meta() = ARTEX) { return Eval.artex(arg); }
+        if (arg.meta() = FMTEX) { return Eval.fmtex(arg); }
+        if (arg.meta() = BLOCK) { return Eval.block(arg); }
 
-
-    function Symbol fmtex(Symbol fmtex) {
-        do fmtex.setData(Eval.formatExpression(fmtex.data()));
-        do fmtex.setMeta(STR);
-        return fmtex;
+        return arg;
     }
 
 
@@ -259,6 +252,86 @@ class Eval {
     }
 
 
+    function Symbol lookup(String s) {
+        var int i;
+        var HashTable table;
+        var Symbol sym;
+
+        if ( Eval.isArg(s) & (context.length()>0) ) {
+            return Eval.lookupArg(s);
+        }
+
+        let i = 0;
+        while (i < symtab.length()) {
+            let table = symtab.nth(i);
+            let sym = table.lookup(s);
+            if (~(sym = null)) {
+                return sym;
+            }
+            let i = i + 1;
+        }
+
+        return null;
+    }
+
+
+    function boolean isArg(String s) {
+        var char c;
+        var int i;
+
+        if (s.length() < 2) {
+            return false;
+        }
+
+        if (~(s.charAt(0) = 36)) {
+            return false;
+        }
+
+        let i = 1;
+        while (i < s.length()) {
+            let c = s.charAt(i);
+            if ( (c<48) | (c>57) ) {
+                return false;
+            }
+            let i = i + 1;
+        }
+
+        return true;
+    }
+
+
+    function Symbol lookupArg(String s) {
+        var Collection argv;
+
+        let argv = context.nth(0);
+        do Str.shift(s, 1, 0);  // ##DB## this might need a dup
+
+        return argv.nth(s.intValue()-1);
+    }
+
+
+    function Symbol artex(Symbol artex) {
+        var Collection q;
+
+        let q = artex.data();
+        if (q.length() = 0) {
+            do artex.setMeta(null);
+        } else {
+            do artex.setData(Eval.arithmeticExpression(artex.data()));
+            do artex.setMeta(INT);
+        }
+
+        return artex;
+    }
+
+
+    function Symbol fmtex(Symbol fmtex) {
+        do fmtex.setData(Eval.formatExpression(fmtex.data()));
+        do fmtex.setMeta(STR);
+        return fmtex;
+    }
+
+
     function Symbol block(Symbol block) {
         var Symbol ret;
 
@@ -275,21 +348,6 @@ class Eval {
         do ret.dispose();
 
         return block;
-    }
-
-
-    function Symbol arg(Symbol arg) {
-
-        if (arg = null) {
-            return null;
-        }
-
-        if (arg.meta() = SYM)   { return Eval.sym(arg);   }
-        if (arg.meta() = ARTEX) { return Eval.artex(arg); }
-        if (arg.meta() = FMTEX) { return Eval.fmtex(arg); }
-        if (arg.meta() = BLOCK) { return Eval.block(arg); }
-
-        return arg;
     }
 
 
@@ -360,64 +418,6 @@ class Eval {
         do LibSym.destroyList(context.pop());
         do LibSym.destroyHashTable(symtab.pop());
         return;
-    }
-
-
-    function Symbol lookup(String s) {
-        var int i;
-        var HashTable table;
-        var Symbol sym;
-
-        if (Eval.isArg(s)) {
-            return Eval.lookupArg(s);
-        }
-
-        let i = 0;
-        while (i < symtab.length()) {
-            let table = symtab.nth(i);
-            let sym = table.lookup(s);
-            if (~(sym = null)) {
-                return sym;
-            }
-            let i = i + 1;
-        }
-
-        return null;
-    }
-
-
-    function boolean isArg(String s) {
-        var char c;
-        var int i;
-
-        if (s.length() < 2) {
-            return false;
-        }
-
-        if (~(s.charAt(0) = 36)) {
-            return false;
-        }
-
-        let i = 1;
-        while (i < s.length()) {
-            let c = s.charAt(i);
-            if ( (c<48) | (c>57) ) {
-                return false;
-            }
-            let i = i + 1;
-        }
-
-        return true;
-    }
-
-
-    function Symbol lookupArg(String s) {
-        var Collection argv;
-
-        let argv = context.nth(0);
-        do Str.shift(s, 1, 0);  // ##DB## this might need a dup
-
-        return argv.nth(s.intValue());
     }
 
 

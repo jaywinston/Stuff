@@ -198,10 +198,17 @@ class LibSym {
 
 
     function void destroyList(Collection list) {
+
+        if (list = null) {
+            return;
+        }
+
         while (list.length() > 0) {
             do LibSym.destroySym(list.pop());
         }
+
         do list.dispose();
+
         return;
     }
 

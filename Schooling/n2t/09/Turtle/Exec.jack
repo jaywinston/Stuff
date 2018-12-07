@@ -208,15 +208,23 @@ class Exec {
         var Symbol arg;
 
         let arg = Eval.arg(argv.pop());
-        let elsev = Exec.elseVector(argv);
+        let elsev = Exec.elsev(argv);
 
         if (~(arg.data() = 0)) {
-            do Exec.cmdlin(argv);
+            while (argv.length() > 0) {
+                do LibSym.destroySym(
+                    Main.enqueue(  /* syscall */
+                        Exec.cmdlin(argv)));
+            }
         } else { if (~(elsev = null)) {
-            do Exec.cmdlin(elsev);
+            while (elsev.length() > 0) {
+                do LibSym.destroySym(
+                    Main.enqueue(  /* syscall */
+                        Exec.cmdlin(elsev)));
+            }
         }}
 
-        do arg.dispose();
+        do LibSym.destroySym(arg);
         do LibSym.destroyList(argv);
         do LibSym.destroyList(elsev);
 
@@ -224,29 +232,31 @@ class Exec {
     }
 
 
-    function Collection elseVector(Collection argv) {
-        var int i;
+    function Collection elsev(Collection argv) {
+        var int a;
         var int nif;
         var Symbol arg;
 
         let nif = 0;
 
-        let i = 0;
-        while (i < argv.length()) {
-            let arg = argv.nth(i);
-            if (Str.eq(ELSES, arg.tag())) {
-                if (nif = 0) {
-                    return Exec.elsev(argv, i);
-                } else { if (nif < 0) {
-                    do LibIO.error("extra 'ELSE' (todo: a better message)");
-                    return null;
-                } else {
-                    let nif = nif - 1;
+        let a = 0;
+        while (a < argv.length()) {
+            let arg = argv.nth(a);
+            if (arg.meta() = SYM) {
+                if (Str.eq(ELSES, arg.data())) {
+                    if (nif = 0) {
+                        return Exec.elseVector(argv, a);
+                    } else { if (nif < 0) {
+                        do LibIO.error("extra 'ELSE' (todo: a better message)");
+                        return null;
+                    } else {
+                        let nif = nif - 1;
+                    }}
+                } else { if (Str.eq(IFS, arg.data())) {
+                    let nif = nif + 1;
                 }}
-            } else { if (Str.eq(IFS, argp.tag())) {
-                let nif = nif + 1;
-            }}
-            let i = i + 1;
+            }
+            let a = a + 1;
         }
 
         return null;
@@ -254,17 +264,15 @@ class Exec {
 
 
     /* Collection.slice() would be easier to read but redundant to execute. */
-    function Collection elsev(Collection argv, int i) {
+    function Collection elseVector(Collection argv, int a) {
         var Collection elsev;
-        var Symbol elsep;
 
         let elsev = Collection.new();
-        while (argv.length() > i) {
-            do elsev.push(argv.remove(argv.length()-1));
+        while ( argv.length() > (a+1) ) {
+            do elsev.append(argv.remove(a+1));
         }
 
-        let elsep = argv.remove(argv.length()-1);
-        do elsep.dispose();
+        do LibSym.destroySym(argv.remove(a));
 
         return elsev;
     }
