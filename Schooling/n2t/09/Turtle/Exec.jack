@@ -71,21 +71,23 @@ class Exec {
 
 
     function Symbol executable(Symbol arg, Collection argv) {
-        var int cmd, type;
+        var int type;
         
-        let cmd = arg.data();
         let type = arg.meta();
-        do arg.dispose();
 
-        if (type = BIN)  { return Bin.exec(cmd, argv);  }
-        if (type = CMD)  { return Exec.cmd(cmd, argv);  }
-        if (type = FUNC) { return Exec.call(cmd, argv); }
+        if (type = BIN)  { return Bin.exec(arg, argv);  }
+        if (type = CMD)  { return Exec.cmd(arg, argv);  }
+        if (type = FUNC) { return Exec.call(arg, argv); }
 
         return null;
     }
 
 
-    function Symbol cmd(int cmd, Collection argv) {
+    function Symbol cmd(Symbol arg, Collection argv) {
+        var int cmd;
+
+        let cmd = arg.data();
+        do arg.dispose();
 
         if (cmd = ASSIGN)          { return Exec.doAssign(argv);   }
         else { if (cmd = FUNCTION) { return Exec.doFunction(argv); }
@@ -100,13 +102,13 @@ class Exec {
     }
 
 
-    function Symbol call(Collection func, Collection argv) {
+    function Symbol call(Symbol func, Collection argv) {
         var Symbol ret;
 
-        do Eval.pushContext(argv);
-        let ret = Exec.cmdlin(func);
+        do Eval.pushContext(func, argv);
+        let ret = Exec.cmdlin(func.data());
         do Eval.dropContext();
-        do LibSym.destroyList(func);
+        do LibSym.destroySym(func);
 
         return ret;
     }

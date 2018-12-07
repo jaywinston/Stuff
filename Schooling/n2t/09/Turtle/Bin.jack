@@ -58,7 +58,12 @@ class Bin {
     }
 
 
-    function Symbol exec(int cmd, Collection argv) {
+    function Symbol exec(Symbol arg, Collection argv) {
+        var int cmd;
+
+        let cmd = arg.data();
+
+        do arg.dispose();
 
         if (cmd = DIR)       { return Bin.dir();                 }
         if (cmd = POSX)      { return Bin.posx();                }
@@ -89,6 +94,7 @@ class Bin {
 
 
     function void forward(Symbol arg) {
+        var int n;
         var Array target;
 
         do Eval.arg(arg);
@@ -104,13 +110,15 @@ class Bin {
             return;
         }
 
-        if (arg.data() < 0) {
+        let n = arg.data();
+        do arg.dispose();
+
+        if (n < 0) {
             do LibIO.error("won't go backwards");
-            do arg.dispose();
             return;
         }
 
-        let target = t.aim(arg.data());
+        let target = t.aim(n);
 
         if ( ((target[0] < left) | (target[0] > right))
                 | ((target[1] < top) | (target[1] > bottom)) ) {
@@ -118,7 +126,7 @@ class Bin {
             return;
         }
 
-        do t.forward(arg.data());
+        do t.forward(n);
 
         return;
     }
@@ -147,6 +155,7 @@ class Bin {
 
 
     function void print(Symbol arg) {
+        var String s;
 
         do Eval.arg(arg);
 
@@ -157,16 +166,23 @@ class Bin {
 
         if (~(arg.meta() = STR)) {
             do LibIO.error("won't print that");
+            do LibSym.destroySym(arg);
             return;
         }
 
+        let s = arg.data();
+        do arg.dispose();
+
         do t.hide();
 
-        if (LibIO.print(arg.data(), (t.y()-top)/11, ((t.x()-left)/8)) = 1) {
+        /* magic number! LibIO.print() errno */
+        if (LibIO.print(s, (t.y()-top)/11, ((t.x()-left)/8)) = 1) {
             do LibIO.error("illegal cursor coordinate");
         }
 
         do t.show();
+
+        do s.dispose();
 
         return;
     }

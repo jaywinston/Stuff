@@ -75,6 +75,132 @@ class Eval {
     }
 
 
+    function Symbol arg(Symbol arg) {
+
+        if (arg = null) {
+            return null;
+        }
+
+        if (arg.meta() = SYM)   { return Eval.sym(arg);   }
+        if (arg.meta() = ARTEX) { return Eval.artex(arg); }
+        if (arg.meta() = FMTEX) { return Eval.fmtex(arg); }
+        if (arg.meta() = BLOCK) { return Eval.block(arg); }
+
+        return arg;
+    }
+
+
+    function Symbol sym(Symbol sym) {
+        var String tag;
+        var Symbol p;
+
+        do sym.setTag(sym.data());
+
+        let p = Eval.lookup(sym.tag());
+
+        if (p = null) {
+            do LibIO.error("undefined symbol");
+            return sym;
+        }
+
+        if (p.meta() = STR) {
+            do sym.setData(Str.dup(p.data()));
+        } else { if ( (p.meta()&LIST) = LIST ) {
+            do sym.setData(LibSym.copyList(p.data()));
+        } else {
+            do sym.setData(p.data());
+        }}
+
+        do sym.setMeta(p.meta());
+
+        return sym;
+    }
+
+
+    function Symbol lookup(String s) {
+        var int i;
+        var HashTable table;
+        var Symbol sym;
+
+        if ( Eval.isArg(s) & (context.length()>0) ) {
+            return Eval.lookupArg(s);
+        }
+
+        let i = 0;
+        while (i < symtab.length()) {
+            let table = symtab.nth(i);
+            let sym = table.lookup(s);
+            if (~(sym = null)) {
+                return sym;
+            }
+            let i = i + 1;
+        }
+
+        return null;
+    }
+
+
+    function boolean isArg(String s) {
+        var char c;
+        var int i;
+
+        if (s.length() < 2) {
+            return false;
+        }
+
+        if (~(s.charAt(0) = 36)) {
+            return false;
+        }
+
+        let i = 1;
+        while (i < s.length()) {
+            let c = s.charAt(i);
+            if ( (c<48) | (c>57) ) {
+                return false;
+            }
+            let i = i + 1;
+        }
+
+        return true;
+    }
+
+
+    function Symbol lookupArg(String s) {
+        var int i;
+        var Collection argv;
+
+        do Str.shift(s, 1, 0);  // todo: this might need a dup
+        let i = s.intValue();
+        do s.dispose();
+
+        if (i < 0) {
+            do LibIO.error("invalid index");
+            return null;
+        }
+
+        let argv = context.nth(0);
+
+        return Eval.arg(argv.nth(i));
+    }
+
+
+    function Symbol artex(Symbol artex) {
+        var Collection q;
+
+        let q = artex.data();
+
+        if (q.length() = 0) {
+            do q.dispose();
+            do artex.setMeta(null);
+        } else {
+            do artex.setData(Eval.arithmeticExpression(q));
+            do artex.setMeta(INT);
+        }
+
+        return artex;
+    }
+
+
     function int arithmeticExpression(Collection queue) {
         var int lo, ro;  /* left, right operand */
         var int n;
@@ -88,8 +214,22 @@ class Eval {
             let tok = queue.pop();
 
             if (tok.meta() = UOP) {
+                if (stack.length() = 0) {
+                    do LibIO.error("expected integer");
+                    do LibSym.destroyList(stack);
+                    do LibSym.destroyList(queue);
+                    do tok.dispose();
+                    return 0;
+                }
                 do stack.push(Eval.uoperate(stack.pop(), tok.data()));
             } else { if ( (tok.meta()&OP) = OP) {
+                if (stack.length() < 2) {
+                    do LibIO.error("expected integer");
+                    do LibSym.destroyList(stack);
+                    do LibSym.destroyList(queue);
+                    do tok.dispose();
+                    return 0;
+                }
                 let ro = stack.pop();
                 let lo = stack.pop();
                 do stack.push(Eval.operate(lo, ro, tok.data()));
@@ -118,6 +258,53 @@ class Eval {
         do queue.dispose();
 
         return n;
+    }
+
+
+    function int uoperate(int n, int op) {
+
+        if (op =  43) { return Math.abs(n); }
+        if (op =  45) { return -n;          }
+        if (op = 126) { return ~n;          }
+
+        do LibIO.error("unrecognized operator");
+        return 0;
+    }
+
+
+    function int operate(int m, int n, int op) {
+
+        if ( ((op=47) | (op=37)) & (n=0) ) {
+            do LibIO.error("division by zero");
+            return 0;
+        }
+
+        if (op =  38) { return m & n; }
+        if (op = 124) { return m | n; }
+        if (op =  94) { return (m|n) & ~(m&n); }
+
+        if (op =  43) { return m + n; }
+        if (op =  45) { return m - n; }
+        if (op =  42) { return m * n; }
+        if (op =  47) { return m / n; }
+        if (op =  37) { return Vector.mod(m, n); }
+
+        if (op = 6161) { return   m = n;  }
+        if (op = 3361) { return ~(m = n); }
+        if (op =   60) { return   m < n;  }
+        if (op =   62) { return   m > n;  }
+        if (op = 6061) { return  (m<n) | (m=n); }
+        if (op = 6261) { return  (m>n) | (m=n); }
+
+        do LibIO.error("unrecognized operator");
+        return 0;
+    }
+
+
+    function Symbol fmtex(Symbol fmtex) {
+        do fmtex.setData(Eval.formatExpression(fmtex.data()));
+        do fmtex.setMeta(STR);
+        return fmtex;
     }
 
 
@@ -210,128 +397,6 @@ class Eval {
     }
 
 
-    function Symbol arg(Symbol arg) {
-
-        if (arg = null) {
-            return null;
-        }
-
-        if (arg.meta() = SYM)   { return Eval.sym(arg);   }
-        if (arg.meta() = ARTEX) { return Eval.artex(arg); }
-        if (arg.meta() = FMTEX) { return Eval.fmtex(arg); }
-        if (arg.meta() = BLOCK) { return Eval.block(arg); }
-
-        return arg;
-    }
-
-
-    function Symbol sym(Symbol sym) {
-        var String tag;
-        var Symbol p;
-
-        let tag = sym.data();
-        let p = Eval.lookup(tag);
-        do tag.dispose();
-
-        if (p = null) {
-            do LibIO.error("undefined symbol");
-            return sym;
-        }
-
-        if (p.meta() = STR) {
-            do sym.setData(Str.dup(p.data()));
-        } else { if ( (p.meta()&LIST) = LIST ) {
-            do sym.setData(LibSym.copyList(p.data()));
-        } else {
-            do sym.setData(p.data());
-        }}
-
-        do sym.setMeta(p.meta());
-
-        return sym;
-    }
-
-
-    function Symbol lookup(String s) {
-        var int i;
-        var HashTable table;
-        var Symbol sym;
-
-        if ( Eval.isArg(s) & (context.length()>0) ) {
-            return Eval.lookupArg(s);
-        }
-
-        let i = 0;
-        while (i < symtab.length()) {
-            let table = symtab.nth(i);
-            let sym = table.lookup(s);
-            if (~(sym = null)) {
-                return sym;
-            }
-            let i = i + 1;
-        }
-
-        return null;
-    }
-
-
-    function boolean isArg(String s) {
-        var char c;
-        var int i;
-
-        if (s.length() < 2) {
-            return false;
-        }
-
-        if (~(s.charAt(0) = 36)) {
-            return false;
-        }
-
-        let i = 1;
-        while (i < s.length()) {
-            let c = s.charAt(i);
-            if ( (c<48) | (c>57) ) {
-                return false;
-            }
-            let i = i + 1;
-        }
-
-        return true;
-    }
-
-
-    function Symbol lookupArg(String s) {
-        var Collection argv;
-
-        let argv = context.nth(0);
-        do Str.shift(s, 1, 0);  // ##DB## this might need a dup
-
-        return argv.nth(s.intValue()-1);
-    }
-
-
-    function Symbol artex(Symbol artex) {
-        var Collection q;
-
-        let q = artex.data();
-        if (q.length() = 0) {
-            do artex.setMeta(null);
-        } else {
-            do artex.setData(Eval.arithmeticExpression(artex.data()));
-            do artex.setMeta(INT);
-        }
-
-        return artex;
-    }
-
-
-    function Symbol fmtex(Symbol fmtex) {
-        do fmtex.setData(Eval.formatExpression(fmtex.data()));
-        do fmtex.setMeta(STR);
-        return fmtex;
-    }
-
-
     function Symbol block(Symbol block) {
         var Symbol ret;
 
@@ -367,47 +432,9 @@ class Eval {
     }
 
 
-    function int uoperate(int n, int op) {
-
-        if (op =  43) { return Math.abs(n); }
-        if (op =  45) { return -n;          }
-        if (op = 126) { return ~n;          }
-
-        do LibIO.error("unrecognized operator");
-        return 0;
-    }
-
-
-    function int operate(int m, int n, int op) {
-
-        if ( ((op=47) | (op=37)) & (n=0) ) {
-            do LibIO.error("division by zero");
-            return 0;
-        }
-
-        if (op =  38) { return m & n; }
-        if (op = 124) { return m | n; }
-        if (op =  94) { return (m|n) & ~(m&n); }
-
-        if (op =  43) { return m + n; }
-        if (op =  45) { return m - n; }
-        if (op =  42) { return m * n; }
-        if (op =  47) { return m / n; }
-        if (op =  37) { return Vector.mod(m, n); }
-
-        if (op = 6161) { return   m = n;  }
-        if (op = 3361) { return ~(m = n); }
-        if (op =   60) { return   m < n;  }
-        if (op =   62) { return   m > n;  }
-        if (op = 6061) { return  (m<n) | (m=n); }
-        if (op = 6261) { return  (m>n) | (m=n); }
-
-        do LibIO.error("unrecognized operator");
-        return 0;
-    }
-
-
-    function void pushContext(Collection argv) {
+    function void pushContext(Symbol arg0, Collection argv) {
+        do argv.push(Symbol.new(null, STR, arg0.tag()));
+        do arg0.setTag(null);
         do context.push(argv);
         do symtab.push(HashTable.new(3));
         return;

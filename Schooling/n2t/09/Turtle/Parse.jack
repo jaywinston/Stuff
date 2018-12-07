@@ -36,7 +36,7 @@ class Parse {
 
         let SITE = LibSym.SITE();
         let GLOBL = ~SITE;
-        let TOKENMASK = SYM | INT;
+        let TOKENMASK = ~STR & (SYM | INT);
 
         let PS1 = ">";
         let PS2 = "|";
@@ -287,20 +287,19 @@ class Parse {
             let cc = Parse.cclass(s, i);
         }
 
-        /* pop ops to queue */
-        let top = stack.nth(0);
+        let top = stack.pop();
         while (~(top.meta() = null)) {
             if (top.meta() = LPAREN) {
                 do LibIO.error("mismatched parentheses");
                 do LibSym.destroyList(stack);
                 return Parse.package(artex, queue, s, -1);
             }
-            do top.setMeta(OP);
-            do queue.append(stack.pop());
-            let top = stack.nth(0);
+            do queue.append(top);
+            let top = stack.pop();
         }
 
-        do LibSym.destroyList(stack);
+        do top.dispose();
+        do stack.dispose();
 
         return Parse.package(artex, queue, s, i);
     }

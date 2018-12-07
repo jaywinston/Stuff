@@ -77,7 +77,7 @@ class LibSym {
         var int i;
         var Array ctab;
 
-        let ctab = Array.new(HACK_CHARSET_SIZE + 2);
+        let ctab = Array.new(HACK_CHARSET_SIZE + 2);  /* magic number! */
 
         let i = 0;
         while (i < 128) {
@@ -85,6 +85,26 @@ class LibSym {
             let i = i + 1;
         }
 
+        let i = 65;
+        while (i < 90) {
+            let ctab[i] = 10240;
+            let i = i + 1;
+        }
+
+        let i = 97;
+        while (i < 122) {
+            let ctab[i] = 10240;
+            let i = i + 1;
+        }
+
+        let ctab[36] = 10240; // $
+
+        let i = 48;
+        while (i < 58) {
+            let ctab[i] = 4096;
+            let i = i + 1;
+        }
+ 
         let ctab[ 91] =    16;  // [
         let ctab[ 40] =    24;  // (
         let ctab[ 38] =    25;  // &
@@ -112,26 +132,6 @@ class LibSym {
         let ctab[  EOS_MAP] =  8224;  // EOS
         let ctab[NOLGL_MAP] = 16384;  // illegal index
 
-        let i = 65;
-        while (i < 90) {
-            let ctab[i] = 8192 | ctab[34];
-            let i = i + 1;
-        }
-
-        let i = 97;
-        while (i < 122) {
-            let ctab[i] = 8192 | ctab[34];
-            let i = i + 1;
-        }
-
-        let ctab[36] = 8192 | ctab[34]; // $
-
-        let i = 48;
-        while (i < 58) {
-            let ctab[i] = 4096;
-            let i = i + 1;
-        }
- 
         return ctab;
     }
 
@@ -143,16 +143,16 @@ class LibSym {
             return null;
         }
 
-        let type = sym.meta() & (LIST|STR);
-
-        if (type = STR) {
-            return Symbol.new(Str.dup(sym.tag()), sym.meta(),
-                              Str.dup(sym.data()));
-        }
+        let type = sym.meta() & (LIST | STR);
 
         if (type = LIST) {
             return Symbol.new(Str.dup(sym.tag()), sym.meta(),
                               LibSym.copyList(sym.data()));
+        }
+
+        if (type = STR) {
+            return Symbol.new(Str.dup(sym.tag()), sym.meta(),
+                              Str.dup(sym.data()));
         }
 
         return Symbol.new(Str.dup(sym.tag()), sym.meta(), sym.data());
@@ -182,9 +182,9 @@ class LibSym {
             return;
         }
 
-        let type = sym.meta() & (LIST|STR);
+        let type = sym.meta() & (LIST | STR);
 
-        if ( type = LIST ) {
+        if (type = LIST) {
             do LibSym.destroyList(sym.data());
         } else { if (type = STR) {
             let s = sym.data();
@@ -237,9 +237,9 @@ class LibSym {
         if (p = null) {
             do ht.install(Str.dup(name), type, value);
         } else {
-            if (p.meta() = FUNC) {
+            if ( (p.meta()&LIST) = LIST ) {
                 do LibSym.destroyList(p.data());
-            } else { if (p.meta() = STR) {
+            } else { if ( (p.meta()&STR) = STR ) {
                 let s = p.data();
                 do s.dispose();
             }}
