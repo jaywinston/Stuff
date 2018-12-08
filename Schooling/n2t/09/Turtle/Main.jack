@@ -63,17 +63,16 @@ class Main {
 
 
     function void run() {
-        var Symbol argv;
+        var Collection argv;
 
         let running = true;
 
         while (running) {
-            //let argv = Parse.next();
-            //while (argv.length() > 0) {
-                do Main.try(null);
-                //do Main.try(argv);
-            //}
-            //do argv.dispose();
+            let argv = Parse.next();
+            while (argv.length() > 0) {
+                do Main.try(argv);
+            }
+            do argv.dispose();
         }
 
         return;
@@ -83,14 +82,12 @@ class Main {
     function void try(Collection argv) {
         var String s;
 
-//        if (LibIO.noerr()) {  /* This is the check for parse errors. */
+        if (LibIO.noerr()) {
             do LibSym.destroySym(
                 Main.enqueue(
-                    Exec.cmdlin(
-                        Parse.next())));
-                    //Exec.cmdlin(argv)));
+                    Exec.cmdlin(argv)));
             do LibIO.fixCanvas();
-//        }
+        }
 
         /* Error messages are queued. */
         do LibIO.clearerr();
@@ -111,14 +108,12 @@ class Main {
             return null;
         }
 
-        if (LibIO.noerr()) {
-            let FARGV[0] = sym.data();
-            if (sym.meta() = STR) {
-                do LibIO.put(Str.format(FSSTR, FARGV));
-            } else { if (sym.meta() = INT) {
-                do LibIO.put(Str.format(FDSTR, FARGV));
-            }}
-        }
+        let FARGV[0] = sym.data();
+        if (sym.meta() = STR) {
+            do LibIO.put(Str.format(FSSTR, FARGV));
+        } else { if (sym.meta() = INT) {
+            do LibIO.put(Str.format(FDSTR, FARGV));
+        }}
 
         return sym;
     }
