@@ -33,7 +33,7 @@
 class LibSym {
 
     static int BIN, BLOCK, CMD, CMDLIN, FUNC, INDEX, INT, ARTEX, LIST, OP,
-        STR, FMTEX, SYM, UOP;
+        STR, FMTEX, NAME, UOP;
     static int HACK_CHARSET_SIZE, EOS_MAP, NOLGL_MAP, SITE;
 
 
@@ -59,7 +59,7 @@ class LibSym {
         let LIST = ctab[91];
         let STR = ctab[34];
         let FMTEX = ctab[44];
-        let SYM = ctab[65];
+        let NAME = ctab[65];
 
         do ctab.dispose();
 
@@ -264,7 +264,7 @@ class LibSym {
     function int SITE() { return SITE; }
     function int STR() { return STR; }
     function int FMTEX() { return FMTEX; }
-    function int SYM() { return SYM; }
+    function int NAME() { return NAME; }
     function int UOP() { return UOP; }
 
 }

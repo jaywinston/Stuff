@@ -32,6 +32,7 @@ class Collection {
             do head.dispose();
             let head = tail;
         }
+        do Memory.deAlloc(this);
         return;
     }
 

@@ -3,7 +3,7 @@
 class Parse {
 
     static int BEND, BLANK, BLOCK, CMDLIN, COMMA, DELIM, END, EOS, EQ, INDEX,
-            INT, ARTEX, LEND, LIST, LPAREN, NOLGL, OP, RPAREN, STR, FMTEX, SYM,
+            INT, ARTEX, LEND, LIST, LPAREN, NOLGL, OP, RPAREN, STR, FMTEX, NAME,
             UOP, ASGN;
     static int GLOBL, SITE, TOKENMASK;
     static String PS1, PS2;
@@ -31,12 +31,12 @@ class Parse {
         let RPAREN = Lex.cclass(41);
         let STR = LibSym.STR();
         let FMTEX = LibSym.FMTEX();
-        let SYM = LibSym.SYM();
+        let NAME = LibSym.NAME();
         let UOP = LibSym.UOP();
 
         let SITE = LibSym.SITE();
         let GLOBL = ~SITE;
-        let TOKENMASK = ~STR & (SYM | INT);
+        let TOKENMASK = ~STR & (NAME | INT);
 
         let PS1 = ">";
         let PS2 = "|";
@@ -126,7 +126,7 @@ class Parse {
                 do LibIO.error("EOS while scanning string");
             }
             do word.setData(t);
-        } else { if (cc = SYM) {
+        } else { if (cc = NAME) {
             let t = String.new(s.length());
             let i = Lex.token(s, t, TOKENMASK, i);
             do word.setData(t);
@@ -172,7 +172,7 @@ class Parse {
             }
 
             if ( (cc=ASGN) & ~(Parse.cclass(s, i+1)=ASGN) ) {
-                do cmdlin.append(Symbol.new(null, SYM, "ASSIGN"));
+                do cmdlin.append(Symbol.new(null, NAME, "ASSIGN"));
                 let i = i + 1;
                 let cc = Parse.cclass(s, i);
             } else { if ( (cc&GLOBL) = ARTEX ) {

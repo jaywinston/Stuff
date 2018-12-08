@@ -54,63 +54,56 @@ class HashTable {
         var Symbol p;
 
         let b = table[hash(s)];
-        let a = Array.new(2);
+        let a = Array.new(3);
         let a[0] = b;
 
         let i = 0;
         while (i < b.length()) {
             let p = b.nth(i);
             if (Str.eq(s, p.tag())) {
-                let a[1] = i;
+                let a[1] = p;
+                let a[2] = i;
                 return a;
             }
             let i = i + 1;
         }
 
-        let a[1] = -1;
+        let a[1] = null;
 
         return a;
     }
 
 
     method Symbol lookup(String s) {
-        var int i;
         var Array a;
-        var Collection b;
+        var Symbol p;
 
         let a = _lookup(s);
-        let b = a[0];
-        let i = a[1];
+        let p = a[1];
         do a.dispose();
 
-        if (i < 0) {
-            return null;
-        }
-
-        return b.nth(i);
+        return p;
     }
 
 
-    method void install(String name, int type, int val) {
-        var int i;
+    method Symbol install(String name, int type, int val) {
         var Array a;
         var Collection b;
         var Symbol p;
 
         let a = _lookup(name);
         let b = a[0];
-        let i = a[1];
+        let p = a[1];
         do a.dispose();
 
-        if (i < 0) {
+        if (p = null) {
             do b.push(Symbol.new(name, type, val));
         } else {
-            let p = b.nth(i);
             do p.setData(val);
             do p.setMeta(type);
         }
 
-        return;
+        return p;
     }
 
 
@@ -121,7 +114,7 @@ class HashTable {
 
         let a = _lookup(name);
         let b = a[0];
-        let i = a[1];
+        let i = a[2];
         do a.dispose();
 
         if (i < 0) {

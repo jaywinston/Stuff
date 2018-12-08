@@ -3,7 +3,7 @@
 class Eval {
 
     static int ESC;
-    static int BLOCK, FUNC, GLOBL, INT, ARTEX, OP, STR, FMTEX, SYM, UOP;
+    static int BLOCK, FUNC, GLOBL, INT, ARTEX, OP, STR, FMTEX, NAME, UOP;
     static Array FSPECTAB, TYPETAB;
     static Array FERRARGV;
     static String FERRFS;
@@ -20,7 +20,7 @@ class Eval {
         let GLOBL = ~LibSym.SITE();
         let STR = LibSym.STR();
         let FMTEX = LibSym.FMTEX();
-        let SYM = LibSym.SYM();
+        let NAME = LibSym.NAME();
         let UOP = LibSym.UOP();
         let FSPECTAB = Eval.fspectab();
         let TYPETAB = Eval.typetab();
@@ -81,7 +81,7 @@ class Eval {
             return null;
         }
 
-        if (arg.meta() = SYM)   { return Eval.sym(arg);   }
+        if (arg.meta() = NAME)   { return Eval.sym(arg);   }
         if (arg.meta() = ARTEX) { return Eval.artex(arg); }
         if (arg.meta() = FMTEX) { return Eval.fmtex(arg); }
         if (arg.meta() = BLOCK) { return Eval.block(arg); }

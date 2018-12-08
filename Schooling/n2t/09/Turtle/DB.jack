@@ -63,8 +63,8 @@ class DB {
             let t = "CMD";
         } else { if (p.meta() = LibSym.INT()) {
             let t = "INT";
-        } else { if (p.meta() = LibSym.SYM()) {
-            let t = "SYM";
+        } else { if (p.meta() = LibSym.NAME()) {
+            let t = "NAME";
         } else { if (p.meta() = LibSym.TTL()) {
             let t = "TTL";
         } else { if (p.meta() = LibSym.STR()) {

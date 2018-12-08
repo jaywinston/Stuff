@@ -36,7 +36,7 @@ class Vector {
     /* These functions return trigonometric values multiplied by 100.
      * The idea is to use the value and then divide by 100.  This is
      * close enough for my needs here.  Vector.init() must be called
-     * at least once before use.
+     * once before use.
      */
     function int sin(int a) {
         var boolean neg;

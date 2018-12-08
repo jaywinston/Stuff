@@ -2,7 +2,7 @@
 
 class Exec {
 
-    static int BIN, BLOCK, CMD, CMDLIN, EXE, FUNC, INT, LIST, SITE, STR, SYM;
+    static int BIN, BLOCK, CMD, CMDLIN, EXE, FUNC, INT, LIST, SITE, STR, NAME;
     static int ASSIGN, FUNCTION, IF, REPEAT, QUIT;
     static String IFS, ELSES;
 
@@ -22,7 +22,7 @@ class Exec {
         let LIST = LibSym.LIST();
         let SITE = ~LibSym.SITE() | EXE;
         let STR = LibSym.STR();
-        let SYM = LibSym.SYM();
+        let NAME = LibSym.NAME();
 
         let ASSIGN   = 1;
         let FUNCTION = 2;
@@ -153,7 +153,7 @@ class Exec {
             return;
         }
 
-        if (~(arg.meta() = SYM)) {
+        if (~(arg.meta() = NAME)) {
             do LibIO.error("won't assign to that");
             return;
         }
@@ -185,7 +185,7 @@ class Exec {
             return;
         }
 
-        if (~(arg.meta() = SYM)) {
+        if (~(arg.meta() = NAME)) {
             do LibIO.error("no function name");
             return;
         }
@@ -243,7 +243,7 @@ class Exec {
         let a = 0;
         while (a < argv.length()) {
             let arg = argv.nth(a);
-            if (arg.meta() = SYM) {
+            if (arg.meta() = NAME) {
                 if (Str.eq(ELSES, arg.data())) {
                     if (nif = 0) {
                         return Exec.elseVector(argv, a);
