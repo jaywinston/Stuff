@@ -3,7 +3,7 @@
 class Eval {
 
     static int ESC;
-    static int BLOCK, LIST, GLOBL, INT, ARTEX, OP, STR, FMTEX, SYM, UOP;
+    static int BLOCK, FUNC, GLOBL, INT, ARTEX, OP, STR, FMTEX, SYM, UOP;
     static Array FSPECTAB, TYPETAB;
     static Array FERRARGV;
     static String FERRFS;
@@ -13,7 +13,7 @@ class Eval {
     function void init() {
         let ESC = 37;  /* magic number! */
         let BLOCK = LibSym.BLOCK();
-        let LIST = LibSym.LIST();
+        let FUNC = LibSym.FUNC();
         let INT = LibSym.INT();
         let ARTEX = LibSym.ARTEX();
         let OP = LibSym.OP();
@@ -105,7 +105,7 @@ class Eval {
 
         if (p.meta() = STR) {
             do sym.setData(Str.dup(p.data()));
-        } else { if ( (p.meta()&LIST) = LIST ) {
+        } else { if (p.meta() = FUNC) {
             do sym.setData(LibSym.copyList(p.data()));
         } else {
             do sym.setData(p.data());

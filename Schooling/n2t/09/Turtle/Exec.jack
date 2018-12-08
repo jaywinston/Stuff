@@ -89,12 +89,11 @@ class Exec {
         let cmd = arg.data();
         do arg.dispose();
 
-        if (cmd = ASSIGN)          { return Exec.doAssign(argv);   }
-        else { if (cmd = FUNCTION) { return Exec.doFunction(argv); }
-        else { if (cmd = IF)       { return Exec.doIf(argv);       }
-        else { if (cmd = REPEAT)   { return Exec.doRepeat(argv);   }
-        else { if (cmd = QUIT)     { return Exec.doQuit(argv);     }
-        }}}}
+        if (cmd = ASSIGN)   { return Exec.doAssign(argv);   }
+        if (cmd = FUNCTION) { return Exec.doFunction(argv); }
+        if (cmd = IF)       { return Exec.doIf(argv);       }
+        if (cmd = REPEAT)   { return Exec.doRepeat(argv);   }
+        if (cmd = QUIT)     { return Exec.doQuit(argv);     }
 
         if (cmd=128) {do DB.mv();}  // ##DB##
 

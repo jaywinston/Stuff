@@ -109,17 +109,14 @@ class Parse {
             do LibIO.error("not implemented");
             let i = -1;
         } else { if (cc = BLOCK) {
-            do word.setMeta(BLOCK);
             let i = Parse.block(s, word, i);
             let s = Parse.tag(word);
         } else { if (cc = INT) {
             let t = String.new(s.length()-i);
             let i = Lex.token(s, t, TOKENMASK, i);
-            do word.setMeta(INT);
             do word.setData(t.intValue());
             do t.dispose();
         } else { if (cc = ARTEX) {
-            do word.setMeta(ARTEX);
             let i = Parse.artex(s, word, i);
             let s = Parse.tag(word);
         } else { if (cc = STR) {
@@ -128,18 +125,17 @@ class Parse {
             if (i < 0) {
                 do LibIO.error("EOS while scanning string");
             }
-            do word.setMeta(STR);
             do word.setData(t);
         } else { if (cc = SYM) {
             let t = String.new(s.length());
             let i = Lex.token(s, t, TOKENMASK, i);
-            do word.setMeta(SYM);
             do word.setData(t);
         } else {
             do LibIO.error("illegal character");
             let i = -1;
         }}}}}}
 
+        do word.setMeta(cc);
         do word.setTag(s);
 
         return i;

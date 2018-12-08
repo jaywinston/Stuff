@@ -47,7 +47,7 @@ class Main {
         let INT = LibSym.INT();
         let STR = LibSym.STR();
         let FARGV = Array.new(1);
-        let FSSTR = "`%S'";
+        let FSSTR = "'%S'";
         let FDSTR = "%D";
 
         return;
@@ -69,10 +69,7 @@ class Main {
 
         while (running) {
             let argv = Parse.next();
-            while (argv.length() > 0) {
-                do Main.try(argv);
-            }
-            do argv.dispose();
+            do Main.try(argv);
         }
 
         return;
@@ -82,11 +79,20 @@ class Main {
     function void try(Collection argv) {
         var String s;
 
+        if (argv = null) {
+            return;
+        }
+
         if (LibIO.noerr()) {
-            do LibSym.destroySym(
-                Main.enqueue(
-                    Exec.cmdlin(argv)));
-            do LibIO.fixCanvas();
+            while (argv.length() > 0) {
+                do LibSym.destroySym(
+                    Main.enqueue(
+                        Exec.cmdlin(argv)));
+                do LibIO.fixCanvas();
+            }
+            do argv.dispose();
+        } else {
+            do LibSym.destroyList(argv);
         }
 
         /* Error messages are queued. */
