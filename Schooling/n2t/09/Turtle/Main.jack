@@ -7,42 +7,26 @@ class Main {
 
 
     function void main() {
-
         do Main.printBanner("Turtle 0.01");
-
         do Main.init();
-
-        let INT = LibSym.INT();
-        let STR = LibSym.STR();
-        let FARGV = Array.new(1);
-        let FSSTR = "`%S'";
-        let FDSTR = "%D";
-
         do Main.run();
-
         do Main.killall();
-
-        do FARGV.dispose();
-        do FSSTR.dispose();
-        do FDSTR.dispose();
-
         return;
     }
 
 
     function void printBanner(String banner) {
-
         do Output.moveCursor(0, 23);  /* magic number!s */
         do Output.printString(banner);
         do banner.dispose();
         do Screen.setColor(true);
         do Screen.drawLine(0, 13, 509, 13);  /* magic number!s */
-
         return;
     }
 
 
     function void init() {
+
         do Vector.init();
         do Turtle.init(2);
         do Collection.init();
@@ -59,11 +43,21 @@ class Main {
         do Eval.init();
         do Bin.init();
         do Exec.init();
+
+        let INT = LibSym.INT();
+        let STR = LibSym.STR();
+        let FARGV = Array.new(1);
+        let FSSTR = "`%S'";
+        let FDSTR = "%D";
+
         return;
     }
 
 
     function void killall() {  // todo: this
+        do FARGV.dispose();
+        do FSSTR.dispose();
+        do FDSTR.dispose();
         return;
     }
 
