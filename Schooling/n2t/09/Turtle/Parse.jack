@@ -258,7 +258,6 @@ class Parse {
                     let top = stack.nth(0);
                     while ( ~(top.meta()<token.meta())
                              & ~(top.meta()=LPAREN) ) {
-                        //##DB##do top.setMeta(OP);
                         do queue.append(stack.pop());
                         let top = stack.nth(0);
                     }
@@ -290,9 +289,6 @@ class Parse {
                 do LibSym.destroyList(stack);
                 return Parse.package(artex, queue, s, -1);
             }
-            //if (top.meta() < UOP) {  // todo: this better
-                //do top.setMeta(OP);
-            //}
             do queue.append(top);
             let top = stack.pop();
         }
@@ -311,6 +307,7 @@ class Parse {
         /* This is very misleading. Remember that ASGN is 26 and EQ is 27.
          * But comparison takes precedence over assignment.
          * I'm starting to appreciate LISP more, if not software design. */
+
         if ( (Parse.cclass(s, i-1)&ASGN) = ASGN ) {
             do token.setMeta(EQ);
         } else {
