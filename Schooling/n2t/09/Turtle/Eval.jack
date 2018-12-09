@@ -180,6 +180,11 @@ class Eval {
 
         let argv = context.nth(0);
 
+        if (~(i < argv.length())) {
+            do LibIO.error("expected argument");
+            return null;
+        }
+
         return Eval.arg(argv.nth(i));
     }
 
@@ -216,8 +221,8 @@ class Eval {
             if (tok.meta() = UOP) {
                 if (stack.length() = 0) {
                     do LibIO.error("expected integer");
-                    do LibSym.destroyList(stack);
                     do LibSym.destroyList(queue);
+                    do stack.dispose();
                     do tok.dispose();
                     return 0;
                 }
@@ -225,8 +230,8 @@ class Eval {
             } else { if ( (tok.meta()&OP) = OP) {
                 if (stack.length() < 2) {
                     do LibIO.error("expected integer");
-                    do LibSym.destroyList(stack);
                     do LibSym.destroyList(queue);
+                    do stack.dispose();
                     do tok.dispose();
                     return 0;
                 }
@@ -237,9 +242,9 @@ class Eval {
                 do Eval.arg(tok);
                 if (~(tok.meta() = INT)) {
                     do LibIO.error("expected integer");
-                    do LibSym.destroyList(stack);
                     do LibSym.destroyList(queue);
                     do LibSym.destroySym(tok);
+                    do stack.dispose();
                     return 0;
                 }
                 do stack.push(tok.data());

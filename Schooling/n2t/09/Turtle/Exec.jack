@@ -95,7 +95,7 @@ class Exec {
         if (cmd = REPEAT)   { return Exec.doRepeat(argv);   }
         if (cmd = QUIT)     { return Exec.doQuit(argv);     }
 
-        if (cmd=128) {do DB.mv();}  // ##DB##
+        if (cmd=128) {return Symbol.new(0,1,128);}  // ##DB##
 
         return null;
     }

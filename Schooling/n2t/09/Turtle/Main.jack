@@ -1,6 +1,7 @@
 class Main {
 
     static boolean running;
+static boolean mv;  // ##DB##
     static int INT, STR;
     static Array FARGV;
     static String FSSTR, FDSTR;
@@ -26,6 +27,7 @@ class Main {
 
 
     function void init() {
+let mv=false;  // ##DB##
 
         do Vector.init();
         do Turtle.init(2);
@@ -70,6 +72,7 @@ class Main {
         while (running) {
             let argv = Parse.next();
             do Main.try(argv);
+if(mv){do DB.mv();let mv=false;}  // ##DB##
         }
 
         return;
@@ -114,6 +117,7 @@ class Main {
             return null;
         }
 
+if(sym.meta()=1&sym.data()=128){let mv=true;}  // ##DB##
         let FARGV[0] = sym.data();
         if (sym.meta() = STR) {
             do LibIO.put(Str.format(FSSTR, FARGV));
