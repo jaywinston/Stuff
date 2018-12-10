@@ -87,6 +87,9 @@ class Exec {
         var int cmd;
 
         let cmd = arg.data();
+
+if (cmd=128) {return arg;}  // ##DB## memory view
+
         do arg.dispose();
 
         if (cmd = ASSIGN)   { return Exec.doAssign(argv);   }
@@ -95,12 +98,12 @@ class Exec {
         if (cmd = REPEAT)   { return Exec.doRepeat(argv);   }
         if (cmd = QUIT)     { return Exec.doQuit(argv);     }
 
-        if (cmd=128) {return Symbol.new(0,1,128);}  // ##DB##
-
         return null;
     }
 
 
+    /* 'func' is passed as 'int'; here it's used as 'Symbol'
+     */
     function Symbol call(Symbol func, Collection argv) {
         var Symbol ret;
 
@@ -123,9 +126,7 @@ class Exec {
 
         while (cmdlist.length() > 1) {
             let cmdlin = cmdlist.pop();
-            do LibSym.destroySym(
-                Main.enqueue(
-                    Exec.cmdlin(cmdlin.data())));
+            do Main.execute(cmdlin.data());
         }
 
         let cmdlin = cmdlist.pop();
@@ -211,19 +212,13 @@ class Exec {
         let arg = Eval.arg(argv.pop());
         let elsev = Exec.elsev(argv);
 
-        if (~(arg.data() = 0)) {
-            while (argv.length() > 0) {
-                do LibSym.destroySym(
-                    Main.enqueue(  /* syscall */
-                        Exec.cmdlin(argv)));
+        if (arg.data() = 0) {
+            if (~(elsev = null)) {
+                do Main.execute(elsev);
             }
-        } else { if (~(elsev = null)) {
-            while (elsev.length() > 0) {
-                do LibSym.destroySym(
-                    Main.enqueue(  /* syscall */
-                        Exec.cmdlin(elsev)));
-            }
-        }}
+        } else {
+            do Main.execute(argv);
+        }
 
         do LibSym.destroySym(arg);
         do LibSym.destroyList(argv);
@@ -281,7 +276,7 @@ class Exec {
 
     function void doRepeat(Collection argv) {
         var int i;
-        var Symbol arg, cmdp;
+        var Symbol arg;
 
         let arg = Eval.arg(argv.pop());
 
@@ -301,10 +296,7 @@ class Exec {
         let i = arg.data();
         do arg.dispose();
         while (i > 0) {
-            do LibSym.destroySym(
-                Main.enqueue(  /* syscall! */
-                    Exec.cmdlin(
-                        LibSym.copyList(argv))));
+            do Main.execute(LibSym.copyList(argv));
             let i = i - 1;
         }
 
@@ -322,10 +314,7 @@ class Exec {
 
         let condition = Eval.condition(arg);
         while (~(condition = 0)) {
-            do LibSym.destroySym(
-                Main.enqueue(  /* syscall! */
-                    Exec.cmdlin(
-                        LibSym.copyList(argv))));
+            do Main.execute(LibSym.copyList(argv));
             let condition = Eval.condition(arg);
         }
 

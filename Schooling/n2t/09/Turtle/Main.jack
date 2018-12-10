@@ -87,12 +87,7 @@ if(mv){do DB.mv();let mv=false;}  // ##DB##
         }
 
         if (LibIO.noerr()) {
-            while (argv.length() > 0) {
-                do LibSym.destroySym(
-                    Main.enqueue(
-                        Exec.cmdlin(argv)));
-                do LibIO.fixCanvas();
-            }
+            do Main.execute(argv);
             do argv.dispose();
         } else {
             do LibSym.destroyList(argv);
@@ -111,13 +106,30 @@ if(mv){do DB.mv();let mv=false;}  // ##DB##
     }
 
 
+    function void execute(Collection argv) {
+        var Symbol ret;
+
+        while (argv.length() > 0) {
+            let ret = Exec.cmdlin(argv);
+            do LibIO.fixCanvas();
+            if (LibIO.noerr()) {
+                do Main.enqueue(ret);
+            }
+            do LibSym.destroySym(ret);
+        }
+
+        return;
+    }
+
+
     function Symbol enqueue(Symbol sym) {
 
         if (sym = null) {
             return null;
         }
 
-if(sym.meta()=1&sym.data()=128){let mv=true;}  // ##DB##
+let mv=sym.meta()=1&sym.data()=128;  // ##DB##
+
         let FARGV[0] = sym.data();
         if (sym.meta() = STR) {
             do LibIO.put(Str.format(FSSTR, FARGV));
