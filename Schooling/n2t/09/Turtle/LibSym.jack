@@ -213,6 +213,14 @@ class LibSym {
     }
 
 
+    function void clearList(Collection l) {
+        while (l.length() > 0) {
+            do LibSym.destroySym(l.pop());
+        }
+        return;
+    }
+
+
     function void destroyHashTable(HashTable ht) {
         var int i;
 

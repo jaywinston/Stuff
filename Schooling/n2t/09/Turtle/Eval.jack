@@ -81,7 +81,7 @@ class Eval {
             return null;
         }
 
-        if (arg.meta() = NAME)   { return Eval.sym(arg);   }
+        if (arg.meta() = NAME)  { return Eval.name(arg);  }
         if (arg.meta() = ARTEX) { return Eval.artex(arg); }
         if (arg.meta() = FMTEX) { return Eval.fmtex(arg); }
         if (arg.meta() = BLOCK) { return Eval.block(arg); }
@@ -90,28 +90,30 @@ class Eval {
     }
 
 
-    function Symbol sym(Symbol sym) {
+    function Symbol name(Symbol sym) {
+        var int type;
         var String tag;
         var Symbol p;
 
-        do sym.setTag(sym.data());
-
-        let p = Eval.lookup(sym.tag());
+        let tag = sym.data();
+        do sym.setTag(tag);
+        let p = Eval.lookup(tag);
 
         if (p = null) {
             do LibIO.error("undefined symbol");
             return sym;
         }
 
-        if (p.meta() = STR) {
+        let type = p.meta();
+        if (type = STR) {
             do sym.setData(Str.dup(p.data()));
-        } else { if (p.meta() = FUNC) {
+        } else { if (type = FUNC) {
             do sym.setData(LibSym.copyList(p.data()));
         } else {
             do sym.setData(p.data());
         }}
 
-        do sym.setMeta(p.meta());
+        do sym.setMeta(type);
 
         return sym;
     }
@@ -447,8 +449,12 @@ class Eval {
 
 
     function void dropContext() {
-        do LibSym.destroyList(context.pop());
+        var Collection argv;
+
+        let argv = context.pop();
+        do LibSym.destroySym(argv.pop());
         do LibSym.destroyHashTable(symtab.pop());
+
         return;
     }
 

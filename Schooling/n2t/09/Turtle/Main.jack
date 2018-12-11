@@ -36,8 +36,8 @@ let mv=false;  // ##DB##
         do LibSym.init();
         do Lex.init(
             LibSym.ctab(),
-            34,
-            92,
+            34,  /* magic number! */
+            92,  /* magic number! */
             LibIO.esctab(),
             LibSym.CHARSETSIZE(),
             LibSym.CHARSETSIZE()+1);
@@ -72,7 +72,8 @@ let mv=false;  // ##DB##
         while (running) {
             let argv = Parse.next();
             do Main.try(argv);
-if(mv){do DB.mv();let mv=false;}  // ##DB##
+if(mv){let mv=DB.mv();}  // ##DB##
+            do LibSym.destroyList(argv);
         }
 
         return;
@@ -88,9 +89,6 @@ if(mv){do DB.mv();let mv=false;}  // ##DB##
 
         if (LibIO.noerr()) {
             do Main.execute(argv);
-            do argv.dispose();
-        } else {
-            do LibSym.destroyList(argv);
         }
 
         /* Error messages are queued. */
@@ -110,6 +108,7 @@ if(mv){do DB.mv();let mv=false;}  // ##DB##
         var Symbol ret;
 
         while (argv.length() > 0) {
+//do DB.dbi(argv.length());
             let ret = Exec.cmdlin(argv);
             do LibIO.fixCanvas();
             if (LibIO.noerr()) {
@@ -122,10 +121,10 @@ if(mv){do DB.mv();let mv=false;}  // ##DB##
     }
 
 
-    function Symbol enqueue(Symbol sym) {
+    function void enqueue(Symbol sym) {
 
         if (sym = null) {
-            return null;
+            return;
         }
 
 let mv=sym.meta()=1&sym.data()=128;  // ##DB##
@@ -137,7 +136,7 @@ let mv=sym.meta()=1&sym.data()=128;  // ##DB##
             do LibIO.put(Str.format(FDSTR, FARGV));
         }}
 
-        return sym;
+        return;
     }
 
 

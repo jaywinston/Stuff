@@ -30,7 +30,7 @@ class Exec {
         let REPEAT   = 4;
         let QUIT     = 5;
 
-        do Eval.install("MV", CMD,128);  // ##DB##
+do Eval.install("MV",CMD,128);  // ##DB##
 
         do Eval.install("ASSIGN", CMD, ASSIGN);
         do Eval.install("FUNCTION", CMD, FUNCTION);
@@ -88,7 +88,7 @@ class Exec {
 
         let cmd = arg.data();
 
-if (cmd=128) {return arg;}  // ##DB## memory view
+if (cmd=128) {return arg;}  // ##DB##
 
         do arg.dispose();
 
@@ -182,24 +182,20 @@ if (cmd=128) {return arg;}  // ##DB## memory view
         let arg = argv.pop();
 
         if (arg = null) {
-            do LibIO.error("no function name");
+            do LibIO.error("no function name found");
             return;
         }
 
         if (~(arg.meta() = NAME)) {
-            do LibIO.error("no function name");
+            do LibIO.error("no function name found");
             return;
         }
 
         let name = arg.data();
-
         do arg.dispose();
-
         do Eval.install(name, FUNC, LibSym.copyList(argv));
-
         do name.dispose();
-
-        do LibSym.destroyList(argv);
+        do LibSym.clearList(argv);
 
         return;
     }
