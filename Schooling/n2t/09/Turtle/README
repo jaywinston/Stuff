@@ -1,13 +1,21 @@
 Grammar:
 
 cmdlin:
+    ''
+    arglist '\n'
+
+arglist:
+    arg
+    arg space arglist
+
+arg:
     assgn
-    arglist
+    expr
 
 assgn:
-    lvalue '=' word
+    ref '=' expr
 
-lvalue:
+ref:
     name
     name indexexpr
 
@@ -16,24 +24,87 @@ name:
     namstart namend
 
 namstart:
-    '[[:alpha:]$]'
+    '[$[:alpha:]]'
 
 namend:
     namchar
     namchar namend
 
 namchar:
-    '[[:alpha:][:digit:]$]'
+    '[$[:alpha:][:digit:]]'
 
 indexexpr:
-    '.' word
+    '.' ref
+    '.' block
+    '.' intexpr
 
-word:
-    lvalue
-    stringexpr
+block:
+    '{' cmdlist '}'
+
+cmdlist:
+    cmdlin
+    cmdlin cmdlist
+
+intexpr:
+    bitexpr
+    uop bitexpr
+
+bitexpr:
+    eqexpr
+    eqexpr bitop bitexpr
+
+eqexpr:
+    addexpr
+    addexpr eqop eqexpr
+
+addexpr:
+    mulexpr
+    mulexpr addop addexpr
+
+mulexpr:
+    term
+    term mulop mulexpr
+
+term:
+    ref
     block
-    list
+    intterm
+    parenterm
+
+intterm:
+    intchar
+    intchar intterm
+
+intchar:
+    [[:digit:]]
+
+parenterm:
+    '(' intexpr ')'
+
+uop:
+    [~-+]
+
+bitop:
+    [&|]
+
+eqop:
+    (==|!=|<|>|<=|>=)
+
+addop:
+    [+-]
+
+mulop:
+    [*/%]
+
+expr:
+    ref
+    block
     intexpr
+    list
+    stringexpr
+
+list:
+    '[' cmdlist ']'
 
 stringexpr:
     formatstring
@@ -64,73 +135,8 @@ formatspec:
     '[%DS]'
 
 farglist:
-    word
-    word ',' farglist
-
-block:
-    '{' cmdlist '}
-
-cmdlist:
-    cmdlin
-    cmdlin '\n' cmdlist
-
-list:
-    '[' cmdlist ']'
-
-intexpr:
-    bitexpr
-    uop bitexpr
-
-bitexpr:
-    eqexpr
-    eqexpr bitop bitexpr
-
-eqexpr:
-    addexpr
-    addexpr eqop eqexpr
-
-addexpr:
-    mulexpr
-    mulexpr addop addexpr
-
-mulexpr:
-    term
-    term mulop mulexpr
-
-term:
-    block
-    lvalue
-    intterm
-    parenterm
-
-intterm:
-    intchar
-    intchar intterm
-
-intchar:
-    [[:digit:]]
-
-parenterm:
-    '(' intexpr ')'
-
-uop:
-    [~-+]
-
-bitop:
-    [&|]
-
-eqop:
-    (==|!=|<|>|<=|>=)
-
-addop:
-    [+-]
-
-mulop:
-    [*/%]
-
-arglist:
-    word
-    word space arglist
+    expr
+    expr ',' farglist
 
 space:
     ' '
