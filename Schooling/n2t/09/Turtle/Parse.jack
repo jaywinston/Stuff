@@ -98,7 +98,7 @@ class Parse {
     }
 
 
-    function int simple(String s, Symbol word, int i) {
+    function int expr(String s, Symbol word, int i) {
         var int cc;
         var String t;
 
@@ -161,7 +161,7 @@ class Parse {
         while ( (cc&DLM) = 0 ) {
 
             let word = Symbol.new(null, null, null);
-            let i = Parse.simple(s, word, i);
+            let i = Parse.expr(s, word, i);
             let s = Parse.tag(word);
             let cc = Parse.cclass(s, i);
 
@@ -266,7 +266,7 @@ class Parse {
                 do stack.push(token);
             } else {
                 let token = Symbol.new(null, null, null);
-                let i = Parse.simple(s, token, i);
+                let i = Parse.expr(s, token, i);
                 let s = Parse.tag(token);
                 do queue.append(token);
 
@@ -330,7 +330,7 @@ class Parse {
         while (Parse.cclass(s, i) = FMTEX) {
 
             let arg = Symbol.new(null, null, null);
-            let i = Parse.simple(s, arg, i+1);
+            let i = Parse.expr(s, arg, i+1);
             let s = Parse.tag(arg);
             let cc = Parse.cclass(s, i) & GLOBL;
 
