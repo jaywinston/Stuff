@@ -2,7 +2,7 @@ class Main {
 
     static boolean running;
 static boolean mv;  // ##DB##
-    static int INT, STR;
+    static int INT, LIST, STR;
     static Array FARGV;
     static String FSSTR, FDSTR;
 
@@ -47,6 +47,7 @@ let mv=false;  // ##DB##
         do Exec.init();
 
         let INT = LibSym.INT();
+        let LIST = LibSym.LIST();
         let STR = LibSym.STR();
         let FARGV = Array.new(1);
         let FSSTR = "'%S'";
@@ -134,7 +135,9 @@ let mv=sym.meta()=1&sym.data()=128;  // ##DB##
             do LibIO.put(Str.format(FSSTR, FARGV));
         } else { if (sym.meta() = INT) {
             do LibIO.put(Str.format(FDSTR, FARGV));
-        }}
+        } else { if (sym.meta() = LIST) {
+            do LibIO.put(LibSym.formatList(FARGV[0]));
+        }}}
 
         return;
     }

@@ -94,7 +94,7 @@ class Collection {
     method Array _nth(int i) {
         var Array p;
 
-        if ( (i<0) | ~(i<length) ) {
+        if ( (i<0) | (i>length) ) {
             return -1;
         }
 
@@ -211,8 +211,12 @@ class Collection {
     method void extend(Collection c) {
         var Array p;
 
-        let p = _nth(length-1);
-        let p[NEXT] = c._nth(0);
+        if (length = 0) {
+            let head = c._nth(0);
+        } else {
+            let p = _nth(length-1);
+            let p[NEXT] = c._nth(0);
+        }
         let tail = c._nth(c.length());
         let end = tail[NEXT];
         let length = length + c.length();

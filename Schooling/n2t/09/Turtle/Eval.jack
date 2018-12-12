@@ -3,7 +3,7 @@
 class Eval {
 
     static int ESC;
-    static int BLOCK, FUNC, GLOBL, INT, ARTEX, OP, STR, FMTEX, NAME, UOP;
+    static int BLOCK, FUNC, GLOBL, LIST, INT, ARTEX, OP, STR, FMTEX, NAME, UOP;
     static Array FSPECTAB, TYPETAB;
     static Array FERRARGV;
     static String FERRFS;
@@ -15,6 +15,7 @@ class Eval {
         let BLOCK = LibSym.BLOCK();
         let FUNC = LibSym.FUNC();
         let INT = LibSym.INT();
+        let LIST = LibSym.LIST();
         let ARTEX = LibSym.ARTEX();
         let OP = LibSym.OP();
         let GLOBL = ~LibSym.SITE();
@@ -85,6 +86,7 @@ class Eval {
         if (arg.meta() = ARTEX) { return Eval.artex(arg); }
         if (arg.meta() = FMTEX) { return Eval.fmtex(arg); }
         if (arg.meta() = BLOCK) { return Eval.block(arg); }
+        if (arg.meta() = LIST)  { return Eval.list(arg);  }
 
         return arg;
     }
@@ -420,6 +422,21 @@ class Eval {
         do ret.dispose();
 
         return block;
+    }
+
+
+    function Symbol list(Symbol arg) {
+        var int i;
+        var Collection list;
+
+        let list = arg.data();
+        let i = 0;
+        while (i < list.length()) {
+            do Eval.arg(list.nth(i));
+            let i = i + 1;
+        }
+
+        return arg;
     }
 
 

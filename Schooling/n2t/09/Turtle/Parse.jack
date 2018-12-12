@@ -106,8 +106,8 @@ class Parse {
         let cc = Parse.cclass(s, i) & GLOBL;
 
         if (cc = LIST) {
-            do LibIO.error("not implemented");
-            let i = -1;
+            let i = Parse.list(s, word, i);
+            let s = Parse.tag(word);
         } else { if (cc = BLOCK) {
             let i = Parse.block(s, word, i);
             let s = Parse.tag(word);
@@ -357,10 +357,9 @@ class Parse {
     }
 
 
-    function int block(String s, Symbol argv, int i) {
-        var boolean newline;
+    function int block(String s, Symbol arg, int i) {
         var int cc;
-        var Collection block, linehead;
+        var Collection block;
         var Symbol cmdlin;
 
         let block = Collection.new();
@@ -380,10 +379,10 @@ class Parse {
 
             let cc = Parse.cclass(s, i);
             if (cc = BEND) {
-                return Parse.package(argv, block, s, i+1);
+                return Parse.package(arg, block, s, i+1);
             }
             if (cc = NOLGL) {
-                return Parse.package(argv, block, s, -1);
+                return Parse.package(arg, block, s, -1);
             }
 
             let s = Parse.input(PS2);
@@ -394,8 +393,35 @@ class Parse {
     }
 
 
-    function int list(String s, Symbol p, int i) {
-        return i;
+    function int list(String s, Symbol arg, int i) {
+        var int cc;
+        var Collection list;
+        var Symbol arglist;
+
+        let list = Collection.new();
+        let arglist = Symbol.new(null, null, null);
+
+        let i = i + 1;
+        while (true) {
+
+            let i = Parse.cmdlin(s, arglist, i);
+            let s = Parse.tag(arglist);
+
+            do list.extend(arglist.data());
+
+            let cc = Parse.cclass(s, i);
+            if (cc = LEND) {
+                return Parse.package(arg, list, s, i+1);
+            }
+            if (cc = NOLGL) {
+                return Parse.package(arg, list, s, -1);
+            }
+
+            let s = Parse.input(PS2);
+            let i = 0;
+        }
+
+        return 0;
     }
 
 

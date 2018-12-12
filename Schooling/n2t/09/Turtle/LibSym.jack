@@ -259,6 +259,73 @@ class LibSym {
     }
 
 
+    function String formatList(Collection list) {
+        var int i;
+        var int len;
+        var String s, t, u;
+        var Symbol arg;
+
+        let len = Str.MAXLEN();
+        let s = String.new(len);
+        do s.appendChar(91);
+
+        let i = 0;
+        while (i < list.length()) {
+            let arg = list.nth(i);
+            if (arg.meta() = INT) {
+                let t = String.new(6);
+                do t.setInt(arg.data());
+                if ( (s.length()+t.length()) > len ) {
+                    let u = String.new(len + Str.MAXLEN());
+                    do Str.cat(u, s);
+                    do s.dispose();
+                    let len = len + Str.MAXLEN();
+                    let s = u;
+                }
+                do Str.cat(s, t);
+                do t.dispose();
+            } else { if (arg.meta() = LIST) {
+                let t = LibSym.formatList(arg.data());
+                if ( (s.length()+t.length()) > len ) {
+                    let u = String.new(len + (t.length() + Str.MAXLEN()));
+                    do Str.cat(u, s);
+                    do s.dispose();
+                    let len = len + (t.length() + Str.MAXLEN());
+                    let s = u;
+                }
+                do Str.cat(s, t);
+                do t.dispose();
+            } else { if (arg.meta() = STR) {
+                let t = arg.data();
+                if ( (s.length()+(t.length()+2)) > len ) {
+                    let u = String.new((len+2) + (t.length() + Str.MAXLEN()));
+                    do Str.cat(u, s);
+                    do s.dispose();
+                    let len = (len+2) + (t.length() + Str.MAXLEN());
+                    let s = u;
+                }
+                do s.appendChar(39);
+                do Str.cat(s, t);
+                do s.appendChar(39);
+            }}}
+                if ( (s.length()+1) > len ) {
+                    let u = String.new(len + Str.MAXLEN());
+                    do Str.cat(u, s);
+                    do s.dispose();
+                    let len = len + Str.MAXLEN();
+                    let s = u;
+                }
+            do s.appendChar(32);
+            let i = i + 1;
+        }
+
+        do s.eraseLastChar();
+        do s.appendChar(93);
+
+        return s;
+    }
+
+
     function int BIN() { return BIN; }
     function int BLOCK() { return BLOCK; }
     function int CHARSETSIZE() { return HACK_CHARSET_SIZE; }
