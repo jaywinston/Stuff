@@ -319,7 +319,9 @@ class LibSym {
             let i = i + 1;
         }
 
-        do s.eraseLastChar();
+        if (s.length() > 1) {
+            do s.eraseLastChar();
+        }
         do s.appendChar(93);
 
         return s;

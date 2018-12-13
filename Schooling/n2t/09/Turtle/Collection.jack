@@ -27,12 +27,24 @@ class Collection {
 
 
     method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+
+
+    method void clear() {
         while (~(head = end)) {
             let tail = head[NEXT];
             do head.dispose();
             let head = tail;
         }
-        do Memory.deAlloc(this);
+        return;
+    }
+
+
+    method void destroy() {
+        do clear();
+        do dispose();
         return;
     }
 
@@ -210,6 +222,10 @@ class Collection {
 
     method void extend(Collection c) {
         var Array p;
+
+        if (c = null) {
+            return;
+        }
 
         if (length = 0) {
             let head = c._nth(0);

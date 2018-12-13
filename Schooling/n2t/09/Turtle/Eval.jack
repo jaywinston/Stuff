@@ -345,6 +345,7 @@ class Eval {
         do arg.dispose();
 
         if (s.length() < 2) {
+            do LibSym.destroyList(argv);
             return s;
         }
 
@@ -410,7 +411,6 @@ class Eval {
         var Symbol ret;
 
         let ret = Exec.block(block.data());
-        do LibSym.destroyList(block.data());
 
         if (ret = null) {
             do block.setMeta(null);
