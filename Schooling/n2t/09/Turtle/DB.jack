@@ -1,13 +1,19 @@
 class DB {
 
     function void db(String s) {
+        var String t;
+        let t = "                  ";
+        do Output.moveCursor(0,0);
+        do Output.printString(t);
+        do t.dispose();
+        do Output.moveCursor(0,0);
         if (s = null) {
-            let s = "DB: no string";
+            let t = "DB: no string";
+            do Output.printString(t);
+            do t.dispose();
+        } else {
+            do Output.printString(s);
         }
-        do Output.moveCursor(0,0);
-        do Output.printString("                  ");
-        do Output.moveCursor(0,0);
-        do Output.printString(s);
         while (Keyboard.keyPressed()=0) {}
         do Memory.poke(24576, 0);
         return;
@@ -15,8 +21,11 @@ class DB {
 
 
     function void dbi(int i) {
+        var String t;
+        let t = "                  ";
         do Output.moveCursor(0,0);
-        do Output.printString("                  ");
+        do Output.printString(t);
+        do t.dispose();
         do Output.moveCursor(0,0);
         do Output.printInt(i);
         while (Keyboard.keyPressed()=0) {}
@@ -26,16 +35,20 @@ class DB {
 
 
     function void mv() {
-        var int i;
+        var int i, n;
 
+        let n = 0;
         let i = 2048;
         while (i < 16384) {
             if (Memory.peek(i)=0) {
-                do Output.printInt(i);
-                do Output.printChar(32);
+                //do Output.printInt(i);
+                //do Output.printChar(32);
+                let n = n + 1;
             }
             let i = Memory.peek(i+1);
         }
+
+        do DB.dbi(n);
 
         return;
 

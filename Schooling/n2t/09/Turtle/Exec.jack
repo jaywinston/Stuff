@@ -127,6 +127,7 @@ if (cmd=128) {return arg;}  // ##DB##
         while (cmdlist.length() > 1) {
             let cmdlin = cmdlist.pop();
             do Main.execute(cmdlin.data());
+            do cmdlin.dispose();
         }
 
         let cmdlin = cmdlist.pop();

@@ -142,60 +142,55 @@ class Parse {
     }
 
 
-    function int cmdlin(String s, Symbol argv, int i) {
+    function int cmdlin(String s, Symbol cmdlin, int i) {
         var int DLM;
         var int cc;
         var String t;
-        var Collection cmdlin;
-        var Symbol word;
+        var Collection arglist;
+        var Symbol arg;
 
-        if (s.length() = 0) {
-            return Parse.package(argv, 0, s, 0);
+        let arglist = Collection.new();
+
+        let i = Str.lskip(s, 32, i);
+        if (i = s.length()) {
+            return Parse.package(cmdlin, arglist, s, 0);
         }
 
         let DLM = END | NOLGL;
-        let cmdlin = Collection.new();
-
-        let i = Str.lskip(s, 32, i);
         let cc = Parse.cclass(s, i);
         while ( (cc&DLM) = 0 ) {
 
-            let word = Symbol.new(null, null, null);
-            let i = Parse.expr(s, word, i);
-            let s = Parse.tag(word);
+            let arg = Symbol.new(null, null, null);
+            let i = Parse.expr(s, arg, i);
+            let s = Parse.tag(arg);
             let cc = Parse.cclass(s, i);
 
             if (cc = INDEX) {
                 do LibIO.error("not implemented");
-                return Parse.package(argv, cmdlin, s, -1);
+                return Parse.package(cmdlin, arglist, s, -1);
                 // willbe: let cc = Parse.cclass(s, i) & GLOBL;
             }
 
             if ( (cc=ASGN) & ~(Parse.cclass(s, i+1)=ASGN) ) {
-                do cmdlin.append(Symbol.new(null, NAME, "ASSIGN"));
+                do arglist.append(Symbol.new(null, NAME, "ASSIGN"));
                 let i = i + 1;
                 let cc = Parse.cclass(s, i);
             } else { if ( (cc&GLOBL) = ARTEX ) {
-                let word = Symbol.new(null, ARTEX, word);
-                let i = Parse.artex(s, word, i);
-                let s = Parse.tag(word);
+                let arg = Symbol.new(null, ARTEX, arg);
+                let i = Parse.artex(s, arg, i);
+                let s = Parse.tag(arg);
             } else { if (cc = FMTEX) {
-                let word = Symbol.new(null, FMTEX, word);
-                let i = Parse.fmtex(s, word, i);
-                let s = Parse.tag(word);
+                let arg = Symbol.new(null, FMTEX, arg);
+                let i = Parse.fmtex(s, arg, i);
+                let s = Parse.tag(arg);
             }}}
 
-            do cmdlin.append(word);
+            do arglist.append(arg);
 
             let cc = Parse.cclass(s, i);
         }
 
-        if (cmdlin.length() = 0) {
-            do cmdlin.dispose();
-            let cmdlin = null;
-        }
-
-        return Parse.package(argv, cmdlin, s, i);
+        return Parse.package(cmdlin, arglist, s, i);
     }
 
 
@@ -359,7 +354,7 @@ class Parse {
 
     function int block(String s, Symbol arg, int i) {
         var int cc;
-        var Collection block;
+        var Collection arglist, block;
         var Symbol cmdlin;
 
         let block = Collection.new();
@@ -371,8 +366,11 @@ class Parse {
             let i = Parse.cmdlin(s, cmdlin, i);
             let s = Parse.tag(cmdlin);
 
-            if (cmdlin.data() = null) {
+            let arglist = cmdlin.data();
+
+            if (arglist.length() = 0) {
                 do cmdlin.dispose();
+                do arglist.dispose();
             } else {
                 do block.append(cmdlin);
             }
@@ -395,33 +393,37 @@ class Parse {
 
     function int list(String s, Symbol arg, int i) {
         var int cc;
-        var Collection list;
+        var Collection cmdlin, list;
         var Symbol arglist;
 
         let list = Collection.new();
         let arglist = Symbol.new(null, null, null);
 
         let i = i + 1;
-        while (true) {
+        let cc = Parse.cclass(s, i);
+        while (~(cc = LEND)) {
 
             let i = Parse.cmdlin(s, arglist, i);
             let s = Parse.tag(arglist);
-
-            do list.extend(arglist.data());
+            let cmdlin = arglist.data();
+            do list.extend(cmdlin);
+            do Memory.deAlloc(cmdlin);
 
             let cc = Parse.cclass(s, i);
-            if (cc = LEND) {
-                return Parse.package(arg, list, s, i+1);
-            }
+
             if (cc = NOLGL) {
                 return Parse.package(arg, list, s, -1);
             }
 
-            let s = Parse.input(PS2);
-            let i = 0;
+            if (~(cc = LEND)) {
+                let s = Parse.input(PS2);
+                let i = 0;
+            }
         }
 
-        return 0;
+        do arglist.dispose();
+
+        return Parse.package(arg, list, s, i+1);
     }
 
 

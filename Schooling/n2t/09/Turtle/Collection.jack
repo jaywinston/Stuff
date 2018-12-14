@@ -17,8 +17,8 @@ class Collection {
 
 
     constructor Collection new() {
-        let tail = Array.new(NODESIZ);
         let end = null;
+        let tail = Array.new(NODESIZ);
         let tail[NEXT] = end;
         let head = tail;
         let length = 0;
@@ -27,6 +27,7 @@ class Collection {
 
 
     method void dispose() {
+        do tail.dispose();
         do Memory.deAlloc(this);
         return;
     }
@@ -233,6 +234,8 @@ class Collection {
             let p = _nth(length-1);
             let p[NEXT] = c._nth(0);
         }
+
+        do tail.dispose();
         let tail = c._nth(c.length());
         let end = tail[NEXT];
         let length = length + c.length();

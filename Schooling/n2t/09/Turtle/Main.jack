@@ -71,10 +71,14 @@ let mv=false;  // ##DB##
         let running = true;
 
         while (running) {
+do DB.mv();
             let argv = Parse.next();
+do DB.mv();
             do Main.try(argv);
+do DB.mv();
 if(mv){let mv=DB.mv();}  // ##DB##
             do LibSym.destroyList(argv);
+do DB.mv();
         }
 
         return;
