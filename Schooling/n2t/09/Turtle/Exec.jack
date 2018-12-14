@@ -117,8 +117,7 @@ if (cmd=128) {return arg;}  // ##DB##
 
 
     function Symbol block(Collection cmdlist) {
-        var Collection ret;
-        var Symbol cmdlin;
+        var Symbol cmdlin, ret;
 
         if (cmdlist = null) {  // todo: might not need
             return null;
@@ -133,14 +132,28 @@ if (cmd=128) {return arg;}  // ##DB##
         let cmdlin = cmdlist.pop();
         do cmdlist.dispose();
 
-        if (cmdlin = null) {
+        if (cmdlin = null) {  // todo: might not need
             return null;
         }
 
-        let ret = cmdlin.data();
+        let cmdlist = cmdlin.data();
         do cmdlin.dispose();
+        let ret = Exec.cmdlin(cmdlin.data());
 
-        return Exec.cmdlin(ret);
+        while (cmdlist.length() > 0) {
+            if (LibIO.noerr()) {
+                do Main.enqueue(ret);
+            } else {
+                do LibSym.destroyList(cmdlist);
+                let cmdlist = Collection.new();
+            }
+            do LibSym.destroySym(ret);
+            let ret = Exec.cmdlin(cmdlin.data());
+        }
+
+        do cmdlist.dispose();
+
+        return ret;
     }
 
 

@@ -71,14 +71,10 @@ let mv=false;  // ##DB##
         let running = true;
 
         while (running) {
-do DB.mv();
             let argv = Parse.next();
-do DB.mv();
             do Main.try(argv);
-do DB.mv();
 if(mv){let mv=DB.mv();}  // ##DB##
             do LibSym.destroyList(argv);
-do DB.mv();
         }
 
         return;
@@ -113,11 +109,13 @@ do DB.mv();
         var Symbol ret;
 
         while (argv.length() > 0) {
-//do DB.dbi(argv.length());
             let ret = Exec.cmdlin(argv);
             do LibIO.fixCanvas();
             if (LibIO.noerr()) {
                 do Main.enqueue(ret);
+            } else {
+                do LibSym.destroyList(argv);
+                let argv = Collection.new();
             }
             do LibSym.destroySym(ret);
         }
