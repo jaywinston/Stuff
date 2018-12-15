@@ -30,7 +30,7 @@ class Exec {
         let REPEAT   = 4;
         let QUIT     = 5;
 
-do Eval.install("MV",CMD,128);  // ##DB##
+do Eval.install("MC",CMD,128);  // ##DB##
 
         do Eval.install("ASSIGN", CMD, ASSIGN);
         do Eval.install("FUNCTION", CMD, FUNCTION);

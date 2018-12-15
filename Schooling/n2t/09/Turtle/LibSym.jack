@@ -243,8 +243,9 @@ class LibSym {
         let p = ht.lookup(name);
 
         if (p = null) {
-            do ht.install(Str.dup(name), type, value);
+            do ht.install(name, type, value);
         } else {
+            do name.dispose();
             if ( (p.meta()&LIST) = LIST ) {
                 do LibSym.destroyList(p.data());
             } else { if ( (p.meta()&STR) = STR ) {

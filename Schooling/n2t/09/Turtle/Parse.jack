@@ -317,7 +317,7 @@ class Parse {
         var int cc;
         var String t;
         var Collection argv;
-        var Symbol arg, artex, next;
+        var Symbol arg, next;
 
         let argv = Collection.new();
         do argv.append(fmtex.data());
@@ -341,7 +341,7 @@ class Parse {
 
             if (cc = ARTEX) {
                 let arg = Symbol.new(null, ARTEX, arg);
-                let i = Parse.artex(s, artex, i);
+                let i = Parse.artex(s, arg, i);
                 let s = Parse.tag(arg);
             }
 

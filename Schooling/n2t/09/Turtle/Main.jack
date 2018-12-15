@@ -73,7 +73,7 @@ let mv=false;  // ##DB##
         while (running) {
             let argv = Parse.next();
             do Main.try(argv);
-if(mv){let mv=DB.mv();}  // ##DB##
+if(mv){let mv=DB.dbi(DB.mc());}  // ##DB##
             do LibSym.destroyList(argv);
         }
 

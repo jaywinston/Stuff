@@ -35,23 +35,34 @@ class DB {
 
 
     function void mv() {
+        var int i;
+
+        let i = 2048;
+        while (i < 16384) {
+            if (Memory.peek(i)=0) {
+                do Output.printInt(i);
+                do Output.printChar(32);
+            }
+            let i = Memory.peek(i+1);
+        }
+
+        return;
+    }
+
+
+    function int mc() {
         var int i, n;
 
         let n = 0;
         let i = 2048;
         while (i < 16384) {
             if (Memory.peek(i)=0) {
-                //do Output.printInt(i);
-                //do Output.printChar(32);
                 let n = n + 1;
             }
             let i = Memory.peek(i+1);
         }
 
-        do DB.dbi(n);
-
-        return;
-
+        return n;
     }
 
 
