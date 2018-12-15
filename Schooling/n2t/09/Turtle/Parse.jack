@@ -22,6 +22,7 @@ class Parse {
         let EOS = Lex.EOS();
         let EQ = Lex.cclass(33);
         let INT = LibSym.INT();
+        let INDEX = LibSym.INDEX();
         let ARTEX = LibSym.ARTEX();
         let LEND = END;
         let LIST = Lex.cclass(91);
@@ -166,9 +167,10 @@ class Parse {
             let cc = Parse.cclass(s, i);
 
             if (cc = INDEX) {
-                do LibIO.error("not implemented");
-                return Parse.package(cmdlin, arglist, s, -1);
-                // willbe: let cc = Parse.cclass(s, i) & GLOBL;
+                let arg = Symbol.new(null, INDEX, arg);
+                let i = Parse.index(s, arg, i);
+                let s = Parse.tag(arg);
+                let cc = Parse.cclass(s, i) & GLOBL;
             }
 
             if ( (cc=ASGN) & ~(Parse.cclass(s, i+1)=ASGN) ) {
@@ -179,15 +181,15 @@ class Parse {
                 let arg = Symbol.new(null, ARTEX, arg);
                 let i = Parse.artex(s, arg, i);
                 let s = Parse.tag(arg);
+                let cc = Parse.cclass(s, i);
             } else { if (cc = FMTEX) {
                 let arg = Symbol.new(null, FMTEX, arg);
                 let i = Parse.fmtex(s, arg, i);
                 let s = Parse.tag(arg);
+                let cc = Parse.cclass(s, i);
             }}}
 
             do arglist.append(arg);
-
-            let cc = Parse.cclass(s, i);
         }
 
         return Parse.package(cmdlin, arglist, s, i);
@@ -334,9 +336,10 @@ class Parse {
             }
 
             if (cc = INDEX) {
-                do LibIO.error("not implemented");
-                return Parse.package(fmtex, argv, s, -1);
-                // will be: let cc = Parse.cclass(s, i) & GLOBL;
+                let arg = Symbol.new(null, INDEX, arg);
+                let i = Parse.index(s, arg, i);
+                let s = Parse.tag(arg);
+                let cc = Parse.cclass(s, i) & GLOBL;
             }
 
             if (cc = ARTEX) {
@@ -427,8 +430,17 @@ class Parse {
     }
 
 
-    function int index(String s, Symbol p, int i) {
-        return i;
+    function int index(String s, Symbol ref, int i) {
+        var Collection index;
+
+        let index = Collection.new();
+        do index.append(ref.data());
+
+        do index.append(Symbol.new(null, null, null));
+        let i = Parse.expr(s, index.nth(1), i+1);
+        let s = Parse.tag(index.nth(1));
+
+        return Parse.package(ref, index, s, i);
     }
 
 }

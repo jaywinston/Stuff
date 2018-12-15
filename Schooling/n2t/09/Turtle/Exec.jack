@@ -164,7 +164,7 @@ if (cmd=128) {return arg;}  // ##DB##
         let arg = argv.pop();
 
         if (arg = null) {
-            do LibIO.error("expected lvalue; need a better name for this");
+            do LibIO.error("expected ref");
             return;
         }
 

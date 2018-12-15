@@ -351,6 +351,7 @@ class LibSym {
     function int CMDLIN() { return CMDLIN; }
     function int FUNC() { return FUNC; }
     function int INT() { return INT; }
+    function int INDEX() { return INDEX; }
     function int ARTEX() { return ARTEX; }
     function int LIST() { return LIST; }
     function int OP() { return OP; }

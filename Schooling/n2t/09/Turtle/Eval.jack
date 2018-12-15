@@ -3,7 +3,7 @@
 class Eval {
 
     static int ESC;
-    static int BLOCK, FUNC, GLOBL, LIST, INT, ARTEX, OP, STR, FMTEX, NAME, UOP;
+    static int BLOCK, FUNC, GLOBL, LIST, INDEX, INT, ARTEX, OP, STR, FMTEX, NAME, UOP;
     static Array FSPECTAB, TYPETAB;
     static Array FERRARGV;
     static String FERRFS;
@@ -14,6 +14,7 @@ class Eval {
         let ESC = 37;  /* magic number! */
         let BLOCK = LibSym.BLOCK();
         let FUNC = LibSym.FUNC();
+        let INDEX = LibSym.INDEX();
         let INT = LibSym.INT();
         let LIST = LibSym.LIST();
         let ARTEX = LibSym.ARTEX();
@@ -87,6 +88,7 @@ class Eval {
         if (arg.meta() = FMTEX) { return Eval.fmtex(arg); }
         if (arg.meta() = BLOCK) { return Eval.block(arg); }
         if (arg.meta() = LIST)  { return Eval.list(arg);  }
+        if (arg.meta() = INDEX) { return Eval.index(arg); }
 
         return arg;
     }
@@ -109,7 +111,8 @@ class Eval {
         let type = p.meta();
         if (type = STR) {
             do sym.setData(Str.dup(p.data()));
-        } else { if (type = FUNC) {
+        //} else { if (type = FUNC) {
+        } else { if ((type&LIST) = LIST) {  // ##TEMP!!!##
             do sym.setData(LibSym.copyList(p.data()));
         } else {
             do sym.setData(p.data());
@@ -437,6 +440,43 @@ class Eval {
         }
 
         return arg;
+    }
+
+
+    function Symbol index(Symbol ref) {
+        var Collection l;
+        var Symbol name, index, deref;
+
+        let l = ref.data();
+        let name = Eval.arg(l.pop());
+        if (name = null) {
+            // todo: err
+        }
+        if (~(name.meta() = LIST)) {
+            // todo: err
+        }
+        let index = Eval.arg(l.pop());
+        if (index = null) {
+            // todo: err
+        }
+        if (~(index.meta() = INT)) {
+            // todo: err
+        }
+
+        do l.dispose();
+        let l = name.data();
+        let deref = l.nth(index.data());
+        do LibSym.destroySym(name);
+        do index.dispose();
+        if (deref = null) {
+            // todo: err
+        }
+
+        do ref.setData(deref.data());
+        do ref.setMeta(deref.meta());
+        do deref.dispose();
+
+        return ref;
     }
 
 
