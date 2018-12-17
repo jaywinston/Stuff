@@ -182,6 +182,7 @@ class LibSym {
             return;
         }
 
+if(sym.tag()=null){
         let type = sym.meta() & (LIST | STR);
 
         if (type = LIST) {
@@ -190,6 +191,7 @@ class LibSym {
             let s = sym.data();
             do s.dispose();
         }}
+}
 
         do sym.dispose();
 

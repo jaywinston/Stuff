@@ -170,7 +170,7 @@ class Parse {
                 let arg = Symbol.new(null, INDEX, arg);
                 let i = Parse.index(s, arg, i);
                 let s = Parse.tag(arg);
-                let cc = Parse.cclass(s, i) & GLOBL;
+                let cc = Parse.cclass(s, i);
             }
 
             if ( (cc=ASGN) & ~(Parse.cclass(s, i+1)=ASGN) ) {

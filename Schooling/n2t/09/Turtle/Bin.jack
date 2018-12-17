@@ -58,12 +58,7 @@ class Bin {
     }
 
 
-    function Symbol exec(Symbol arg, Collection argv) {
-        var int cmd;
-
-        let cmd = arg.data();
-
-        do arg.dispose();
+    function Symbol exec(int cmd, Collection argv) {
 
         if (cmd = DIR)       { return Bin.dir();                 }
         if (cmd = POSX)      { return Bin.posx();                }

@@ -109,14 +109,14 @@ class Eval {
         }
 
         let type = p.meta();
-        if (type = STR) {
-            do sym.setData(Str.dup(p.data()));
+        //if (type = STR) {
+            //do sym.setData(Str.dup(p.data()));
         //} else { if (type = FUNC) {
-        } else { if ((type&LIST) = LIST) {  // ##TEMP!!!##
-            do sym.setData(LibSym.copyList(p.data()));
-        } else {
+        //} else { if ((type&LIST) = LIST) {  // ##TEMP!!!##
+            //do sym.setData(LibSym.copyList(p.data()));
+        //} else {
             do sym.setData(p.data());
-        }}
+        //}}
 
         do sym.setMeta(type);
 
