@@ -22,7 +22,7 @@ class Lex {
     }
 
 
-    function void dispose() {
+    function void kill() {
         do CTAB.dispose();
         return;
     }

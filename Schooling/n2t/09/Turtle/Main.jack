@@ -8,7 +8,7 @@ static boolean mv;  // ##DB##
 
 
     function void main() {
-        do Main.printBanner("Turtle 0.01");
+        do Main.printBanner();
         do Main.init();
         do Main.run();
         do Main.killall();
@@ -16,12 +16,18 @@ static boolean mv;  // ##DB##
     }
 
 
-    function void printBanner(String banner) {
-        do Output.moveCursor(0, 23);  /* magic number!s */
+    function void printBanner() {
+        var int indent;
+        var String banner;
+
+        let banner = "Logo on Hack 0.01";
+        let indent = 29 - (banner.length()/2);
+        do Output.moveCursor(0, indent);
         do Output.printString(banner);
         do banner.dispose();
         do Screen.setColor(true);
         do Screen.drawLine(0, 13, 509, 13);  /* magic number!s */
+
         return;
     }
 
@@ -59,6 +65,8 @@ let mv=false;  // ##DB##
 
 
     function void killall() {  // todo: this
+        do Lex.kill();
+        do Parse.kill();
         do FARGV.dispose();
         do FSSTR.dispose();
         do FDSTR.dispose();
