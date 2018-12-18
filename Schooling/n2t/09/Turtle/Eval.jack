@@ -455,6 +455,7 @@ class Eval {
         if (~(name.meta() = LIST)) {
             // todo: err
         }
+
         let index = Eval.arg(l.pop());
         if (index = null) {
             // todo: err
@@ -464,17 +465,19 @@ class Eval {
         }
 
         do l.dispose();
+
         let l = name.data();
+        do name.dispose();
+
         let deref = l.nth(index.data());
-        do LibSym.destroySym(name);
         do index.dispose();
+
         if (deref = null) {
             // todo: err
         }
 
         do ref.setData(deref.data());
         do ref.setMeta(deref.meta());
-        do deref.dispose();
 
         return ref;
     }

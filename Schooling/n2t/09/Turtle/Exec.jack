@@ -3,7 +3,7 @@
 class Exec {
 
     static int BIN, BLOCK, CMD, CMDLIN, EXE, FUNC, INT, LIST, SITE, STR, NAME,
-        INDEX;
+        INDEX, LSP;
     static int ASSIGN, FUNCTION, IF, REPEAT, QUIT;
     static String IFS, ELSES;
 
@@ -16,6 +16,7 @@ class Exec {
         let BIN = LibSym.BIN();
         let BLOCK = LibSym.BLOCK();
         let CMD = LibSym.CMD();
+        let LSP = LibSym.LSP();
         let CMDLIN = LibSym.CMDLIN();
         let EXE = 1;  /* magic number! */
         let FUNC = LibSym.FUNC();
@@ -87,8 +88,9 @@ if (cmd=128) {return arg;}  // ##DB##
 
         do arg.dispose();
 
-        if (type = BIN)  { return Bin.exec(cmd, argv);  }
-        if (type = CMD)  { return Exec.cmd(cmd, argv);  }
+        if (type = BIN)  { return Bin.exec(cmd, argv);      }
+        if (type = CMD)  { return Exec.cmd(cmd, argv);      }
+        if (type = LSP)  { return List.process(cmd, argv);  }
 
         return null;
     }
@@ -236,7 +238,7 @@ if (cmd=128) {return arg;}  // ##DB##
         do indexv.dispose();
 
         if (~(indexp.meta() = INT)) {
-            do LibIO.error("indices must be integer");
+            do LibIO.error("index must be integer");
             do LibSym.destroySym(indexp);
             do LibSym.destroySym(namep);
             do LibSym.clearList(argv);

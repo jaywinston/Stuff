@@ -43,6 +43,7 @@ let mv=false;  // ##DB##
             LibSym.CHARSETSIZE()+1);
         do Parse.init();
         do Eval.init();
+        do List.init();
         do Bin.init();
         do Exec.init();
 

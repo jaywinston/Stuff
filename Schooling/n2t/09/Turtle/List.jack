@@ -1,0 +1,54 @@
+class List {
+
+    static int LIST, LSP;
+    static int APPEND, EXTEND;
+
+    function void init() {
+
+        let LIST = LibSym.LIST();
+        let LSP = LibSym.LSP();
+
+        let APPEND = 1;
+        let EXTEND = 2;
+
+        do Eval.install("APPEND", LSP, APPEND);
+        do Eval.install("EXTEND", LSP, EXTEND);
+
+        return;
+    }
+
+
+    function Symbol process(int cmd, Collection argv) {
+
+        if (cmd = APPEND) { return List.append(argv); }
+        if (cmd = EXTEND) { return List.extend(argv); }
+
+        return null;
+    }
+
+
+    function void append(Collection argv) {
+        var Collection l;
+        var Symbol p;
+
+        let p = Eval.arg(argv.pop());
+        let l = p.data();
+        do l.append(Eval.arg(argv.pop()));
+
+        return;
+    }
+
+
+    function void extend(Collection argv) {
+        var Collection l;
+        var Symbol p;
+
+        let p = Eval.arg(argv.pop());
+        let l = p.data();
+        let p = Eval.arg(argv.pop());
+        do l.extend(p.data());
+
+        return;
+    }
+
+}
