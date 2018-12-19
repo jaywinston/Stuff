@@ -489,17 +489,19 @@ class Eval {
         }
 
         do l.dispose();
-
         let l = name.data();
-        do name.dispose();
 
         let i = index.data();
         if ( (i<0) | ~(i<l.length()) ) {
             do LibIO.error("invalid index");
+            do LibSym.destroySym(name);
+            do index.dispose();
             return ref;
         }
 
         let deref = l.nth(i);
+
+        do LibSym.destroySym(name);
         do index.dispose();
 
         do ref.setData(deref.data());

@@ -21,7 +21,7 @@ static boolean mv;  // ##DB##
         var String banner;
 
         let banner = "Logo on Hack 0.01";
-        let indent = 29 - (banner.length()/2);
+        let indent = 29 - (banner.length()/2);  /* magic number! */
         do Output.moveCursor(0, indent);
         do Output.printString(banner);
         do banner.dispose();
@@ -97,10 +97,6 @@ if(mv){let mv=DB.dbi(DB.mc());}  // ##DB##
     function void try(Collection argv) {
         var String s;
 
-        if (argv = null) {
-            return;
-        }
-
         if (LibIO.noerr()) {
             do Main.execute(argv);
         }
@@ -124,11 +120,11 @@ if(mv){let mv=DB.dbi(DB.mc());}  // ##DB##
         while (argv.length() > 0) {
             let ret = Exec.cmdlin(argv);
             do LibIO.fixCanvas();
+let mv=ret.meta()=1&ret.data()=128;  // ##DB##
             if (LibIO.noerr()) {
                 do Main.enqueue(ret);
             } else {
-                do LibSym.destroyList(argv);
-                let argv = Collection.new();
+                do LibSym.clearList(argv);
             }
             do LibSym.destroySym(ret);
         }
@@ -138,12 +134,6 @@ if(mv){let mv=DB.dbi(DB.mc());}  // ##DB##
 
 
     function void enqueue(Symbol sym) {
-
-        if (sym = null) {
-            return;
-        }
-
-let mv=sym.meta()=1&sym.data()=128;  // ##DB##
 
         let FARGV[0] = sym.data();
         if (sym.meta() = STR) {

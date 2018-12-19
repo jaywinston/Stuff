@@ -55,15 +55,7 @@ do Eval.install("MC",CMD,128);  // ##DB##
     function Symbol cmdlin(Collection argv) {
         var Symbol arg;
 
-        if (argv = null) {
-            return null;
-        }
-
         let arg = Eval.arg(argv.pop());
-
-        if (arg = null) {
-            return null;
-        }
 
         if ( (arg.meta()&EXE) = EXE ) {
             return Exec.executable(arg, argv);
