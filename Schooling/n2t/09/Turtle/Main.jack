@@ -65,11 +65,15 @@ let mv=false;  // ##DB##
 
 
     function void killall() {  // todo: this
-        do Lex.kill();
+
+        do Eval.kill();
         do Parse.kill();
+        do Lex.kill();
+
         do FARGV.dispose();
         do FSSTR.dispose();
         do FDSTR.dispose();
+
         return;
     }
 

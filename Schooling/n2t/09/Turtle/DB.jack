@@ -14,8 +14,7 @@ class DB {
         } else {
             do Output.printString(s);
         }
-        while (Keyboard.keyPressed()=0) {}
-        do Memory.poke(24576, 0);
+        do DB.pause();
         return;
     }
 
@@ -28,8 +27,7 @@ class DB {
         do t.dispose();
         do Output.moveCursor(0,0);
         do Output.printInt(i);
-        while (Keyboard.keyPressed()=0) {}
-        do Memory.poke(24576, 0);
+        do DB.pause();
         return;
     }
 

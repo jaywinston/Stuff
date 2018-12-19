@@ -129,7 +129,10 @@ class Collection {
         } else {
             let p = _nth(i);
         }
-        /* todo: err check */
+
+        if (p = -1) {
+            return 0;
+        }
 
         return p[VAL];
     }
