@@ -211,11 +211,11 @@ class Collection {
 
 
     method Collection slice(int i, int j) {
-        var Collction list, slice;
+        var Collection list, slice;
 
         let list = this;
         let slice = Collection.new();
-        while (i < j) {
+        while ( i < (j+1) ) {
             do slice.append(list.nth(i));
             let i = i + 1;
         }

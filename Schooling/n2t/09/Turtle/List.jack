@@ -1,18 +1,22 @@
 class List {
 
     static int LIST, LSP;
-    static int APPEND, EXTEND;
+    static int APPEND, CLEARLIST, EXTEND, SLICE;
 
     function void init() {
 
         let LIST = LibSym.LIST();
         let LSP = LibSym.LSP();
 
-        let APPEND = 1;
-        let EXTEND = 2;
+        let APPEND    = 0;
+        let CLEARLIST = 1;
+        let EXTEND    = 2;
+        let SLICE     = 3;
 
         do Eval.install("APPEND", LSP, APPEND);
+        do Eval.install("CLEARLIST", LSP, CLEARLIST);
         do Eval.install("EXTEND", LSP, EXTEND);
+        do Eval.install("SLICE", LSP, SLICE);
 
         return;
     }
@@ -20,8 +24,10 @@ class List {
 
     function Symbol process(int cmd, Collection argv) {
 
-        if (cmd = APPEND) { return List.append(argv); }
-        if (cmd = EXTEND) { return List.extend(argv); }
+        if (cmd = APPEND)    { return List.append(argv);    }
+        if (cmd = CLEARLIST) { return List.clearList(argv); }
+        if (cmd = EXTEND)    { return List.extend(argv);    }
+        if (cmd = SLICE)     { return List.slice(argv);     }
 
         return null;
     }
@@ -39,6 +45,18 @@ class List {
     }
 
 
+    function void clearList(Collection argv) {
+        var Collection l;
+        var Symbol p;
+
+        let p = Eval.arg(argv.pop());
+        let l = p.data();
+        do LibSym.clearList(l);
+
+        return;
+    }
+
+
     function void extend(Collection argv) {
         var Collection l;
         var Symbol p;
@@ -49,6 +67,19 @@ class List {
         do l.extend(p.data());
 
         return;
+    }
+
+
+    function Collection slice(Collection argv) {
+        var Collection l;
+        var Symbol p, q;
+
+        let p = Eval.arg(argv.pop());
+        let l = p.data();
+        let p = Eval.arg(argv.pop());
+        let q = Eval.arg(argv.pop());
+
+        return Symbol.new(null, LIST, l.slice(p.data(), q.data()));
     }
 
 }

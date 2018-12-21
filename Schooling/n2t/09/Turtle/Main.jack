@@ -139,7 +139,7 @@ if(mv){let mv=DB.dbi(DB.mc());}  // ##DB##
             return;
         }
 
-let mv=ret.meta()=1&ret.data()=128;  // ##DB##
+let mv=sym.meta()=1&sym.data()=128;  // ##DB##
 
         let s =  LibSym.format(sym);
 
