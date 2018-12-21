@@ -263,6 +263,51 @@ if(sym.tag()=null){
     }
 
 
+    function String format(Symbol p) {
+
+        if (p.meta() = INT)  { return LibSym.formatInt(p.data());  }
+        if (p.meta() = STR)  { return LibSym.formatStr(p.data());  }
+        if (p.meta() = FUNC) { return LibSym.formatFunc(p.tag());  }
+        if (p.meta() = LIST) { return LibSym.formatList(p.data()); }
+    
+        return null;
+    }
+
+
+    function String formatInt(int i) {
+        var String s;
+
+        let s = String.new(6);
+        do s.setInt(i);
+
+        return s;
+    }
+
+
+    function String formatStr(String s) {
+        var String t;
+
+        let t = String.new(s.length()+2);
+        do t.appendChar(39);
+        do Str.cat(t, s);
+        do t.appendChar(39);
+
+        return t;
+    }
+
+
+    function String formatFunc(String s) {
+        var String t;
+
+        let t = String.new(s.length()+2);
+        do t.appendChar(123);
+        do Str.cat(t, s);
+        do t.appendChar(125);
+
+        return t;
+    }
+
+
     function String formatList(Collection list) {
         var int i;
         var int len;
@@ -277,64 +322,49 @@ if(sym.tag()=null){
         while (i < list.length()) {
             let arg = list.nth(i);
             if (arg.meta() = INT) {
-                let t = String.new(6);
-                do t.setInt(arg.data());
+                let t = LibSym.formatInt(arg.data());
                 if ( (s.length()+t.length()) > len ) {
-                    let u = String.new(len + Str.MAXLEN());
-                    do Str.cat(u, s);
-                    do s.dispose();
                     let len = len + Str.MAXLEN();
-                    let s = u;
+                    let s = Str.realloc(s, len);
+                }
+                do Str.cat(s, t);
+                do t.dispose();
+            } else { if (arg.meta() = STR) {
+                let t = LibSym.formatStr(arg.data());
+                if ( (s.length()+t.length()) > len ) {
+                    let len = (len+Str.MAXLEN()) + t.length();
+                    let s = Str.realloc(s, len);
+                }
+                do Str.cat(s, t);
+                do t.dispose();
+            } else { if (arg.meta() = FUNC) {
+                let t = LibSym.formatFunc(arg.tag());
+                if ( (s.length()+t.length()) > len ) {
+                    let len = (len+Str.MAXLEN()) + t.length();
+                    let s = Str.realloc(s, len);
                 }
                 do Str.cat(s, t);
                 do t.dispose();
             } else { if (arg.meta() = LIST) {
                 let t = LibSym.formatList(arg.data());
                 if ( (s.length()+t.length()) > len ) {
-                    let u = String.new(len + (t.length() + Str.MAXLEN()));
-                    do Str.cat(u, s);
-                    do s.dispose();
-                    let len = len + (t.length() + Str.MAXLEN());
-                    let s = u;
+                    let len = (len+Str.MAXLEN()) + t.length();
+                    let s = Str.realloc(s, len);
                 }
                 do Str.cat(s, t);
                 do t.dispose();
-            } else { if (arg.meta() = STR) {
-                let t = arg.data();
-                if ( (s.length()+(t.length()+2)) > len ) {
-                    let len = (len+2) + (t.length() + Str.MAXLEN());
-                    let u = String.new(len);
-                    do Str.cat(u, s);
-                    do s.dispose();
-                    let s = u;
-                }
-                do s.appendChar(39);
-                do Str.cat(s, t);
-                do s.appendChar(39);
-            } else { if (arg.meta() = FUNC) {
-                let t = arg.tag();
-                if ( (s.length()+(t.length()+2)) > len ) {
-                    let len = (len+2) + (t.length() + Str.MAXLEN());
-                    let u = String.new(len);
-                    do Str.cat(u, s);
-                    do s.dispose();
-                    let s = u;
-                }
-                do s.appendChar(123);
-                do Str.cat(s, t);
-                do s.appendChar(125);
             }}}}
 
-            if ( (s.length()+1) > len ) {
-                let u = String.new(len + Str.MAXLEN());
-                do Str.cat(u, s);
-                do s.dispose();
-                let len = len + Str.MAXLEN();
-                let s = u;
+            let i = i + 1;
+
+            if (i < list.length()) {
+                if ( (s.length()+1) > len ) {
+                    let u = String.new(len + Str.MAXLEN());
+                    let s = Str.realloc(s, len);
+                }
             }
 
             do s.appendChar(32);
-            let i = i + 1;
         }
 
         if (s.length() > 1) {

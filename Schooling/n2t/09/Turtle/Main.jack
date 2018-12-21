@@ -120,7 +120,6 @@ if(mv){let mv=DB.dbi(DB.mc());}  // ##DB##
         while (argv.length() > 0) {
             let ret = Exec.cmdlin(argv);
             do LibIO.fixCanvas();
-let mv=ret.meta()=1&ret.data()=128;  // ##DB##
             if (LibIO.noerr()) {
                 do Main.enqueue(ret);
             } else {
@@ -134,15 +133,19 @@ let mv=ret.meta()=1&ret.data()=128;  // ##DB##
 
 
     function void enqueue(Symbol sym) {
+        var String s;
 
-        let FARGV[0] = sym.data();
-        if (sym.meta() = STR) {
-            do LibIO.put(Str.format(FSSTR, FARGV));
-        } else { if (sym.meta() = INT) {
-            do LibIO.put(Str.format(FDSTR, FARGV));
-        } else { if (sym.meta() = LIST) {
-            do LibIO.put(LibSym.formatList(FARGV[0]));
-        }}}
+        if (sym = null) {
+            return;
+        }
+
+let mv=ret.meta()=1&ret.data()=128;  // ##DB##
+
+        let s =  LibSym.format(sym);
+
+        if (~(s = null)) {
+            do LibIO.put(s);
+        }
 
         return;
     }

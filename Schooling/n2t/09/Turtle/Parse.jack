@@ -102,7 +102,7 @@ class Parse {
         var int cc;
         var String t;
 
-        let i = Str.lskip(s, 32, i);
+        let i = Str.skip(s, 32, i);
         let cc = Parse.cclass(s, i) & GLOBL;
 
         if (cc = LIST) {
@@ -151,7 +151,7 @@ class Parse {
 
         let arglist = Collection.new();
 
-        let i = Str.lskip(s, 32, i);
+        let i = Str.skip(s, 32, i);
         if (i = s.length()) {
             return Parse.package(cmdlin, arglist, s, 0);
         }
