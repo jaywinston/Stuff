@@ -102,7 +102,6 @@ class Parse {
         var int cc;
         var String t;
 
-        let i = Str.skip(s, 32, i);
         let cc = Parse.cclass(s, i) & GLOBL;
 
         if (cc = LIST) {
@@ -131,7 +130,7 @@ class Parse {
             let i = Lex.token(s, t, TOKENMASK, i);
             do word.setData(t);
         } else {
-            do LibIO.error("illegal character");
+            do LibIO.error("unexpected character");
             let i = -1;
         }}}}}}
 
@@ -175,20 +174,19 @@ class Parse {
             if ( (cc=ASGN) & ~(Parse.cclass(s, i+1)=ASGN) ) {
                 do arglist.append(Symbol.new(null, NAME, "ASSIGN"));
                 let i = i + 1;
-                let cc = Parse.cclass(s, i);
             } else { if ( (cc&GLOBL) = ARTEX ) {
                 let arg = Symbol.new(null, ARTEX, arg);
                 let i = Parse.artex(s, arg, i);
                 let s = Parse.tag(arg);
-                let cc = Parse.cclass(s, i);
             } else { if (cc = FMTEX) {
                 let arg = Symbol.new(null, FMTEX, arg);
                 let i = Parse.fmtex(s, arg, i);
                 let s = Parse.tag(arg);
-                let cc = Parse.cclass(s, i);
             }}}
 
             do arglist.append(arg);
+            let i = Str.skip(s, 32, i);
+            let cc = Parse.cclass(s, i);
         }
 
         return Parse.package(cmdlin, arglist, s, i);
@@ -247,10 +245,9 @@ class Parse {
                     let token = Symbol.new(null, UOP, op);
                 } else {
                     let token = Symbol.new(null, cc&SITE, op);
-                    if ( Parse.cclass(s, i) = ASGN ) {
+                    if (Parse.cclass(s, i) = ASGN) {
                         let i = Parse.eqop(s, token, i);
                     }
-                    /* pop higher/equal ops to queue */
                     let top = stack.nth(0);
                     while ( ~(top.meta()<token.meta())
                              & ~(top.meta()=LPAREN) ) {
@@ -264,6 +261,11 @@ class Parse {
                 let token = Symbol.new(null, null, null);
                 let i = Parse.expr(s, token, i);
                 let s = Parse.tag(token);
+                if (Parse.cclass(s, i) = INDEX) {
+                    let token = Symbol.new(null, INDEX, token);
+                    let i = Parse.index(s, token, i);
+                    let s = Parse.tag(token);
+                }
                 do queue.append(token);
 
                 let top = stack.nth(0);

@@ -1,10 +1,11 @@
 class List {
 
-    static int LIST, LSP;
+    static int INT, LIST, LSP;
     static int APPEND, CLEARLIST, EXTEND, SLICE;
 
     function void init() {
 
+        let INT = LibSym.INT();
         let LIST = LibSym.LIST();
         let LSP = LibSym.LSP();
 
@@ -71,15 +72,54 @@ class List {
 
 
     function Collection slice(Collection argv) {
+        var int i, j;
         var Collection l;
-        var Symbol p, q;
+        var Symbol lp, p;
+
+        let lp = Eval.arg(argv.pop());
+
+        if (~(lp.meta() = LIST)) {
+            do LibIO.error("expected list");
+            do LibSym.destroySym(lp);
+            return null;
+        }
+
+        let l = lp.data();
 
         let p = Eval.arg(argv.pop());
-        let l = p.data();
-        let p = Eval.arg(argv.pop());
-        let q = Eval.arg(argv.pop());
 
-        return Symbol.new(null, LIST, l.slice(p.data(), q.data()));
+        if (p = null) {
+            let p = Symbol.new(null, LIST, l.slice(0, l.length()-1));
+            do LibSym.destroySym(lp);
+            return p;
+        }
+
+        if (~(p.meta() = INT)) {
+            do LibIO.error("expected integer");
+            do LibSym.destroySym(p);
+            return null;
+        }
+
+        let i = p.data();
+        do p.dispose();
+
+        let p = Eval.arg(argv.pop());
+
+        if (~(p.meta() = INT)) {
+            do LibIO.error("expected integer");
+            do LibSym.destroySym(p);
+            return null;
+        }
+
+        let j = p.data();
+        do p.dispose();
+
+        let p = Symbol.new(null, LIST, l.slice(i, j));
+
+        do LibSym.destroySym(lp);
+
+        return p;
+
     }
 
 }
