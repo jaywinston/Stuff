@@ -103,6 +103,7 @@ class Parse {
         var String t;
 
         let cc = Parse.cclass(s, i) & GLOBL;
+        do word.setMeta(cc);
 
         if (cc = LIST) {
             let i = Parse.list(s, word, i);
@@ -134,9 +135,14 @@ class Parse {
             let i = -1;
         }}}}}}
 
-        do word.setMeta(cc);
-        do word.setTag(s);
+        if (Parse.cclass(s, i) = INDEX) {
+            do word.setData(Symbol.new(null, word.meta(), word.data()));
+            do word.setMeta(INDEX);
+            let i = Parse.index(s, word, i);
+            let s = Parse.tag(word);
+        }
 
+        do word.setTag(s);
         return i;
     }
 
@@ -163,13 +169,6 @@ class Parse {
             let i = Parse.expr(s, arg, i);
             let s = Parse.tag(arg);
             let cc = Parse.cclass(s, i);
-
-            if (cc = INDEX) {
-                let arg = Symbol.new(null, INDEX, arg);
-                let i = Parse.index(s, arg, i);
-                let s = Parse.tag(arg);
-                let cc = Parse.cclass(s, i);
-            }
 
             if ( (cc=ASGN) & ~(Parse.cclass(s, i+1)=ASGN) ) {
                 do arglist.append(Symbol.new(null, NAME, "ASSIGN"));
@@ -261,11 +260,6 @@ class Parse {
                 let token = Symbol.new(null, null, null);
                 let i = Parse.expr(s, token, i);
                 let s = Parse.tag(token);
-                if (Parse.cclass(s, i) = INDEX) {
-                    let token = Symbol.new(null, INDEX, token);
-                    let i = Parse.index(s, token, i);
-                    let s = Parse.tag(token);
-                }
                 do queue.append(token);
 
                 let top = stack.nth(0);
@@ -334,13 +328,6 @@ class Parse {
 
             if (cc = NOLGL) {
                 return Parse.package(fmtex, argv, s, -1);
-            }
-
-            if (cc = INDEX) {
-                let arg = Symbol.new(null, INDEX, arg);
-                let i = Parse.index(s, arg, i);
-                let s = Parse.tag(arg);
-                let cc = Parse.cclass(s, i) & GLOBL;
             }
 
             if (cc = ARTEX) {
@@ -441,11 +428,6 @@ class Parse {
         let off = Symbol.new(null, null, null);
         let i = Parse.expr(s, off, i+1);
         let s = Parse.tag(off);
-        if (Parse.cclass(s, i) = INDEX) {
-            let off = Symbol.new(null, INDEX, off);
-            let i = Parse.index(s, off, i);
-            let s = Parse.tag(off);
-        }
         do index.append(off);
 
         return Parse.package(ref, index, s, i);
