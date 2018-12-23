@@ -547,8 +547,7 @@ class Eval {
     function void dropContext() {
         var Collection argv;
 
-        let argv = context.pop();
-        do LibSym.destroySym(argv.pop());
+        do LibSym.clearList(context.pop());
         do LibSym.destroyHashTable(symtab.pop());
 
         return;

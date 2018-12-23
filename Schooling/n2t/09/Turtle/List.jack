@@ -1,23 +1,26 @@
 class List {
 
-    static int INT, LIST, LSP;
-    static int APPEND, CLEARLIST, EXTEND, SLICE;
+    static int INT, FUNC, LIST, LSP;
+    static int APPEND, APPLY, CLEARLIST, COPY, EXTEND;
 
     function void init() {
 
         let INT = LibSym.INT();
+        let FUNC = LibSym.FUNC();
         let LIST = LibSym.LIST();
         let LSP = LibSym.LSP();
 
         let APPEND    = 0;
-        let CLEARLIST = 1;
-        let EXTEND    = 2;
-        let SLICE     = 3;
+        let APPLY     = 1;
+        let CLEARLIST = 2;
+        let EXTEND    = 3;
+        let COPY      = 4;
 
         do Eval.install("APPEND", LSP, APPEND);
+        do Eval.install("APPLY", LSP, APPLY);
         do Eval.install("CLEARLIST", LSP, CLEARLIST);
         do Eval.install("EXTEND", LSP, EXTEND);
-        do Eval.install("SLICE", LSP, SLICE);
+        do Eval.install("COPY", LSP, COPY);
 
         return;
     }
@@ -26,9 +29,10 @@ class List {
     function Symbol process(int cmd, Collection argv) {
 
         if (cmd = APPEND)    { return List.append(argv);    }
+        if (cmd = APPLY)     { return List.apply(argv);     }
         if (cmd = CLEARLIST) { return List.clearList(argv); }
         if (cmd = EXTEND)    { return List.extend(argv);    }
-        if (cmd = SLICE)     { return List.slice(argv);     }
+        if (cmd = COPY)      { return List.copy(argv);      }
 
         return null;
     }
@@ -41,6 +45,49 @@ class List {
         let p = Eval.arg(argv.pop());
         let l = p.data();
         do l.append(Eval.arg(argv.pop()));
+
+        return;
+    }
+
+
+    function void apply(Collection argv) {
+        var int i;
+        var Collection list;
+        var Symbol arg, func;
+
+        let arg = Eval.arg(argv.pop());
+
+        if (arg = null) { // todo: error
+            return;
+        }
+
+        if (~(arg.meta() = LIST)) { // todo: error
+            return;
+        }
+
+        let list = arg.data();
+        do arg.dispose();
+
+        let func = Eval.arg(argv.pop());
+
+        if (func = null) { // todo: error
+            return;
+        }
+
+        if (~(func.meta() = FUNC)) { // todo: error
+            return;
+        }
+
+        let argv = Collection.new();
+
+        let i = 0;
+        while (i < list.length()) {
+            do argv.push(list.nth(i));
+            let arg = Exec.call(func, argv);
+            do list.setnth(i, arg);
+            do argv.pop();
+            let i = i + 1;
+        }
 
         return;
     }
@@ -71,7 +118,7 @@ class List {
     }
 
 
-    function Collection slice(Collection argv) {
+    function Collection copy(Collection argv) {
         var int i, j;
         var Collection l;
         var Symbol lp, p;

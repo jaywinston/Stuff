@@ -4,7 +4,7 @@ class Exec {
 
     static int BIN, BLOCK, CMD, CMDLIN, EXE, FUNC, INT, LIST, SITE, STR, NAME,
         INDEX, LSP;
-    static int ASSIGN, FUNCTION, IF, REPEAT, QUIT;
+    static int ASSIGN, FUNCTION, IF, LENGTH, OVER, REPEAT, QUIT;
     static String IFS, ELSES;
 
 
@@ -16,28 +16,32 @@ class Exec {
         let BIN = LibSym.BIN();
         let BLOCK = LibSym.BLOCK();
         let CMD = LibSym.CMD();
-        let LSP = LibSym.LSP();
         let CMDLIN = LibSym.CMDLIN();
         let EXE = 1;  /* magic number! */
         let FUNC = LibSym.FUNC();
         let INDEX = LibSym.INDEX();
         let INT = LibSym.INT();
         let LIST = LibSym.LIST();
+        let LSP = LibSym.LSP();
+        let NAME = LibSym.NAME();
         let SITE = ~LibSym.SITE() | EXE;
         let STR = LibSym.STR();
-        let NAME = LibSym.NAME();
 
-        let ASSIGN   = 1;
-        let FUNCTION = 2;
-        let IF       = 3;
-        let REPEAT   = 4;
-        let QUIT     = 5;
+        let ASSIGN   = 0;
+        let IF       = 1;
+        let LENGTH   = 2;
+        let FUNCTION = 3;
+        let OVER     = 4;
+        let REPEAT   = 5;
+        let QUIT     = 6;
 
 do Eval.install("MC",CMD,128);  // ##DB##
 
         do Eval.install("ASSIGN", CMD, ASSIGN);
         do Eval.install("FUNCTION", CMD, FUNCTION);
         do Eval.install("IF", CMD, IF);
+        do Eval.install("LENGTH", CMD, LENGTH);
+        do Eval.install("OVER", CMD, OVER);
         do Eval.install("REPEAT", CMD, REPEAT);
         do Eval.install("QUIT", CMD, QUIT);
 
@@ -67,7 +71,7 @@ do Eval.install("MC",CMD,128);  // ##DB##
 
     function Symbol executable(Symbol arg, Collection argv) {
         var int cmd, type;
-        
+
         let type = arg.meta();
 
         if (type = FUNC) {
@@ -93,6 +97,7 @@ if (cmd=128) {return arg;}  // ##DB##
         if (cmd = ASSIGN)   { return Exec.doAssign(argv);   }
         if (cmd = FUNCTION) { return Exec.doFunction(argv); }
         if (cmd = IF)       { return Exec.doIf(argv);       }
+        if (cmd = LENGTH)   { return Exec.doLength(argv);   }
         if (cmd = REPEAT)   { return Exec.doRepeat(argv);   }
         if (cmd = QUIT)     { return Exec.doQuit(argv);     }
 
@@ -149,17 +154,16 @@ if (cmd=128) {return arg;}  // ##DB##
 
         let cmdlist = cmdlin.data();
         do cmdlin.dispose();
-        let ret = Exec.cmdlin(cmdlin.data());
+        let ret = Exec.cmdlin(cmdlist);
 
         while (cmdlist.length() > 0) {
             if (LibIO.noerr()) {
                 do Main.enqueue(ret);
             } else {
-                do LibSym.destroyList(cmdlist);
-                let cmdlist = Collection.new();
+                do LibSym.clearList(cmdlist);
             }
             do LibSym.destroySym(ret);
-            let ret = Exec.cmdlin(cmdlin.data());
+            let ret = Exec.cmdlin(cmdlist);
         }
 
         do cmdlist.dispose();
@@ -288,6 +292,30 @@ if (cmd=128) {return arg;}  // ##DB##
     }
 
 
+    function Symbol doLength(Collection argv) {
+        var int n;
+        var String s;
+        var Collection l;
+        var Symbol p;
+
+        let p = Eval.arg(argv.pop());
+
+        if (p.meta() = STR) {
+            let s = p.data();
+            let n = s.length();
+        } else { if (p.meta() = LIST) {
+            let l = p.data();
+            let n = l.length();
+        } else {
+            do LibIO.error("argument has no length");
+        }}
+
+        do LibSym.destroySym(p);
+
+        return Symbol.new(null, INT, n);
+    }
+
+
     function void doIf(Collection argv) {
         var Collection elsev;
         var Symbol arg;
@@ -374,6 +402,12 @@ if (cmd=128) {return arg;}  // ##DB##
             return;
         }
 
+        if ( (arg.meta()=CMD) & (arg.data()=OVER) ) {
+            do arg.dispose();
+            do Exec.doRepeatOver(argv);
+            return;
+        }
+
         /* todo: type check */
 
         let i = arg.data();
@@ -403,6 +437,48 @@ if (cmd=128) {return arg;}  // ##DB##
 
         do LibSym.destroyList(argv);
         do LibSym.destroySym(arg);
+
+        return;
+    }
+
+
+    function void doRepeatOver(Collection argv) {
+        var int i;
+        var String name;
+        var Collection list;
+        var Symbol arg;
+
+        let arg = Eval.arg(argv.pop());
+
+        if (arg = null) { // todo: error
+            return;
+        }
+
+        if (~(arg.meta() = LIST)) { // todo: error
+            return;
+        }
+
+        let list = arg.data();
+
+        let arg = argv.pop();
+
+        if (arg = null) { // todo: error
+            return;
+        }
+
+        if (~(arg.meta() = NAME)) { // todo: error
+            return;
+        }
+
+        let name = arg.data();
+
+        let i = 0;
+        while (i < list.length()) {
+            let arg = list.nth(i);
+            do Eval.install(name, arg.meta(), arg.data());
+            do Main.execute(LibSym.copyList(argv));
+            let i = i + 1;
+        }
 
         return;
     }
