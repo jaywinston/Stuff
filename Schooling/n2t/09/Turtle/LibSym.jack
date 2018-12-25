@@ -144,16 +144,19 @@ class LibSym {
             return null;
         }
 
-        let type = sym.meta() & (LIST | STR);
 
-        if (type = LIST) {
-            return Symbol.new(Str.dup(sym.tag()), sym.meta(),
-                              LibSym.copyList(sym.data()));
-        }
+        if (~(sym.tag() = null)) {
 
-        if (type = STR) {
-            return Symbol.new(Str.dup(sym.tag()), sym.meta(),
-                              Str.dup(sym.data()));
+            let type = sym.meta() & (LIST | STR);
+
+            if (type = LIST) {
+                return Symbol.new(null, sym.meta(),
+                                  LibSym.copyList(sym.data()));
+            }
+
+            if (type = STR) {
+                return Symbol.new(null, sym.meta(), Str.dup(sym.data()));
+            }
         }
 
         return Symbol.new(Str.dup(sym.tag()), sym.meta(), sym.data());
