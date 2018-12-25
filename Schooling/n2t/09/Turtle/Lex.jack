@@ -10,12 +10,12 @@ class Lex {
     /**
      * ctab is a table mapping characters to bitmaps
      */
-    function void init(Array ctab, char sdlm, char esc, Array etab,
-                       char eos, char nolgl) {
+    function void init(Array ctab, Array etab, char esc,
+                       char sdlm, char eos, char nolgl) {
         let CTAB = ctab;
-        let STRING_DLM = sdlm;
-        let ESC = esc;
         let ESCTAB = etab;
+        let ESC = esc;
+        let STRING_DLM = sdlm;
         let EOS_MAP = eos;
         let NOLGL_MAP = nolgl;
         return;

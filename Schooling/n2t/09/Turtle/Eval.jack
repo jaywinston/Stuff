@@ -13,7 +13,7 @@ class Eval {
 
     function void init() {
 
-        let ESC = 37;  /* magic number! */
+        let ESC = 37;
 
         let ARTEX = LibSym.ARTEX();
         let BLOCK = LibSym.BLOCK();
@@ -122,7 +122,7 @@ class Eval {
         if (type = LIST)  { return Eval.list(arg);  }
         if (type = INDEX) { return Eval.index(arg); }
 
-        return arg;
+        return LibSym.copySym(arg);
     }
 
 
@@ -131,18 +131,14 @@ class Eval {
         var Symbol p;
 
         let tag = name.data();
-        do name.setTag(tag);
         let p = Eval.lookup(tag);
 
         if (p = null) {
             do LibIO.error("undefined name");
-            return name;
+            return null;
         }
 
-        do name.setData(p.data());
-        do name.setMeta(p.meta());
-
-        return name;
+        return Symbol.new(Str.dup(tag), p.meta(), p.data());
     }
 
 
@@ -220,6 +216,7 @@ class Eval {
     }
 
 
+/*
     function Symbol artex(Symbol artex) {
         var Collection q;
 
@@ -235,65 +232,68 @@ class Eval {
 
         return artex;
     }
+*/
 
 
-    function int arithmeticExpression(Collection queue) {
+    //function int arithmeticExpression(Collection queue) {
+    function Symbol artex(Symbol artex) {
+        var int i;
         var int lo, ro;  /* left, right operand */
         var int n;
-        var Collection stack;
+        var Collection stack, queue;
         var Symbol tok;
 
         let stack = Collection.new();
+        let queue = artex.data();
 
-        while (queue.length() > 0) {
+        let i = 0;
+        while (i < queue.length()) {
 
-            let tok = queue.pop();
+            let tok = Eval.arg(queue.nth(i));
 
             if (tok.meta() = UOP) {
                 if (stack.length() = 0) {
                     do LibIO.error("expected integer");
-                    do LibSym.destroyList(queue);
                     do stack.dispose();
                     do tok.dispose();
-                    return 0;
+                    return null;
                 }
                 do stack.push(Eval.uoperate(stack.pop(), tok.data()));
             } else { if ( (tok.meta()&OP) = OP) {
                 if (stack.length() < 2) {
                     do LibIO.error("expected integer");
-                    do LibSym.destroyList(queue);
                     do stack.dispose();
                     do tok.dispose();
-                    return 0;
+                    return null;
                 }
                 let ro = stack.pop();
                 let lo = stack.pop();
                 do stack.push(Eval.operate(lo, ro, tok.data()));
             } else {
-                do Eval.arg(tok);
                 if (~(tok.meta() = INT)) {
                     do LibIO.error("expected integer");
-                    do LibSym.destroyList(queue);
                     do LibSym.destroySym(tok);
                     do stack.dispose();
-                    return 0;
+                    return null;
                 }
                 do stack.push(tok.data());
             }}
 
             do tok.dispose();
+            let i = i + 1;
         }
 
         let n = stack.pop();
 
         if (stack.length() > 0) {
             do LibIO.error("expected operator");
+            do stack.dispose();
+            return null;
         }
 
         do stack.dispose();
-        do queue.dispose();
 
-        return n;
+        return Symbol.new(null, INT, n);
     }
 
 
@@ -337,43 +337,46 @@ class Eval {
     }
 
 
+/*
     function Symbol fmtex(Symbol fmtex) {
         do fmtex.setData(Eval.formatExpression(fmtex.data()));
         do fmtex.setMeta(STR);
         return fmtex;
     }
+*/
 
 
-    function String formatExpression(Collection argv) {
+    //function String formatExpression(Collection argv) {
+    function Symbol fmtex(Symbol fmtex) {
         var boolean fspec;
         var int c;
         var int a, i;
         var int type;
         var Array fargv;
+        var Collection argv;
         var String s, t;
         var Symbol arg;
 
-        let arg = Eval.arg(argv.pop());
+        let argv = fmtex.data();
+        let arg = Eval.arg(argv.nth(0));
 
         if (arg = null) {
             do LibIO.error("expected format string");
-            do LibSym.destroyList(argv);
-            return "";
+            do LibSym.destroySym(arg);
+            return null;
         }
 
         if (~(arg.meta() = STR)) {
             do LibIO.error("expected format string");
-            do LibSym.destroyList(argv);
             do LibSym.destroySym(arg);
-            return "";
+            return null;
         }
 
         let s = arg.data();
         do arg.dispose();
 
         if (s.length() < 2) {
-            do LibSym.destroyList(argv);
-            return Str.dup(s);
+            return Symbol.new(null, STR, Str.dup(s));
         }
 
         let fargv = Array.new(s.length()/2);

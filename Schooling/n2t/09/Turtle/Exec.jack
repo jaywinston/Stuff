@@ -141,7 +141,7 @@ if (cmd=128) {return arg;}  // ##DB##
 
         while (cmdlist.length() > 1) {
             let cmdlin = cmdlist.pop();
-            do Main.execute(cmdlin.data());
+            do Main.try(cmdlin.data());
             do cmdlin.dispose();
         }
 
@@ -325,10 +325,10 @@ if (cmd=128) {return arg;}  // ##DB##
 
         if (arg.data() = 0) {
             if (~(elsev = null)) {
-                do Main.execute(elsev);
+                do Main.try(elsev);
             }
         } else {
-            do Main.execute(argv);
+            do Main.try(argv);
         }
 
         do LibSym.destroySym(arg);
@@ -413,7 +413,7 @@ if (cmd=128) {return arg;}  // ##DB##
         let i = arg.data();
         do arg.dispose();
         while (i > 0) {
-            do Main.execute(LibSym.copyList(argv));
+            do Main.try(LibSym.copyList(argv));
             let i = i - 1;
         }
 
@@ -431,7 +431,7 @@ if (cmd=128) {return arg;}  // ##DB##
 
         let condition = Eval.condition(arg);
         while (~(condition = 0)) {
-            do Main.execute(LibSym.copyList(argv));
+            do Main.try(LibSym.copyList(argv));
             let condition = Eval.condition(arg);
         }
 
@@ -476,7 +476,7 @@ if (cmd=128) {return arg;}  // ##DB##
         while (i < list.length()) {
             let arg = list.nth(i);
             do Eval.install(name, arg.meta(), arg.data());
-            do Main.execute(LibSym.copyList(argv));
+            do Main.try(LibSym.copyList(argv));
             let i = i + 1;
         }
 
