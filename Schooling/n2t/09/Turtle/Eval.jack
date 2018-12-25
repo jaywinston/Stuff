@@ -251,7 +251,7 @@ class Eval {
 
             if (tok.meta() = UOP) {
                 if (stack.length() = 0) {
-                    do LibIO.error("expected integer");
+                    do LibIO.error("expected operand");
                     do LibSym.destroyList(queue);
                     do stack.dispose();
                     do tok.dispose();
@@ -260,7 +260,7 @@ class Eval {
                 do stack.push(Eval.uoperate(stack.pop(), tok.data()));
             } else { if ( (tok.meta()&OP) = OP) {
                 if (stack.length() < 2) {
-                    do LibIO.error("expected integer");
+                    do LibIO.error("expected operand");
                     do LibSym.destroyList(queue);
                     do stack.dispose();
                     do tok.dispose();
@@ -367,27 +367,22 @@ class Eval {
         do fmtex.dispose();
         let fstrp = argv.nth(0);
 
-/*
-        if (arg = null) {
+        if (fstrp = null) {  // todo: no need?
             do LibIO.error("expected format string");
             do LibSym.destroyList(argv);
-            do LibSym.destroySym(fstrp);
             return null;
         }
-*/
 
         if (~(fstrp.meta() = STR)) {
             do LibIO.error("expected format string");
             do LibSym.destroyList(argv);
-            do LibSym.destroySym(fstrp);
             return null;
         }
 
-        let s = arg.data();
+        let s = fstrp.data();
 
         if (s.length() < 2) {
             let s = Str.dup(s);
-            do LibSym.destroySym(fstrp);
             do LibSym.destroyList(argv);
             return Symbol.new(null, STR, s);
         }
@@ -406,7 +401,6 @@ class Eval {
                 if (arg = null) {
                     do LibIO.error("expected format argument");
                     do LibSym.destroyList(argv);
-                    do LibSym.destroySym(fstrp);
                     return null;
                 }
 
@@ -415,7 +409,6 @@ class Eval {
                 if (type = c) {
                     do LibIO.error("unrecognized format specifier");
                     do LibSym.destroyList(argv);
-                    do LibSym.destroySym(fstrp);
                     return null;
                 }
 
@@ -423,7 +416,6 @@ class Eval {
                     let FERRARGV[0] = Lex.escape(type, TYPETAB);
                     do LibIO.error(Str.format(FERRFS, FERRARGV));
                     do LibSym.destroyList(argv);
-                    do LibSym.destroySym(fstrp);
                     return null;
                 }
 
@@ -483,30 +475,29 @@ class Eval {
         var Symbol deref;
 
         let l = ref.data();
-        let name = Eval.arg(l.pop());
+        let name = Eval.arg(l.nth(0));
         if (~(name.meta() = LIST)) {
             do LibIO.error("expected list");
             do LibSym.destroySym(name);
-            return ref;
+            return null;
         }
 
-        let index = Eval.arg(l.pop());
+        let index = Eval.arg(l.nth(0));
         if (~(index.meta() = INT)) {
             do LibIO.error("expected integer");
             do LibSym.destroySym(index);
             do LibSym.destroySym(name);
-            return ref;
+            return null;
         }
 
-        do l.dispose();
         let l = name.data();
-
         let i = index.data();
+
         if ( (i<0) | ~(i<l.length()) ) {
             do LibIO.error("invalid index");
             do LibSym.destroySym(name);
             do index.dispose();
-            return ref;
+            return null;
         }
 
         let deref = l.nth(i);
@@ -514,10 +505,7 @@ class Eval {
         do LibSym.destroySym(name);
         do index.dispose();
 
-        do ref.setData(deref.data());
-        do ref.setMeta(deref.meta());
-
-        return ref;
+        return LibSym.copySym(deref);
     }
 
 
@@ -527,7 +515,11 @@ class Eval {
         var Collection cl;
         var Symbol cp;
 
-        let cp = Eval.arg(LibSym.copySym(arg));
+        let cp = Eval.arg(arg);
+
+        if (cp = null) {
+            return 0;
+        }
 
         if (cp.meta() = STR) {
             let cs = cp.data();
