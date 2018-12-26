@@ -105,13 +105,12 @@ if (cmd=128) {return arg;}  // ##DB##
     }
 
 
-    /* 'func' is passed as 'int'; here it's used as 'Collection'
-     */
     function Symbol call(Symbol func, Collection argv) {
         var Collection cpy;
         var Symbol ret;
 
         do Eval.pushContext(func, argv);
+
         let cpy = LibSym.copyList(func.data());
         let ret = Exec.cmdlin(cpy);
         while (cpy.length() > 0) {
@@ -120,11 +119,12 @@ if (cmd=128) {return arg;}  // ##DB##
                 do LibSym.destroySym(ret);
                 let ret = Exec.cmdlin(cpy);
             } else {
-                do LibSym.destroyList(cpy);
-                let cpy = Collection.new();
+                do LibSym.clearList(cpy);
+                do LibSym.destroySym(ret);
                 let ret = null;
             }
         }
+
         do Eval.dropContext();
         do func.dispose();
 
@@ -135,7 +135,7 @@ if (cmd=128) {return arg;}  // ##DB##
     function Symbol block(Collection cmdlist) {
         var Symbol cmdlin, ret;
 
-        if (cmdlist = null) {  // todo: might not need
+        if (cmdlist = null) {  // todo: no need?
             return null;
         }
 
@@ -148,7 +148,7 @@ if (cmd=128) {return arg;}  // ##DB##
         let cmdlin = cmdlist.pop();
         do cmdlist.dispose();
 
-        if (cmdlin = null) {  // todo: might not need
+        if (cmdlin = null) {  // todo: no need?
             return null;
         }
 
@@ -159,11 +159,13 @@ if (cmd=128) {return arg;}  // ##DB##
         while (cmdlist.length() > 0) {
             if (LibIO.noerr()) {
                 do Main.enqueue(ret);
+                do LibSym.destroySym(ret);
+                let ret = Exec.cmdlin(cmdlist);
             } else {
                 do LibSym.clearList(cmdlist);
+                do LibSym.destroySym(ret);
+                let ret = null;
             }
-            do LibSym.destroySym(ret);
-            let ret = Exec.cmdlin(cmdlist);
         }
 
         do cmdlist.dispose();
@@ -197,12 +199,14 @@ if (cmd=128) {return arg;}  // ##DB##
         do arg.dispose();
 
         let arg = Eval.arg(argv.pop());
+
         if (arg = null) {
             do LibIO.error("expected expression");
             return;
         }
 
         do Eval.install(name, arg.meta(), arg.data());
+
         do arg.dispose();
 
         return;
@@ -257,11 +261,9 @@ if (cmd=128) {return arg;}  // ##DB##
         }
 
         do LibSym.destroySym(indexv.nth(indexp.data()));
-        do indexv.setnth(indexp.data(), Symbol.new(null, valp.meta(),
-                         valp.data()));
+        do indexv.setnth(indexp.data(), valp);
 
         do indexp.dispose();
-        do valp.dispose();
 
         return;
     }
@@ -300,6 +302,11 @@ if (cmd=128) {return arg;}  // ##DB##
 
         let p = Eval.arg(argv.pop());
 
+        if (p = null) {
+            do LibIO.error("expected iterable");
+            return null;
+        }
+
         if (p.meta() = STR) {
             let s = p.data();
             let n = s.length();
@@ -307,7 +314,7 @@ if (cmd=128) {return arg;}  // ##DB##
             let l = p.data();
             let n = l.length();
         } else {
-            do LibIO.error("argument has no length");
+            do LibIO.error("expected iterable");
         }}
 
         do LibSym.destroySym(p);
@@ -354,7 +361,7 @@ if (cmd=128) {return arg;}  // ##DB##
                     if (nif = 0) {
                         return Exec.elseVector(argv, a);
                     } else { if (nif < 0) {
-                        do LibIO.error("extra 'ELSE' (todo: a better message)");
+                        do LibIO.error("unexpected 'ELSE'");
                         return null;
                     } else {
                         let nif = nif - 1;
@@ -392,7 +399,7 @@ if (cmd=128) {return arg;}  // ##DB##
         let arg = Eval.arg(argv.pop());
 
         if (arg = null) {
-            /* todo: abort */
+            LibIO.error("expected repetition");
             return;
         }
 
@@ -408,7 +415,11 @@ if (cmd=128) {return arg;}  // ##DB##
             return;
         }
 
-        /* todo: type check */
+        if (~(arg.meta() = INT)) {
+            do LibIO.error("won't repeat that");
+            do LibSym.destroySym(arg);
+            return;
+        }
 
         let i = arg.data();
         do arg.dispose();
@@ -417,7 +428,7 @@ if (cmd=128) {return arg;}  // ##DB##
             let i = i - 1;
         }
 
-        do LibSym.destroyList(argv);
+        do LibSym.clearList(argv);
 
         return;
     }
@@ -435,7 +446,7 @@ if (cmd=128) {return arg;}  // ##DB##
             let condition = Eval.condition(arg);
         }
 
-        do LibSym.destroyList(argv);
+        do LibSym.clearList(argv);
         do LibSym.destroySym(arg);
 
         return;
@@ -450,15 +461,19 @@ if (cmd=128) {return arg;}  // ##DB##
 
         let arg = Eval.arg(argv.pop());
 
-        if (arg = null) { // todo: error
+        if (arg = null) {
+            do LibIO.error("expected list");
             return;
         }
 
-        if (~(arg.meta() = LIST)) { // todo: error
+        if (~(arg.meta() = LIST)) {
+            do LibIO.error("expected list");
+            do LibSym.destroySym(arg);
             return;
         }
 
         let list = arg.data();
+        do arg.dispose();
 
         let arg = argv.pop();
 
