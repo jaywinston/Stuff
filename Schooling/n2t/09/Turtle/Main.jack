@@ -95,8 +95,10 @@ let mv=false;  // ##DB##
 
         while (running) {
             let argv = Parse.next();
-            do Main.try(argv);
+            while (argv.length() > 0) {
+                do LibSym.destroySym(Main.try(argv));
 if(mv){let mv=DB.dbi(DB.mc());}  // ##DB##
+            }
             do LibSym.destroyList(argv);
         }
 
@@ -104,18 +106,19 @@ if(mv){let mv=DB.dbi(DB.mc());}  // ##DB##
     }
 
 
-    function void try(Collection argv) {
+    function Symbol try(Collection argv) {
         var String s;
         var Symbol ret;
 
         if (LibIO.noerr()) {
-            do Main.execute(argv);
             let ret = Exec.cmdlin(argv);
             do LibIO.fixCanvas();
             if (LibIO.noerr()) {
                 do Main.enqueue(ret);
+            } else {
+                do LibSym.clearList(argv);
             }
-            do LibSym.destroySym(ret);
+            //do LibSym.destroySym(ret);
         }
 
         /* Error messages are already queued. */
@@ -127,19 +130,7 @@ if(mv){let mv=DB.dbi(DB.mc());}  // ##DB##
             do s.dispose();
         }
 
-        return;
-    }
-
-
-    function void execute(Collection argv) {
-        var Symbol ret;
-
-        let ret = Exec.cmdlin(argv);
-        do LibIO.fixCanvas();
-        do Main.enqueue(ret);
-        do LibSym.destroySym(ret);
-
-        return;
+        return ret;
     }
 
 
@@ -152,7 +143,7 @@ if(mv){let mv=DB.dbi(DB.mc());}  // ##DB##
 
 let mv=sym.meta()=1&sym.data()=128;  // ##DB##
 
-        let s =  LibSym.format(sym);
+        let s = LibSym.format(sym);
 
         if (~(s = null)) {
             do LibIO.put(s);

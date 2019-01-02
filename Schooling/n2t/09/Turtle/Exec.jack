@@ -41,7 +41,6 @@ do Eval.install("MC",CMD,128);  // ##DB##
         do Eval.install("FUNCTION", CMD, FUNCTION);
         do Eval.install("IF", CMD, IF);
         do Eval.install("LENGTH", CMD, LENGTH);
-        do Eval.install("OVER", CMD, OVER);
         do Eval.install("REPEAT", CMD, REPEAT);
         do Eval.install("QUIT", CMD, QUIT);
 
@@ -84,9 +83,9 @@ if (cmd=128) {return arg;}  // ##DB##
 
         do arg.dispose();
 
-        if (type = BIN)  { return Bin.exec(cmd, argv);      }
-        if (type = CMD)  { return Exec.cmd(cmd, argv);      }
-        if (type = LSP)  { return List.process(cmd, argv);  }
+        if (type = BIN) { return Bin.exec(cmd, argv);     }
+        if (type = CMD) { return Exec.cmd(cmd, argv);     }
+        if (type = LSP) { return List.process(cmd, argv); }
 
         return null;
     }
@@ -112,21 +111,15 @@ if (cmd=128) {return arg;}  // ##DB##
         do Eval.pushContext(func, argv);
 
         let cpy = LibSym.copyList(func.data());
-        let ret = Exec.cmdlin(cpy);
+        let ret = Main.try(cpy);
         while (cpy.length() > 0) {
-            if (LibIO.noerr()) {
-                do Main.enqueue(ret);
-                do LibSym.destroySym(ret);
-                let ret = Exec.cmdlin(cpy);
-            } else {
-                do LibSym.clearList(cpy);
-                do LibSym.destroySym(ret);
-                let ret = null;
-            }
+            do LibSym.destroySym(ret);
+            let ret = Main.try(cpy);
         }
 
         do Eval.dropContext();
         do func.dispose();
+        do cpy.dispose();
 
         return ret;
     }
@@ -399,7 +392,7 @@ if (cmd=128) {return arg;}  // ##DB##
         let arg = Eval.arg(argv.pop());
 
         if (arg = null) {
-            LibIO.error("expected repetition");
+            do LibIO.error("expected integer");
             return;
         }
 
