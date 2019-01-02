@@ -55,7 +55,63 @@ do Eval.install("MC",CMD,128);  // ##DB##
     }
 
 
-    function Symbol cmdlin(Collection argv) {
+    function void enqueue(Symbol sym) {
+        do LibIO.put(LibSym.format(sym));
+        return;
+    }
+
+
+    function void next() {
+        var Collection argv;
+
+        let argv = Parse.next();
+
+        if (LibIO.err()) {
+            do LibSym.destroyList(argv);
+            return;
+        }
+
+        do Exec.cmdlin(argv);
+
+        return;
+    }
+
+
+    function void cmdlin(Collection argv) {
+        var Symbol ret;
+
+        let ret = Exec.arglist(argv);
+        if (~LibIO.err()) {
+            do Exec.enqueue(ret);
+        }
+        do LibSym.destroySym(ret);
+
+        return;
+    }
+
+
+    function Symbol arglist(Collection argv) {
+        var Symbol ret;
+
+        let ret = Exec.arg(argv);
+        while (argv.length() > 0) {
+            if (libIO.err()) {
+                do LibSym.clearList(argv);
+                do LibSym.destroySym(ret);
+                return null;
+            }
+            do LibIO.put(LibSym.format(ret));
+            do LibSym.destroySym(ret);
+            let ret = Exec.arg(argv);
+        }
+
+        do argv.dispose();
+
+        return ret;
+    }
+
+
+    function Symbol arg(Collection argv) {
         var Symbol arg;
 
         let arg = Eval.arg(argv.pop());
@@ -79,13 +135,13 @@ do Eval.install("MC",CMD,128);  // ##DB##
 
         let cmd = arg.data();
 
-if (cmd=128) {return arg;}  // ##DB##
-
         do arg.dispose();
 
         if (type = BIN) { return Bin.exec(cmd, argv);     }
         if (type = CMD) { return Exec.cmd(cmd, argv);     }
         if (type = LSP) { return List.process(cmd, argv); }
+
+if (cmd=128) {do Main.mc();}  // ##DB##
 
         return null;
     }
@@ -109,14 +165,8 @@ if (cmd=128) {return arg;}  // ##DB##
         var Symbol ret;
 
         do Eval.pushContext(func, argv);
-
         let cpy = LibSym.copyList(func.data());
-        let ret = Main.try(cpy);
-        while (cpy.length() > 0) {
-            do LibSym.destroySym(ret);
-            let ret = Main.try(cpy);
-        }
-
+        let ret = Exec.cmdlin(cpy);
         do Eval.dropContext();
         do func.dispose();
         do cpy.dispose();
@@ -126,44 +176,21 @@ if (cmd=128) {return arg;}  // ##DB##
 
 
     function Symbol block(Collection cmdlist) {
-        var Symbol cmdlin, ret;
-
-        if (cmdlist = null) {  // todo: no need?
-            return null;
-        }
+        var Symbol cmdlin;
 
         while (cmdlist.length() > 1) {
             let cmdlin = cmdlist.pop();
-            do Main.try(cmdlin.data());
+            do Exec.cmdlin(cmdlin.data());
             do cmdlin.dispose();
         }
 
         let cmdlin = cmdlist.pop();
         do cmdlist.dispose();
 
-        if (cmdlin = null) {  // todo: no need?
-            return null;
-        }
-
         let cmdlist = cmdlin.data();
         do cmdlin.dispose();
-        let ret = Exec.cmdlin(cmdlist);
 
-        while (cmdlist.length() > 0) {
-            if (LibIO.noerr()) {
-                do Main.enqueue(ret);
-                do LibSym.destroySym(ret);
-                let ret = Exec.cmdlin(cmdlist);
-            } else {
-                do LibSym.clearList(cmdlist);
-                do LibSym.destroySym(ret);
-                let ret = null;
-            }
-        }
-
-        do cmdlist.dispose();
-
-        return ret;
+        return Exec.arglist(cmdlist);
     }
 
 
@@ -207,56 +234,25 @@ if (cmd=128) {return arg;}  // ##DB##
 
 
     function void assignIndex(Symbol arg, Collection argv) {
-        var String name;
-        var Collection indexv;
-        var Symbol namep, indexp, valp;
+        var Symbol index, val;
 
-        let indexv = arg.data();
+        do arg.setTag(1);
+        let index = Eval.arg(arg);
+        do arg.setTag(0);
         do arg.dispose();
+        let val = Eval.arg(argv.pop());
 
-        let namep = indexv.pop();
-        let name = namep.data();
-        do Eval.arg(namep);
-
-        if (~(namep.meta() = LIST)) {
-            do LibIO.error("expected list");
-            do LibSym.destroyList(indexv);
-            do LibSym.destroySym(namep);
-            do LibSym.clearList(argv);
-            do name.dispose();
-            return;
-        }
-
-        let indexp = Eval.arg(indexv.pop());
-        do indexv.dispose();
-
-        if (~(indexp.meta() = INT)) {
-            do LibIO.error("index must be integer");
-            do LibSym.destroySym(indexp);
-            do LibSym.destroySym(namep);
-            do LibSym.clearList(argv);
-            do name.dispose();
-            return;
-        }
-
-        let indexv = namep.data();
-
-        let valp = Eval.arg(argv.pop());
-
-        if (valp = null) {
+        if (val = null) {
             do LibIO.error("expected expression");
-            do LibSym.destroySym(indexp);
-            do LibSym.destroySym(namep);
-            do LibSym.destroySym(valp);
-            do LibSym.clearList(argv);
-            do name.dispose();
+            do LibSym.destroySym(index);
             return;
         }
 
-        do LibSym.destroySym(indexv.nth(indexp.data()));
-        do indexv.setnth(indexp.data(), valp);
+        do index.setMeta(val.meta());
+        do index.setData(val.data());
 
-        do indexp.dispose();
+        do LibSym.destroySym(index);
+        do LibSym.destroySym(val);
 
         return;
     }
@@ -269,12 +265,13 @@ if (cmd=128) {return arg;}  // ##DB##
         let arg = argv.pop();
 
         if (arg = null) {
-            do LibIO.error("no function name found");
+            do LibIO.error("expected name");
             return;
         }
 
         if (~(arg.meta() = NAME)) {
-            do LibIO.error("no function name found");
+            do LibIO.error("expected name");
+            do LibSym.destroySym(arg);
             return;
         }
 
@@ -325,15 +322,15 @@ if (cmd=128) {return arg;}  // ##DB##
 
         if (arg.data() = 0) {
             if (~(elsev = null)) {
-                do Main.try(elsev);
+                do Exec.cmdlin(elsev);
             }
+            do LibSym.clearList(argv);
         } else {
-            do Main.try(argv);
+            do Exec.cmdlin(argv);
+            do LibSym.clearList(elsev);
         }
 
         do LibSym.destroySym(arg);
-        do LibSym.destroyList(argv);
-        do LibSym.destroyList(elsev);
 
         return;
     }
@@ -370,7 +367,6 @@ if (cmd=128) {return arg;}  // ##DB##
     }
 
 
-    /* Collection.slice() would be easier to read but redundant to execute. */
     function Collection elseVector(Collection argv, int a) {
         var Collection elsev;
 
@@ -402,9 +398,8 @@ if (cmd=128) {return arg;}  // ##DB##
             return;
         }
 
-        if ( (arg.meta()=CMD) & (arg.data()=OVER) ) {
-            do arg.dispose();
-            do Exec.doRepeatOver(argv);
+        if (arg.meta() = LIST) {
+            do Exec.doRepeatList(arg, argv);
             return;
         }
 
@@ -416,8 +411,14 @@ if (cmd=128) {return arg;}  // ##DB##
 
         let i = arg.data();
         do arg.dispose();
+
+        if (i < 0) {
+            do LibIO.error("won't repeat that");
+            return;
+        }
+
         while (i > 0) {
-            do Main.try(LibSym.copyList(argv));
+            do Exec.cmdlin(LibSym.copyList(argv));
             let i = i - 1;
         }
 
@@ -428,15 +429,12 @@ if (cmd=128) {return arg;}  // ##DB##
 
 
     function void doRepeatIf(Collection argv) {
-        var int condition;
         var Symbol arg;
 
         let arg = argv.pop();
 
-        let condition = Eval.condition(arg);
-        while (~(condition = 0)) {
-            do Main.try(LibSym.copyList(argv));
-            let condition = Eval.condition(arg);
+        while (~(Eval.condition(arg) = 0)) {
+            do Exec.cmdlin(LibSym.copyList(argv));
         }
 
         do LibSym.clearList(argv);
@@ -446,47 +444,36 @@ if (cmd=128) {return arg;}  // ##DB##
     }
 
 
-    function void doRepeatOver(Collection argv) {
+    function void doRepeatList(Collection list, Collection argv) {
         var int i;
         var String name;
-        var Collection list;
         var Symbol arg;
 
-        let arg = Eval.arg(argv.pop());
+        let arg = argv.pop();
 
         if (arg = null) {
-            do LibIO.error("expected list");
+            do LibIO.error("expected name");
             return;
         }
 
-        if (~(arg.meta() = LIST)) {
-            do LibIO.error("expected list");
+        if (~(arg.meta() = NAME)) {
+            do LibIO.error("expected name");
             do LibSym.destroySym(arg);
             return;
         }
 
-        let list = arg.data();
-        do arg.dispose();
-
-        let arg = argv.pop();
-
-        if (arg = null) { // todo: error
-            return;
-        }
-
-        if (~(arg.meta() = NAME)) { // todo: error
-            return;
-        }
-
         let name = arg.data();
+        do arg.dispose();
 
         let i = 0;
         while (i < list.length()) {
             let arg = list.nth(i);
             do Eval.install(name, arg.meta(), arg.data());
-            do Main.try(LibSym.copyList(argv));
+            do Exec.cmdlin(LibSym.copyList(argv));
             let i = i + 1;
         }
+
+        do LibSym.clearList(argv);
 
         return;
     }

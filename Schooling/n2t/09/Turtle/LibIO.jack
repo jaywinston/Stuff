@@ -1,6 +1,6 @@
 class LibIO {
 
-    static boolean noerr;
+    static boolean err;
     static Array B;  /* boundaries */
     static Array argv;
     static String cerrfs, serrfs;  /* error format strings */
@@ -16,7 +16,7 @@ class LibIO {
         let B[1] = 32;
         let B[2] = 20;
         let B[3] = 31;
-        let noerr = true;
+        let err = true;
         let argv = Array.new(1);
         let cerrfs = "unexpected token: %C";
         let serrfs = "unexpected token: %S";
@@ -40,7 +40,10 @@ class LibIO {
     }
 
 
-    function void put(int msg) {
+    function void put(String msg) {
+        if (msg = null) {
+            return;
+        }
         do que.append(msg);
         return;
     }
@@ -57,20 +60,20 @@ class LibIO {
 
 
     function void error(String s) {
+        let err = true;
         do que.append(s);
-        let noerr = false;
         return;
     }
 
 
     function void clearerr() {
-        let noerr = true;
+        let err = false;
         return;
     }
 
 
-    function boolean noerr() {
-        return noerr;
+    function boolean err() {
+        return err;
     }
 
 

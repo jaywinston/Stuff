@@ -138,7 +138,11 @@ class Eval {
             return null;
         }
 
-        return Symbol.new(Str.dup(tag), p.meta(), p.data());
+        do name.setTag(tag);
+        do name.setMeta(p.meta());
+        do name.setData(p.data());
+
+        return name;
     }
 
 
@@ -169,6 +173,10 @@ class Eval {
         var char c;
         var int i;
 
+        if (context.length() = 0) {
+            return false;
+        }
+
         if (s.length() < 2) {
             return false;
         }
@@ -192,17 +200,11 @@ class Eval {
 
     function Symbol lookupArg(String s) {
         var int i;
-        var String t;
         var Collection argv;
 
-        if (context.length() = 0) {
-            return null;
-        }
-
-        let t = Str.dup(s);
-        do Str.shift(t, 1, 0);
-        let i = t.intValue();
-        do t.dispose();
+        do Str.shift(s, 1, 0);
+        let i = s.intValue();
+        do s.dispose();
 
         let argv = context.nth(0);
 
@@ -216,7 +218,6 @@ class Eval {
     }
 
 
-/*
     function Symbol artex(Symbol artex) {
         var Collection q;
 
@@ -232,18 +233,15 @@ class Eval {
 
         return artex;
     }
-*/
 
 
-    //function int arithmeticExpression(Collection queue) {
-    function Symbol artex(Symbol artex) {
+    function int arithmeticExpression(Collection queue) {
         var int lo, ro;  /* left, right operand */
         var int n;
-        var Collection stack, queue;
+        var Collection stack;
         var Symbol tok;
 
         let stack = Collection.new();
-        let queue = LibSym.copyList(artex.data());
 
         while (queue.length() > 0) {
 
@@ -280,7 +278,7 @@ class Eval {
                 do stack.push(tok.data());
             }}
 
-            do LibSym.destroySym(tok);
+            do tok.dispose();
         }
 
         let n = stack.pop();
@@ -295,7 +293,7 @@ class Eval {
         do stack.dispose();
         do queue.dispose();
 
-        return Symbol.new(null, INT, n);
+        return n;
     }
 
 
@@ -339,33 +337,23 @@ class Eval {
     }
 
 
-/*
     function Symbol fmtex(Symbol fmtex) {
         do fmtex.setData(Eval.formatExpression(fmtex.data()));
         do fmtex.setMeta(STR);
         return fmtex;
     }
-*/
 
 
-    //function String formatExpression(Collection argv) {
-    function Symbol fmtex(Symbol fmtex) {
+    function String formatExpression(Collection argv) {
         var boolean fspec;
         var int c;
         var int a, i;
         var int type;
         var Array fargv;
-        var Collection argv;
-        var String s;
-        var Symbol arg, fstrp, ret;
+        var String s, t;
+        var Symbol arg, fstrp;
 
-        let fmtex = Eval.list(fmtex);
-        if (fmtex = null) {
-            return null;
-        }
-        let argv = fmtex.data();
-        do fmtex.dispose();
-        let fstrp = argv.nth(0);
+        let fstrp = Eval.arg(argv.pop());
 
         if (fstrp = null) {  // todo: no need?
             do LibIO.error("expected format string");
@@ -376,31 +364,35 @@ class Eval {
         if (~(fstrp.meta() = STR)) {
             do LibIO.error("expected format string");
             do LibSym.destroyList(argv);
+            do LibSym.destroySym(fstrp);
             return null;
         }
 
         let s = fstrp.data();
 
         if (s.length() < 2) {
-            let s = Str.dup(s);
             do LibSym.destroyList(argv);
-            return Symbol.new(null, STR, s);
+            let s = Str.dup(s);
+            do LibSym.destroySym(fstrp);
+            return s;
         }
 
         let fargv = Array.new(s.length()/2);
         let fspec = false;
-        let a = 1;
+        let a = 0;
 
         let i = 0;
         while (i < s.length()) {
             let c = s.charAt(i);
             if ( fspec & ~(c=ESC) ) {
 
-                let arg = argv.nth(a);
+                let arg = Eval.arg(argv.nth(a));
 
                 if (arg = null) {
                     do LibIO.error("expected format argument");
                     do LibSym.destroyList(argv);
+                    do LibSym.destroySym(fstrp);
+                    do fargv.dispose();
                     return null;
                 }
 
@@ -409,6 +401,8 @@ class Eval {
                 if (type = c) {
                     do LibIO.error("unrecognized format specifier");
                     do LibSym.destroyList(argv);
+                    do LibSym.destroySym(fstrp);
+                    do fargv.dispose();
                     return null;
                 }
 
@@ -416,6 +410,8 @@ class Eval {
                     let FERRARGV[0] = Lex.escape(type, TYPETAB);
                     do LibIO.error(Str.format(FERRFS, FERRARGV));
                     do LibSym.destroyList(argv);
+                    do LibSym.destroySym(fstrp);
+                    do fargv.dispose();
                     return null;
                 }
 
@@ -429,104 +425,120 @@ class Eval {
 
         if (fspec) {
             do LibIO.error("expected format specifier");
-            let ret = null;
+            let t = "";
         } else {
-            let ret = Symbol.new(null, STR, Str.format(s, fargv));
+            let t = Str.format(s, fargv);
         }
 
         do LibSym.destroyList(argv);
+        do LibSym.destroySym(fstrp);
         do fargv.dispose();
 
-        return ret;
+        return t;
     }
 
 
     function Symbol block(Symbol arg) {
-        return Exec.block(arg.data());
+        var Symbol p;
+
+        let p = Exec.block(arg.data());
+
+        if (p = null) {
+            do arg.setMeta(null);
+        } else {
+            do arg.setMeta(p.meta());
+            do arg.setData(p.data());
+        }
+
+        return arg;
     }
 
 
     function Symbol list(Symbol arg) {
         var int i;
-        var Collection old, new;
-        var Symbol p;
+        var Collection l;
 
-        let old = arg.data();
-        let new = Collection.new();
+        let l = arg.data();
         let i = 0;
-        while (i < old.length()) {
-            let p = Eval.arg(list.nth(i));
-            if (p = null) {
-                do LibSym.destroyList(new);
-                return null;
-            }
-            do new.append(p);
+        while (i < l.length()) {
+            do Eval.arg(l.nth(i));
             let i = i + 1;
         }
 
-        return Symbol.new(null, LIST, new);
+        return arg;
     }
 
 
-    function Symbol index(Symbol ref) {
+    function Symbol index(Symbol arg) {
         var int i;
-        var Collection l;
-        var Symbol name, index;
+        var Collection index, list;
+        var Symbol indexp, listp;
         var Symbol deref;
 
-        let l = ref.data();
-        let name = Eval.arg(l.nth(0));
-        if (~(name.meta() = LIST)) {
-            do LibIO.error("expected list");
-            do LibSym.destroySym(name);
-            return null;
-        }
+        let index = arg.data();
 
-        let index = Eval.arg(l.nth(0));
-        if (~(index.meta() = INT)) {
-            do LibIO.error("expected integer");
-            do LibSym.destroySym(index);
-            do LibSym.destroySym(name);
-            return null;
-        }
-
-        let l = name.data();
-        let i = index.data();
-
-        if ( (i<0) | ~(i<l.length()) ) {
-            do LibIO.error("invalid index");
-            do LibSym.destroySym(name);
-            do index.dispose();
-            return null;
-        }
-
-        let deref = l.nth(i);
-
-        do LibSym.destroySym(name);
+        let listp = Eval.arg(index.pop());
+        let indexp = Eval.arg(index.pop());
         do index.dispose();
 
-        return LibSym.copySym(deref);
+        if (~(listp.meta() = LIST)) {
+            do LibIO.error("expected list");
+            do LibSym.destroySym(listp);
+            do indexp.dispose();
+            return null;
+        }
+
+        if (~(indexp.meta() = INT)) {
+            do LibIO.error("expected integer");
+            do LibSym.destroySym(listp);
+            do indexp.dispose();
+            return null;
+        }
+
+        let list = listp.data();
+        let i = indexp.data();
+        do indexp.dispose();
+
+        if ( (i<0) | ~(i<list.length()) ) {
+            do LibIO.error("invalid index");
+            do LibSym.destroySym(listp);
+            do indexp.dispose();
+            return null;
+        }
+
+        let deref = list.nth(i);
+
+        if (arg.tag() = 1) {
+            return deref;
+        }
+
+        do arg.setMeta(deref.meta());
+        do arg.setData(deref.data());
+
+        do LibSym.destroySym(listp);
+
+        return arg;
     }
 
 
     function int condition(Symbol arg) {
         var int c;
-        var String cs;
-        var Collection cl;
+        var String s;
+        var Collection l;
         var Symbol cp;
 
-        let cp = Eval.arg(arg);
+        let cp = Eval.arg(LibSym.copySym(arg));
 
         if (cp = null) {
             return 0;
         }
 
         if (cp.meta() = STR) {
-            let cs = cp.data();
-            let c = cs.length();
+            let s = cp.data();
+            let c = s.length();
         } else { if (cp.meta() = LIST) {
-            let cl = cp.data();
-            let c = cl.length();
+            let l = cp.data();
+            let c = l.length();
         } else {
             let c = cp.data();
         }}
