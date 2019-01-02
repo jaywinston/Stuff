@@ -16,7 +16,7 @@ class LibIO {
         let B[1] = 32;
         let B[2] = 20;
         let B[3] = 31;
-        let err = true;
+        let err = false;
         let argv = Array.new(1);
         let cerrfs = "unexpected token: %C";
         let serrfs = "unexpected token: %S";

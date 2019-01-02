@@ -36,7 +36,14 @@ static boolean mv;  // ##DB##
         var char stringDelimiter, escapeCharacter;
         var int eosKey, illegalKey;
         var Array charToBitmapTable, escapeSequenceTable;
+
 let mv=false;  // ##DB##
+
+        do Vector.init();
+        do Turtle.init(2);
+        do Collection.init();
+        do LibIO.init();
+        do LibSym.init();
 
         let stringDelimiter = 34;
         let escapeCharacter = 92;
@@ -45,11 +52,6 @@ let mv=false;  // ##DB##
         let charToBitmapTable = LibSym.ctab();
         let escapeSequenceTable = LibIO.esctab();
 
-        do Vector.init();
-        do Turtle.init(2);
-        do Collection.init();
-        do LibIO.init();
-        do LibSym.init();
         do Lex.init(
             charToBitmapTable,
             escapeSequenceTable,

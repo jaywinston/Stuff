@@ -95,7 +95,7 @@ do Eval.install("MC",CMD,128);  // ##DB##
 
         let ret = Exec.arg(argv);
         while (argv.length() > 0) {
-            if (libIO.err()) {
+            if (LibIO.err()) {
                 do LibSym.clearList(argv);
                 do LibSym.destroySym(ret);
                 return null;
@@ -137,11 +137,11 @@ do Eval.install("MC",CMD,128);  // ##DB##
 
         do arg.dispose();
 
+if (cmd=128) {return Main.mc();}  // ##DB##
+
         if (type = BIN) { return Bin.exec(cmd, argv);     }
         if (type = CMD) { return Exec.cmd(cmd, argv);     }
         if (type = LSP) { return List.process(cmd, argv); }
-
-if (cmd=128) {do Main.mc();}  // ##DB##
 
         return null;
     }

@@ -268,6 +268,10 @@ if(sym.tag()=null){
 
     function String format(Symbol p) {
 
+        if (p = null) {
+            return null;
+        }
+
         if (p.meta() = INT)  { return LibSym.formatInt(p.data());  }
         if (p.meta() = STR)  { return LibSym.formatStr(p.data());  }
         if (p.meta() = FUNC) { return LibSym.formatFunc(p.tag());  }

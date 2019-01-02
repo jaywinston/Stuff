@@ -122,7 +122,7 @@ class Eval {
         if (type = LIST)  { return Eval.list(arg);  }
         if (type = INDEX) { return Eval.index(arg); }
 
-        return LibSym.copySym(arg);
+        return arg;
     }
 
 
@@ -135,7 +135,8 @@ class Eval {
 
         if (p = null) {
             do LibIO.error("undefined name");
-            return null;
+            do name.setMeta(null);
+            return name;
         }
 
         do name.setTag(tag);
