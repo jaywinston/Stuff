@@ -126,24 +126,24 @@ class Eval {
     }
 
 
-    function Symbol name(Symbol name) {
+    function Symbol name(Symbol arg) {
         var String tag;
         var Symbol p;
 
-        let tag = name.data();
+        let tag = arg.data();
         let p = Eval.lookup(tag);
 
         if (p = null) {
             do LibIO.error("undefined name");
-            do name.setMeta(null);
-            return name;
+            do arg.setMeta(null);
+            return arg;
         }
 
-        do name.setTag(tag);
-        do name.setMeta(p.meta());
-        do name.setData(p.data());
+        do arg.setTag(tag);
+        do arg.setMeta(p.meta());
+        do arg.setData(p.data());
 
-        return name;
+        return arg;
     }
 
 
@@ -485,15 +485,15 @@ class Eval {
         if (~(listp.meta() = LIST)) {
             do LibIO.error("expected list");
             do LibSym.destroySym(listp);
-            do indexp.dispose();
-            return null;
+            do LibSym.destroySym(indexp);
+            return arg;
         }
 
         if (~(indexp.meta() = INT)) {
             do LibIO.error("expected integer");
             do LibSym.destroySym(listp);
-            do indexp.dispose();
-            return null;
+            do LibSym.destroySym(indexp);
+            return arg;
         }
 
         let list = listp.data();
@@ -503,13 +503,15 @@ class Eval {
         if ( (i<0) | ~(i<list.length()) ) {
             do LibIO.error("invalid index");
             do LibSym.destroySym(listp);
-            do indexp.dispose();
-            return null;
+            return arg;
         }
 
         let deref = list.nth(i);
 
         if (arg.tag() = 1) {
+            do arg.setTag(listp.tag());
+            do arg.setMeta(LIST);
+            do arg.setData(list);
             return deref;
         }
 

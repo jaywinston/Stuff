@@ -66,7 +66,7 @@ do Eval.install("MC",CMD,128);  // ##DB##
 
         let argv = Parse.next();
 
-        if (LibIO.err()) {
+        if ( LibIO.err() | (argv.length()=0) ) {
             do LibSym.destroyList(argv);
             return;
         }
@@ -234,24 +234,30 @@ if (cmd=128) {return Main.mc();}  // ##DB##
 
 
     function void assignIndex(Symbol arg, Collection argv) {
-        var Symbol index, val;
+        var Symbol deref, val;
 
         do arg.setTag(1);
-        let index = Eval.arg(arg);
-        do arg.setTag(0);
-        do arg.dispose();
+        let deref = Eval.index(arg);
+
+        if (deref = null) {
+            do LibIO.error("expected expression");
+            do LibSym.destroySym(arg);
+            return;
+        }
+
         let val = Eval.arg(argv.pop());
 
         if (val = null) {
             do LibIO.error("expected expression");
-            do LibSym.destroySym(index);
+            do LibSym.destroySym(deref);
+            do LibSym.destroySym(arg);
             return;
         }
 
-        do index.setMeta(val.meta());
-        do index.setData(val.data());
+        do deref.setMeta(val.meta());
+        do deref.setData(val.data());
 
-        do LibSym.destroySym(index);
+        do LibSym.destroySym(arg);
         do LibSym.destroySym(val);
 
         return;
