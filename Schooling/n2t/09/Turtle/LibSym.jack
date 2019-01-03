@@ -249,7 +249,7 @@ if(sym.tag()=null){
         let p = ht.lookup(name);
 
         if (p = null) {
-            do ht.install(name, type, value);
+            let p = ht.install(name, type, value);
         } else {
             do name.dispose();
             if ( (p.meta()&LIST) = LIST ) {
@@ -260,6 +260,31 @@ if(sym.tag()=null){
             }}
             do p.setMeta(type);
             do p.setData(value);
+        }
+
+        if (type = LIST) {
+            do LibSym.tagList(p.data());
+        }
+
+        return;
+    }
+
+
+    function void tagList(Collection l) {
+        var int i;
+        var Collection l;
+        var Symbol p;
+
+        let i = 0;
+        while (i < l.length()) {
+            let p = l.nth(i);
+            if (p.tag() = null) {
+                do p.setTag("");
+            }
+            if (p.meta() = LIST) {
+                do LibSym.tagList(p.data());
+            }
+            let i = i + 1;
         }
 
         return;

@@ -477,22 +477,22 @@ class Eval {
         var Symbol deref;
 
         let index = arg.data();
-
         let listp = Eval.arg(index.pop());
-        let indexp = Eval.arg(index.pop());
-        do index.dispose();
 
         if (~(listp.meta() = LIST)) {
             do LibIO.error("expected list");
+            do LibSym.destroyList(index);
             do LibSym.destroySym(listp);
-            do LibSym.destroySym(indexp);
             return arg;
         }
 
+        let indexp = Eval.arg(index.pop());
+        do index.dispose();
+
         if (~(indexp.meta() = INT)) {
             do LibIO.error("expected integer");
-            do LibSym.destroySym(listp);
             do LibSym.destroySym(indexp);
+            do LibSym.destroySym(listp);
             return arg;
         }
 
@@ -507,13 +507,6 @@ class Eval {
         }
 
         let deref = list.nth(i);
-
-        if (arg.tag() = 1) {
-            do arg.setTag(listp.tag());
-            do arg.setMeta(LIST);
-            do arg.setData(list);
-            return deref;
-        }
 
         do arg.setMeta(deref.meta());
         do arg.setData(deref.data());

@@ -97,7 +97,8 @@ class HashTable {
         do a.dispose();
 
         if (p = null) {
-            do b.push(Symbol.new(name, type, val));
+            let p = Symbol.new(name, type, val);
+            do b.push(p);
         } else {
             do p.setData(val);
             do p.setMeta(type);

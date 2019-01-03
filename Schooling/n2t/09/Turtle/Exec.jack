@@ -234,31 +234,56 @@ if (cmd=128) {return Main.mc();}  // ##DB##
 
 
     function void assignIndex(Symbol arg, Collection argv) {
-        var Symbol deref, val;
+        var int i;
+        var Collection index, list;
+        var Symbol deref, indexp, listp, val;
 
-        do arg.setTag(1);
-        let deref = Eval.index(arg);
+        let index = arg.data();
+        do arg.dispose();
 
-        if (deref = null) {
-            do LibIO.error("expected expression");
-            do LibSym.destroySym(arg);
+        let listp = Eval.arg(index.pop());
+
+        if (~(listp.meta() = LIST)) {
+            do LibIO.error("expected list");
+            do LibSym.destroyList(index);
+            do LibSym.destroySym(listp);
             return;
         }
+
+        let indexp = Eval.arg(index.pop());
+        do index.dispose();
+
+        if (~(indexp.meta() = INT)) {
+            do LibIO.error("expected integer");
+            do LibSym.destroySym(indexp);
+            do LibSym.destroySym(listp);
+            return;
+        }
+
+        let list = listp.data();
+        let i = indexp.data();
+        do indexp.dispose();
+
+        if ( (i<0) | ~(i<list.length()) ) {
+            do LibSym.destroySym(listp);
+            return;
+        }
+
+        let deref = list.nth(i);
 
         let val = Eval.arg(argv.pop());
 
         if (val = null) {
             do LibIO.error("expected expression");
-            do LibSym.destroySym(deref);
-            do LibSym.destroySym(arg);
+            do LibSym.destroySym(listp);
             return;
         }
 
         do deref.setMeta(val.meta());
         do deref.setData(val.data());
+        do val.dispose();
 
-        do LibSym.destroySym(arg);
-        do LibSym.destroySym(val);
+        do LibSym.destroySym(listp);
 
         return;
     }
