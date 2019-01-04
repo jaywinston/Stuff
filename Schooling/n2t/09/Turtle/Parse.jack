@@ -98,7 +98,7 @@ class Parse {
     }
 
 
-    function int expr(String s, Symbol word, int i) {
+    function int atom(String s, Symbol word, int i) {
         var int cc;
         var String t;
 
@@ -135,14 +135,25 @@ class Parse {
             let i = -1;
         }}}}}}
 
+        do word.setTag(s);
+
+        return i;
+    }
+
+
+    function int expr(String s, Symbol atom, int i) {
+
+        let i = Parse.atom(s, atom, i);
+        let s = Parse.tag(atom);
+
         if (Parse.cclass(s, i) = INDEX) {
-            do word.setData(Symbol.new(null, word.meta(), word.data()));
-            do word.setMeta(INDEX);
-            let i = Parse.index(s, word, i);
-            let s = Parse.tag(word);
+            do atom.setData(Symbol.new(null, atom.meta(), atom.data()));
+            do atom.setMeta(INDEX);
+            let i = Parse.index(s, atom, i);
+            let s = Parse.tag(atom);
         }
 
-        do word.setTag(s);
+        do atom.setTag(s);
 
         return i;
     }
@@ -427,9 +438,16 @@ class Parse {
         do index.append(ref.data());
 
         let off = Symbol.new(null, null, null);
-        let i = Parse.expr(s, off, i+1);
+        let i = Parse.atom(s, off, i+1);
         let s = Parse.tag(off);
         do index.append(off);
+        if (Parse.cclass(s, i) = INDEX) {
+            let off = Symbol.new(null, INDEX, Symbol.new(null, INDEX, index));
+            let i = Parse.index(s, off, i);
+            let s = off.tag();
+            let index = off.data();
+            do off.dispose();
+        }
 
         return Parse.package(ref, index, s, i);
     }

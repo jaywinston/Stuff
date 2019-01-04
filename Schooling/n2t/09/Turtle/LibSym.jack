@@ -145,7 +145,7 @@ class LibSym {
         }
 
 
-        if (~(sym.tag() = null)) {
+        if (sym.tag() = null) {
 
             let type = sym.meta() & (LIST | STR);
 
@@ -186,16 +186,16 @@ class LibSym {
             return;
         }
 
-if(sym.tag()=null){
-        let type = sym.meta() & (LIST | STR);
+        if (sym.tag() = null) {
+            let type = sym.meta() & (LIST | STR);
 
-        if (type = LIST) {
-            do LibSym.destroyList(sym.data());
-        } else { if (type = STR) {
-            let s = sym.data();
-            do s.dispose();
-        }}
-}
+            if (type = LIST) {
+                do LibSym.destroyList(sym.data());
+            } else { if (type = STR) {
+                let s = sym.data();
+                do s.dispose();
+            }}
+        }
 
         do sym.dispose();
 
@@ -229,10 +229,13 @@ if(sym.tag()=null){
 
     function void destroyHashTable(HashTable ht) {
         var int i;
+        var Collection b;
 
         let i = 0;
         while (i < ht.hashSize()) {
-            do LibSym.destroyList(ht.bucket(i));
+            let b = ht.bucket(i);
+            do LibSym.untagList(b);
+            do LibSym.destroyList(b);
             let i = i + 1;
         }
 
@@ -272,7 +275,6 @@ if(sym.tag()=null){
 
     function void tagList(Collection l) {
         var int i;
-        var Collection l;
         var Symbol p;
 
         let i = 0;
@@ -280,6 +282,26 @@ if(sym.tag()=null){
             let p = l.nth(i);
             if (p.tag() = null) {
                 do p.setTag("");
+            }
+            if (p.meta() = LIST) {
+                do LibSym.tagList(p.data());
+            }
+            let i = i + 1;
+        }
+
+        return;
+    }
+
+
+    function void untagList(Collection l) {
+        var int i;
+        var Symbol p;
+
+        let i = 0;
+        while (i < l.length()) {
+            let p = l.nth(i);
+            if (p.tag() = null) {
+                do p.setTag(null);
             }
             if (p.meta() = LIST) {
                 do LibSym.tagList(p.data());
