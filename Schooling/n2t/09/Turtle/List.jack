@@ -53,28 +53,35 @@ class List {
     function void apply(Collection argv) {
         var int i;
         var Collection list;
-        var Symbol arg, func;
+        var Symbol arg, funcp, listp;
 
-        let arg = Eval.arg(argv.pop());
+        let listp = Eval.arg(argv.pop());
 
-        if (arg = null) { // todo: error
+        if (listp = null) {
+            do LibIO.error("expected list");
             return;
         }
 
-        if (~(arg.meta() = LIST)) { // todo: error
+        if (~(listp.meta() = LIST)) {
+            do LibIO.error("expected list");
+            do LibSym.destroySym(listp);
             return;
         }
 
-        let list = arg.data();
-        do arg.dispose();
+        let list = listp.data();
 
-        let func = Eval.arg(argv.pop());
+        let funcp = Eval.arg(argv.pop());
 
-        if (func = null) { // todo: error
+        if (funcp = null) {
+            do LibIO.error("expected function name");
+            do LibSym.destroySym(listp);
             return;
         }
 
-        if (~(func.meta() = FUNC)) { // todo: error
+        if (~(funcp.meta() = FUNC)) {
+            do LibIO.error("expected function name");
+            do LibSym.destroySym(listp);
+            do LibSym.destroySym(funcp);
             return;
         }
 
@@ -83,9 +90,9 @@ class List {
         let i = 0;
         while (i < list.length()) {
             do argv.push(list.nth(i));
-            let arg = Exec.call(func, argv);
+            let arg = Exec.call(funcp, argv);
             do list.setnth(i, arg);
-            do argv.pop();
+            do LibSym.destroySym(argv.pop());
             let i = i + 1;
         }
 
@@ -125,6 +132,11 @@ class List {
 
         let lp = Eval.arg(argv.pop());
 
+        if (lp = null) {
+            do LibIO.error("expected list");
+            return null;
+        }
+
         if (~(lp.meta() = LIST)) {
             do LibIO.error("expected list");
             do LibSym.destroySym(lp);
@@ -143,6 +155,7 @@ class List {
 
         if (~(p.meta() = INT)) {
             do LibIO.error("expected integer");
+            do LibSym.destroySym(lp);
             do LibSym.destroySym(p);
             return null;
         }
@@ -154,6 +167,7 @@ class List {
 
         if (~(p.meta() = INT)) {
             do LibIO.error("expected integer");
+            do LibSym.destroySym(lp);
             do LibSym.destroySym(p);
             return null;
         }

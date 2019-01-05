@@ -20,7 +20,7 @@ static boolean mv;  // ##DB##
         var int indent;
         var String banner;
 
-        let banner = "Logo on Hack 0.01";
+        let banner = "Turtle 0.01";
         let indent = 29 - (banner.length()/2);  /* magic number! */
         do Output.moveCursor(0, indent);
         do Output.printString(banner);
@@ -114,53 +114,6 @@ if(mv){let mv=DB.dbi(DB.mc());}  // ##DB##
     }
 
 
-/*
-    function Symbol try(Collection argv) {
-        var String s;
-        var Symbol ret;
-
-        if (LibIO.err()) {
-            let ret = Exec.cmdlin(argv);
-            do LibIO.fixCanvas();
-            if (LibIO.err()) {
-                do Main.enqueue(ret);
-            } else {
-                do LibSym.clearList(argv);
-            }
-            //do LibSym.destroySym(ret);
-        }
-
-        /* Error messages are already queued. * /
-        do LibIO.clearerr();
-
-        while (LibIO.isqueued()) {
-            let s = LibIO.get();
-            do LibIO.echo(s);
-            do s.dispose();
-        }
-
-        return ret;
-    }
-
-
-    function void enqueue(Symbol sym) {
-        var String s;
-
-        if (sym = null) {
-            return;
-        }
-
-        let s = LibSym.format(sym);
-
-        if (~(s = null)) {
-            do LibIO.put(s);
-        }
-
-        return;
-    }
-*/
-
-
     function void stop() {
         let running = false;
         return;
@@ -168,4 +121,5 @@ if(mv){let mv=DB.dbi(DB.mc());}  // ##DB##
 
 
     function void mc(){let mv=true;return;}
+
 }
