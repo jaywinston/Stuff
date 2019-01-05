@@ -100,6 +100,12 @@ class LibIO {
     }
 
 
+    function void termprint(String s) {
+        do term.print(s);
+        return;
+    }
+
+
     function void echo(String s) {
         do term.echo(s);
         return;

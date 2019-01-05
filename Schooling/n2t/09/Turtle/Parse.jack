@@ -444,7 +444,7 @@ class Parse {
         if (Parse.cclass(s, i) = INDEX) {
             let off = Symbol.new(null, INDEX, Symbol.new(null, INDEX, index));
             let i = Parse.index(s, off, i);
-            let s = off.tag();
+            let s = Parse.tag(off);
             let index = off.data();
             do off.dispose();
         }

@@ -140,12 +140,12 @@ class Bin {
 
 
     function Symbol posx() {
-        return Symbol.new(null, INT, t.x() - ((left+right)/2));
+        return Symbol.new(null, INT, t.x()-left);
     }
 
 
     function Symbol posy() {
-        return Symbol.new(null, INT, -(t.y() - ((top+bottom)/2)));
+        return Symbol.new(null, INT, -(t.y()-bottom));
     }
 
 

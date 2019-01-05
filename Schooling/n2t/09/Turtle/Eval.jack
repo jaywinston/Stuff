@@ -508,6 +508,7 @@ class Eval {
 
         let deref = list.nth(i);
 
+        do arg.setTag(deref.tag());
         do arg.setMeta(deref.meta());
         do arg.setData(deref.data());
 
@@ -541,7 +542,7 @@ class Eval {
 
         do LibSym.destroySym(cp);
 
-        return c;
+        return ~(c = 0);
     }
 
 

@@ -4,7 +4,7 @@ class Exec {
 
     static int BIN, BLOCK, CMD, CMDLIN, EXE, FUNC, INT, LIST, SITE, STR, NAME,
         INDEX, LSP;
-    static int ASSIGN, FUNCTION, IF, LENGTH, OVER, REPEAT, QUIT;
+    static int ASSIGN, FUNCTION, HELP, IF, LENGTH, OVER, REPEAT, QUIT;
     static String IFS, ELSES;
 
 
@@ -28,10 +28,10 @@ class Exec {
         let STR = LibSym.STR();
 
         let ASSIGN   = 0;
-        let IF       = 1;
-        let LENGTH   = 2;
-        let FUNCTION = 3;
-        let OVER     = 4;
+        let FUNCTION = 1;
+        let HELP     = 2;
+        let IF       = 3;
+        let LENGTH   = 4;
         let REPEAT   = 5;
         let QUIT     = 6;
 
@@ -39,6 +39,7 @@ do Eval.install("MC",CMD,128);  // ##DB##
 
         do Eval.install("ASSIGN", CMD, ASSIGN);
         do Eval.install("FUNCTION", CMD, FUNCTION);
+        do Eval.install("HELP", CMD, HELP);
         do Eval.install("IF", CMD, IF);
         do Eval.install("LENGTH", CMD, LENGTH);
         do Eval.install("REPEAT", CMD, REPEAT);
@@ -72,6 +73,7 @@ do Eval.install("MC",CMD,128);  // ##DB##
         }
 
         do Exec.cmdlin(argv);
+        do LibIO.fixCanvas();
 
         return;
     }
@@ -151,10 +153,11 @@ if (cmd=128) {return Main.mc();}  // ##DB##
 
         if (cmd = ASSIGN)   { return Exec.doAssign(argv);   }
         if (cmd = FUNCTION) { return Exec.doFunction(argv); }
+        if (cmd = HELP)     { return Exec.doHelp();         }
         if (cmd = IF)       { return Exec.doIf(argv);       }
         if (cmd = LENGTH)   { return Exec.doLength(argv);   }
         if (cmd = REPEAT)   { return Exec.doRepeat(argv);   }
-        if (cmd = QUIT)     { return Exec.doQuit(argv);     }
+        if (cmd = QUIT)     { return Exec.doQuit();         }
 
         return null;
     }
@@ -269,9 +272,8 @@ if (cmd=128) {return Main.mc();}  // ##DB##
             return;
         }
 
-        let deref = list.nth(i);
-
         let val = Eval.arg(argv.pop());
+        do LibSym.tagSym(val);
 
         if (val = null) {
             do LibIO.error("expected expression");
@@ -279,10 +281,8 @@ if (cmd=128) {return Main.mc();}  // ##DB##
             return;
         }
 
-        do deref.setMeta(val.meta());
-        do deref.setData(val.data());
-        do val.dispose();
-
+        do LibSym.eradicateSym(list.nth(i));
+        do list.setnth(i, val);
         do LibSym.destroySym(listp);
 
         return;
@@ -315,32 +315,74 @@ if (cmd=128) {return Main.mc();}  // ##DB##
     }
 
 
-    function Symbol doLength(Collection argv) {
-        var int n;
+    function void doHelp() {
         var String s;
-        var Collection l;
-        var Symbol p;
 
-        let p = Eval.arg(argv.pop());
+        let s = "APPEND <list> <expression>";
+        do LibIO.echo(s);
+        do s.dispose();
+        let s = "APPLY <list> <function>";
+        do LibIO.echo(s);
+        do s.dispose();
+        let s = "CLEARLIST <list>";
+        do LibIO.echo(s);
+        do s.dispose();
+        let s = "COPY <list>";
+        do LibIO.echo(s);
+        do s.dispose();
+        let s = "EXTEND <list>";
+        do LibIO.echo(s);
+        do s.dispose();
+        let s = "LENGTH <list|string>";
+        do LibIO.echo(s);
+        do s.dispose();
+        let s = "CLEAR";
+        do LibIO.echo(s);
+        do s.dispose();
+        let s = "DIR";
+        do LibIO.echo(s);
+        do s.dispose();
+        let s = "FORWARD <integer expession>";
+        do LibIO.echo(s);
+        do s.dispose();
+        let s = "PENDOWN";
+        do LibIO.echo(s);
+        do s.dispose();
+        let s = "PENUP";
+        do LibIO.echo(s);
+        do s.dispose();
+        let s = "POSX";
+        do LibIO.echo(s);
+        do s.dispose();
+        let s = "POSY";
+        do LibIO.echo(s);
+        do s.dispose();
+        let s = "TURNLEFT <integer expession>";
+        do LibIO.echo(s);
+        do s.dispose();
+        let s = "TURNRIGHT <integer expession>";
+        do LibIO.echo(s);
+        do s.dispose();
+        let s = "FUNCTION <name> <cmdlin>";
+        do LibIO.echo(s);
+        do s.dispose();
+        let s = "HELP";
+        do LibIO.echo(s);
+        do s.dispose();
+        let s = "IF <condition> <cmdlin>";
+        do LibIO.echo(s);
+        do s.dispose();
+        let s = "PRINT <string>";
+        do LibIO.echo(s);
+        do s.dispose();
+        let s = "REPEAT [IF] <expression|list name> <cmdlin>";
+        do LibIO.echo(s);
+        do s.dispose();
+        let s = "QUIT";
+        do LibIO.echo(s);
+        do s.dispose();
 
-        if (p = null) {
-            do LibIO.error("expected iterable");
-            return null;
-        }
-
-        if (p.meta() = STR) {
-            let s = p.data();
-            let n = s.length();
-        } else { if (p.meta() = LIST) {
-            let l = p.data();
-            let n = l.length();
-        } else {
-            do LibIO.error("expected iterable");
-        }}
-
-        do LibSym.destroySym(p);
-
-        return Symbol.new(null, INT, n);
+        return;
     }
 
 
@@ -412,6 +454,35 @@ if (cmd=128) {return Main.mc();}  // ##DB##
     }
 
 
+    function Symbol doLength(Collection argv) {
+        var int n;
+        var String s;
+        var Collection l;
+        var Symbol p;
+
+        let p = Eval.arg(argv.pop());
+
+        if (p = null) {
+            do LibIO.error("expected iterable");
+            return null;
+        }
+
+        if (p.meta() = STR) {
+            let s = p.data();
+            let n = s.length();
+        } else { if (p.meta() = LIST) {
+            let l = p.data();
+            let n = l.length();
+        } else {
+            do LibIO.error("expected iterable");
+        }}
+
+        do LibSym.destroySym(p);
+
+        return Symbol.new(null, INT, n);
+    }
+
+
     function void doRepeat(Collection argv) {
         var int i;
         var Symbol arg;
@@ -464,7 +535,7 @@ if (cmd=128) {return Main.mc();}  // ##DB##
 
         let arg = argv.pop();
 
-        while (~(Eval.condition(arg) = 0)) {
+        while (Eval.condition(arg)) {
             do Exec.cmdlin(LibSym.copyList(argv));
         }
 
@@ -510,8 +581,8 @@ if (cmd=128) {return Main.mc();}  // ##DB##
     }
 
 
-    function void doQuit(Symbol arg) {
-        do Main.stop();  /* syscall! */
+    function void doQuit() {
+        do Main.stop();  /* "syscall!" */
         return;
     }
 

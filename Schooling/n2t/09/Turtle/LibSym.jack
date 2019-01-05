@@ -219,6 +219,45 @@ class LibSym {
     }
 
 
+    function void eradicateSym(Symbol sym) {
+        var int type;
+        var String s;
+
+        if (sym = null) {
+            return;
+        }
+
+        let type = sym.meta() & (LIST | STR);
+
+        if (type = LIST) {
+            do LibSym.destroyList(sym.data());
+        } else { if (type = STR) {
+            let s = sym.data();
+            do s.dispose();
+        }}
+
+        do sym.dispose();
+
+        return;
+    }
+
+
+    function void eradicateList(Collection list) {
+
+        if (list = null) {
+            return;
+        }
+
+        while (list.length() > 0) {
+            do LibSym.eradicateSym(list.pop());
+        }
+
+        do list.dispose();
+
+        return;
+    }
+
+
     function void clearList(Collection l) {
         while (l.length() > 0) {
             do LibSym.destroySym(l.pop());
@@ -234,8 +273,7 @@ class LibSym {
         let i = 0;
         while (i < ht.hashSize()) {
             let b = ht.bucket(i);
-            do LibSym.untagList(b);
-            do LibSym.destroyList(b);
+            do LibSym.eradicateList(b);
             let i = i + 1;
         }
 
@@ -273,6 +311,24 @@ class LibSym {
     }
 
 
+    function void tagSym(Symbol p) {
+
+        if (p = null) {
+            return;
+        }
+
+        if (p.tag() = null) {
+            do p.setTag("");
+        }
+
+        if ( (p.meta()&LIST) = LIST ) {
+            do LibSym.tagList(p.data());
+        }
+
+        return;
+    }
+
+
     function void tagList(Collection l) {
         var int i;
         var Symbol p;
@@ -282,26 +338,6 @@ class LibSym {
             let p = l.nth(i);
             if (p.tag() = null) {
                 do p.setTag("");
-            }
-            if (p.meta() = LIST) {
-                do LibSym.tagList(p.data());
-            }
-            let i = i + 1;
-        }
-
-        return;
-    }
-
-
-    function void untagList(Collection l) {
-        var int i;
-        var Symbol p;
-
-        let i = 0;
-        while (i < l.length()) {
-            let p = l.nth(i);
-            if (p.tag() = null) {
-                do p.setTag(null);
             }
             if (p.meta() = LIST) {
                 do LibSym.tagList(p.data());
