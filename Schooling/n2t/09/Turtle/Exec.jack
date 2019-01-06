@@ -118,6 +118,10 @@ do Eval.install("MC",CMD,128);  // ##DB##
 
         let arg = Eval.arg(argv.pop());
 
+        if (arg = null) {
+            return null;
+        }
+
         if ( (arg.meta()&EXE) = EXE ) {
             return Exec.executable(arg, argv);
         }
@@ -169,7 +173,7 @@ if (cmd=128) {return Main.mc();}  // ##DB##
 
         do Eval.pushContext(func, argv);
         let cpy = LibSym.copyList(func.data());
-        let ret = Exec.cmdlin(cpy);
+        let ret = Exec.arglist(cpy);
         do Eval.dropContext();
         do func.dispose();
         do cpy.dispose();

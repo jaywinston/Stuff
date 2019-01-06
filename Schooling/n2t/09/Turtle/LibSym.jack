@@ -230,7 +230,7 @@ class LibSym {
         let type = sym.meta() & (LIST | STR);
 
         if (type = LIST) {
-            do LibSym.destroyList(sym.data());
+            do LibSym.eradicateList(sym.data());
         } else { if (type = STR) {
             let s = sym.data();
             do s.dispose();
@@ -342,6 +342,38 @@ class LibSym {
             if (p.meta() = LIST) {
                 do LibSym.tagList(p.data());
             }
+            let i = i + 1;
+        }
+
+        return;
+    }
+
+
+    function void untagSym(Symbol p) {
+        var String s;
+
+        let s = p.tag();
+
+        if (~(s = null)) {
+            do s.dispose();
+        }
+
+        if (p.meta() = LIST) {
+            do LibSym.untagList(p.data());
+        }
+
+        return;
+    }
+
+
+    function void untagList(Collection l) {
+        var int i;
+        var Symbol p;
+
+        let i = 0;
+        while (i < l.length()) {
+            let p = l.nth(i);
+            do LibSym.untagSym(p);
             let i = i + 1;
         }
 

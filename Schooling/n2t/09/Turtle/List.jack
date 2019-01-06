@@ -53,7 +53,7 @@ class List {
     function void apply(Collection argv) {
         var int i;
         var Collection list;
-        var Symbol arg, funcp, listp;
+        var Symbol funcp, listp, ret;
 
         let listp = Eval.arg(argv.pop());
 
@@ -90,9 +90,9 @@ class List {
         let i = 0;
         while (i < list.length()) {
             do argv.push(list.nth(i));
-            let arg = Exec.call(funcp, argv);
-            do list.setnth(i, arg);
-            do LibSym.destroySym(argv.pop());
+            let ret = Exec.call(LibSym.copySym(funcp), argv);
+            do list.setnth(i, ret);
+            do LibSym.eradicateSym(argv.pop());
             let i = i + 1;
         }
 
