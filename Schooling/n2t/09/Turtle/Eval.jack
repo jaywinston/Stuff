@@ -447,6 +447,7 @@ class Eval {
         if (p = null) {
             do arg.setMeta(null);
         } else {
+            do arg.setTag(Str.dup(p.tag()));
             do arg.setMeta(p.meta());
             do arg.setData(p.data());
         }
@@ -508,7 +509,7 @@ class Eval {
 
         let deref = list.nth(i);
 
-        do arg.setTag(deref.tag());
+        do arg.setTag(Str.dup(deref.tag()));
         do arg.setMeta(deref.meta());
         do arg.setData(deref.data());
 

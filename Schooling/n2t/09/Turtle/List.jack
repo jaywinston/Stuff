@@ -96,6 +96,10 @@ class List {
             let i = i + 1;
         }
 
+        do LibSym.destroySym(listp);
+        do LibSym.destroySym(funcp);
+        do argv.dispose();
+
         return;
     }
 

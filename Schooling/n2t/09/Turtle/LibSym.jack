@@ -268,12 +268,10 @@ class LibSym {
 
     function void destroyHashTable(HashTable ht) {
         var int i;
-        var Collection b;
 
         let i = 0;
         while (i < ht.hashSize()) {
-            let b = ht.bucket(i);
-            do LibSym.eradicateList(b);
+            do LibSym.eradicateList(ht.bucket(i));
             let i = i + 1;
         }
 

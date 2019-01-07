@@ -404,7 +404,7 @@ if (cmd=128) {return Main.mc();}  // ##DB##
             do LibSym.clearList(argv);
         } else {
             do Exec.cmdlin(argv);
-            do LibSym.clearList(elsev);
+            do LibSym.destroyList(elsev);
         }
 
         do LibSym.destroySym(arg);
@@ -550,10 +550,13 @@ if (cmd=128) {return Main.mc();}  // ##DB##
     }
 
 
-    function void doRepeatList(Collection list, Collection argv) {
+    function void doRepeatList(Symbol listp, Collection argv) {
         var int i;
         var String name;
+        var Collection l;
         var Symbol arg;
+
+        let l = listp.data();
 
         let arg = argv.pop();
 
@@ -564,6 +567,7 @@ if (cmd=128) {return Main.mc();}  // ##DB##
 
         if (~(arg.meta() = NAME)) {
             do LibIO.error("expected name");
+            do LibSym.destroySym(listp);
             do LibSym.destroySym(arg);
             return;
         }
@@ -572,13 +576,14 @@ if (cmd=128) {return Main.mc();}  // ##DB##
         do arg.dispose();
 
         let i = 0;
-        while (i < list.length()) {
-            let arg = list.nth(i);
+        while (i < l.length()) {
+            let arg = l.nth(i);
             do Eval.install(name, arg.meta(), arg.data());
             do Exec.cmdlin(LibSym.copyList(argv));
             let i = i + 1;
         }
 
+        do LibSym.destroySym(listp);
         do LibSym.clearList(argv);
 
         return;
