@@ -7,7 +7,7 @@
 // used to announce an integer expression tree and afterwards, are masked
 // and used for arithmetic operator precedence.
 // 
-// The bitmap is:
+// The bitmap is: todo: check this
 //   32768 16384 8192 4096 2048 1024 512 256 128  64  32  16   8   4   2   1
 //       |     |    |    |    |    |   |   |   |   |   |   |   |   |   |   |
 //  unused     |    |    |    |    |   |   |   |   |   |   |   |   |   |   |
@@ -15,20 +15,17 @@
 //       symbol token    |    |    |   |   |   |   |   |   |   |   |   |   |
 //           integer token    |    |   |   |   |   |   |   |   |   |   |   |
 //               string literal    |   |   |   |   |   |   |   |   |   |   |
-//                     string format   |   |   |   |   |   |   |   |   |   |  
+//                 format expression   |   |   |   |   |   |   |   |   |   |  
 //                                 block   |   |   |   |   |   |   |   |   |
 //                                    unused   |   |   |   |   |   |   |   |
 //                                   white space   |   |   |   |   |   |   |
 //                                             index   |   |   |   |   |   |
 //                                                   end   |   |   |   |   |
 //                                                      list   |   |   |   |
-//                                 integer expression / operator   |   |   |
+//                              arithmetic expression / operator   |   |   |
 //                                                                 |   |   |
 //                                                                 site use
 //
-// String expressions are calls to the format function.
-// Integer expressions are compound expressions i.e. including one or
-// more operators.
 
 class LibSym {
 
@@ -281,8 +278,8 @@ class LibSym {
     }
 
 
-    function void install(HashTable ht, String name, int type, int value) {
-        var String s;
+    function void install(HashTable ht, int refcount,
+                          String name, int type, int value) {
         var Symbol p;
 
         let p = ht.lookup(name);
@@ -290,13 +287,10 @@ class LibSym {
         if (p = null) {
             let p = ht.install(name, type, value);
         } else {
+            if (refcount < 2) {
+                do LibSym.gc(p);
+            }
             do name.dispose();
-            if ( (p.meta()&LIST) = LIST ) {
-                do LibSym.destroyList(p.data());
-            } else { if ( (p.meta()&STR) = STR ) {
-                let s = p.data();
-                do s.dispose();
-            }}
             do p.setMeta(type);
             do p.setData(value);
         }
@@ -304,6 +298,20 @@ class LibSym {
         if (type = LIST) {
             do LibSym.tagList(p.data());
         }
+
+        return;
+    }
+
+
+    function void gc(Symbol p) {
+        var String s;
+
+        if ( (p.meta()&LIST) = LIST ) {
+            do LibSym.eradicateList(p.data());
+        } else { if ( (p.meta()&STR) = STR ) {
+            let s = p.data();
+            do s.dispose();
+        }}
 
         return;
     }
@@ -340,38 +348,6 @@ class LibSym {
             if (p.meta() = LIST) {
                 do LibSym.tagList(p.data());
             }
-            let i = i + 1;
-        }
-
-        return;
-    }
-
-
-    function void untagSym(Symbol p) {
-        var String s;
-
-        let s = p.tag();
-
-        if (~(s = null)) {
-            do s.dispose();
-        }
-
-        if (p.meta() = LIST) {
-            do LibSym.untagList(p.data());
-        }
-
-        return;
-    }
-
-
-    function void untagList(Collection l) {
-        var int i;
-        var Symbol p;
-
-        let i = 0;
-        while (i < l.length()) {
-            let p = l.nth(i);
-            do LibSym.untagSym(p);
             let i = i + 1;
         }
 

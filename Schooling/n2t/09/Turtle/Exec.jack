@@ -319,7 +319,7 @@ if (cmd=128) {return Main.mc();}  // ##DB##
     }
 
 
-    function void doHelp() {
+    function void doHelp() {  // todo: this better
         var String s;
 
         let s = "APPEND <list> <expression>";
@@ -494,7 +494,7 @@ if (cmd=128) {return Main.mc();}  // ##DB##
         let arg = Eval.arg(argv.pop());
 
         if (arg = null) {
-            do LibIO.error("expected integer");
+            do LibIO.error("expected expression");
             return;
         }
 
@@ -543,8 +543,8 @@ if (cmd=128) {return Main.mc();}  // ##DB##
             do Exec.cmdlin(LibSym.copyList(argv));
         }
 
-        do LibSym.clearList(argv);
         do LibSym.destroySym(arg);
+        do LibSym.clearList(argv);
 
         return;
     }
@@ -562,6 +562,7 @@ if (cmd=128) {return Main.mc();}  // ##DB##
 
         if (arg = null) {
             do LibIO.error("expected name");
+            do LibSym.destroySym(listp);
             return;
         }
 
@@ -578,20 +579,21 @@ if (cmd=128) {return Main.mc();}  // ##DB##
         let i = 0;
         while (i < l.length()) {
             let arg = l.nth(i);
-            do Eval.install(name, arg.meta(), arg.data());
+            do Eval.install(Str.dup(name), arg.meta(), arg.data());
             do Exec.cmdlin(LibSym.copyList(argv));
             let i = i + 1;
         }
 
         do LibSym.destroySym(listp);
         do LibSym.clearList(argv);
+        do name.dispose();
 
         return;
     }
 
 
     function void doQuit() {
-        do Main.stop();  /* "syscall!" */
+        do Main.stop();  /* "syscall"! */
         return;
     }
 
