@@ -32,6 +32,7 @@ class LibSym {
     static int BIN, BLOCK, CMD, CMDLIN, FUNC, INDEX, INT, ARTEX, LIST, OP,
         STR, FMTEX, NAME, UOP, LSP;
     static int HACK_CHARSET_SIZE, EOS_MAP, NOLGL_MAP, SITE;
+    static HashTable rctab;
 
 
     function void init() {
@@ -66,6 +67,8 @@ class LibSym {
 
         let OP = ARTEX & ~LIST;
         let UOP = OP | SITE;
+
+        let rctab = HashTable.new(15);
 
         return;
     }
@@ -278,19 +281,31 @@ class LibSym {
     }
 
 
-    function void install(HashTable ht, int refcount,
-                          String name, int type, int value) {
-        var Symbol p;
+    function void install(HashTable ht, String name, int type, int value) {
+        var boolean mm;
+        var String ref;
+        var Symbol p, rcp;
+
+        let mm = ~( (type & (STR|LIST)) = 0 );
 
         let p = ht.lookup(name);
 
+        if (mm) {
+            let rcp = LibSym.refcount(value);
+        }
+
         if (p = null) {
             let p = ht.install(name, type, value);
-        } else {
-            if (refcount < 2) {
-                do LibSym.gc(p);
+            if (mm) {
+                do rcp.setData(rcp.data() + 1);
             }
+        } else {
             do name.dispose();
+            if (mm) {
+                if (rcp.data() < 2) {
+                    do LibSym.gc(p);
+                }
+            }
             do p.setMeta(type);
             do p.setData(value);
         }
@@ -302,6 +317,22 @@ class LibSym {
         return;
     }
 
+
+    function Symbol refcount(Symbol p) {
+        var String r;
+        var Symbol rp;
+
+        let r = String.new(6);
+        do r.setInt(p);
+        let rp = rctab.lookup(r);
+        if (rp = null) {
+            do rctab.install(r, null, 0);
+            let rp = rctab.lookup(r);
+        }
+        do r.dispose();
+
+        return rp;
+    }
 
     function void gc(Symbol p) {
         var String s;

@@ -571,26 +571,8 @@ class Eval {
 
 
     function void install(String name, int type, int value) {
-        do LibSym.install(symtab.nth(0), Eval.refcount(name),
-                          name, type, value);
+        do LibSym.install(symtab.nth(0), name, type, value);
         return;
-    }
-
-
-    function int refcount(String name) {
-        var String ref;
-        var HashTable rc;
-        var Symbol p;
-
-        let 
-        let rc = refcount.nth(0);
-        let p = rc.lookup(name);
-        if (p = null) {
-            return 0;
-        }
-        do p.setData(p.data()+1);
-
-        return p.data() - 1;
     }
 
 }
