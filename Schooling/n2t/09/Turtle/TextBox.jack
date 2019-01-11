@@ -21,7 +21,7 @@ class TextBox {
 
 
     method void dispose() {
-        do Memory.dealloc(this);
+        do Memory.deAlloc(this);
         return;
     }
 

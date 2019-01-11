@@ -10,8 +10,14 @@ static boolean mv;  // ##DB##
     function void main() {
         do Main.printBanner();
         do Main.init();
-        do Main.run();
+        //do Main.run();
         do Main.killall();
+
+do Screen.clearScreen();
+do DB.mv();
+do DB.pause();
+do Output.moveCursor(0,0);
+do Output.printInt(DB.mc());
         return;
     }
 
@@ -76,11 +82,16 @@ let mv=false;  // ##DB##
     }
 
 
-    function void killall() {  // todo: this
+    function void killall() {
 
+        do Bin.kill();
         do Eval.kill();
+        do Exec.kill();
+        do LibIO.kill();
+        do LibSym.kill();
         do Parse.kill();
         do Lex.kill();
+        do Vector.kill();
 
         do FARGV.dispose();
         do FSSTR.dispose();

@@ -33,7 +33,7 @@ class LibIO {
         do argv.dispose();
         do cerrfs.dispose();
         do serrfs.dispose();
-        do que.dispose();
+        do LibSym.eradicateList(que);
         do canvas.dispose();
         do term.dispose();
         return;

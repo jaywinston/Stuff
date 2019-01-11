@@ -58,6 +58,12 @@ class Bin {
     }
 
 
+    function void kill() {
+        do t.dispose();
+        return;
+    }
+
+
     function Symbol exec(int cmd, Collection argv) {
 
         if (cmd = DIR)       { return Bin.dir();                 }

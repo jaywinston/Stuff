@@ -74,6 +74,12 @@ class LibSym {
     }
 
 
+    function void kill() {
+        do LibSym.destroyHashTable(rctab);
+        return;
+    }
+
+
     function Array ctab() {
         var int i;
         var Array ctab;
