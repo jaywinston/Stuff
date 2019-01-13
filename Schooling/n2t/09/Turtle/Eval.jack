@@ -8,7 +8,7 @@ class Eval {
     static Array FSPECTAB, TYPETAB;
     static Array FERRARGV;
     static String FERRFS;
-    static Collection context, refcount, symtab;
+    static Collection context, symtab;
 
 
     function void init() {
@@ -34,8 +34,6 @@ class Eval {
         let FERRARGV = Array.new(1);
 
         let context = Collection.new();
-        let refcount = Collection.new();
-        do refcount.push(HashTable.new(15));
         let symtab = Collection.new();
         do symtab.push(HashTable.new(15));
 
@@ -51,7 +49,7 @@ class Eval {
         do FERRARGV.dispose();
 
         while (context.length() > 0) {
-            do LibSym.destroyList(context.pop());
+            do LibSym.eradicateList(context.pop());
         }
         do context.dispose();
 
@@ -553,7 +551,6 @@ class Eval {
         do argv.push(Symbol.new(null, STR, arg0.tag()));
         do arg0.setTag(null);
         do context.push(argv);
-        do refcount.push(HashTable.new(3));
         do symtab.push(HashTable.new(3));
         return;
     }
@@ -563,7 +560,6 @@ class Eval {
         var Collection argv;
 
         do LibSym.clearList(context.pop());
-        do LibSym.destroyHashTable(refcount.pop());
         do LibSym.destroyHashTable(symtab.pop());
 
         return;

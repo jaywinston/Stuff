@@ -50,7 +50,7 @@ class Parse {
     function void kill() {
         do PS1.dispose();
         do PS2.dispose();
-        do LibSym.destroySym(ARGV);
+        do LibSym.eradicateSym(ARGV);
         return;
     }
 

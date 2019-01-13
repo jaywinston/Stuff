@@ -2,6 +2,7 @@ class ScreenArea {
 
     field int aLen, height, width;
     field Array words;
+
     static Array origin;
 
     /** w and h are in pixels. */

@@ -24,6 +24,7 @@ class Lex {
 
     function void kill() {
         do CTAB.dispose();
+        do ESCTAB.dispose();
         return;
     }
 
