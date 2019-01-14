@@ -173,6 +173,10 @@ class LibSym {
         var int i;
         var Collection new;
 
+        if (list = null) {
+            return null;
+        }
+
         let new = Collection.new();
         let i = 0;
         while (i < list.length()) {
@@ -430,6 +434,7 @@ class LibSym {
 
 
     function String formatFunc(String s) {
+/*
         var String t;
 
         let t = String.new(s.length()+2);
@@ -438,6 +443,8 @@ class LibSym {
         do t.appendChar(125);
 
         return t;
+*/
+        return "{function}";
     }
 
 

@@ -95,6 +95,10 @@ do Eval.install("MC",CMD,128);  // ##DB##
     function Symbol arglist(Collection argv) {
         var Symbol ret;
 
+        if (argv = null) {
+            return null;
+        }
+
         let ret = Exec.arg(argv);
         while (argv.length() > 0) {
             if (LibIO.err()) {
@@ -171,8 +175,12 @@ if (cmd=128) {return Main.mc();}  // ##DB##
         var Collection cpy;
         var Symbol ret;
 
-        do Eval.pushContext(func, argv);
+
         let cpy = LibSym.copyList(func.data());
+        if (cpy = null) {
+            return null;
+        }
+        do Eval.pushContext(func, argv);
         let ret = Exec.arglist(cpy);
         do Eval.dropContext();
         do func.dispose();
@@ -293,29 +301,29 @@ if (cmd=128) {return Main.mc();}  // ##DB##
     }
 
 
-    function void doFunction(Collection argv) {
+    function Symbol doFunction(Collection argv) {
         var String name;
         var Symbol arg;
 
         let arg = argv.pop();
 
         if (arg = null) {
-            do LibIO.error("expected name");
-            return;
+            return Symbol.new(null, FUNC, null);  // nop
         }
 
-        if (~(arg.meta() = NAME)) {
-            do LibIO.error("expected name");
-            do LibSym.destroySym(arg);
-            return;
+        if (arg.meta() = NAME) {
+            let name = arg.data();
+            do arg.dispose();
+            do Eval.install(name, FUNC, LibSym.copyList(argv));
+            do LibSym.clearList(argv);
+            return null;
         }
 
-        let name = arg.data();
-        do arg.dispose();
-        do Eval.install(name, FUNC, LibSym.copyList(argv));
+        do argv.push(arg);
+        let arg = Symbol.new("", FUNC, LibSym.copyList(argv));
         do LibSym.clearList(argv);
 
-        return;
+        return arg;
     }
 
 

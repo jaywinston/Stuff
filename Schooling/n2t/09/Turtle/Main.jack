@@ -8,7 +8,7 @@ static boolean mv;  // ##DB##
     function void main() {
         do Main.printBanner();
         do Main.init();
-        //do Main.run();
+        do Main.run();
         do Main.killall();
 
 do Screen.clearScreen();

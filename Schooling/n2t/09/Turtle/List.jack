@@ -79,7 +79,7 @@ class List {
         }
 
         if (~(funcp.meta() = FUNC)) {
-            do LibIO.error("expected function name");
+            do LibIO.error("expected function");
             do LibSym.destroySym(listp);
             do LibSym.destroySym(funcp);
             return;
