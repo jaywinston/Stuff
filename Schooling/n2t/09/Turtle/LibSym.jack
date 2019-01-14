@@ -292,32 +292,28 @@ class LibSym {
 
 
     function void install(HashTable ht, String name, int type, int value) {
-        var boolean mm;
         var String ref;
         var Symbol p, rcp;
 
-        let mm = ~( (type & (STR|LIST)) = 0 );
-
         let p = ht.lookup(name);
-
-        if (mm) {
-            let rcp = LibSym.refcount(value);
-        }
 
         if (p = null) {
             let p = ht.install(name, type, value);
-            if (mm) {
-                do rcp.setData(rcp.data() + 1);
-            }
         } else {
             do name.dispose();
-            if (mm) {
+            if (~( (p.meta() & (STR|LIST)) = 0 )) {
+                let rcp = LibSym.refcount(p.data());
                 if (rcp.data() < 2) {
                     do LibSym.gc(p);
                 }
             }
             do p.setMeta(type);
             do p.setData(value);
+        }
+
+        if (~( (type & (STR|LIST)) = 0 )) {
+            let rcp = LibSym.refcount(value);
+            do rcp.setData(rcp.data() + 1);
         }
 
         if (type = LIST) {
@@ -336,13 +332,14 @@ class LibSym {
         do r.setInt(p);
         let rp = rctab.lookup(r);
         if (rp = null) {
-            do rctab.install(r, null, 0);
-            let rp = rctab.lookup(r);
+            let rp = rctab.install(r, null, 0);
+        } else {
+            do r.dispose();
         }
-        do r.dispose();
 
         return rp;
     }
+
 
     function void gc(Symbol p) {
         var String s;
