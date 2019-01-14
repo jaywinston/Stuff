@@ -42,11 +42,21 @@ class Eval {
 
 
     function void kill() {
+        var int i;
+        var String s;
 
         do FSPECTAB.dispose();
-        do TYPETAB.dispose();
         do FERRFS.dispose();
         do FERRARGV.dispose();
+
+        let i = 0;
+        while (~(TYPETAB[i] = null)) {
+            let s = TYPETAB[i+1];
+            do s.dispose();
+            let i = i + 2;
+        }
+
+        do TYPETAB.dispose();
 
         while (context.length() > 0) {
             do LibSym.eradicateList(context.pop());

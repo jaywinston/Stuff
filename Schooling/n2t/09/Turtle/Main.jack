@@ -10,12 +10,6 @@ static boolean mv;  // ##DB##
         do Main.init();
         do Main.run();
         do Main.killall();
-
-do Screen.clearScreen();
-do DB.mv();
-do DB.pause();
-do Output.moveCursor(0,0);
-do Output.printInt(DB.mc());
         return;
     }
 
@@ -82,10 +76,10 @@ let mv=false;  // ##DB##
         do Bin.kill();
         do Eval.kill();
         do Exec.kill();
-        do LibIO.kill();
-        do LibSym.kill();
         do Parse.kill();
         do Lex.kill();
+        do LibIO.kill();
+        do LibSym.kill();
         do Vector.kill();
 
         return;
