@@ -305,19 +305,8 @@ class Parse {
 
 
     function int eqop(String s, Symbol token, int i) {
-
         do token.setData((token.data()*100) + 61);
-
-        /* This is very misleading. Remember that ASGN is 26 and EQ is 27.
-         * But comparison takes precedence over assignment.
-         * I'm starting to appreciate LISP more, if not software design. */
-
-        if ( (Parse.cclass(s, i-1)&ASGN) = ASGN ) {
-            do token.setMeta(EQ);
-        } else {
-            do token.setMeta(ASGN);
-        }
-
+        do token.setMeta(EQ&SITE);
         return i + 1;
     }
 

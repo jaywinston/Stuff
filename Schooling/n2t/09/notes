@@ -1,0 +1,38 @@
+In this project, I learned that it's very important to separate data storage
+from access.  The lists used internally were originally linked lists of
+Symbols.  It worked but was very cumbersome.  Symbols shouldn't have to worry
+about where they are.  Refactoring to use lists as a separate data structure
+with thier own methods facilitated more sophisticated data manipulation.
+I learned this lesson the hard way, such can be seen in the Git history.
+
+An even harder lesson was that of parsing.  The parse module was by far the
+hardest to implement because it was the design of the language, by far the
+most abstract attribute of the whole project.  At first, I tried to gloss
+things over and not properly lex individual tokens.  Things went pretty easily
+until I ran into some difficult problems regarding recursive tokens.  At some
+point, I realized that you can't cheat this and got to work.  It was then that
+I found some contradictions in my concept of the language i.e. I couldn't parse
+it.  At that point, I stopped coding and sat down with pencil and paper and
+designed some sort of grammer.  That was a major breakthrough, though the
+grammer evovled a lot as it was being implemented in code.  My solution to the
+recursive token problems were to read input from within the parse module, from
+function calls when necessary.  I orginally wanted all input to be read from
+the top level of the main loop.  I'm still not sure if it's a good solution
+but it worked.
+
+The idea to use bitmaps as token delimiters started as using bitmaps for token
+meta data.  I used them to look for symbols that pointed to memory that had to
+be freed.  Once that was in place, it snowballed into the idea to use the same
+bitmap for all meta data and arithmetic operator precedence.  Again, I have
+no idea if it's good programming but it worked and obviated a lot of
+conditionals.  To be honest, the carefully planned bitmaps gained a bit of
+haphazardness right at the end.  But I redesigned the bitmaps once and it
+proved to be more problematic than expected.  So I left the last hoorah as
+a kludge.
+
+The most valuable lesson that I learned is to not bite off more than one
+can chew.  This project was a bigger investment than I foresaw because I
+didn't consider what it really is.  And while I'm glad that I did it, it was
+not without some cost.  But it helped me qualify the skills that I have and
+those that I don't, an insight that's arguably worth the cost.
+

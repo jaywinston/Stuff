@@ -1,0 +1,137 @@
+This is an interactive turtle graphics console.  It has some basic list
+processing, conditionals, loops, and function definitions as statements and
+expressions.  It is dynamically scoped and has garbage collection.
+
+In general, expressions are space delimited.  Blocks, lists and strings
+of course allow embedded spaces, though format expressions do not.
+Any expression not used in a command or assignment is echoed to the console.
+
+Arithmetic expressions mostly follow standard precedence rules. Unary operators
+bind tightest of anything, bitwise logic binds looser than anything, and
+comparison operators follow.  Besides that, rules are standard.
+Operators are:
+ unary:
+  + absolute value
+  - arithmetic negation
+  ~ bitwise negation
+ binary:
+  & bitwise and
+  | bitwise or
+  == equal
+  != not equal
+  >= greater than or equal
+  <= less than or equal
+  > greater than
+  < less than
+  * multiplication
+  / division
+  % modulo
+  + addition
+  - subtraction
+
+Format expressions are <format string> ',' <argument> [',' <argument> ...]
+So it lookes like:
+
+"%D\N",8
+
+which resolves to:
+
+8
+
+
+Format directives are a percent ('%') character followed by a specifier.
+Specifiers are 'S' for string, 'D' for integers and '%' for literal '%'.
+Any other character is an error.  Three escape sequences, 'N' for newline,
+'"' for double quote character, and '\' for reverse solidus character are
+recognized and escaped by a backslash ('\') character.  Any other character
+resolves to itself.
+
+Blocks and functions return their last line.
+Lists are indexed as follows:
+
+<list> '.' <index>
+
+so [1 2 3].1 resolves to 2.  Indexes can be any expression that resolves
+to an integer.
+
+Functions are a binding of one command line to an expression.  They can be
+anonymous.  As they are one command line, multiple lines must wrapped in
+a block.  Functions can be passed as arguments.  To capture a function's
+return value, it must called as the last line of a block e.g.
+
+N={F}
+
+or
+
+FORWARD {
+  TURNLEFT 180
+  F
+}
+
+Variables are assigned as <ref> '=' <expr> e.g. F=90.  Though assignment
+is not an expression, white space is not allowed.
+
+The commands are:
+
+        APPEND <list> <expression>
+            append expression to list; returns null;
+
+        APPLY <list> <function>
+            apply function in place to the elements of list; returns null;
+
+        CLEARLIST <list>
+            clear list of elements; returns null
+
+        COPY <list> [<integer> <integer>]
+            returns a copy of list; if integers are given return a copy
+            of list from integer to integer, inclusive
+
+        EXTEND <list> <list>
+            extend list with list; returns null;
+
+        LENGTH <list|string>
+            returns length of list or string
+
+        CLEAR
+            clear the canvas and console, reset the turtle; returns null
+
+        DIR
+            returns the turtle's direction
+
+        FORWARD <integer>
+
+        PENDOWN
+
+        PENUP
+
+        POSX
+            returns the turtle's horizontal coordinate
+
+        POSY
+            returns the turtle's vertical coordinate
+
+        (The origin is at the bottom-left corner.)
+
+        TURNLEFT <integer>
+
+        TURNRIGHT <integer>
+
+        FUNCTION <name> <cmdlin>
+
+        HELP
+            not so helpful
+
+        IF <condition> <cmdlin> [ELSE <cmdlin>]
+
+        PRINT <string>
+            prints string on the canvas at the turtle's position; returns null
+
+        REPEAT [IF] <expression|list name> <cmdlin>
+            repeat cmdlin expression times.  If IF is provided, repeat while
+            expression (or it's length if it's a string) does not resolve
+            to zero.  If expression is a list, repeat for every element in
+            it with element assigned to name.  Does not overwrite element.
+
+        QUIT
+
+
