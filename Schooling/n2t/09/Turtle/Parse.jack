@@ -211,7 +211,7 @@ class Parse {
         var Collection stack, queue;
         var Symbol token, top;
 
-        let dlm = (BLANK | COMMA) | (END | EOS);
+        let dlm = (BLANK | COMMA) | END;
         let queue = Collection.new();
         let stack = Collection.new();
         do stack.push(Symbol.new(null, null, null));
@@ -322,8 +322,14 @@ class Parse {
 
         while (Parse.cclass(s, i) = FMTEX) {
 
+            let i = i + 1;
+
+            if (i = s.length()) {
+                return Parse.package(fmtex, argv, s, i);
+            }
+
             let arg = Symbol.new(null, null, null);
-            let i = Parse.expr(s, arg, i+1);
+            let i = Parse.expr(s, arg, i);
             let s = Parse.tag(arg);
             let cc = Parse.cclass(s, i) & GLOBL;
 

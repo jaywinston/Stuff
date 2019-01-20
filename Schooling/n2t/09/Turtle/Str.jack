@@ -74,7 +74,7 @@ class Str {
                     let t = Str.dup(arg[a]);
                 } else { if (c = 67) {
                     do s.appendChar(arg[a]);
-                } else { if (i < Str.MAXLEN()) {
+                } else { if (i < len) {
                     do s.appendChar(c);
                 }}}}
 
@@ -93,7 +93,7 @@ class Str {
 
             } else {
                 if ( ~(s.length()+1) < len ) {
-                    let len = (len+Str.MAXLEN()) + t.length();
+                    let len = len + Str.MAXLEN();
                     let s = Str.realloc(s, len);
                 }
                 do s.appendChar(c);

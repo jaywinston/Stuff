@@ -1,5 +1,5 @@
 /**
- * Returns the index of the character immediately beyond the end of the token. 
+ * returns the index of the character immediately beyond the end of the token
  */
 class Lex {
 

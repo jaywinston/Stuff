@@ -2,7 +2,6 @@ class Main {
 
     static boolean running;
 static boolean mv;  // ##DB##
-    static int INT, LIST, STR;
 
 
     function void main() {
@@ -10,9 +9,6 @@ static boolean mv;  // ##DB##
         do Main.init();
         do Main.run();
         do Main.killall();
-do Screen.clearScreen();
-do Output.moveCursor(0,0);
-do Output.printInt(DB.mc());
         return;
     }
 
@@ -66,16 +62,11 @@ let mv=false;  // ##DB##
         do Bin.init();
         do Exec.init();
 
-        let INT = LibSym.INT();
-        let LIST = LibSym.LIST();
-        let STR = LibSym.STR();
-
         return;
     }
 
 
     function void killall() {
-
         do Bin.kill();
         do Eval.kill();
         do Exec.kill();
@@ -84,7 +75,6 @@ let mv=false;  // ##DB##
         do LibIO.kill();
         do LibSym.kill();
         do Vector.kill();
-
         return;
     }
 

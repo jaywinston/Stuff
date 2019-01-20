@@ -182,9 +182,9 @@ if (cmd=128) {return Main.mc();}  // ##DB##
         }
         do Eval.pushContext(func, argv);
         let ret = Exec.arglist(cpy);
+        do LibSym.destroyList(cpy);
         do Eval.dropContext();
         do func.dispose();
-        do cpy.dispose();
 
         return ret;
     }

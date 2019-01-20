@@ -558,8 +558,15 @@ class Eval {
 
 
     function void pushContext(Symbol arg0, Collection argv) {
+        var int i;
+
+        let i = 0;
+        while (i < argv.length()) {
+            do Eval.arg(argv.nth(i));
+            let i = i + 1;
+        }
         do argv.push(Symbol.new(null, STR, arg0.tag()));
-        do arg0.setTag(null);
+        do arg0.setTag("");
         do context.push(argv);
         do symtab.push(HashTable.new(3));
         return;

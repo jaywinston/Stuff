@@ -1,31 +1,31 @@
-// CTAB is an array of size 128.  It is used as something of a hashtable
-// in that it is indexed by a character.  Its values are a bitmap of the
-// character's type.  That bitmap is also used to implement arithmetic
-// operator precedence.  Most types are one-bit values.  Block types
-// and integer types have subtypes.  Block types are used by LibSym
-// list functions to recurse on the symbol's data.  Integer types are
-// used to announce an integer expression tree and afterwards, are masked
-// and used for arithmetic operator precedence.
-// 
-// The bitmap is: todo: check this
-//   32768 16384 8192 4096 2048 1024 512 256 128  64  32  16   8   4   2   1
-//       |     |    |    |    |    |   |   |   |   |   |   |   |   |   |   |
-//  unused     |    |    |    |    |   |   |   |   |   |   |   |   |   |   |
-// illegal index    |    |    |    |   |   |   |   |   |   |   |   |   |   |
-//       symbol token    |    |    |   |   |   |   |   |   |   |   |   |   |
-//           integer token    |    |   |   |   |   |   |   |   |   |   |   |
-//               string literal    |   |   |   |   |   |   |   |   |   |   |
-//                 format expression   |   |   |   |   |   |   |   |   |   |  
-//                                 block   |   |   |   |   |   |   |   |   |
-//                                    unused   |   |   |   |   |   |   |   |
-//                                   white space   |   |   |   |   |   |   |
-//                                             index   |   |   |   |   |   |
-//                                                   end   |   |   |   |   |
-//                                                      list   |   |   |   |
-//                              arithmetic expression / operator   |   |   |
-//                                                                 |   |   |
-//                                                                 site use
-//
+/* CTAB is an array of size 128.  It is used as something of a hashtable
+ * in that it is indexed by a character.  Its values are a bitmap of the
+ * character's type.  That bitmap is also used to implement arithmetic
+ * operator precedence.  Most types are one-bit values.  List types
+ * and integer types have subtypes.  List types are used by LibSym
+ * list functions to recurse on the symbol's data.  Integer types are
+ * used to announce an arithmetic expression tree and afterwards, are masked
+ * and used for arithmetic operator precedence.
+ *
+ * The bitmap is: todo: check this
+ *  3 2768 16384 8192 4096 2048 1024 512 256 128  64  32  16   8   4   2   1
+ *       |     |    |    |    |    |   |   |   |   |   |   |   |   |   |   |
+ *  unused     |    |    |    |    |   |   |   |   |   |   |   |   |   |   |
+ * illegal index    |    |    |    |   |   |   |   |   |   |   |   |   |   |
+ *       symbol token    |    |    |   |   |   |   |   |   |   |   |   |   |
+ *           integer token    |    |   |   |   |   |   |   |   |   |   |   |
+ *               string literal    |   |   |   |   |   |   |   |   |   |   |
+ *                 format expression   |   |   |   |   |   |   |   |   |   |
+ *                                 block   |   |   |   |   |   |   |   |   |
+ *                                    unused   |   |   |   |   |   |   |   |
+ *                                   white space   |   |   |   |   |   |   |
+ *                                             index   |   |   |   |   |   |
+ *                                                   end   |   |   |   |   |
+ *                                                      list   |   |   |   |
+ *                              arithmetic expression / operator   |   |   |
+ *                                                                 |   |   |
+ *                                                                 site use
+ */
 
 class LibSym {
 
@@ -399,12 +399,16 @@ class LibSym {
             return null;
         }
 
-        if (p.meta() = INT)  { return LibSym.formatInt(p.data());  }
-        if (p.meta() = STR)  { return LibSym.formatStr(p.data());  }
-        if (p.meta() = FUNC) { return LibSym.formatFunc(p.tag());  }
-        if (p.meta() = LIST) { return LibSym.formatList(p.data()); }
+        if (p.meta() = null) {
+            return null;
+        }
+
+        if (  p.meta()       = INT)  { return LibSym.formatInt(p.data());  }
+        if ( (p.meta()&STR)  = STR)  { return LibSym.formatStr(p.data());  }
+        if ( (p.meta()&LIST) = LIST) { return LibSym.formatList(p.data()); }
+        if ( (p.meta()&OP)   = OP)   { return LibSym.formatOp(p.data());   }
     
-        return null;
+        return "?";
     }
 
 
@@ -413,6 +417,22 @@ class LibSym {
 
         let s = String.new(6);
         do s.setInt(i);
+
+        return s;
+    }
+
+
+    function String formatOp(int op) {
+        var String s;
+
+        if (op > 1000) {
+            let s = String.new(2);
+            do s.appendChar(op/100);
+            do s.appendChar(61);
+        } else {
+            let s = String.new(1);
+            do s.appendChar(op);
+        }
 
         return s;
     }
@@ -430,21 +450,6 @@ class LibSym {
     }
 
 
-    function String formatFunc(String s) {
-/*
-        var String t;
-
-        let t = String.new(s.length()+2);
-        do t.appendChar(123);
-        do Str.cat(t, s);
-        do t.appendChar(125);
-
-        return t;
-*/
-        return "{function}";
-    }
-
-
     function String formatList(Collection list) {
         var int i;
         var int len;
@@ -457,46 +462,22 @@ class LibSym {
 
         let i = 0;
         while (i < list.length()) {
-            let arg = list.nth(i);
-            if (arg.meta() = INT) {
-                let t = LibSym.formatInt(arg.data());
-                if ( (s.length()+t.length()) > len ) {
-                    let len = len + Str.MAXLEN();
-                    let s = Str.realloc(s, len);
-                }
-                do Str.cat(s, t);
-                do t.dispose();
-            } else { if (arg.meta() = STR) {
-                let t = LibSym.formatStr(arg.data());
-                if ( (s.length()+t.length()) > len ) {
-                    let len = (len+Str.MAXLEN()) + t.length();
-                    let s = Str.realloc(s, len);
-                }
-                do Str.cat(s, t);
-                do t.dispose();
-            } else { if (arg.meta() = FUNC) {
-                let t = LibSym.formatFunc(arg.tag());
-                if ( (s.length()+t.length()) > len ) {
-                    let len = (len+Str.MAXLEN()) + t.length();
-                    let s = Str.realloc(s, len);
-                }
-                do Str.cat(s, t);
-                do t.dispose();
-            } else { if (arg.meta() = LIST) {
-                let t = LibSym.formatList(arg.data());
-                if ( (s.length()+t.length()) > len ) {
-                    let len = (len+Str.MAXLEN()) + t.length();
-                    let s = Str.realloc(s, len);
-                }
-                do Str.cat(s, t);
-                do t.dispose();
-            }}}}
+
+            let t = LibSym.format(list.nth(i));
+
+            if ( (s.length()+t.length()) > len ) {
+                let len = len + Str.MAXLEN();
+                let s = Str.realloc(s, len);
+            }
+
+            do Str.cat(s, t);
+            do t.dispose();
 
             let i = i + 1;
 
             if (i < list.length()) {
                 if ( (s.length()+1) > len ) {
-                    let u = String.new(len + Str.MAXLEN());
+                    let len = len + Str.MAXLEN();
                     let s = Str.realloc(s, len);
                 }
             }
