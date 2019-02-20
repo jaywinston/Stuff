@@ -105,6 +105,7 @@ class LibSym {
         }
 
         let ctab[36] = 10240; // $
+        let ctab[95] = 10240; // _
 
         let i = 48;
         while (i < 58) {

@@ -80,7 +80,7 @@ FORWARD {
   F
 }
 
-Variables are assigned as <ref> '=' <expr> e.g. F=90.  Though assignment
+Variables are assigned as <ref> '=' <expr> e.g. N=90.  Though assignment
 is not an expression, white space is not allowed.
 
 The commands are:
@@ -148,4 +148,11 @@ The commands are:
 
         QUIT
 
+
+BUGS
+    - Anonymous functions cannot start with a name-expresssion.
+    - The last term of a parenthesized arithmetic expression cannot be
+      an index-expression whose index expression is a parenthesized
+      arithmetic expression.
+    (A workaround for both is to wrap the problem-expression in a block.)
 
