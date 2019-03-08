@@ -2,23 +2,22 @@
 #include <limits.h>
 #include <float.h>
 
-int power(int, int);
+
+int minn(int size)
+{
+    return 1 << size * 8 - 1;
+}
+
+
+int maxn(int size)
+{
+    return ~minn(size);
+}
+
 
 int main ()
 {
-    char c;
-    unsigned char uc;
-    short s;
-    unsigned short us;
-    int i;
-    unsigned int ui;
-    long l;
-    unsigned long ul;
-    float f;
-    double d;
-    long double ld;
-
-    printf("From headers\n============\n");
+    printf("From \"limits.h\"\n============\n");
     printf("char signed %20d, %d\n", SCHAR_MIN, SCHAR_MAX);
     printf("char unsigned max %19d\n", UCHAR_MAX);
     printf("short signed %17d, %d\n", SHRT_MIN, SHRT_MAX);
@@ -34,23 +33,15 @@ int main ()
 
     printf("Calculated\n==========\n");
 
-    c = power(2, 7);
-    printf("char signed %d, %d\n", c, -c+1);
-    printf("char unsigned max %19d\n", UCHAR_MAX);
-    printf("short signed %10d .. %10d\n", SHRT_MIN, SHRT_MAX);
-    printf("short unsigned max %18u\n", USHRT_MAX);
-    printf("int signed %12d .. %d\n", INT_MIN, INT_MAX);
-    printf("int unsigned max %20u\n", UINT_MAX);
-    printf("long signed %ld .. %ld\n", LONG_MIN, LONG_MAX);
-    printf("long unsigned max %19u\n", ULONG_MAX);
-}
+    /* I don't know how this can be calculated without
+       knowledge of the machine's architecture. */
 
-/* power: raise base to the nth power */
-int power(int base, int n)
-{
-    int p;
-
-    for (p = 1; n > 0; --n)
-        p = p * base;
-    return p;
+    printf("char signed %d, %d\n", maxn(sizeof (char)), minn(sizeof (char)));
+    printf("char unsigned max %19d\n", maxn(sizeof (unsigned char)));
+    printf("short signed %10d .. %10d\n", maxn(sizeof (short)), minn(sizeof (short)));
+    printf("short unsigned max %18u\n", maxn(sizeof (unsigned short)));
+    printf("int signed %12d .. %d\n", maxn(sizeof (int)), minn(sizeof (int)));
+    printf("int unsigned max %20u\n", maxn(sizeof (unsigned int)));
+    printf("long signed %ld .. %ld\n", maxn(sizeof (long)), minn(sizeof (long)));
+    printf("long unsigned max %19u\n", maxn(sizeof (unsigned long)));
 }
