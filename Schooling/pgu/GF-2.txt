@@ -1,0 +1,47 @@
+#Chapter 8 - Going Further - 2
+#   Research the different types of executable file formats in use today and
+#   in the history of computing.  Tell the strengths and weaknesses of each.
+#
+
+#NOTE:  Many of these points are quotes from Wikipedia and I don't really
+#       understand some of them (marked '(?)').
+#
+
+OS/360:
+strengths:
+    - adequate for its time (circa 1964)
+    - easy to implement
+    - still usable today (not deprecated)
+weaknesses:
+    - names limited to 8-bytes
+    - alignment cannot be specified
+    - a module that is pure data and is not executable cannot be specified
+    - reentrant module cannot be specified
+    - cannot distinguish between a subroutine (a routine that handles data only
+        through arguments) and a function (a routine that returns data throug a
+        return value)
+    - a module designed so that it is movable cannot be specified (?)
+    - address constants can't be identified as pointers
+    - attributes cannot be assigned to external references
+    - no means to allow procedures or functions to check or validate argument
+      types or validate external structures
+    - no means to declare an object where part of the structure is data and
+      part is code
+    - the sym table is limited in the information it can provide
+
+a.out:
+# a.out was the format used by Ken Thomson's assembler for the DEC PDP-7 which
+# eventually became an object file format in UNIX.  It has been ported to many
+# platforms and as such is not universally defined.  Notably, the Linux version
+# suffered limitations that compelled its developers to adopt the ELF format.
+# FreeBSD, on the other hand, did not suffer those limitations and adopted ELF
+# much later and for different reasons.
+It seems that a list of strengths and weaknesses is not possible to make
+because 'a.out' is not one format.  It seems to be implemented differently
+in - at least - every different system that supports it.  In fact,
+<http://www.cs.utah.edu/flux/oskit/OLD/html/doc-0.96/node690.html>
+says so explicitly.  One strength that can be said of it is that it still sees
+support to this day (March 11, 2019).  Perhaps its weakness is it's varied
+implementations.  It cannot be said that it lacks support for dynamic linkage
+because the FreeBSD implementation did support dynamic linkage.
+

@@ -1,0 +1,144 @@
+Grammar:
+
+cmdlin:
+    ''
+    arglist '\n'
+
+arglist:
+    arg
+    arg space arglist
+
+arg:
+    assgn
+    expr
+
+assgn:
+    ref '=' expr
+
+ref:
+    name
+    name indexexpr
+
+name:
+    namstart
+    namstart namend
+
+namstart:
+    '[$_[:alpha:]]'
+
+namend:
+    namchar
+    namchar namend
+
+namchar:
+    '[$_[:alpha:][:digit:]]'
+
+indexexpr:
+    '.' ref
+    '.' block
+    '.' intexpr
+
+block:
+    '{' cmdlist '}'
+
+cmdlist:
+    cmdlin
+    cmdlin cmdlist
+
+intexpr:
+    bitexpr
+    uop bitexpr
+
+bitexpr:
+    eqexpr
+    eqexpr bitop bitexpr
+
+eqexpr:
+    addexpr
+    addexpr eqop eqexpr
+
+addexpr:
+    mulexpr
+    mulexpr addop addexpr
+
+mulexpr:
+    term
+    term mulop mulexpr
+
+term:
+    ref
+    block
+    intterm
+    parenterm
+
+intterm:
+    intchar
+    intchar intterm
+
+intchar:
+    '[[:digit:]]'
+
+parenterm:
+    '(' intexpr ')'
+
+uop:
+    '[~-+]'
+
+bitop:
+    '[&|]'
+
+eqop:
+    (==|!=|<|>|<=|>=)
+
+addop:
+    '[+-]'
+
+mulop:
+    '[*/%]'
+
+expr:
+    ref
+    block
+    intexpr
+    list
+    stringexpr
+
+list:
+    '[' cmdlist ']'
+
+stringexpr:
+    formatstring
+    formatstring ',' farglist
+
+formatstring:
+    '"' text '"'
+
+text:
+    textchar
+    textchar text
+
+textchar:
+    '[^"\[:cntrl:]]'
+    escseq
+    formatseq
+
+escseq:
+    '\' escspec
+
+escspec:
+    '[N"\]'
+
+formatseq:
+    '%' formatspec
+
+formatspec:
+    '[%DS]'
+
+farglist:
+    expr
+    expr ',' farglist
+
+space:
+    ' '
+    ' ' space
+
