@@ -369,14 +369,14 @@ class Eval {
         if (fstrp = null) {  // todo: no need?
             do LibIO.error("expected format string");
             do LibSym.destroyList(argv);
-            return null;
+            return "";
         }
 
         if (~(fstrp.meta() = STR)) {
             do LibIO.error("expected format string");
             do LibSym.destroyList(argv);
             do LibSym.destroySym(fstrp);
-            return null;
+            return "";
         }
 
         let s = fstrp.data();
@@ -404,7 +404,7 @@ class Eval {
                     do LibSym.destroyList(argv);
                     do LibSym.destroySym(fstrp);
                     do fargv.dispose();
-                    return null;
+                    return "";
                 }
 
                 let type = Lex.escape(c, FSPECTAB);
@@ -414,7 +414,7 @@ class Eval {
                     do LibSym.destroyList(argv);
                     do LibSym.destroySym(fstrp);
                     do fargv.dispose();
-                    return null;
+                    return "";
                 }
 
                 if (~(arg.meta() = type)) {
@@ -423,7 +423,7 @@ class Eval {
                     do LibSym.destroyList(argv);
                     do LibSym.destroySym(fstrp);
                     do fargv.dispose();
-                    return null;
+                    return "";
                 }
 
                 let fargv[a] = arg.data();

@@ -435,14 +435,12 @@ class Parse {
         let off = Symbol.new(null, null, null);
         let i = Parse.atom(s, off, i+1);
         let s = Parse.tag(off);
-        do index.append(off);
         if (Parse.cclass(s, i) = INDEX) {
-            let off = Symbol.new(null, INDEX, Symbol.new(null, INDEX, index));
+            let off = Symbol.new(null, INDEX, off);
             let i = Parse.index(s, off, i);
             let s = Parse.tag(off);
-            let index = off.data();
-            do off.dispose();
         }
+        do index.append(off);
 
         return Parse.package(ref, index, s, i);
     }
