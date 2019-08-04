@@ -39,7 +39,11 @@ if [ "$(dd if=$1 bs=4 count=1 2>/dev/null)" != '%PDF' ] ; then
 fi
 
 infile=$1
-pages=$(pdfinfo -meta $infile | grep Pages: | cut -d: -f2)
+mkdir pages
+pdfseparate $infile pages/page-%d.pdf
+#not reliable. pages=$(pdfinfo -meta $infile | grep Pages: | cut -d: -f2)
+pages=$(ls pages | wc -l)  # "When in doubt, use brute force."  --ken, maybe
+echo | groff -T pdf > blank.pdf
 pps=$(( ${sheets:-4} * 4 ))  # pages per style; 4 pages per sheet
 len_seq=$pps
 styles=$(( (pages-1) / pps + 1 ))
@@ -61,9 +65,6 @@ function make_sequence {
 
 sequence=( $(make_sequence) )
 
-pdfseparate $infile page-%d.pdf
-echo | groff -T pdf > blank.pdf
-
 # ns: number of style
 for ((ns=0; ns<styles; ns++)) ; do
 
@@ -78,16 +79,17 @@ for ((ns=0; ns<styles; ns++)) ; do
     for ((i=0; i<len_seq; i++)) ; do
         page_no=$(( po + ${sequence[i]} ))
         if ((page_no <= pages)) ; then
-            style[$i]="page-${page_no}.pdf"
+            style[$i]="pages/page-${page_no}.pdf"
         else
             style[$i]=blank.pdf
         fi
     done
 
     pdfunite ${style[@]} style-$(printf "%0${fmt_w}d" $ns).pdf
-    rm $(grep -o 'page[^ ]*' <<< ${style[@]})
+#    rm $(grep -o 'page[^ ]*' <<< ${style[@]})
     unset style
 
 done
 
+rm -r pages
 rm blank.pdf

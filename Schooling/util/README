@@ -1,0 +1,32 @@
+I included these scripts in this repository to illustrate my work environment.
+They were first written for one tutorial.  When I saw that my work flow was the
+same for the next tutorial, I rewrote them to work for any tutorial.  Then I
+realized that they are an example of my work.  So I documented them and
+included them in this repository.
+
+There are adjustments to the environment.  CWD is an environment variable and
+PATH is prepended with this directory.  To remind me of this, I prepend PS1
+with the name of the tutorial in parentheses (like Python's venv).  Any other
+changes are defined in Schooling/.bashrc.  And there is a function there named
+deactivate that cleans up the environment as best it can.
+
+The evironment is initialized by a function in $HOME/.bashrc:
+
+    function learn {
+        if check=$(~/Github/Stuff/Schooling/util/rc_learn $*) ; then
+            BASEDIR=~/Github/Stuff/Schooling TUTORIAL=$check \
+                source ~/Github/Stuff/Schooling/.bashrc
+            cd $CWD
+            getopts q q || (okular $(sed -n '4p' .config) &) &>/dev/null
+            unset q
+        else
+            echo "learn: err: '$check'"
+        fi
+    }
+
+Each tutorial directory has a '.config' file.  It's format is the current
+chapter on the first line and a space-delimited list of file names on the
+second line.  It is populated automatically.  Though it needs to be manually
+created.
+
+todo: explain the last two lines of .config format

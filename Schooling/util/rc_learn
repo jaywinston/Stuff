@@ -1,0 +1,40 @@
+#!/bin/dash
+
+# rc_learn: initialize the environment for the given tutorial
+
+# Any option is handled by the calling function so
+# getopts is purely a test and the opt name is unused.
+getopts pq q && shift
+
+# This is tested for null later.
+input=$1
+
+# Any directory with a .config file is considered a working directory.
+# todo?: handle simlinks
+TUTORIALS=$(basename -a $(dirname $(find $(dirname $0)/.. -name .config)))
+TUTORIAL=
+
+until test -n "$TUTORIAL"
+do
+	if echo "$TUTORIALS" | grep -qx "$input"
+    then
+		TUTORIAL="$input"
+	elif echo $input | grep -Eqx '[[:digit:]]+' && \
+			test "$input" -le $(echo "$TUTORIALS" | wc -l)
+    then
+		TUTORIAL=$(echo "$TUTORIALS" | sed -n "${input}p")
+	else
+		input=
+	fi
+	if [ -z "$input" ]
+    then
+		# If there was no input or it was invalid then show a menu.
+		# Note the embedded newline in the prompt.
+		read -p "$(echo "$TUTORIALS" | nl)
+> " input
+	fi
+done
+
+# This is captured by the calling function.
+echo $TUTORIAL
+

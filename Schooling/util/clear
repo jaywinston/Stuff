@@ -1,0 +1,91 @@
+#!/bin/dash
+
+PROG=$(basename $0)
+
+usage () {
+	echo "$PROG: Usage: $PROG [-mrfqh] (not yet --> [DIRECTORY])"
+	echo
+	echo "  clears the working directory" 
+	echo
+	echo "  If no options are given, then files are copied to the target."
+	echo
+	echo "  options:"
+	echo "  -m	move files from working directory"
+	echo "  -r	remove files from working directory interactively"
+    echo "  -f  force"
+	echo "  -q	quiet, do not update .config"
+	echo "  -h	show this message"
+}
+
+CH=$(sed -n '1p' ${CWD}/.config)
+TARGETS=$(sed -n '3p' ${CWD}/.config)
+CMD='cp'
+unset quiet IFLAG
+
+while getopts mrfqh opt
+do
+	case $opt in
+	m)	CMD='mv' ;;
+	r)	CMD='rm' ; IFLAG='-i' ; quiet=on ;;
+    f)  unset IFLAG ;;
+	q)	quiet=on ;;
+	h)	usage ; exit 0 ;;
+	\?)	usage ; exit 2 ;;
+	esac
+done
+shift $(($OPTIND - 1))
+
+#unset argdir
+#if [ -d $1 ] ; then
+#	argdir=$1
+#else
+#	echo "$PROG: directory not found: '$1'"
+#	usage
+#	exit 3
+#fi
+
+files=${@:-$(find                      \
+             -maxdepth 1               \
+             -type f                   \
+             ! -name Makefile          \
+             ! -name README            \
+             ! -name '.*'              \
+             -exec basename '{}' ';' ) \
+}
+
+# This goes through the working files, tests each file extension,
+# and moves the file to the appropriate directory.
+# It also captures the source file names in a variable to update .config.
+
+for file in $files
+do
+
+	# sh string truncation doesn't seem to truncate if the pattern
+	# isn't matched.  And this needs to be truncated so any file name
+	# with no extension is not captured as the extension.
+
+	exts=$(echo $file | cut -s -d . -f 2-)
+	ext=${exts#*.}
+
+	dir=$(echo $TARGETS | grep -Eo "${ext:-,}/[^,]+" | cut -d / -f 2)
+
+	# skip unrecognized file extensions
+	[ -z "$dir" ] && continue
+
+	# rm must not see 'dest' because it will try to remove it.
+	[ $CMD = 'rm' ] && dest= || dest=${dir}/${CH}/ #${argdir}
+
+	$CMD $IFLAG $file $dest
+
+	if test $? -eq 0 && file $dest$file | grep -q 'ASCII text'
+    then
+		# This modification prevents a space at
+		# the beginning or end of the string.
+		fnames="${fnames:+$fnames }$file"
+	fi
+
+done
+
+# save fnames in the config file
+[ $quiet ] || sed -i "2s/^.*$/${fnames}/" ${CWD}/.config
+

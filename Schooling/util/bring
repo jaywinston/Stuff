@@ -1,0 +1,63 @@
+#!/bin/dash
+
+# bring: copies files to the working directory
+
+
+PROG=$(basename $0)
+
+usage () {
+{
+	echo "$PROG: Usage: bring [-lh | FILE ...]"
+	echo 
+	echo " -l	list the current file(s)"
+	echo " -h	help"
+} >&2 
+}
+
+list_files () {
+	for fname in $fnames
+	do
+		echo "${CH}/${fname}"
+	done
+}
+
+bring_defaults () {
+	for fname in $fnames
+	do
+		# fnames was taken from .config so it should be valid.
+		cp src/${CH}/${fname} $CWD
+	done
+}
+
+CH=$(sed -n '1p' ${CWD}/.config)
+fnames=$(sed -n '2p' ${CWD}/.config)
+
+while getopts lh opt
+do
+	case "$opt" in
+	l)	list_files && exit 0 ;;
+	h)	usage && exit 0 ;;
+	\?)	usage && exit 1 ;;
+	esac
+done
+
+if test "$#" -eq 0
+then
+	bring_defaults
+	exit
+fi
+
+# todo: check this
+for arg in "$@"
+do
+	# I'd like to do this prettier.
+	find src/$(dirname $arg)	  \
+		-name "$(basename $arg)"  \
+		-exec cp '{}' $CWD ';'
+	if ! test -f ${CWD}/$(basename $arg)
+	then
+		echo "$PROG: file not found: '$arg'" >&2
+		usage
+		exit 1
+	fi
+done

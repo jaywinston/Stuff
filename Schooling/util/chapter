@@ -1,0 +1,22 @@
+#!/bin/dash
+
+if [ -z "$*" ]
+then
+	head -n 1 ${CWD}/.config
+    exit
+fi
+
+if ! echo "$*" | grep -Eqx '[[:digit:]]+'
+then
+	PROG=$(basename $0)
+	echo "$PROG: Usage: $PROG [CHAPTER]"
+fi
+
+CH=$1
+
+for dir in $(sed -n '3p' ${CWD}/.config | tr , \ )
+do
+	[ -d ${CWD}/${dir##*/}/${CH} ] || mkdir ${CWD}/${dir##*.}/${CH}
+done
+
+sed -i -e "1s/^.*$/${1}/" -e '2s/^.*$//' ${CWD}/.config
