@@ -4,7 +4,7 @@
 
 PROG=$(basename $0)
 
-usage () {
+function usage {
     echo "$PROG: Usage: $PROG [options] PDF-FILE"
 }
 
@@ -24,31 +24,41 @@ break  # With one option for now, let's quit while we're ahead.
     fi
 done
 
-if [ $# -ne 1 ] ; then
+if (( $# != 1 )) ; then
     usage >&2
     exit 2
 fi
 
-if [ "$(dd if=$1 bs=4 count=1 2>/dev/null)" != '%PDF' ] ; then
+if [[ ! -f $1 ]] ; then
+    {
+        echo "$PROGNAME: input must be a PDF file"
+        usage
+        echo "$PROGNAME: exiting"
+    } >&2
+    exit 3
+fi
+
+if [[ "$(dd if=$1 bs=4 count=1 2>/dev/null)" != '%PDF' ]] ; then
     {
         echo "$PROG: input file does not appear to be in PDF format"
         usage
         echo "$PROG: exiting"
     } >&2
-    exit 3
+    exit 4
 fi
 
 infile=$1
 mkdir pages
 pdfseparate $infile pages/page-%d.pdf
-#not reliable. pages=$(pdfinfo -meta $infile | grep Pages: | cut -d: -f2)
+#not reliable: pages=$(pdfinfo -meta $infile | grep Pages: | cut -d: -f2)
 pages=$(ls pages | wc -l)  # "When in doubt, use brute force."  --ken, maybe
 echo | groff -T pdf > blank.pdf
 pps=$(( ${sheets:-4} * 4 ))  # pages per style; 4 pages per sheet
 len_seq=$pps
 styles=$(( (pages-1) / pps + 1 ))
 last_style=$(( pages%pps + (-(pages%4)&3) ))  # Arithmetically anyone?
-fmt_w=${#styles}  # width for zero padding in the output filenames
+#fmt_w=${#styles}  # width for zero padding in the output filenames
+eval fmtv=( {00..$styles} )  # zero padded for the output filenames
 
 
 function make_sequence {
@@ -85,7 +95,8 @@ for ((ns=0; ns<styles; ns++)) ; do
         fi
     done
 
-    pdfunite ${style[@]} style-$(printf "%0${fmt_w}d" $ns).pdf
+    pdfunite ${style[@]} style-${fmtv[ns]}.pdf
+#    pdfunite ${style[@]} style-$(printf "%0${fmt_w}d" $ns).pdf
 #    rm $(grep -o 'page[^ ]*' <<< ${style[@]})
     unset style
 
