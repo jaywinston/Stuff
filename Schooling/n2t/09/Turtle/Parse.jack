@@ -170,7 +170,7 @@ class Parse {
 
         let i = Str.skip(s, 32, i);
         if (i = s.length()) {
-            return Parse.package(cmdlin, arglist, s, 0);
+            return Parse.package(cmdlin, arglist, s, i);
         }
 
         let dlm = END | NOLGL;
