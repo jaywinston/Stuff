@@ -395,19 +395,22 @@ class LibSym {
 
 
     function String format(Symbol p) {
+        var int type;
 
         if (p = null) {
             return null;
         }
 
-        if (p.meta() = null) {
+        let type = p.meta();
+
+        if (type = 0) {
             return null;
         }
 
-        if (  p.meta()       = INT)  { return LibSym.formatInt(p.data());  }
-        if ( (p.meta()&STR)  = STR)  { return LibSym.formatStr(p.data());  }
-        if ( (p.meta()&LIST) = LIST) { return LibSym.formatList(p.data()); }
-        if ( (p.meta()&OP)   = OP)   { return LibSym.formatOp(p.data());   }
+        if (  type       = INT)  { return LibSym.formatInt(p.data());  }
+        if ( (type&STR)  = STR)  { return LibSym.formatStr(p.data());  }
+        if ( (type&LIST) = LIST) { return LibSym.formatList(p.data()); }
+        if ( (type&OP)   = OP)   { return LibSym.formatOp(p.data());   }
     
         return "?";
     }

@@ -73,6 +73,7 @@ do Eval.install("MC",CMD,128);  // ##DB##
         }
 
         do Exec.cmdlin(argv);
+        do argv.dispose();
         do LibIO.fixCanvas();
 
         return;
@@ -106,12 +107,11 @@ do Eval.install("MC",CMD,128);  // ##DB##
                 do LibSym.destroySym(ret);
                 return null;
             }
-            do LibIO.put(LibSym.format(ret));
+            //do LibIO.put(LibSym.format(ret));
+            do Exec.enqueue(ret);
             do LibSym.destroySym(ret);
             let ret = Exec.arg(argv);
         }
-
-        do argv.dispose();
 
         return ret;
     }
