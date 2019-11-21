@@ -172,7 +172,6 @@ if (cmd=128) {return Main.mc();}  // ##DB##
         }
 
         do Eval.pushContext(func, LibSym.copyList(argv));
-        do func.dispose();
         do LibSym.clearList(argv);
 
         let ret = Exec.arglist(cmdlin);

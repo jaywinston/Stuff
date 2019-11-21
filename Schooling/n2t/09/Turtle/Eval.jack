@@ -562,26 +562,33 @@ class Eval {
 
     function void pushContext(Symbol arg0, Collection argv) {
         var int i;
+        var String s;
 
         let i = 0;
         while (i < argv.length()) {
             do Eval.arg(argv.nth(i));
             let i = i + 1;
         }
-        do argv.push(Symbol.new(null, STR, arg0.tag()));
-        do arg0.setTag("");
+
+        let s = arg0.tag();
+        if (s = null) {
+            do argv.push(Symbol.new(null, STR, ""));
+        } else {
+            do argv.push(Symbol.new(null, STR, s));
+            do arg0.setTag(null);
+        }
+
+        do LibSym.destroySym(arg0);
         do context.push(argv);
         do symtab.push(HashTable.new(3));
+
         return;
     }
 
 
     function void dropContext() {
-        var Collection argv;
-
         do LibSym.destroyList(context.pop());
         do LibSym.destroyHashTable(symtab.pop());
-
         return;
     }
 
