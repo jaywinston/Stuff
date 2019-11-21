@@ -195,12 +195,12 @@ class Collection {
             return 0;
         }
 
-        if (i = 0) {
-            return pop();
-        }
-
         if (~(i < length)) {
             return 0;
+        }
+
+        if (i = 0) {
+            return pop();
         }
 
         let p = _nth(i-1);

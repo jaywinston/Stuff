@@ -100,27 +100,55 @@ class TextBox {
 
     method void putc(int c) {
 
+        if (c = 128) {
+            do newline();
+            return;
+        }
+
         if (col = right) {
             do newline();
-            /* The vm emulator insists on an extra column to the right. 
-            if (right < 64)  {
-                do Screen.setColor(true);
-                do Screen.drawLine(right*8, top*11, right*8, bottom*11);
-            } ##DB## */
         }
 
         do Output.moveCursor(row, col);
         do Output.printChar(c);
 
-        if (c = 128) {
-            do newline();
-            return;
-        } else { if (c = 129) {
+        if (c = 129) {
+            if ( (col=left) & (left>0) )  {
+                do Screen.setColor(true);
+                do Screen.drawLine((left*8)-2, top*11, (left*8)-2, bottom*11);
+            }
             do backspace();
             return;
-        }}
+        }
 
         let col = col + 1;
+
+        return;
+    }
+
+
+    method void newline() {
+
+        let col = left;
+        let row = row + 1;
+
+        if (row = bottom) {
+            do scroll();
+            let row = row - 1;
+        }
+
+        return;
+    }
+
+
+    method void backspace() {
+
+        if ( (col=left) & (row>top) ) {
+            let col = right - 1;
+            let row = row - 1;
+        } else {
+            let col = col - 1;
+        }
 
         return;
     }
@@ -153,37 +181,6 @@ class TextBox {
 
         do print(s);
         do newline();
-
-        return;
-    }
-
-
-    method void newline() {
-
-        let col = left;
-        let row = row + 1;
-
-        if (row = bottom) {
-            do scroll();
-            let row = row - 1;
-        }
-
-        return;
-    }
-
-
-    method void backspace() {
-
-        if ( (col=left) & (row>top) ) {
-            let col = right - 1;
-            let row = row - 1;
-            if (left > 0)  {
-                do Screen.setColor(true);
-                do Screen.drawLine((left*8)-2, top*11, (left*8)-2, bottom*11);
-            }
-        } else {
-            let col = col - 1;
-        }
 
         return;
     }

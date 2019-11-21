@@ -146,6 +146,7 @@ class Eval {
         if (p = null) {
             do LibIO.error("undefined name");
             do arg.setMeta(null);
+            do tag.dispose();
             return arg;
         }
 
@@ -225,7 +226,7 @@ class Eval {
             return null;
         }
 
-        return Eval.arg(argv.nth(i));
+        return argv.nth(i);
     }
 
 
@@ -309,11 +310,9 @@ class Eval {
 
 
     function int uoperate(int n, int op) {
-
         if (op =  43) { return Math.abs(n); }
         if (op =  45) { return -n;          }
         if (op = 126) { return ~n;          }
-
         do LibIO.error("unrecognized operator");
         return 0;
     }
@@ -340,8 +339,8 @@ class Eval {
         if (op = 3361) { return ~(m = n); }
         if (op =   60) { return   m < n;  }
         if (op =   62) { return   m > n;  }
-        if (op = 6061) { return  (m<n) | (m=n); }
-        if (op = 6261) { return  (m>n) | (m=n); }
+        if (op = 6061) { return ~(m > n); }
+        if (op = 6261) { return ~(m < n);  }
 
         do LibIO.error("unrecognized operator");
         return 0;
@@ -457,9 +456,11 @@ class Eval {
         if (p = null) {
             do arg.setMeta(null);
         } else {
-            do arg.setTag(Str.dup(p.tag()));
+            do arg.setTag(p.tag());
             do arg.setMeta(p.meta());
             do arg.setData(p.data());
+            do p.setTag(null);
+            do p.dispose();
         }
 
         return arg;
@@ -511,7 +512,7 @@ class Eval {
         let i = indexp.data();
         do indexp.dispose();
 
-        if ( (i<0) | ~(i<list.length()) ) {
+        if ( (~(i < list.length())) | ((i<0)&(-i>list.length())) ) {
             do LibIO.error("invalid index");
             do LibSym.destroySym(listp);
             return arg;
@@ -523,7 +524,9 @@ class Eval {
         do arg.setMeta(deref.meta());
         do arg.setData(deref.data());
 
-        do LibSym.destroySym(listp);
+//see kludge in Exec.next()        do LibSym.destroySym(listp);
+//        do LibSym.destroySym(listp);
+        do Exec.nestedlistkludge(listp);
 
         return arg;
     }
@@ -576,7 +579,7 @@ class Eval {
     function void dropContext() {
         var Collection argv;
 
-        do LibSym.clearList(context.pop());
+        do LibSym.destroyList(context.pop());
         do LibSym.destroyHashTable(symtab.pop());
 
         return;

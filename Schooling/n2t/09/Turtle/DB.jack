@@ -64,6 +64,23 @@ class DB {
     }
 
 
+    function void ps(Symbol p) {
+        do DB.db(LibSym.format(p));
+        return;
+    }
+
+
+    function void pl(Collection p) {
+        var int i;
+        let i=0;
+        while(i<p.length()) {
+            do DB.db(LibSym.format(p.nth(i)));
+            let i=i+1;
+        }
+        return;
+    }
+
+
 /*
     function void print(Symbol p, int c1, int r1) {
         var int c, r, l;
@@ -125,7 +142,7 @@ class DB {
 
         if (p.next()>0) {
             do Output.moveCursor(r,c+l);
-            do Output.printString(" -> ");
+            do Output.printString("->");
         }
 
         do Output.moveCursor(r+1,c);

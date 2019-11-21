@@ -3,7 +3,8 @@
  */
 class Lex {
 
-    static char ESC, NEWLINE, STRING_DLM, NOLGL_MAP, EOS_MAP;
+    static char ESC, NEWLINE, STRING_DLM, NOLGL_KEY, EOS_KEY;
+    static char charbuf;
     static Array CTAB, ESCTAB;
 
 
@@ -16,8 +17,8 @@ class Lex {
         let ESCTAB = etab;
         let ESC = esc;
         let STRING_DLM = sdlm;
-        let EOS_MAP = eos;
-        let NOLGL_MAP = nolgl;
+        let EOS_KEY = eos;
+        let NOLGL_KEY = nolgl;
         return;
     }
 
@@ -37,11 +38,11 @@ class Lex {
     function char getch(String s, int i) {
 
         if ( (i<0) | (i>s.length()) ) {
-            return NOLGL_MAP;
+            return NOLGL_KEY;
         }
 
         if (i = s.length()) {
-            return EOS_MAP;
+            return EOS_KEY;
         }
 
         return s.charAt(i);
@@ -109,7 +110,7 @@ class Lex {
     }
 
 
-    function int EOS() { return CTAB[EOS_MAP]; }
-    function int NOLGL() { return CTAB[NOLGL_MAP]; }
+    function int EOS() { return CTAB[EOS_KEY]; }
+    function int NOLGL() { return CTAB[NOLGL_KEY]; }
 
 }

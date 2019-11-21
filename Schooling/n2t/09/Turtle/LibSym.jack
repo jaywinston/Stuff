@@ -8,7 +8,7 @@
  * and used for arithmetic operator precedence.
  *
  * The bitmap is: todo: check this
- *  3 2768 16384 8192 4096 2048 1024 512 256 128  64  32  16   8   4   2   1
+ *   32768 16384 8192 4096 2048 1024 512 256 128  64  32  16   8   4   2   1
  *       |     |    |    |    |    |   |   |   |   |   |   |   |   |   |   |
  *  unused     |    |    |    |    |   |   |   |   |   |   |   |   |   |   |
  * illegal index    |    |    |    |   |   |   |   |   |   |   |   |   |   |
@@ -31,7 +31,7 @@ class LibSym {
 
     static int BIN, BLOCK, CMD, CMDLIN, FUNC, INDEX, INT, ARTEX, LIST, OP,
         STR, FMTEX, NAME, UOP, LSP;
-    static int HACK_CHARSET_SIZE, EOS_MAP, NOLGL_MAP, SITE;
+    static int HACK_CHARSET_SIZE, EOS_KEY, NOLGL_KEY, SITE;
     static HashTable rctab;
 
 
@@ -42,8 +42,8 @@ class LibSym {
         let HACK_CHARSET_SIZE = 152;
         let SITE = 7;
 
-        let EOS_MAP = HACK_CHARSET_SIZE;
-        let NOLGL_MAP = HACK_CHARSET_SIZE + 1;
+        let EOS_KEY = HACK_CHARSET_SIZE;
+        let NOLGL_KEY = HACK_CHARSET_SIZE + 1;
 
         let CMD = 1;
         let BIN = 3;
@@ -130,15 +130,15 @@ class LibSym {
         let ctab[ 47] =    29;  // /
         let ctab[ 41] =    30;  // )
         let ctab[ 93] =    32;  // ]
-        let ctab[ 46] =    64;  // .
+        let ctab[ 46] =    80;  // .
         let ctab[ 32] =   128;  //  
         let ctab[123] =   528;  // {
         let ctab[125] =   544;  // }
         let ctab[ 44] =  1040;  // ,
         let ctab[ 34] =  2048;  // "
 
-        let ctab[  EOS_MAP] =  8224;  // EOS
-        let ctab[NOLGL_MAP] = 16384;  // illegal index
+        let ctab[  EOS_KEY] =  8224;  // EOS
+        let ctab[NOLGL_KEY] = 16384;  // illegal index
 
         return ctab;
     }
@@ -150,7 +150,6 @@ class LibSym {
         if (sym = null) {
             return null;
         }
-
 
         if (sym.tag() = null) {
 
