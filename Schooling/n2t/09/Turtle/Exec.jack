@@ -434,7 +434,9 @@ if (cmd=128) {return Main.mc();}  // ##DB##
 
         if (c = 0) {
             do LibSym.clearList(argv);
-            if (~(elsev = null)) {
+            if (elsev = null) {
+                let p = null;
+            } else {
                 let p = Exec.arglist(elsev);
             }
         } else {
