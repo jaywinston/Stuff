@@ -189,7 +189,7 @@ class Parse {
                 let asgn = false;
                 do arglist.append(Symbol.new(null, NAME, "ASSIGN"));
                 let i = i + 1;
-            } else { if ( ((cc=ASGN) & (~(Parse.cclass(s, i+1)=ASGN))) ) {
+            } else { if ( (cc=ASGN) & (~(Parse.cclass(s, i+1)=ASGN)) ) {
                 do arglist.append(Symbol.new(null, NAME, "ASSIGN"));
                 let i = i + 1;
             } else { if ( (cc&GLOBL) = ARTEX ) {

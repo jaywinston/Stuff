@@ -575,7 +575,7 @@ class Eval {
             do argv.push(Symbol.new(null, STR, ""));
         } else {
             do argv.push(Symbol.new(null, STR, s));
-            do arg0.setTag(null);
+            do arg0.setTag("");
         }
 
         do LibSym.destroySym(arg0);
