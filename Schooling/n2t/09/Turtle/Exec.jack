@@ -311,7 +311,6 @@ if (cmd=128) {return Main.mc();}  // ##DB##
             return;
         }
 
-        do LibSym.tagSym(val);
         do LibSym.destroySym(list.nth(i));
         do list.setnth(i, val);
         do LibSym.destroySym(listp);
