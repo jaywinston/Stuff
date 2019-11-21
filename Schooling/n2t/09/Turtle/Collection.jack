@@ -108,8 +108,12 @@ class Collection {
         var Array p;
 
         // overrun is for extend()
-        if ( (i<0) | (i>length) ) {
+        if (i > length) {
             return -1;
+        }
+
+        if (i < 0) {
+            let i = length + i;
         }
 
         let p = head;
@@ -129,11 +133,7 @@ class Collection {
             return 0;  // ?
         }
 
-        if (i < 0) {
-            let p = _nth(length+i);
-        } else {
-            let p = _nth(i);
-        }
+        let p = _nth(i);
 
         if (p = -1) {
             return 0;  // ?

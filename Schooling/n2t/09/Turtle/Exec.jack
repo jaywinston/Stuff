@@ -297,8 +297,8 @@ if (cmd=128) {return Main.mc();}  // ##DB##
         let i = indexp.data();
         do indexp.dispose();
 
-        if ( ~(i<list.length()) ) {
-        //if ( (i<0) | ~(i<list.length()) ) {
+        if (~(i < list.length())) {
+            do LibIO.error("invalid index");
             do LibSym.destroySym(listp);
             return;
         }
