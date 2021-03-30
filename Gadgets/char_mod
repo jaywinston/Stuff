@@ -108,5 +108,3 @@ function putchar {
     printf '\033[8C'
     printf '\033[8A'
 }
-
-#x=1;printf '\e[s';for i in {32..126} ;do [[ ! "${charset[i]}" =~ ^\ +$ ]] && putchar "${charset[i]}"&&{ ((x++%20))||printf '\e[7B\n'; };done;printf '\e[u\e[8B'

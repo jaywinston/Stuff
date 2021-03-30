@@ -1,0 +1,108 @@
+#!/usr/bin/python3
+
+import sys
+
+src = sys.stdin.read().rstrip('\n')
+i = 0
+b = [0]
+bp = 0
+s = []
+
+
+def fail(m):
+    lines = src[:i].split('\n')
+    line = len(lines)
+    col = i + 1 if line == 1 else i - len(' '.join(lines[:-1]))  # improve this
+    raise RuntimeError(f'{m}\nline {line}, column {col}')
+
+
+def left():
+    global bp
+    if bp == 0:
+        fail('buffer overrun')
+    bp -= 1
+
+
+def right():
+    global bp
+    bp += 1
+    if bp == len(b):
+        b.append(0)
+
+
+def up():
+    b[bp] += 1
+
+
+def down():
+    b[bp] -= 1
+
+
+def decide():
+    global i
+    if b[bp]:
+        s.append(i - 1)
+    else:
+        p = i
+        n = 1
+        while n:
+            i += 1
+            if i == len(src):
+                i = p
+                fail('unmatched [')
+            elif src[i] == '[':
+                n += 1
+            elif src[i] == ']':
+                n -= 1
+
+
+def repeat():
+    global i
+    if not s:
+        fail('unmatched ]')
+    i = s.pop()
+
+
+def get():
+    b[bp] = ord(input()[:1] or '\0')
+
+
+def put():
+    print(chr(b[bp]
+              if 32 <= b[bp] < 127 or 9 <= b[bp] <= 12
+              else ord('·')),
+          end='')
+
+
+def do():
+    {
+        '<': left,
+        '>': right,
+        '+': up,
+        '-': down,
+        '[': decide,
+        ']': repeat,
+        ',': get,
+        '.': put,
+    }.get(src[i], lambda: None)()
+
+
+def advance():
+    global i
+    i += 1
+
+
+def main():
+    while i < len(src):
+        do()
+        advance()
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        print()
+    except RuntimeError as e:
+        print(e)
+        exit(1)

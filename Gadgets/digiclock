@@ -10,30 +10,40 @@ function cleanup {
     exit
 }
 
+function carriagereturn {
+    printf '\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b'
+    printf '\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b'
+    printf '\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b'
+    printf '\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b'
+}
+
+function printnumber {
+    putchar "${charset[$(( ${1:0:1} + 0x30 ))]}"
+    putchar "${charset[$(( ${1:1:1} + 0x30 ))]}"
+}
+
+function printsep {
+  putchar "${charset[$1]}"
+}
+
 (
     tput civis
     putchar "${charset[0x20]}"
     printf '\b\b\b\b\b\b\b\b\033[s'
-    ((x=y=0))
     trap cleanup SIGTERM SIGINT
     while (( $(date +'%N' | sed 's/^0*//') / 10000000 )) ; do : ; done
-    t=( $(date +'%H %M %S') )
-    h=${t[0]}
-    m=${t[1]}
-    s=${t[2]}
+    tick=0
     while : ; do
-        n=$(( $(date +'%N' | sed 's/^0*//') / 10000000 ))
-        if ((n==00 || n==50)) ; then
-            printf '\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b'
-            printf '\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b'
-            printf '\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b'
-            printf '\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b'
-            for t in $h $m $s ; do
-                putchar "${charset[$(printf '%#x' $(( ${t:0:1} + 0x30 )))]}"
-                putchar "${charset[$(printf '%#x' $(( ${t:1:1} + 0x30 )))]}"
-                ((++x%3)) && ((j=++y%4?0x3a:0x20)) && putchar "${charset[j]}"
-            done
-            ((n==00)) && (((++s && ((s%=60))) || (++m && ((m%=60))) || (++h && ((h%=24)))))
-        fi
+        t=( $(date +'%H %M %S') )
+        h=${t[0]}
+        m=${t[1]}
+        s=${t[2]}
+        carriagereturn
+        printnumber $h
+        printsep 0x3a
+        printnumber $m
+        printsep $(( (tick=~tick) ? 0x3a : 0x20 ))
+        printnumber $s
+        sleep .5
     done
 ) 2>/dev/null
