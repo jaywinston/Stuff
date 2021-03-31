@@ -3,6 +3,7 @@
 import sys
 
 src = sys.stdin.read().rstrip('\n')
+sys.stdin = open('/dev/tty')
 i = 0
 b = [0]
 bp = 0
@@ -64,14 +65,14 @@ def repeat():
 
 
 def get():
-    b[bp] = ord(input()[:1] or '\0')
+    b[bp] = ord(sys.stdin.read(1))
 
 
 def put():
-    print(chr(b[bp]
-              if 32 <= b[bp] < 127 or 9 <= b[bp] <= 12
-              else ord('·')),
-          end='')
+    sys.stdout.write(chr(b[bp]
+                     if 32 <= b[bp] < 127 or 9 <= b[bp] <= 12
+                     else ord('·')))
+    sys.stdout.flush()
 
 
 def do():
