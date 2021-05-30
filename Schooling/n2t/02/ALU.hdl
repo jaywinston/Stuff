@@ -43,6 +43,7 @@ CHIP ALU {
 
     PARTS:
    // Put you code here:
+   // logical negation could be done with a 16 bit xor
    Mux16(a=x, b=false, sel=zx, out=xMuxzx);
    Not16(in=xMuxzx, out=xNot);
    Mux16(a=xMuxzx, b=xNot, sel=nx, out=outx);

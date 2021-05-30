@@ -525,7 +525,6 @@ class Eval {
         do arg.setData(deref.data());
 
 //see kludge in Exec.next()        do LibSym.destroySym(listp);
-//        do LibSym.destroySym(listp);
         do Exec.nestedlistkludge(listp);
 
         return arg;

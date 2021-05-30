@@ -316,11 +316,9 @@ class LibSym {
             do rcp.setData(rcp.data() + 1);
         }
 
-/*
         if (type = LIST) {
             do LibSym.tagList(p.data());
         }
-*/
 
         return;
     }
@@ -357,26 +355,31 @@ class LibSym {
     }
 
 
-/*
+    function void tagSym(Symbol p) {
+        if (p.tag() = null) {
+            do p.setTag("");
+        }
+        if ( (p.meta()&LIST) = LIST ) {
+            do LibSym.tagList(p.data());
+        }
+        return;
+    }
+
+
     function void tagList(Collection l) {
-        var int i;
+        var int i, len;
         var Symbol p;
 
+        let len = l.length();
         let i = 0;
-        while (i < l.length()) {
+        while (i < len) {
             let p = l.nth(i);
-            if (p.tag() = null) {
-                do p.setTag("");
-            }
-            if (p.meta() = LIST) {
-                do LibSym.tagList(p.data());
-            }
+            do LibSym.tagSym(p);
             let i = i + 1;
         }
 
         return;
     }
-*/
 
 
     function String format(Symbol p) {
