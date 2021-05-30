@@ -99,11 +99,10 @@ def main():
         advance()
 
 
-if __name__ == '__main__':
-    try:
-        main()
-    except KeyboardInterrupt:
-        print()
-    except RuntimeError as e:
-        print(e)
-        exit(1)
+try:
+    main()
+except KeyboardInterrupt:
+    print()
+except RuntimeError as e:
+    print(e)
+    exit(1)
