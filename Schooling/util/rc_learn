@@ -14,27 +14,27 @@ input=$1
 TUTORIALS=$(basename -a $(dirname $(find $(dirname $0)/.. -name .config)))
 TUTORIAL=
 
+# it's been a while since I wrote this and it could use some refactorization
 until test -n "$TUTORIAL"
 do
-	if echo "$TUTORIALS" | grep -qx "$input"
-    then
-		TUTORIAL="$input"
-	elif echo $input | grep -Eqx '[[:digit:]]+' && \
-			test "$input" -le $(echo "$TUTORIALS" | wc -l)
-    then
-		TUTORIAL=$(echo "$TUTORIALS" | sed -n "${input}p")
-	else
-		input=
-	fi
-	if [ -z "$input" ]
-    then
-		# If there was no input or it was invalid then show a menu.
-		# Note the embedded newline in the prompt.
-		read -p "$(echo "$TUTORIALS" | nl)
+  if echo "$TUTORIALS" | grep -qx "$input"
+  then
+    TUTORIAL="$input"
+  elif echo $input | grep -Eqx '[[:digit:]]+' && \
+        test "$input" -le $(echo "$TUTORIALS" | wc -l)
+  then
+    TUTORIAL=$(echo "$TUTORIALS" | sed -n "${input}p")
+  else
+    input=
+  fi
+  if [ -z "$input" ]
+  then
+    # If there was no input or it was invalid then show a menu.
+    # Note the embedded newline in the prompt.
+    read -p "$(echo "$TUTORIALS" | nl)
 > " input
-	fi
+  fi
 done
 
 # This is captured by the calling function.
 echo $TUTORIAL
-

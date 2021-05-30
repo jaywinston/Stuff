@@ -41,7 +41,7 @@ because 'a.out' is not one format.  It seems to be implemented differently
 in - at least - every different system that supports it.  In fact,
 <http://www.cs.utah.edu/flux/oskit/OLD/html/doc-0.96/node690.html>
 says so explicitly.  One strength that can be said of it is that it still sees
-support to this day (March 11, 2019).  Perhaps its weakness is it's varied
+support to this day (March 11, 2019).  Perhaps its weakness is its varied
 implementations.  It cannot be said that it lacks support for dynamic linkage
 because the FreeBSD implementation did support dynamic linkage.
 

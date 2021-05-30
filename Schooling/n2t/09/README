@@ -1,6 +1,6 @@
 This is an interactive turtle graphics console.  It has some basic list
 processing, conditionals, loops, and function definitions as statements and
-expressions.  It is dynamically scoped and has garbage collection.
+expressions.  It is dynamically scoped and is garbage collected.
 
 In general, expressions are space delimited.  Blocks, lists and strings
 of course allow embedded spaces, though format expressions do not.
@@ -19,7 +19,8 @@ below in the description of format expressions.
 
 Arithmetic expressions mostly follow standard precedence rules. Unary operators
 bind tightest of anything, bitwise logic binds looser than anything, and
-comparison operators follow.  Besides that, rules are standard.
+comparison operators follow.  Besides that, rules are standard.  Parentheses
+are honored.
 Operators are:
  unary:
   + absolute value
@@ -57,9 +58,9 @@ Any other character is an error.  Three escape sequences, 'N' for newline,
 recognized and escaped by a backslash ('\') character.  Any other character
 resolves to itself.
 
-Blocks and functions return their last line.
+Blocks and functions return their last executed line.
 
-Lists are indexed as follows:
+Lists are zero-indexed as follows:
 
 <list> '.' <index>
 
