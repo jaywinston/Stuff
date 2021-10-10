@@ -104,6 +104,7 @@ class Parse {
     function int atom(String s, Symbol word, int i) {
         var int cc;
         var String t;
+        var Array a;
 
         let cc = Parse.cclass(s, i) & GLOBL;
         do word.setMeta(cc);
@@ -134,7 +135,12 @@ class Parse {
             let i = Lex.token(s, t, TOKENMASK, i);
             do word.setData(t);
         } else {
-            do LibIO.error("unexpected character");
+            let t = "unexpected character: '%C'";
+            let a = Array.new(1);
+            let a[0] = s.charAt(i);
+            do LibIO.error(Str.format(t, a));
+            do t.dispose();
+            do a.dispose();
             let i = -1;
         }}}}}}
 
@@ -331,6 +337,9 @@ class Parse {
     }
 
 
+function void db(int c) { var String p,q; var Array a; let a=Array.new(1); let a[0]=c; let p="c is: '%C'"; let q=Str.format(p,a); do DB.db(q); do p.dispose(); do q.dispose(); do a.dispose(); return; }
+function void dbs(int c) { var String p,q; var Array a; let a=Array.new(1); let a[0]=c; let p="s is: '%S'"; let q=Str.format(p,a); do DB.db(q); do p.dispose(); do q.dispose(); do a.dispose(); return; }
+
     function int fmtex(String s, Symbol fmtex, int i) {
         var int cc;
         var String t;
@@ -348,12 +357,17 @@ class Parse {
                 return Parse.package(fmtex, argv, s, i);
             }
 
+            if (s.charAt(i) = 32) {  // todo: handle any unexpected, see Lex?
+                return Parse.package(fmtex, argv, s, i);
+            }
+
             let arg = Symbol.new(null, null, null);
             let i = Parse.expr(s, arg, i);
             let s = Parse.tag(arg);
             let cc = Parse.cclass(s, i) & GLOBL;
 
             if (cc = NOLGL) {
+                do LibSym.destroySym(arg);
                 return Parse.package(fmtex, argv, s, -1);
             }
 

@@ -83,7 +83,7 @@ class Vector {
 
     function void init() {
         let SINTAB = Array.new(91);
-                         /* populate sine table */
+
         let SINTAB[0] = 0; let SINTAB[1] = 2; let SINTAB[2] = 3;
         let SINTAB[3] = 5; let SINTAB[4] = 7; let SINTAB[5] = 9;
         let SINTAB[6] = 10; let SINTAB[7] = 12; let SINTAB[8] = 14;
@@ -115,7 +115,7 @@ class Vector {
         let SINTAB[84] = 99; let SINTAB[85] = 100; let SINTAB[86] = 100;
         let SINTAB[87] = 100; let SINTAB[88] = 100; let SINTAB[89] = 100;
         let SINTAB[90] = 100;
-                         /* end sine table */
+
         return;
     }
 

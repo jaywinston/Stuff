@@ -72,8 +72,7 @@ class Eval {
     }
 
 
-    /** format specifiers must not map to themselves
-     */
+    /** format specifiers must not map to themselves */
     function Array fspectab() {
         var int i;
         var Array fspectab;
@@ -340,7 +339,7 @@ class Eval {
         if (op =   60) { return   m < n;  }
         if (op =   62) { return   m > n;  }
         if (op = 6061) { return ~(m > n); }
-        if (op = 6261) { return ~(m < n);  }
+        if (op = 6261) { return ~(m < n); }
 
         do LibIO.error("unrecognized operator");
         return 0;
@@ -365,7 +364,7 @@ class Eval {
 
         let fstrp = Eval.arg(argv.pop());
 
-        if (fstrp = null) {  // todo: no need?
+        if (fstrp = null) {  // todo: need?
             do LibIO.error("expected format string");
             do LibSym.destroyList(argv);
             return "";

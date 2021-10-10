@@ -14,7 +14,7 @@ point, I realized that you can't cheat this and got to work.  It was then that
 I found some contradictions in my concept of the language i.e. I couldn't parse
 it.  At that point, I stopped coding and sat down with pencil and paper and
 designed some sort of grammar.  That was a major breakthrough, though the
-crammer evolved a lot as it was being implemented in code.  My solution to the
+grammar evolved a lot as it was being implemented in code.  My solution to the
 recursive token problems were to read input from within the parse module, from
 function calls when necessary.  I originally wanted all input to be read from
 the top level of the main loop.  I'm still not sure if it's a good solution

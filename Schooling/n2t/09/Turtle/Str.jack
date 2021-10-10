@@ -7,7 +7,7 @@ class Str {
 
 
     function boolean eq(String s, String t) {
-        var int i;
+        var int i, len;
 
         if (s = t) {
             return true;
@@ -17,12 +17,14 @@ class Str {
             return false;
         }
 
-        if (~(s.length() = t.length())) {
+        let len = s.length();
+
+        if (~(len = t.length())) {
             return false;
         }
 
         let i = 0;
-        while (i < s.length()) {
+        while (i < len) {
             if (~(s.charAt(i) = t.charAt(i))) {
                 return false;
             }
@@ -37,10 +39,13 @@ class Str {
     function String format(String f, Array arg) {
         var boolean continue;
         var char c;
-        var int a, i, j, len;
+        var int a, i, j;
+        var int fLen, len;
         var String s, t;
 
-        if (f.length() < 2) {
+        let fLen = f.length();
+
+        if (fLen < 2) {
             return Str.dup(f);
         }
 
@@ -50,22 +55,22 @@ class Str {
 
         let a = 0;
         let i = 0;
-        while (i < f.length()) {
+        while (i < fLen) {
 
             let c = f.charAt(i);
             let continue = ~(c = 37);
 
             let i = i + 1;
-            while ( (i<f.length()) & continue ) {
+            while ( (i<fLen) & continue ) {
                 do s.appendChar(c);
                 let c = f.charAt(i);
                 let continue = ~(c = 37);
                 let i = i + 1;
             }
 
-            if (i < f.length()) {
+            if (i < fLen) {  // c == '%'
 
-                let c = f.charAt(i);
+                let c = f.charAt(i);  // the format directive
 
                 if (c = 68) {
                     let t = String.new(6);
@@ -74,12 +79,14 @@ class Str {
                     let t = Str.dup(arg[a]);
                 } else { if (c = 67) {
                     do s.appendChar(arg[a]);
+                    let a = a + 1;
                 } else { if (i < len) {
                     do s.appendChar(c);
                 }}}}
 
                 if (~(t = null)) {
-                    if ( ~(s.length()+t.length()) < len ) {
+                    // ? if ( ~(s.length()+t.length()) < len ) {
+                    if (~( (s.length()+t.length()) < len) ) {
                         let len = (len+Str.MAXLEN()) + t.length();
                         let s = Str.realloc(s, len);
                     }
@@ -92,7 +99,8 @@ class Str {
                 let i = i + 1;
 
             } else {
-                if ( ~(s.length()+1) < len ) {
+                // again with that!? if ( ~(s.length()+1) < len ) {
+                if (~( (s.length()+1) < len) ) {
                     let len = len + Str.MAXLEN();
                     let s = Str.realloc(s, len);
                 }
@@ -115,17 +123,18 @@ class Str {
     }
 
 
-    /** dangerous */
+    /** dangerous, what is s.maxLen? */
     function int cat(String s, String t) {
-        var int i;
+        var int i, tLen;
 
         let i = 0;
-        while (i < t.length()) {
+        let tLen = t.length();
+        while (i < tLen) {
             do s.appendChar(t.charAt(i));
             let i = i + 1;
         }
 
-        return i + s.length();
+        return s.length();
     }
 
 
