@@ -1,6 +1,9 @@
-This is an interactive turtle graphics console.  It has some basic list
+This is an interactive turtle graphics console.  It is my chapter 9 project for
+the nand2tetris course (https://www.nand2tetris.org/).  It has some basic list
 processing, conditionals, loops, and function definitions as statements and
 expressions.  It is dynamically scoped and garbage collected.
+
+A video demonstration: https://youtu.be/bEFqiwZSe78
 
 In general, expressions are space delimited.  Blocks, lists and strings
 allow embedded spaces, though format expressions do not.  An expression not
