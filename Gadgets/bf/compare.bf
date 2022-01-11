@@ -13,7 +13,6 @@
 >                                           \0
 >++[>++[>+++[>+++++<-]<-]<->>>+<<<]>>>[<<<+>>>-]<<<  '&gt;'
 
-
 .>
  ,>>>>>,<<<<<       read 1 and flush \n; todo: handle strings and safer flush
  [<<<<<+>>>>>>+<-]  copy to message and comparsion area
@@ -25,10 +24,10 @@
 
 >[  if no match then modify message
   <<<<<<<< ++++++++++ ++++++++++ ++++++++++ ++  change \0 to ' '
-  <<<<<<<<
-  .>.>.
-  >>>>>>>>>>>>>
+  <<<<<<<<  this is just a coincedence *dot dot dot* or is it?
+  .>.  "no"
+  >>>>>>>>>>>>>>
 ]
-<<<<<<<<<<<<
+<<<<<<<<<<<<<
 
 [.>]++++++++++.  print

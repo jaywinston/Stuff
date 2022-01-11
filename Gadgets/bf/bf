@@ -8,6 +8,9 @@ i = 0
 b = [0]
 bp = 0
 s = []
+DB = src[0] == '?'
+if DB:
+    src = src[1:]
 
 
 def fail(m):
@@ -70,9 +73,9 @@ def get():
 
 
 def put():
-    sys.stdout.write(chr(b[bp]
+    sys.stdout.write(chr(b[bp])
                      if 32 <= b[bp] < 127 or 9 <= b[bp] <= 12
-                     else ord('·')))
+                     else '·')
     sys.stdout.flush()
 
 
@@ -86,8 +89,8 @@ def do():
         ']': repeat,
         ',': get,
         '.': put,
-        '?': lambda: print(b),  # db
-        '!': lambda: exit()     # db
+        '?': lambda: DB and print(b),
+        '!': lambda: DB and exit()
     }.get(src[i], lambda: None)()
 
 
