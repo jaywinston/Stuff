@@ -86,6 +86,8 @@ def do():
         ']': repeat,
         ',': get,
         '.': put,
+        '?': lambda: print(b),  # db
+        '!': lambda: exit()     # db
     }.get(src[i], lambda: None)()
 
 
