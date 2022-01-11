@@ -2,6 +2,8 @@
 
 # for entertainment purposes only.
 
+# this needs fixing.
+
 source $(dirname $0)/char_mod
 
 function cleanup {

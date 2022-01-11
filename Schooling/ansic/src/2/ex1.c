@@ -3,20 +3,23 @@
 #include <float.h>
 #include <signal.h>
 
-/* This solution is cheating. I use features of the language which have not yet been covered in the book.
+/* This solution should be fully portable as it assumes nothing of data
+ * representation.  It is is cheating, though as I use features of the
+ * language which have not yet been covered in the book.  It also does
+ * not handle floating point so "solution" is perhaps a bit ambitious.
+ * And while diminutive tests are encouraging, they also indicate that
+ * this program would take well over nine hundred years to complete on
+ * my sixty four bit system, (hence "h()"). So, the world may never know.
  *
- * - data rep unknown
-   - arith won't work
-   - when stop?
-   - float shows inf so not solution?
+ *  *crunch*
  */
 
 unsigned char canvas[sizeof (long double)];
 
-void h(int i)
+void h(int s)
 {
-for (int i=0;i<sizeof(canvas);i++) printf("%d,", canvas[i]);
-putchar('\n');
+  for (int i=0;i<sizeof(canvas);i++) printf("%d,", canvas[i]);
+  putchar('\n');
 }
 
 
@@ -26,7 +29,8 @@ putchar('\n');
  */
 int main()
 {
-signal(SIGUSR1,h);
+  signal(SIGUSR1,h);
+
   unsigned char onebit, bit, carry;
   int i;
 
