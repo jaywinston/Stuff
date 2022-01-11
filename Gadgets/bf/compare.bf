@@ -14,17 +14,17 @@
 >++[>++[>+++[>+++++<-]<-]<->>>+<<<]>>>[<<<+>>>-]<<<  '&gt;'
 
 .>
- ,>>>>>,<<<<<       read 1 and flush \n; todo: handle strings and safer flush
+ ,>>>,<<<           read 1 and flush \n; todo: handle strings and safer flush
  [<<<<<+>>>>>>+<-]  copy to message and comparsion area
 <.>
- ,>>>>>,<<<<<
+ ,>>>,<<<           do it again
  [<<<+>>>>>+<<-]
 
 >[->-<]  compare
 
 >[  if no match then modify message
   <<<<<<<< ++++++++++ ++++++++++ ++++++++++ ++  change \0 to ' '
-  <<<<<<<<  this is just a coincedence *dot dot dot* or is it?
+  <<<<<<<<  this is just a coincidence *dot dot dot* or is it?
   .>.  "no"
   >>>>>>>>>>>>>>
 ]
