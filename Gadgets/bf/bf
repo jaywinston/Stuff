@@ -8,9 +8,7 @@ i = 0
 b = [0]
 bp = 0
 s = []
-DB = src[0] == '?'
-if DB:
-    src = src[1:]
+DB = '-d' in sys.argv
 
 
 def fail(m):
@@ -55,8 +53,10 @@ def decide():
             if i == len(src):
                 i = p
                 fail('unmatched [')
-            n += src[i] == '['
-            n -= src[i] == ']'
+            elif src[i] == '[':
+                n += 1
+            elif src[i] == ']':
+                n -= 1
 
 
 def repeat():
