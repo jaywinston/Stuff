@@ -16,12 +16,12 @@
 │ >                                           \0                               │
 │ >++[>++[>+++[>+++++<-]<-]<->>>+<<<]>>>[<<<+>>>-]<<<  '&gt;'                  │
 │                                                                              │
-│ .>                                                                           │
-│  ,>>>,<<<           read 1 and flush \n; todo: handle strings                │
+│ .>,                 prompt/read                                              │
 │  [<<<<<+>>>>>>+<-]  copy to message and comparsion area                      │
-│ <.>                                                                          │
-│  ,>>>,<<<           do it again                                              │
+│  ,[-]               wait for enter (or any) key                              │
+│ <.>,                do it all again                                          │
 │  [<<<+>>>>>+<<-]                                                             │
+│  ,[-]                                                                        │
 └──────────────────────────────────────────────────────────────────────────────┘
 
 >[->-<]  compare; this is the program; but that's most software right?

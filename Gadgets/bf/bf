@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import sys
+import termios
 
 src = sys.stdin.read()
 sys.stdin = open('/dev/tty')
@@ -9,6 +10,7 @@ b = [0]
 bp = 0
 s = []
 DB = '-d' in sys.argv
+termattrs = termios.tcgetattr(sys.stdin.fileno())
 
 
 def fail(m):
@@ -72,7 +74,7 @@ def get():
 
 def put():
     sys.stdout.write(chr(b[bp])
-                     if 32 <= b[bp] < 127 or 9 <= b[bp] <= 12
+                     if 32 <= b[bp] < 127 or 9 <= b[bp] <= 13
                      else '·')
     sys.stdout.flush()
 
@@ -88,7 +90,7 @@ def do():
         ',': get,
         '.': put,
         '?': lambda: DB and print(b),
-        '!': lambda: DB and exit()
+        '!': lambda: DB and exit(),
     }.get(src[i], lambda: None)()
 
 
@@ -104,9 +106,15 @@ def main():
 
 
 try:
+    termios.tcsetattr(
+        sys.stdin.fileno(),
+        termios.TCSADRAIN,
+        termattrs[:3] + [termattrs[3] & ~termios.ICANON] + termattrs[4:] )
     main()
 except KeyboardInterrupt:
     print()
 except RuntimeError as e:
     print(e)
     exit(1)
+finally:
+    termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, termattrs)
