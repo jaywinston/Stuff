@@ -115,6 +115,5 @@ except KeyboardInterrupt:
     print()
 except RuntimeError as e:
     print(e)
-    exit(1)
 finally:
     termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, termattrs)

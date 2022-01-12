@@ -18,10 +18,10 @@
 │                                                                              │
 │ .>,                 prompt/read                                              │
 │  [<<<<<+>>>>>>+<-]  copy to message and comparsion area                      │
-│  ,[-]               wait for enter (or any) key                              │
+│  ,                  wait for enter (or any) key                              │
 │ <.>,                do it all again                                          │
 │  [<<<+>>>>>+<<-]                                                             │
-│  ,[-]                                                                        │
+│  ,                                                                           │
 └──────────────────────────────────────────────────────────────────────────────┘
 
 >[->-<]  compare; this is the program; but that's most software right?
