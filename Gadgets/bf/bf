@@ -4,13 +4,11 @@ import sys
 import termios
 
 src = sys.stdin.read()
-sys.stdin = open('/dev/tty')
 i = 0
 b = [0]
-bp = 0
+p = 0
 s = []
 DB = '-d' in sys.argv
-termattrs = termios.tcgetattr(sys.stdin.fileno())
 
 
 def fail(m):
@@ -21,39 +19,39 @@ def fail(m):
 
 
 def left():
-    global bp
-    if bp == 0:
+    global p
+    if p == 0:
         b.insert(0, 0)
     else:
-        bp -= 1
+        p -= 1
 
 
 def right():
-    global bp
-    bp += 1
-    if bp == len(b):
+    global p
+    p += 1
+    if p == len(b):
         b.append(0)
 
 
 def up():
-    b[bp] += 1
+    b[p] += 1
 
 
 def down():
-    b[bp] -= 1
+    b[p] -= 1
 
 
 def decide():
     global i
-    if b[bp]:
+    if b[p]:
         s.append(i - 1)
     else:
-        p = i
+        e = i
         n = 1
         while n:
             i += 1
             if i == len(src):
-                i = p
+                i = e
                 fail('unmatched [')
             elif src[i] == '[':
                 n += 1
@@ -69,12 +67,12 @@ def repeat():
 
 
 def get():
-    b[bp] = ord(sys.stdin.read(1))
+    b[p] = ord(sys.stdin.read(1))
 
 
 def put():
-    sys.stdout.write(chr(b[bp])
-                     if 32 <= b[bp] < 127 or 9 <= b[bp] <= 13
+    sys.stdout.write(chr(b[p])
+                     if 32 <= b[p] < 127 or 9 <= b[p] <= 13
                      else '·')
     sys.stdout.flush()
 
@@ -106,6 +104,8 @@ def main():
 
 
 try:
+    sys.stdin = open('/dev/tty')
+    termattrs = termios.tcgetattr(sys.stdin.fileno())
     termios.tcsetattr(
         sys.stdin.fileno(),
         termios.TCSADRAIN,
