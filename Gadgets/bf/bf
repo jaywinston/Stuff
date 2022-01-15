@@ -2,8 +2,20 @@
 
 import sys
 import termios
+import pathlib
 
-src = sys.stdin.read()
+
+try:
+    src = ''.join(pathlib.Path(f).read_text()
+                  for f in sys.argv[1:] if
+                  f != '-d')
+    if not src:
+        src = sys.stdin.read()
+        sys.stdin = open('/dev/tty')
+except FileNotFoundError as e:
+    print(e)
+    exit(1)
+
 i = 0
 b = [0]
 p = 0
@@ -11,7 +23,9 @@ s = []
 DB = '-d' in sys.argv
 
 
-def fail(m):
+def fail(m, e):
+    global r
+    r = e
     lines = src[:i].split('\n')
     line = len(lines)
     col = i + 1 if line == 1 else i - len(' '.join(lines[:-1]))  # improve this
@@ -52,7 +66,7 @@ def decide():
             i += 1
             if i == len(src):
                 i = e
-                fail('unmatched [')
+                fail('unmatched [', 2)
             elif src[i] == '[':
                 n += 1
             elif src[i] == ']':
@@ -62,7 +76,7 @@ def decide():
 def repeat():
     global i
     if not s:
-        fail('unmatched ]')
+        fail('unmatched ]', 3)
     i = s.pop()
 
 
@@ -71,9 +85,7 @@ def get():
 
 
 def put():
-    sys.stdout.write(chr(b[p])
-                     if 32 <= b[p] < 127 or 9 <= b[p] <= 13
-                     else '·')
+    sys.stdout.write(chr(b[p]))
     sys.stdout.flush()
 
 
@@ -87,7 +99,15 @@ def do():
         ']': repeat,
         ',': get,
         '.': put,
-        '?': lambda: DB and print(b),
+        '_': lambda: DB and print(' ', end=''),
+        '~': lambda: DB and print('\n', end=''),
+        '$': lambda: DB and print(src, end=''),
+        '@': lambda: DB and print(i, end=''),
+        '?': lambda: DB and print(b, end=''),
+        '^': lambda: DB and print(p, end=''),
+        '*': lambda: DB and print(b[p], end=''),
+        '#': lambda: DB and print(len(b), end=''),
+        ':': lambda: DB and print(s, end=''),
         '!': lambda: DB and exit(),
     }.get(src[i], lambda: None)()
 
@@ -104,16 +124,19 @@ def main():
 
 
 try:
-    sys.stdin = open('/dev/tty')
-    termattrs = termios.tcgetattr(sys.stdin.fileno())
-    termios.tcsetattr(
-        sys.stdin.fileno(),
-        termios.TCSADRAIN,
-        termattrs[:3] + [termattrs[3] & ~termios.ICANON] + termattrs[4:] )
+    r = 0
+    if sys.stdin.isatty():
+        termattrs = termios.tcgetattr(sys.stdin.fileno())
+        termios.tcsetattr(
+            sys.stdin.fileno(),
+            termios.TCSADRAIN,
+            termattrs[:3] + [termattrs[3] & ~termios.ICANON] + termattrs[4:])
     main()
 except KeyboardInterrupt:
     print()
 except RuntimeError as e:
     print(e)
 finally:
-    termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, termattrs)
+    if sys.stdin.isatty():
+        termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, termattrs)
+exit(r)
