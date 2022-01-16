@@ -12,8 +12,7 @@ the message buffers are
 ctrl F and ctrl H hang the program; ctrl R comes as \012 on gnome terminal;
 I haven't tested all control chars
 
-This falsley reports a match on string 2 endswith string1 and string2 is
-longer than string1; shoulda seen that coming
+todo: refactor colors to known locations
 
  ++++++++++ ++++++++++ ++++++++++ ++++++++++ ++++++++++ ++++++++++  '&lt;'
 >++++++++++ ++++++++++ ++++++++++ ++                                ' '
@@ -26,12 +25,12 @@ longer than string1; shoulda seen that coming
 >>[>]>>>>>                 go to buffer2; skipping null|comparison cell|null
 ,----------[>,----------]  read until ascii \n
 <[<]<<<<<                  go to end of buf1
-[
+[  compare
   [>+>+<<-]          copy buf1 lastchar to condition and message buffer
   >[[>]>+<<[<]>-]    move current char to comparison cell
   >[>]>>>[>]<        go to end of buf2
   [>+>+<<-]          copy buf2 lastchar to condition and message buffer
-  >[<<[<]<->>[>]>-]  compare
+  >[<<[<]<->>[>]>-]  subtract current char from comparison area
   >[<]               conditionally compensate for empty string 2
   <<[<]<[            go to comparison cell
     <<[<]<<[<]       go to start of buf1
@@ -62,13 +61,44 @@ longer than string1; shoulda seen that coming
     +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++.  'm'
     ---------------------------------------
     --------------------------------------.  ' '
-    >[++++++++++.>]>>[++++++++++.>]++++++++++.  echo buf2
+    >[++++++++++.>]>>[++++++++++.>]++++++++++.* echo buf2
     [>]>>>>  exit
   ]
   <<[<]<<
-]+[  check for empty string 1
-  >>>
-  [<<<<<<<<<<<] non empty so exit off the left
+]+[-
+  >>>[  go to start of msg1
+    [>]>>>[  go to start buf2
+      data still in buf2 which means that s2 in longer than s1
+      so report diff and exit
+      <<<<[<]
+      +++++++++++++++++++++++++++.
+      ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++.
+      ----------------------------------------.--.
+      ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++.
+      ----------------------------------------------------------------.
+      ------------------.
+      ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++.
+      -------------------------------------------.
+      +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++.
+      ---------------------------------------
+      --------------------------------------.
+      >[++++++++++.>]++++++++++.>
+      +++++++++++++++++++++++++++.
+      ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++.
+      ----------------------------------------.-.
+      +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++.
+      ------------------------------------------------------------------.
+      ----------------.
+      ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++.
+      -------------------------------------------.
+      +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++.
+      ---------------------------------------
+      --------------------------------------.
+      >>[++++++++++.>]>>[++++++++++.>]++++++++++.
+      [<]<<[<]<<<[<]^?  go to start of s1
+      ^
+    ]
+  ]
   >>>[          check for non empty string 2
     <           go to a null cell and use it for printing
     +++++++++++++++++++++++++++.
@@ -98,3 +128,5 @@ longer than string1; shoulda seen that coming
     [>]  exit
   ]
 ]
+
+~^_*_?~

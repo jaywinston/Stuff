@@ -37,6 +37,11 @@ def fail(m, e):
     raise RuntimeError(report(m))
 
 
+def info(o):
+    sys.stderr.write(str(o))
+    sys.stderr.flush()
+
+
 def left():
     global p
     if p == 0:
@@ -104,15 +109,15 @@ def do():
         ']': repeat,
         ',': get,
         '.': put,
-        '_': lambda: DB and print(' ', end=''),
-        '~': lambda: DB and print('\n', end=''),
-        '$': lambda: DB and print(src, end=''),
-        '@': lambda: DB and print(i, end=''),
-        '?': lambda: DB and print(b, end=''),
-        '^': lambda: DB and print(p, end=''),
-        '*': lambda: DB and print(b[p], end=''),
-        '#': lambda: DB and print(len(b), end=''),
-        ':': lambda: DB and print(s, end=''),
+        '_': lambda: DB and info(' '),
+        '~': lambda: DB and info('\n'),
+        '$': lambda: DB and info(src),
+        '@': lambda: DB and info(i),
+        '?': lambda: DB and info(b),
+        '^': lambda: DB and info(p),
+        '*': lambda: DB and info(b[p]),
+        '#': lambda: DB and info(len(b)),
+        ':': lambda: DB and info(s),
         '!': lambda: DB and exit(),
     }.get(src[i], lambda: None)()
 
