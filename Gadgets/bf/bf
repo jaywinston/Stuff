@@ -7,8 +7,8 @@ import pathlib
 
 try:
     src = ''.join(pathlib.Path(f).read_text()
-                  for f in sys.argv[1:] if
-                  f != '-d')
+                  for f in sys.argv[1:]
+                  if f != '-d')
     if not src:
         src = sys.stdin.read()
         sys.stdin = open('/dev/tty')
@@ -81,11 +81,11 @@ def repeat():
 
 
 def get():
-    b[p] = ord(sys.stdin.read(1))
+    b[p] = ord(sys.stdin.read(1))  # this can fail, useful err message welcome
 
 
 def put():
-    sys.stdout.write(chr(b[p]))
+    sys.stdout.write(chr(b[p]))  # this can fail, useful err message welcome
     sys.stdout.flush()
 
 

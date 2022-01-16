@@ -1,5 +1,3 @@
-this does not handle empty strings
-
 the message buffers are
   ; each string buffer is delimited by \0
   ; go the char immediately left of that
