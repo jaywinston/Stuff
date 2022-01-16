@@ -23,13 +23,18 @@ s = []
 DB = '-d' in sys.argv
 
 
-def fail(m, e):
-    global r
-    r = e
+def report(m=''):
     lines = src[:i].split('\n')
     line = len(lines)
     col = i + 1 if line == 1 else i - len(' '.join(lines[:-1]))  # improve this
-    raise RuntimeError(f'{m}\nline {line}, column {col}')
+    return f'{m}\nline {line}, column {col}'
+
+
+
+def fail(m, e):
+    global r
+    r = e
+    raise RuntimeError(report(m))
 
 
 def left():
@@ -136,6 +141,9 @@ except KeyboardInterrupt:
     print()
 except RuntimeError as e:
     print(e)
+except:
+    print(report())
+    raise
 finally:
     if sys.stdin.isatty():
         termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, termattrs)
