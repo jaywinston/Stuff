@@ -99,27 +99,30 @@ def put():
     sys.stdout.flush()
 
 
+TRANSLATIONS = {
+    '<': left,
+    '>': right,
+    '+': up,
+    '-': down,
+    '[': decide,
+    ']': repeat,
+    ',': get,
+    '.': put,
+    '_': lambda: DB and info(' '),
+    '~': lambda: DB and info('\n'),
+    '$': lambda: DB and info(src),
+    '@': lambda: DB and info(i),
+    '?': lambda: DB and info(b),
+    '^': lambda: DB and info(p),
+    '*': lambda: DB and info(b[p]),
+    '#': lambda: DB and info(len(b)),
+    ':': lambda: DB and info(s),
+    '!': lambda: DB and exit(),
+}
+
+
 def do():
-    {
-        '<': left,
-        '>': right,
-        '+': up,
-        '-': down,
-        '[': decide,
-        ']': repeat,
-        ',': get,
-        '.': put,
-        '_': lambda: DB and info(' '),
-        '~': lambda: DB and info('\n'),
-        '$': lambda: DB and info(src),
-        '@': lambda: DB and info(i),
-        '?': lambda: DB and info(b),
-        '^': lambda: DB and info(p),
-        '*': lambda: DB and info(b[p]),
-        '#': lambda: DB and info(len(b)),
-        ':': lambda: DB and info(s),
-        '!': lambda: DB and exit(),
-    }.get(src[i], lambda: None)()
+    TRANSLATIONS.get(src[i], lambda: None)()
 
 
 def advance():
