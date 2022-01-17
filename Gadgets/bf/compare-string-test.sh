@@ -1,6 +1,5 @@
-#!/bin/bash
+#!/bin/bash -e
 
-set -e  # todo: why not #!/bin/bash -e?
 
 function test {  # this must be first
   local r s in out
