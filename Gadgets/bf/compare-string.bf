@@ -97,7 +97,7 @@ todo: refactor colors to known locations
       ---------------------------------------
       --------------------------------------.
       >>[++++++++++.>]>>[++++++++++.>]++++++++++.
-      [<]<<[<]<<<[<]<<<<  exit
+      >>>> exit
     ]+[-<<<]  go to start of msg1
   ]  s1 is empty so check s2 or the program's exited so nothing will happen
   >>>[  check for non empty string 2
