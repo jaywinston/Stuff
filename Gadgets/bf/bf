@@ -13,7 +13,8 @@ try:
         src = sys.stdin.read()
         sys.stdin = open('/dev/tty')
 except FileNotFoundError as e:
-    print(e)
+    print(str(e).replace('[Errno 2] ', '').replace(' or directory', ''),
+          file=sys.stderr)
     exit(1)
 
 i = 0
@@ -38,8 +39,7 @@ def fail(m, e):
 
 
 def info(o):
-    sys.stderr.write(str(o))
-    sys.stderr.flush()
+    print(o, end='', file=sys.stderr, flush=True)
 
 
 def left():
@@ -145,9 +145,9 @@ try:
 except KeyboardInterrupt:
     print()
 except RuntimeError as e:
-    print(e)
+    print(e, file=sys.stderr)
 except:
-    print(report())
+    print(report(), file=sys.stderr)
     raise
 finally:
     if sys.stdin.isatty():
