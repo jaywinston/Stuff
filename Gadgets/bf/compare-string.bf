@@ -11,6 +11,8 @@ the message buffers are
 
 ctrl F and ctrl H hang the program; ctrl R comes as \012 on gnome terminal;
 I haven't tested all control chars
+Oh; that's bc they're less than \n; i have no intention on handling
+this any time soon
 
 todo: refactor colors to known locations
 
@@ -27,13 +29,13 @@ todo: refactor colors to known locations
 <[<]<<<<<                  go to end of buf1
 [  compare
   [>+>+<<-]          copy buf1 lastchar to condition and message buffer
-  >[[>]>+<<[<]>-]    move current char to comparison cell
+  >[[>]>+<<[<]>-]    move condition to comparison cell
   >[>]>>>[>]<        go to end of buf2
   [>+>+<<-]          copy buf2 lastchar to condition and message buffer
-  >[<<[<]<->>[>]>-]  subtract current char from comparison area
+  >[<<[<]<->>[>]>-]  subtract condition from comparison cell
   >[<]               conditionally compensate for empty string 2
   <<[<]<[            go to comparison cell
-    <<[<]<<[<]       go to start of buf1
+    <<[<]<<[<]  go to start of buf1
     fancy shmancy colors; yeah
     +++++++++++++++++++++++++++.  \033
     ++++++++++++++++++++++++++++++++   left
@@ -47,7 +49,7 @@ todo: refactor colors to known locations
     +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++.  'm'
     ---------------------------------------
     --------------------------------------.  ' '
-    >[++++++++++.>]>>[++++++++++.>]++++++++++.  echo buf1
+    >[++++++++++.>]>>[++++++++++.>]++++++++++.  echo s1
     >>  go to null immediately left of buf2
     fancy shmancy colors; yeah
     +++++++++++++++++++++++++++.  \033
@@ -61,10 +63,10 @@ todo: refactor colors to known locations
     +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++.  'm'
     ---------------------------------------
     --------------------------------------.  ' '
-    >[++++++++++.>]>>[++++++++++.>]++++++++++.* echo buf2
+    >[++++++++++.>]>>[++++++++++.>]++++++++++.* echo s2
     [>]>>>>  exit
   ]
-  <<[<]<<
+  <<[<]<<  go to start of buf1
 ]+[-
   >>>[  go to start of msg1
     [>]>>>[  go to start buf2
@@ -95,12 +97,11 @@ todo: refactor colors to known locations
       ---------------------------------------
       --------------------------------------.
       >>[++++++++++.>]>>[++++++++++.>]++++++++++.
-      [<]<<[<]<<<[<]^?  go to start of s1
-      ^
-    ]
-  ]
-  >>>[          check for non empty string 2
-    <           go to a null cell and use it for printing
+      [<]<<[<]<<<[<]<<<<  exit
+    ]+[-<<<]  go to start of msg1
+  ]  s1 is empty so check s2 or the program's exited so nothing will happen
+  >>>[  check for non empty string 2
+    <   go to a null cell and use it for printing
     +++++++++++++++++++++++++++.
     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++.
     ----------------------------------------.--.
@@ -112,7 +113,7 @@ todo: refactor colors to known locations
     +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++.
     ---------------------------------------
     --------------------------------------.  ' ' deliberately
-    ----------------------.  \n
+    ----------------------.
     +++++++++++++++++.
     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++.
     ----------------------------------------.-.
@@ -123,10 +124,8 @@ todo: refactor colors to known locations
     -------------------------------------------.
     +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++.
     ---------------------------------------
-    --------------------------------------.  ' '
-    >[++++++++++.>]++++++++++.  echo buf2
-    [>]  exit
+    --------------------------------------.
+    >[++++++++++.>]++++++++++.  echo s2
+    >  exit
   ]
 ]
-
-~^_*_?~
