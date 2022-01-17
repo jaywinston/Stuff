@@ -67,8 +67,7 @@ function s1-shorter-than-s2-overlap_many { test klm abcdefghijklm ; }
 
 
 function run {  # this must be second to last
-  local r=( $* )
-  r="${r[*]}"
+  local r="$*"
   eval "${r// /;}"
 }
 
