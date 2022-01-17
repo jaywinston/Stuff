@@ -1,6 +1,9 @@
 #!/bin/bash -e
 
 
+BASEDIR=`dirname $0`
+
+
 function test {  # this must be first
   local r s in out
   in="$1"$'\n'"$2"$'\n'
@@ -8,10 +11,8 @@ function test {  # this must be first
     out=$'\e[31m-\e[0m '"$1"$'\n\e[32m+\e[0m '"$2"  # magic!
   fi
   if
-    r="`2>&1 \
-      ~/Projects/Stuff/Gadgets/bf/bf \
-      ~/Projects/Stuff/Gadgets/bf/compare-string.bf  <<< "$in"`" && \
-    r=${r/<<< <<< }  # magic!
+    r="`2>&1 "$BASEDIR"/bf "$BASEDIR"/compare-string.bf  <<< "$in"`" \
+    && r=${r/<<< <<< }  # magic!
   then
     if ! [[ "$r" == "$out" ]] ; then
       {
