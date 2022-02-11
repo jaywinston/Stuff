@@ -117,7 +117,7 @@ TRANSLATIONS = {
     '*': lambda: DB and info(b[p]),
     '#': lambda: DB and info(len(b)),
     ':': lambda: DB and info(s),
-    '!': lambda: DB and exit(),
+    '!': lambda: DB and 1/0  # exit
 }
 
 
@@ -146,6 +146,8 @@ try:
             termattrs[:3] + [termattrs[3] & ~termios.ICANON] + termattrs[4:])
     main()
 except KeyboardInterrupt:
+    print()
+except ZeroDivisionError:
     print()
 except RuntimeError as e:
     print(e, file=sys.stderr)
