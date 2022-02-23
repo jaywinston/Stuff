@@ -3,8 +3,12 @@
 #include <float.h>
 #include <signal.h>
 
+/* update: As of now, I believe that this relies on undefined behavior :(
+ * Oh well! Back to the old drawing board.
+ */
+
 /* This solution should be fully portable as it assumes nothing of data
- * representation.  It is is cheating, though as I use features of the
+ * representation.  It is cheating, though as I use features of the
  * language which have not yet been covered in the book.  It also does
  * not handle floating point so "solution" is perhaps a bit ambitious.
  * And while diminutive tests are encouraging, they also indicate that
