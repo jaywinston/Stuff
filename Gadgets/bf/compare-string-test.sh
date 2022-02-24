@@ -4,7 +4,12 @@
 BASEDIR=`dirname $0`
 
 
-function test {  # this must be first
+# exceptional conditions only occur in the
+# interpreter so they are not considered
+
+
+# the first three functions must be first
+function test {
   local r s in out
   in="$1"$'\n'"$2"$'\n'
   if [[ "$1" != "$2" ]] ; then
@@ -29,6 +34,20 @@ function test {  # this must be first
     echo "$r" >&2
   fi
   return $s
+}
+
+
+function run {
+  local r="$*"
+  eval "${r// /;}"
+}
+
+
+function all {
+  local r
+  r=`declare -F`
+  r=( ${r//declare -f} )
+  run ${r[*]:3}  # this adds two yet informative frames to the call stack
 }
 
 
@@ -66,18 +85,5 @@ function s1-shorter-than-s2-overlap_3 { test def abcdef ; }
 function s1-shorter-than-s2-overlap_4 { test efg abcdefg ; }
 function s1-shorter-than-s2-overlap_many { test klm abcdefghijklm ; }
 
-
-function run {  # this must be second to last
-  local r="$*"
-  eval "${r// /;}"
-}
-
-
-function all {  # this must be last
-  local r
-  r=`declare -F`
-  r=( ${r//declare -f} )
-  run ${r[*]:2:${#r[*]}-3}
-}
 
 run ${*:-all}
