@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 
-BASEDIR=`dirname $0`
+BASEDIR=`dirname $0`  # careful, this is good enough for my use
 
 
 # exceptional conditions only occur in the
