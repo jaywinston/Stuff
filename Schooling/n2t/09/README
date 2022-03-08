@@ -1,7 +1,9 @@
 This is an interactive turtle graphics console.  It is my chapter 9 project for
-the nand2tetris course (https://www.nand2tetris.org/).  It has some basic list
-processing, conditionals, loops, and function definitions as statements and
-expressions.  It is dynamically scoped and garbage collected.
+the nand2tetris course.
+https://www.nand2tetris.org/copy-of-talks#:~:text=Turtle%20Graphics%20Console
+It has some basic list processing, conditionals, loops, and function
+definitions as statements and expressions.  It is dynamically scoped and
+garbage collected.
 
 A video demonstration: https://youtu.be/bEFqiwZSe78
 
