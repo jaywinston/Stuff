@@ -9,8 +9,6 @@ static boolean mv;  // ##DB##
         do Main.init();
         do Main.run();
         do Main.killall();
-do DB.dbi(DB.mc()); // ##DB##
-//do DB.mv(); // ##DB##
         return;
     }
 
@@ -98,8 +96,6 @@ let mv=false;  // ##DB##
                 do LibIO.echo(s);
                 do s.dispose();
             }
-if(mv){let mv=DB.dbi(DB.mc());}  // ##DB##
-//if(mv){let mv=DB.mv();}  // ##DB##
         }
 
         return;
