@@ -3,6 +3,9 @@
 
 BASEDIR=`dirname $0`  # careful, this is good enough for my use
 
+V=`[[ "$1" == -v ]] && echo 1 || echo`
+if [[ "$V" ]] ; then shift ; fi
+
 # using DB features breaks tests
 DB=`[[ "$1" == -d ]] && echo -d || echo`
 if [[ "$DB" ]] ; then shift ; fi
@@ -13,6 +16,9 @@ if [[ "$DB" ]] ; then shift ; fi
 
 # the first three functions must be first
 function test {
+  if [[ "$V" ]] ; then
+    echo ${FUNCNAME[1]}
+  fi
   local r s in out
   in="$1"$'\n'"$2"$'\n'
   if [[ "$1" != "$2" ]] ; then
@@ -99,7 +105,8 @@ function s1-shorter-than-s2-overlap_many { test klm abcdefghijklm ; }
 function ctrlchars { test `ctrl 01`  `ctrl 01`  ; }
 function ctrlcharss { test `ctrl 01 2`  `ctrl 01 2`  ; }
 function ctrlcharsss { test `ctrl 01 3`  `ctrl 01 3`  ; }
-function ctrlcharssss { test `ctrl 01 4`  `ctrl 01 4`  ; }
+function ctrlcharssss { test `ctrl 02 4`  `ctrl 01 4`  ; }
+function ctrlcharsssss { test $'\00\00\00' $'\00\00\00' ; }
 
 
 run ${*:-all}
