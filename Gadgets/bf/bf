@@ -115,7 +115,7 @@ TRANSLATIONS = {
     '?': lambda: DB and info(b),
     '^': lambda: DB and info(p),
     '*': lambda: DB and info(b[p]),
-    '#': lambda: DB and info(len(b)),
+    '#': lambda: DB and info(len(src)),
     ':': lambda: DB and info(s),
     '!': lambda: DB and 1/0  # exit
 }
@@ -145,6 +145,8 @@ try:
             termios.TCSADRAIN,
             termattrs[:3] + [termattrs[3] & ~termios.ICANON] + termattrs[4:])
     main()
+    if s:
+        fail('unmatched [', 2)
 except KeyboardInterrupt:
     print()
 except ZeroDivisionError:
