@@ -3,6 +3,9 @@
 
 BASEDIR=`dirname $0`  # careful, this is good enough for my use
 
+# using DB features breaks tests
+DB=`[[ "$1" == -d ]] && echo -d || echo`
+if [[ "$DB" ]] ; then shift ; fi
 
 # exceptional conditions only occur in the
 # interpreter so they are not considered
@@ -16,7 +19,7 @@ function test {
     out=$'\e[31m-\e[0m '"$1"$'\n\e[32m+\e[0m '"$2"  # magic!
   fi
   if
-    r="`2>&1 "$BASEDIR"/bf "$BASEDIR"/compare-string.bf  <<< "$in"`" \
+    r="`2>&1 "$BASEDIR"/bf $DB "$BASEDIR"/compare-string.bf  <<< "$in"`" \
     && r=${r/<<< <<< }  # magic!
   then
     if ! [[ "$r" == "$out" ]] ; then
@@ -37,6 +40,13 @@ function test {
 }
 
 
+function ctrl {
+  for ((i=0; i<${2:-1}; i++)) ; do
+    builtin echo -en "\x$1"
+  done
+}
+
+
 function run {
   local r="$*"
   eval "${r// /;}"
@@ -52,6 +62,7 @@ function all {
 
 
 # todo: test non [:alpha:] chars? shouldn't make a difference...
+#       but now, they're handled to i'd like to do
 # comparison is from end to start so overlap is at the end
 function s1_empty-s2_empty { test '' '' ; }
 function s1_1-s2_empty { test a '' ; }
@@ -84,6 +95,11 @@ function s1-shorter-than-s2-overlap_2 { test cde abcde ; }
 function s1-shorter-than-s2-overlap_3 { test def abcdef ; }
 function s1-shorter-than-s2-overlap_4 { test efg abcdefg ; }
 function s1-shorter-than-s2-overlap_many { test klm abcdefghijklm ; }
+# todo: ...
+function ctrlchars { test `ctrl 01`  `ctrl 01`  ; }
+function ctrlcharss { test `ctrl 01 2`  `ctrl 01 2`  ; }
+function ctrlcharsss { test `ctrl 01 3`  `ctrl 01 3`  ; }
+function ctrlcharssss { test `ctrl 01 4`  `ctrl 01 4`  ; }
 
 
 run ${*:-all}
