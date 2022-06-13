@@ -12,12 +12,12 @@ allow embedded spaces, though format expressions do not.  An expression not
 used in a command or assignment is echoed to the console.
 
 Blocks are a list of zero or more command lines enclosed by '{' and '}'.
-They may be nested and, span multiple lines.
+They may be nested and span multiple lines.
 
 Lists are a list of zero or more expressions enclosed by '[' and ']'.
 They also may be nested and span multiple lines.
 
-Strings are any sequence of printable characters recognized by the Hack
+Strings are a sequence of any printable characters recognized by the Hack
 platform, except for '"' and '\', enclosed by '"' and '"'.  They may not be
 nested nor span multiple lines.  There are some escape sequences described
 below in the description of format expressions.
@@ -135,8 +135,9 @@ The commands are:
 
         TURNRIGHT <integer>
 
-        FUNCTION <name> <cmdlin>
-            assign cmdlin to name
+        FUNCTION [<name>] <cmdlin>
+            interpret cmdlin.  If name is defined, bind interpretation to it,
+            otherwise return interpretation.
 
         HELP
             not so helpful
@@ -144,7 +145,7 @@ The commands are:
         IF <condition> <cmdlin> [ELSE <cmdlin>]
 
         PRINT <string>
-            prints string on the canvas at the turtle's position; returns null
+            print string on the canvas at the turtle's position; returns null
 
         REPEAT [IF] {<expression>|<list> <name>} <cmdlin>
             repeat cmdlin expression times.  If IF is provided, repeat while

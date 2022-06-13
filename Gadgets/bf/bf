@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
+import pathlib
 import sys
 import termios
-import pathlib
 
 
 try:
@@ -31,15 +31,14 @@ def report(m=''):
     return f'{m}\nline {line}, column {col}'
 
 
-
 def fail(m, e):
     global r
     r = e
     raise RuntimeError(report(m))
 
 
-def info(o):
-    print(o, end='', file=sys.stderr, flush=True)
+def info(*o):
+    print(*o, end='', file=sys.stderr, flush=True)
 
 
 def left():
@@ -95,8 +94,9 @@ def get():
 
 
 def put():
-    sys.stdout.write(chr(b[p]))  # this can fail, useful err message welcome
-    sys.stdout.flush()
+    info(chr(b[p]))  # todo: test this and kill old version if it works
+    #sys.stdout.write(chr(b[p]))  # this can fail, useful err message welcome
+    #sys.stdout.flush()
 
 
 TRANSLATIONS = {
@@ -112,12 +112,20 @@ TRANSLATIONS = {
     '~': lambda: DB and info('\n'),
     '$': lambda: DB and info(src),
     '@': lambda: DB and info(i),
-    '?': lambda: DB and info(b),
+    '?': lambda: DB and info(
+        b),
+        # this color-inverts the referenced cell
+        # i find it useful but annoying
+        # str(b[:p])[:-1] +
+        # (', ' if p>0 else '') +
+        # f'\033[7m{str(b[p])}\033[0m' +
+        # (', ' if p<len(b)-1 else '') +
+        # str(b[p+1:])[1:]),
     '^': lambda: DB and info(p),
     '*': lambda: DB and info(b[p]),
     '#': lambda: DB and info(len(src)),
     ':': lambda: DB and info(s),
-    '!': lambda: DB and 1/0  # exit
+    '!': lambda: DB and 1/0  # exit safely out of interpreter, see below
 }
 
 
@@ -147,9 +155,7 @@ try:
     main()
     if s:
         fail('unmatched [', 2)
-except KeyboardInterrupt:
-    print()
-except ZeroDivisionError:
+except (KeyboardInterrupt, ZeroDivisionError):
     print()
 except RuntimeError as e:
     print(e, file=sys.stderr)
