@@ -5,46 +5,45 @@
 # usage: to stderr
 function usage
 {
-{
-	echo "$PROG: Usage: $PROG -c [RATE] -h [FILE|YEAR]"
-	echo
-	echo "  options:"
-	echo "  Only the first option is evaluated."
-	echo "  -c	convert amounts"
-	echo "  -h	show this message"
-} >&2
+  cat << . >&2
+$PROG: Usage: $PROG [-h|-c RATE] [FILE|YEAR]
+
+  options:
+  Only the first option is evaluated.
+  -c	convert amounts
+  -h	show this message
+.
 }
 
 
 # help: to stderr
 function help
 {
-{
-	echo
-	echo " If FILE is provided, then it assumed"
-	echo " to be a ledger and processed.  If no"
-	echo " year is found in the file name, then"
-	echo " the user is prompted for a year."
-	echo
-	echo " Conversion is Local * RATE"
-} >&2
+  cat << . >&2
+
+ If FILE is provided, then it assumed
+ to be a ledger and processed.  If no
+ year is found in the file name, then
+ the user is prompted for a year.
+
+ Conversion is Local * RATE
+.
 }
 
 
 # help_screen: display a help screen from ui
 function help_screen
 {
-{
+  cat << . >&2
 	echo "TODO: help screen"
-} >&2
+.
 }
 
 PROG=$(basename $0)
 
-ui=on  # user interface flag
-rate=  # conversion flag
+ui=on
+rate=
 infile=
-# regexes
 year_chars='^[0-9]{1,4}$'
 amount_chars='[-]?[[:digit:]]+([.][[:digit:]]*)?'
 
@@ -65,8 +64,7 @@ shift $((OPTIND - 1))
 
 arg=${1:-$OPTARG}
 
-[ $arg ] \
-&& if [ -f $arg ] ; then
+[ $arg ] && if [ -f $arg ] ; then
 	infile=$arg
 	unset ui
 	year=$(basename $infile | cut -d- -f1)
@@ -83,14 +81,15 @@ until [[ $year =~ $year_chars ]] ; do
 done
 
 # user interface
-if [ $ui ] ; then
+if [[ "$ui" ]] ; then
 
-	infile=~/${year}-ledger
+	infile=${year}-ledger
 	COLUMNS=$(tput cols)
 	margin=$((COLUMNS/2 + 3))
 	tab=$((COLUMNS / 5))
 
 	clear
+	printf '\e]0;Report %d\e\\' $year
 	printf '\e[4;1H'
 
 	while : ; do
@@ -173,7 +172,7 @@ while read -r line ; do
 	((++nl))
 	amount=$(cut -s -d' ' -f1 <<< "$line")
 	[[ "$amount" =~ $amount_chars ]] || validate
-	if (( "$amount" < 0 )) ; then
+	if (( "${amount%.*}" < 0 )) ; then
 		outsub=$(bc <<< "$outsub + $amount")
 		item=$(cut -s -d' ' -f2- <<< "$line" \
 			| tr '\t' ' ' | tr -s ' ' | tr ' ' _)
@@ -218,7 +217,7 @@ net=$(bc <<< "$insub + $outsub")  # outsub is stored as a negative int
 # display the report and save it in a file
 {
 	printf "*** Report for %4d ***\n.......................\n" $year
-	printf "Income:%16s\nOutlay:%16s\n" "$insub" "${outsub#-}"
+	printf "\e[1mIncome:%16s\nOutlay:%16s\e[0m\n" "$insub" "${outsub#-}"
 	for item in "${!outlays[@]}" ; do
 		printf " %s:%$((21-${#item}))s\n" \
 			"$(tr '_' ' ' <<< $item)" \
@@ -227,5 +226,5 @@ net=$(bc <<< "$insub + $outsub")  # outsub is stored as a negative int
 	echo "......................."
 	printf "Net Total:%13s\n" "$net"
 
-} | tee ~/${year}-report
+} | tee ${year}-report
 

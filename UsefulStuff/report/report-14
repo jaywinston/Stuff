@@ -83,14 +83,15 @@ until [[ $year =~ $year_chars ]] ; do
 done
 
 # user interface
-if [ $ui ] ; then
+if [[ "$ui" ]] ; then
 
-	infile=~/${year}-ledger
+	infile=${year}-ledger
 	COLUMNS=$(tput cols)
 	margin=$((COLUMNS/2 + 3))
 	tab=$((COLUMNS / 5))
 
 	clear
+	printf '\e]0;Report %d\e\\' $year
 	printf '\e[4;1H'
 
 	while : ; do
@@ -173,7 +174,7 @@ while read -r line ; do
 	((++nl))
 	amount=$(cut -s -d' ' -f1 <<< "$line")
 	[[ "$amount" =~ $amount_chars ]] || validate
-	if (( "$amount" < 0 )) ; then
+	if (( "${amount%.*}" < 0 )) ; then
 		outsub=$(bc <<< "$outsub + $amount")
 		item=$(cut -s -d' ' -f2- <<< "$line" \
 			| tr '\t' ' ' | tr -s ' ' | tr ' ' _)
@@ -218,7 +219,7 @@ net=$(bc <<< "$insub + $outsub")  # outsub is stored as a negative int
 # display the report and save it in a file
 {
 	printf "*** Report for %4d ***\n.......................\n" $year
-	printf "Income:%16s\nOutlay:%16s\n" "$insub" "${outsub#-}"
+	printf "\e[1mIncome:%16s\nOutlay:%16s\e[0m\n" "$insub" "${outsub#-}"
 	for item in "${!outlays[@]}" ; do
 		printf " %s:%$((21-${#item}))s\n" \
 			"$(tr '_' ' ' <<< $item)" \
@@ -227,5 +228,5 @@ net=$(bc <<< "$insub + $outsub")  # outsub is stored as a negative int
 	echo "......................."
 	printf "Net Total:%13s\n" "$net"
 
-} | tee ~/${year}-report
+} | tee ${year}-report
 

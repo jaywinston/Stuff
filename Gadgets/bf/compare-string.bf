@@ -1,15 +1,15 @@
 the message buffers are
-  ; each string buffer is delimited on both sides by \0
-  ; go the char immediately left of that
-  ; copy that char to the cells two and three to the right
-  ; the cell one to the right is now the demarcator of the current character
-  ; the cell two to the right is now the stop condition
-  ; the cell three to the right is now in the 'message buffer'
-  ; the stop condition is to stop modifying the comparison cell ie move
+  • each string buffer is delimited on both sides by \0
+  • go the char immediately left of that
+  • copy that char to the cells two and three to the right
+  • the cell one to the right is now the demarcator of the current character
+  • the cell two to the right is now the stop condition
+  • the cell three to the right is now in the 'message buffer'
+  • the stop condition is to stop modifying the comparison cell ie move
     the 'stop condition' to the comparison cell
-  ; the demarcator is updated when the stop condition is nulled by moving it to
+  • the demarcator is updated when the stop condition is nulled by moving it to
     the comparison cell
-  ; if a difference is found then the string may need to be reconstructed from
+  • if a difference is found then the string may need to be reconstructed from
     the original and message buffers; that is accomplished by printing
     whatever may be in the original buffer then moving right two cells and
     then printing whatever may be in the message buffer
@@ -30,13 +30,13 @@ nice decorations
 >+++++++++++++++++++++++++++++++++++++++++++++  minus
 >+++++++++++++++++++++++++++++++++++++++++++    plus
 prompt
->++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  '&lt;'
+>++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  '\<'
 >++++++++++++++++++++++++++++++++                              ' '
 
 <...>.                     prompt
 >>                         go to buffer1
 ,----------[>,----------]  read until ascii \n
-<[++++++++++<]<            go to prompt restoring data
+<[++++++++++<]<            go to prompt restoring data (lazy eval aint worth)
 <...>.                     prompt
 >>[>]>>>>>                 go to buffer2
 ,----------[>,----------]  read until ascii \n
@@ -49,13 +49,13 @@ prompt
   >[<<[<]<->>[>]>-]  subtract condition from comparison cell
   >[<]               conditionally compensate for empty string 2
   <<[<]<[            go to comparison cell
-    <<[<]<<[<]  go to start of buf1
     s2 is not longer than s1 (see below)
+    <<[<]<<[<]  go to start of buf1
     fancy shmancy colors; yeah
-    ((\033 leftbracket) = (CSI)) 3 1 m minus CSI 0 m ' '
+    ((\033 \lb) = (CSI)) 3 1 m '\min' CSI 0 m ' '
     <<<<<<<<<<<.>.>.>>.>>.>.<<<<<<<.>.>>>>.>.>>>>.
     >>[.>]>>[.>]++++++++++.  echo s1
-    CSI 3 2 m plus CSI 0 m ' '
+    CSI 3 2 m '\plus' CSI 0 m ' '
     [<]<<[<]<<<<<<<<<<<.>.>.>.>>>.>>.<<<<<<<<.>.>>>>.>.>>>>.
     >>[>]>>[>]>[.>]>>[.>]++++++++++. echo s2
     >>>>>  exit
