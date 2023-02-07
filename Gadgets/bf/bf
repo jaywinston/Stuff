@@ -8,20 +8,36 @@ import termios
 try:
     src = ''.join(pathlib.Path(f).read_text()
                   for f in sys.argv[1:]
-                  if f != '-d')
+                  if not f.startswith('-'))
     if not src:
         src = sys.stdin.read()
         sys.stdin = open('/dev/tty')
 except FileNotFoundError as e:
-    print(str(e).replace('[Errno 2] ', '').replace(' or directory', ''),
-          file=sys.stderr)
-    exit(1)
+    src = ''.join(sys.argv[1:])
+
 
 i = 0
 b = [0]
 p = 0
 s = []
+r = 0
 DB = '-d' in sys.argv
+
+
+class DebugExit(Exception):
+    # idk why empty exception classes are so anti-dogmaed.
+    # they're very expressive when used judiciously.
+    pass
+
+
+def main():
+    while i < len(src):
+        do()
+        advance()
+
+
+def debug_exit():
+    raise DebugExit
 
 
 def report(m=''):
@@ -86,7 +102,9 @@ def repeat():
     global i
     if not s:
         fail('unmatched ]', 3)
-    i = s.pop()
+    n = s.pop()
+    if b[p]:
+        i = n
 
 
 def get():
@@ -94,9 +112,10 @@ def get():
 
 
 def put():
-    info(chr(b[p]))  # todo: test this and kill old version if it works
-    #sys.stdout.write(chr(b[p]))  # this can fail, useful err message welcome
-    #sys.stdout.flush()
+    try:
+        info(chr(b[p]))
+    except ValueError as e:
+        fail(f'in cell {p}: not in character set: {b[p]}', 4)
 
 
 TRANSLATIONS = {
@@ -108,6 +127,8 @@ TRANSLATIONS = {
     ']': repeat,
     ',': get,
     '.': put,
+    # my extensions
+    '\\': escape,
     '_': lambda: DB and info(' '),
     '~': lambda: DB and info('\n'),
     '$': lambda: DB and info(src),
@@ -125,7 +146,7 @@ TRANSLATIONS = {
     '*': lambda: DB and info(b[p]),
     '#': lambda: DB and info(len(src)),
     ':': lambda: DB and info(s),
-    '!': lambda: DB and 1/0  # exit safely out of interpreter, see below
+    '!': lambda: DB and debug_exit(),
 }
 
 
@@ -138,24 +159,32 @@ def advance():
     i += 1
 
 
-def main():
-    while i < len(src):
-        do()
-        advance()
+escape = advance
 
 
-try:
-    r = 0
+def setup():
     if sys.stdin.isatty():
+        global termattrs
         termattrs = termios.tcgetattr(sys.stdin.fileno())
         termios.tcsetattr(
             sys.stdin.fileno(),
             termios.TCSADRAIN,
+            # raw mode reads without "Enter"
             termattrs[:3] + [termattrs[3] & ~termios.ICANON] + termattrs[4:])
+
+
+def cleanup():
+    if sys.stdin.isatty():
+        termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, termattrs)
+
+
+try:
+    setup()
     main()
     if s:
+        print('===unmatched [', 2, s)
         fail('unmatched [', 2)
-except (KeyboardInterrupt, ZeroDivisionError):
+except (KeyboardInterrupt, DebugExit):
     print()
 except RuntimeError as e:
     print(e, file=sys.stderr)
@@ -163,6 +192,5 @@ except:
     print(report(), file=sys.stderr)
     raise
 finally:
-    if sys.stdin.isatty():
-        termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, termattrs)
+    cleanup()
 exit(r)

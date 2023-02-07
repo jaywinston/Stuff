@@ -69,6 +69,7 @@ function all {
 
 # todo: test non [:alpha:] chars? shouldn't make a difference...
 #       but now, they're handled to i'd like to do
+# realization: these should have been an associative array
 # comparison is from end to start so overlap is at the end
 function s1_empty-s2_empty { test '' '' ; }
 function s1_1-s2_empty { test a '' ; }
