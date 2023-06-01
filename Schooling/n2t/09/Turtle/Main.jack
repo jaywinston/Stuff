@@ -1,7 +1,6 @@
 class Main {
 
     static boolean running;
-static boolean mv;  // ##DB##
 
 
     function void main() {
@@ -33,8 +32,6 @@ static boolean mv;  // ##DB##
         var char stringDelimiter, escapeCharacter;
         var int eosKey, illegalKey;
         var Array charToBitmapTable, escapeSequenceTable;
-
-let mv=false;  // ##DB##
 
         do Vector.init();
         do Turtle.init(2);
@@ -106,8 +103,5 @@ let mv=false;  // ##DB##
         let running = false;
         return;
     }
-
-
-function void mc(){let mv=true;return;}  // ##DB##
 
 }
