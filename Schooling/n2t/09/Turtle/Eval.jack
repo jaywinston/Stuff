@@ -136,20 +136,20 @@ class Eval {
 
 
     function Symbol name(Symbol arg) {
-        var String tag;
+        var String name;
         var Symbol p;
 
-        let tag = arg.data();
-        let p = Eval.lookup(tag);
+        let name = arg.data();
+        let p = Eval.lookup(name);
 
         if (p = null) {
             do LibIO.error("undefined name");
             do arg.setMeta(null);
-            do tag.dispose();
+            do name.dispose();
             return arg;
         }
 
-        do arg.setTag(tag);
+        do arg.setTag(name);
         do arg.setMeta(p.meta());
         do arg.setData(p.data());
 
