@@ -1,0 +1,114 @@
+class Main {
+
+
+    function void main() {
+        do Main.vectorSin();
+        return;
+    }
+
+
+    function void print(int r, int c, String s) {
+        do Output.moveCursor(r,c);
+        do Output.printString(s);
+        do s.dispose();
+        return;
+    }
+
+
+    function void vectorSin() {
+        var int i;
+        var Vector v;
+
+        do Screen.clearScreen();
+        do Main.print(0,0,"Testing Vector.sin() and Vector.cos()");
+        do Vector.init();
+
+        do Main.print((128+Vector.sin(0))/11, 1, "Sine:");
+        let i = 0;
+        while (i < 361) {
+            do Screen.drawPixel(76+i, 128+Vector.sin(i));
+            let i = i+1;
+        }
+
+        do Main.print((128+Vector.cos(0))/11, 1, "Cosine:");
+        let i = 0;
+        while (i < 361) {
+            do Screen.drawPixel(76+i, 128+Vector.cos(i));
+            let i = i+1;
+        }
+
+        do Main.print(1, 0, "press any key to continue");
+        do DB.pause();
+        do Screen.clearScreen();
+
+        do Main.print(0,0,"Testing Vector.calculate()");
+        let v = Vector.new();
+        let i = 0;
+        while (i < 361) {
+            do v.calculate(100, i);
+            do Screen.drawPixel(206+v.im(), 128+v.re());
+            let i = i+1;
+        }
+
+        do Vector.kill();
+
+        return;
+    }
+
+
+    function void setup() {
+        var char stringDelimiter, escapeCharacter;
+        var int eosKey, illegalKey;
+        var Array charToBitmapTable, escapeSequenceTable;
+
+        do Turtle.init(2);
+        do Collection.init();
+        do LibIO.init();
+        do LibSym.init();
+
+        let stringDelimiter = 34;
+        let escapeCharacter = 92;
+        let eosKey = LibSym.CHARSETSIZE();
+        let illegalKey = LibSym.CHARSETSIZE() + 1;
+        let charToBitmapTable = LibSym.ctab();
+        let escapeSequenceTable = LibIO.esctab();
+
+        do Lex.init(
+            charToBitmapTable,
+            escapeSequenceTable,
+            escapeCharacter,
+            stringDelimiter,
+            eosKey,
+            illegalKey);
+        do Parse.init();
+        do Eval.init();
+        do List.init();
+        do Bin.init();
+        do Exec.init();
+
+        return;
+    }
+
+
+    function void teardown() {
+        do Bin.kill();
+        do Eval.kill();
+        do Exec.kill();
+        do Parse.kill();
+        do Lex.kill();
+        do LibIO.kill();
+        do LibSym.kill();
+        return;
+    }
+
+
+    function void run() {
+        return;
+    }
+
+
+    function void stop() {
+        return;
+    }
+
+}
