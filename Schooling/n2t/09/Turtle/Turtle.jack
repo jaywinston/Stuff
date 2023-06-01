@@ -22,7 +22,7 @@ class Turtle {
         let direction = setDirection(d);
         let target = Array.new(2);
         let target[0] = -1;
-        let v = Vector.new();
+        let v = Vector.new(0, 0);
         let sa = ScreenArea.new(TLEN*8, TLEN*8);
         let pendown = false;
         do show();

@@ -152,8 +152,6 @@ do Eval.install("MC",CMD,128);  // ##DB##
 
         do arg.dispose();
 
-if (cmd=128) {return Main.mc();}  // ##DB##
-
         if (type = BIN) { return Bin.exec(cmd, argv);     }
         if (type = CMD) { return Exec.cmd(cmd, argv);     }
         if (type = LSP) { return List.process(cmd, argv); }
@@ -387,10 +385,10 @@ if (cmd=128) {return Main.mc();}  // ##DB##
         let s = "POSY";
         do LibIO.echo(s);
         do s.dispose();
-        let s = "TURNLEFT <integer expession>";
+        let s = "LEFT <integer expession>";
         do LibIO.echo(s);
         do s.dispose();
-        let s = "TURNRIGHT <integer expession>";
+        let s = "RIGHT <integer expession>";
         do LibIO.echo(s);
         do s.dispose();
         let s = "FUNCTION <name> <cmdlin>";
