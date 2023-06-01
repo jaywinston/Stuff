@@ -3,7 +3,7 @@ class Bin {
     static int bottom, left, right, top;
     static int BIN, INT, STR;
     static int CLEAR, DIR, FORWARD, PENDOWN, PENUP, POSX, POSY, PRINT,
-        TURNLEFT, TURNRIGHT;
+        LEFT, RIGHT;
     static Turtle t;
 
 
@@ -33,8 +33,8 @@ class Bin {
         let POSX      = 5;
         let POSY      = 6;
         let PRINT     = 7;
-        let TURNLEFT  = 8;
-        let TURNRIGHT = 9;
+        let LEFT  = 8;
+        let RIGHT = 9;
 
         do Eval.install("CLEAR", BIN, CLEAR);
         do Eval.install("DIR", BIN, DIR);
@@ -44,8 +44,8 @@ class Bin {
         do Eval.install("POSX", BIN, POSX);
         do Eval.install("POSY", BIN, POSY);
         do Eval.install("PRINT", BIN, PRINT);
-        do Eval.install("TURNLEFT", BIN, TURNLEFT);
-        do Eval.install("TURNRIGHT", BIN, TURNRIGHT);
+        do Eval.install("LEFT", BIN, LEFT);
+        do Eval.install("RIGHT", BIN, RIGHT);
 
         return;
     }
@@ -74,8 +74,8 @@ class Bin {
         if (cmd = PENDOWN)   { return Bin.pendown();             }
         if (cmd = PENUP)     { return Bin.penup();               }
         if (cmd = PRINT)     { return Bin.print(argv.pop());     }
-        if (cmd = TURNLEFT)  { return Bin.turnleft(argv.pop());  }
-        if (cmd = TURNRIGHT) { return Bin.turnright(argv.pop()); }
+        if (cmd = LEFT)  { return Bin.turnleft(argv.pop());  }
+        if (cmd = RIGHT) { return Bin.turnright(argv.pop()); }
 
         return null;
     }

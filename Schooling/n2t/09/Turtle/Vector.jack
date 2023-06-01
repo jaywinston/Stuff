@@ -2,17 +2,12 @@ class Vector {
 
     static Array SINTAB;  /* see init below */
 
-    field int re, im;
+    field int r, i;
 
 
-    constructor Vector new() {
-        return this;
-    }
-
-
-    method Vector calculate(int m, int a) {
-        let re = (m*Vector.cos(a)) / 100;
-        let im = (m*Vector.sin(a)) / 100;
+    constructor Vector new(int m, int a) {
+        let r = (m*Vector.cos(a)) / 100;
+        let i = (m*Vector.sin(a)) / 100;
         return this;
     }
 
@@ -23,13 +18,30 @@ class Vector {
     }
 
 
+    method Vector calculate(int m, int a) {
+        let r = (m*Vector.cos(a)) / 100;
+        let i = (m*Vector.sin(a)) / 100;
+        return this;
+    }
+
+
     method int re() {
-        return re;
+        return r;
     }
 
 
     method int im() {
-        return im;
+        return i;
+    }
+
+
+    method int r() {
+        return r;
+    }
+
+
+    method int i() {
+        return i;
     }
 
 
