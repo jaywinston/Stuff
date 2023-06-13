@@ -79,7 +79,7 @@ def next_tag(cmd):
 def format(line, **kwargs):
     fline = line.format(**kwargs) + '\n'
     if not line.startswith('('):
-        fline = '\t' + fline
+        fline = '  ' + fline
     return fline
 
 
