@@ -1,5 +1,5 @@
 from os import listdir
-from os.path import basename, dirname, isdir, isfile, join
+from os.path import abspath, basename, dirname, isdir, isfile, join
 from sys import argv, exit
 
 PROG = basename(argv[0])
@@ -28,6 +28,7 @@ def mk_path(file, dir=None):
 def process_arg():
 
     arg = argv[1]
+    dname = ''
 
     if isfile(arg):
         if not arg.endswith('.vm'):
@@ -38,7 +39,11 @@ def process_arg():
     elif isdir(arg):
         infiles = listdir(arg)
         fname = arg.rstrip('/')
-        dirname = fname
+        if fname == '.':
+            fname = abspath(fname).split('/')[-1]
+            dname = ''
+        else:
+            dname = fname
 
-    return infiles, fname, dirname
+    return infiles, fname, dname
 
