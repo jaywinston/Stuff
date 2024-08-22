@@ -18,7 +18,7 @@
  *  *crunch*
  */
 
-unsigned char canvas[sizeof (long double)];
+unsigned char canvas[sizeof (long long)];
 
 void h(int s)
 {
@@ -43,7 +43,7 @@ int main()
   int bitcount = 0;
   do {
     ++bitcount;
-  } while (x <<= 1);
+  } while (x <<= 1);  /* the standard guarantees zeroes fill the right */
   onebit = ((unsigned char) ~(0 ^ 0)) >> (bitcount-1);
 
   char charmin=0, charmax=0;
@@ -58,9 +58,15 @@ int main()
   long longmin=0, longmax=0;
   unsigned long ulongmax=0;
 
+  long long llongmin=0, llongmax=0;
+  unsigned long long ullongmax=0;
+
+/* it's been a while since i looked, but i think floats aren't even in the
+   exercise.
   float floatmin=0, floatmax=0;
   double doublemin=0, doublemax=0;
   long double longdoublemin=0, longdoublemax=0;
+*/
 
   for (i=0; i<sizeof (canvas); i++)
     canvas[i] = 0 ^ 0;
@@ -86,6 +92,7 @@ int main()
     if (*((unsigned long*) canvas) > ulongmax) ulongmax =
       *((unsigned long*) canvas);
 
+/*
     if (*((float*) canvas) < floatmin) floatmin = *((float*) canvas);
     if (*((float*) canvas) > floatmax) floatmax = *((float*) canvas);
 
@@ -96,6 +103,7 @@ int main()
       *((long double*) canvas);
     if (*((long double*) canvas) > longdoublemax) longdoublemax =
       *((long double*) canvas);
+*/
 
     for (i=0, carry=1; carry && i<sizeof (canvas); i++, carry = bit==0) {
       for (bit=onebit; canvas[i] & bit; bit <<= 1)
@@ -149,6 +157,18 @@ int main()
   );
 
   printf(
+    "signed long long min header:     %ld\n"
+    "signed long long min calculated: %ld\n"
+    "signed long long max header:     %ld\n"
+    "signed long long max calculated: %ld\n"
+    "unsigned long long max header:     %lu\n"
+    "unsigned long long max calculated: %lu\n"
+    "\n",
+    LLONG_MIN, llongmin, LLONG_MAX, llongmax, ULLONG_MAX, ullongmax
+  );
+
+/*
+  printf(
     "float min header:     %f\n"
     "float min calculated: %f\n"
     "float max header:     %f\n"
@@ -173,6 +193,7 @@ int main()
     "long double max calculated: %f\n",
     LDBL_MIN, longdoublemin, LDBL_MAX, longdoublemax
   );
+*/
 
   return 0;
 }
