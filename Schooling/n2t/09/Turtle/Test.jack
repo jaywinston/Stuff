@@ -1,13 +1,10 @@
-/**
- * Note the class name vs the file name and compile appropriately.
- * I make a test directory, symlink to the jack files, and link
- * <testdir>/Main.jack -> ../Tests.jack
- */
-class Main {
+class Test {
 
 
-    function void main() {
-        do testrunner.run();  // see ./runtests
+    function void end() {
+        do Screen.clearScreen();
+        do Test.print(0,0,"done.");
+        while(true){}
         return;
     }
 
@@ -30,18 +27,19 @@ class Main {
 
         let n = DB.mc();
         if (~(n = 0)) {
-            do Main.print(22,0, "Memory leak detected: ");
+            do Test.print(22,0, "Memory leak detected: ");
             do Output.printInt(n);
             if (n = 1) {
-                do Main.print(-1,0," object. Press any key to continue");
+                do Test.print(-1,0," object.");
             } else {
-                do Main.print(-1,0," objects. Press any key to continue");
+                do Test.print(-1,0," objects.");
             }
+            do Test.print(-1,0," Press any key to dump core.");
             do DB.pause();
             do Screen.clearScreen();
             do Output.moveCursor(0,0);
-            do DB.mv();
-            do Main.fail(null);
+            do DB.mv(n);
+            do Test.fail(null);
         }
 
         return;
@@ -63,11 +61,11 @@ class Main {
 
     function void Vector_kill() {
         do Screen.clearScreen();
-        do Main.print(0,0,"Testing Vector.kill()...");
+        do Test.print(0,0,"Testing Vector.kill()...");
         do Vector.init();
         do Vector.kill();
-        do Main.print(-1,0," done.");
-        do Main.print(1,0,"press any key for memory check");
+        do Test.print(-1,0," done.");
+        do Test.print(1,0,"press any key for memory check");
         do DB.pause();
         return;
     }
@@ -78,17 +76,17 @@ class Main {
         var Vector v;
 
         do Screen.clearScreen();
-        do Main.print(0,0,"Testing Vector.sin() and Vector.cos()");
+        do Test.print(0,0,"Testing Vector.sin() and Vector.cos()");
         do Vector.init();
 
-        do Main.print((128+Vector.sin(0))/11, 1, "Sine:");
+        do Test.print((128+Vector.sin(0))/11, 1, "Sine:");
         let i = 0;
         while (i < 361) {
             do Screen.drawPixel(76+i, 128+Vector.sin(i));
             let i = i+1;
         }
 
-        do Main.print((128+Vector.cos(0))/11, 1, "Cosine:");
+        do Test.print((128+Vector.cos(0))/11, 1, "Cosine:");
         let i = 0;
         while (i < 361) {
             do Screen.drawPixel(76+i, 128+Vector.cos(i));
@@ -97,7 +95,7 @@ class Main {
 
         do Vector.kill();
 
-        do Main.print(1, 0, "press any key to continue");
+        do Test.print(1, 0, "press any key to continue");
         do DB.pause();
 
         return;
@@ -111,7 +109,7 @@ class Main {
         do Screen.clearScreen();
         do Vector.init();
 
-        do Main.print(0,0,"Testing Vector.New()");
+        do Test.print(0,0,"Testing Vector.New()");
         let i = 0;
         while (i < 361) {
             let v = Vector.new(100,i);
@@ -121,6 +119,9 @@ class Main {
         }
 
         do Vector.kill();
+
+        do Test.print(1, 0, "press any key to continue");
+        do DB.pause();
 
         return;
     }

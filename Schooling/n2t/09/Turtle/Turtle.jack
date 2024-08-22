@@ -92,7 +92,6 @@ class Turtle {
 
 
     method void hide() {
-        do drawTurtle(false);
         do sa.restore();
         return;
     }

@@ -100,7 +100,7 @@ class Str {
 
             } else {
                 // again with that!? if ( ~(s.length()+1) < len ) {
-                if (~( (s.length()+1) < len) ) {
+                if (~( (s.length()+1) < len )) {
                     let len = len + Str.MAXLEN();
                     let s = Str.realloc(s, len);
                 }

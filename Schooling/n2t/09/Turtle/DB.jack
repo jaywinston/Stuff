@@ -32,16 +32,42 @@ class DB {
     }
 
 
-    function void mv() {
-        var int i;
+    function void mv(int n) {
+        var int i, m;
+        var int col, row;
 
-        let i = 2048;
-        while (i < 16384) {
-            if (Memory.peek(i)=0) {
-                do Output.printInt(i);
-                do Output.printChar(32);
+        if (n = 0) {
+            return;
+        }
+
+        do Screen.clearScreen();
+
+        let col = 0;
+        let row = 0;
+        let i = 0;
+        let m = 2048;
+        while (m < 16384) {
+            if (m[0] = 0) {
+                do Output.moveCursor(row, col);
+                do Output.printInt(m);
+                let row = row + 1;
+                if (~(row < 23)) {
+                    let row = 0;
+                    let col = col + 7;
+                }
             }
-            let i = Memory.peek(i+1);
+            let i = i + 1;
+            if (((col = 56) & (row = 22)) & (((i+1) < n))) {
+                do Output.moveCursor(row, col);
+                do Output.printChar(46);
+                do Output.printChar(46);
+                do Output.printChar(46);
+                do DB.pause();
+                do Screen.clearScreen();
+                let row = 0;
+                let col = 0;
+            }
+            let m = m[1];
         }
 
         return;
@@ -54,10 +80,10 @@ class DB {
         let n = 0;
         let i = 2048;
         while (i < 16384) {
-            if (Memory.peek(i)=0) {
+            if (i[0]=0) {
                 let n = n + 1;
             }
-            let i = Memory.peek(i+1);
+            let i = i[1];
         }
 
         return n;
@@ -163,8 +189,10 @@ class DB {
 
 
     function void pause() {
+        var int m;
+        let m = 24576;
         while (Keyboard.keyPressed() = 0){}
-        do Memory.poke(24576,0);
+        let m[0] = 0;
         return;
     }
 

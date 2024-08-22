@@ -135,9 +135,10 @@ class Parse {
             let i = Lex.token(s, t, TOKENMASK, i);
             do word.setData(t);
         } else {
-            let t = "unexpected character: '%C'";
-            let a = Array.new(1);
+            let t = "unexpected character: '%C'\Nat %D";
+            let a = Array.new(2);
             let a[0] = s.charAt(i);
+            let a[1] = i;
             do LibIO.error(Str.format(t, a));
             do t.dispose();
             do a.dispose();
