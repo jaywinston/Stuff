@@ -24,7 +24,9 @@ class ScreenArea {
     }
 
 
-    /** copy aLen words, starting from (x, y) */
+    /**
+     * copy aLen words, starting from (x, y)
+     */
     method int copy(int x, int y) {
         var int i;
         var int h, w;

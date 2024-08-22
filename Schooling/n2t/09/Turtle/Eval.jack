@@ -72,7 +72,9 @@ class Eval {
     }
 
 
-    /** format specifiers must not map to themselves */
+    /**
+     * format specifiers must not map to themselves
+     */
     function Array fspectab() {
         var int i;
         var Array fspectab;
