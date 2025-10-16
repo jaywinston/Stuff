@@ -5,14 +5,17 @@ import sys
 import termios
 
 
-i = 0
-b = [0]
-p = 0
-s = []
+b = [0]  # The Buffer
+p = 0    # The Pointer
+s = []   # stack for loop addresses
+i = 0    # src index
 src = ''
 
-r = 0
-DB = '-d' in sys.argv
+r = 0  # exit status
+
+if '-d' in sys.argv:
+    DEBUG = True
+    sys.argv.remove('-d')
 
 
 def main():
@@ -37,9 +40,7 @@ def main():
 def getsrc():
     global src
     try:
-        src = ''.join(pathlib.Path(f).read_text()
-                      for f in sys.argv[1:]
-                      if not f.startswith('-'))
+        src = ''.join(pathlib.Path(f).read_text() for f in sys.argv[1:])
         if not src:
             src = sys.stdin.read()
             sys.stdin = open('/dev/tty')
@@ -101,8 +102,8 @@ def fail(m, e):
     raise RuntimeError(report(m))
 
 
-def info(*o):
-    print(*o, end='', file=sys.stderr, flush=True)
+def info(*o, file=sys.stderr):
+    print(*o, end='', file=file, flush=True)
 
 
 def left():
@@ -156,12 +157,16 @@ def repeat():
 
 
 def get():
-    b[p] = ord(sys.stdin.read(1))  # this can fail, useful err message welcome
+    #b[p] = ord(sys.stdin.read(1))  # this can fail, useful err message welcome
+    try:
+        b[p] = ord(sys.stdin.read(1))
+    except ValueError as e:
+        fail(f'while reading input: not in character set: {b[p]}', 5)
 
 
 def put():
     try:
-        info(chr(b[p]))
+        info(chr(b[p]), file=sys.stdout)
     except ValueError as e:
         fail(f'in cell {p}: not in character set: {b[p]}', 4)
 
@@ -175,27 +180,30 @@ TRANSLATIONS = {
     ']': repeat,
     ',': get,
     '.': put,
-    # my extensions
-    '_': lambda: DB and info(' '),
-    '~': lambda: DB and info('\n'),
-    '$': lambda: DB and info(src),
-    '@': lambda: DB and info(i),
-    '?': lambda: DB and info(
-        b),
-        # this color-inverts the referenced cell
-        # i find it useful but annoying
-        # str(b[:p])[:-1] +
-        # (', ' if p>0 else '') +
-        # f'\033[7m{str(b[p])}\033[0m' +
-        # (', ' if p<len(b)-1 else '') +
-        # str(b[p+1:])[1:]),
-    '^': lambda: DB and info(p),
-    '*': lambda: DB and info(b[p]),
-    '#': lambda: DB and info(len(src)),
-    ':': lambda: DB and info(s),
-    '!': lambda: DB and debug_exit(),
 }
 
+if DEBUG:
+    TRANSLATIONS.update({
+        # my extensions
+        '_': lambda: info(' '),
+        '~': lambda: info('\n'),
+        '$': lambda: info(src),
+        '@': lambda: info(i),
+        '?': lambda: info(
+            b),
+            # this color-inverts the referenced cell
+            # i find it useful but annoying
+            # str(b[:p])[:-1] +
+            # (', ' if p>0 else '') +
+            # f'\033[7m{str(b[p])}\033[0m' +
+            # (', ' if p<len(b)-1 else '') +
+            # str(b[p+1:])[1:]),
+        '^': lambda: info(p),
+        '*': lambda: info(b[p]),
+        '#': lambda: info(len(src)),
+        ':': lambda: info(s),
+        '!': debug_exit,
+    })
 
-# __name__ can only == '__main__'
+
 main()
