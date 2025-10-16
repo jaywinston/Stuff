@@ -44,8 +44,8 @@ class Bin {
         do Eval.install("POSX", BIN, POSX);
         do Eval.install("POSY", BIN, POSY);
         do Eval.install("PRINT", BIN, PRINT);
-        do Eval.install("LEFT", BIN, LEFT);
-        do Eval.install("RIGHT", BIN, RIGHT);
+        do Eval.install("TURNLEFT", BIN, LEFT);
+        do Eval.install("TURNRIGHT", BIN, RIGHT);
 
         return;
     }

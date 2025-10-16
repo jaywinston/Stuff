@@ -71,7 +71,7 @@ class Turtle {
 
         do Screen.drawCircle(x, y, TLEN);
 
-        do v.calculate(TLEN*3, direction);
+        do v.calculate(TLEN*3, direction);  // magic!
         let x1 = x + v.re();
         let y1 = y - v.im();
 

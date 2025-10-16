@@ -1,6 +1,9 @@
 class Test {
 
 
+    /**
+     *  pause execution before the emulator stops so not to lose state
+     */
     function void end() {
         do Screen.clearScreen();
         do Test.print(0,0,"done.");
@@ -64,9 +67,8 @@ class Test {
         do Test.print(0,0,"Testing Vector.kill()...");
         do Vector.init();
         do Vector.kill();
+        do Test.mk();
         do Test.print(-1,0," done.");
-        do Test.print(1,0,"press any key for memory check");
-        do DB.pause();
         return;
     }
 
@@ -120,49 +122,6 @@ class Test {
 
         do Vector.kill();
 
-        do Test.print(1, 0, "press any key to continue");
-        do DB.pause();
-
         return;
     }
-
-
-/*
-    function void setUp() {
-        var char stringDelimiter, escapeCharacter;
-        var int eosKey, illegalKey;
-        var Array charToBitmapTable, escapeSequenceTable;
-
-        do Turtle.init(2);
-        do Collection.init();
-        do LibIO.init();
-        do LibSym.init();
-
-        let stringDelimiter = 34;
-        let escapeCharacter = 92;
-        let eosKey = LibSym.CHARSETSIZE();
-        let illegalKey = LibSym.CHARSETSIZE() + 1;
-        let charToBitmapTable = LibSym.ctab();
-        let escapeSequenceTable = LibIO.esctab();
-
-        do Lex.init(
-            charToBitmapTable,
-            escapeSequenceTable,
-            escapeCharacter,
-            stringDelimiter,
-            eosKey,
-            illegalKey);
-        do Parse.init();
-        do Eval.init();
-        do List.init();
-        do Bin.init();
-        do Exec.init();
-
-        return;
-    }
-*/
-
-
-    function void stop() { return; }  // dummy
-
 }

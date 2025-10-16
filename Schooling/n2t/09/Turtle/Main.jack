@@ -1,6 +1,6 @@
 class Main {
 
-    static boolean running;
+    //static boolean running;
 
 
     function void main() {
@@ -80,9 +80,9 @@ class Main {
         var String s;
         var Collection argv;
 
-        let running = true;
+        //let running = true;
 
-        while (running) {
+        while (LibIO.running()) {
             do Exec.next();
 
             /* Error messages are already queued. */
@@ -99,9 +99,11 @@ class Main {
     }
 
 
+/*
     function void stop() {
         let running = false;
         return;
     }
+*/
 
 }

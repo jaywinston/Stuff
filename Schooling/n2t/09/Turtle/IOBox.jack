@@ -9,8 +9,8 @@ class IOBox {
     constructor IOBox new(int i, int j, int h, int w,
                           int bufferSize, int maxlen) {
 
-        let BUFSIZ = bufferSize;
-        let MAXLEN = maxlen;
+        let BUFSIZ = bufferSize;  // this must be a power of 2
+        let MAXLEN = maxlen;      // I was into clean™ code when I wrote this
         let LINBUF = Array.new(BUFSIZ);
         let bp = 0;
         while (bp < BUFSIZ) {
@@ -94,10 +94,7 @@ class IOBox {
         }
 
         if (s.length() > 0) {
-            let bp = bp + 1;
-            if (bp = BUFSIZ) {
-                let bp = 0;
-            }
+            let bp = (bp + 1) & (BUFSIZ - 1);
         }
 
         do Output.printChar(129);   /* erase cursor */
@@ -111,6 +108,7 @@ class IOBox {
         var int l;
         var String s;
 
+        // better solution welcome. might needs be in TextBox
         let s = LINBUF[rp];
         let l = s.length();
         while (l > 0) {
@@ -118,12 +116,24 @@ class IOBox {
             let l = l - 1;
         }
 
+/* see comment on negrec
         let rp = rp + step;
 
         if (step < 0) {
             let rp = negrec(step, rp);
         } else {
             let rp = posrec(step, rp);
+        }
+*/
+
+        if (step < 0) {
+            if (rp > 0) {
+                let rp = rp + step;
+            }
+        } else {
+            if ((s.length()>0) & (rp<(BUFSIZ-1))) {
+                let rp = rp + step;
+            }
         }
 
         do tb.print(LINBUF[rp]);
@@ -132,6 +142,9 @@ class IOBox {
     }
 
 
+/* what is all this? i think trying to use empty string as buf bound
+ * and not 0 -- for some reason -- .
+ */
     method int negrec(int step, int rp) {
         var String s;
 

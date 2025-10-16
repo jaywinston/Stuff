@@ -1,0 +1,22 @@
+#!/bin/bash
+
+
+echo 'class Main {
+    function void main() {'
+  
+awk '
+  /function void [[:upper:]][[:alpha:]]*_/ {
+    print "        // "$3
+    print "        do Test.print(-1,0,\""$3"..\");"
+    print "        do Test."$3
+    print "        do Test.print(-1,0,\" ok\");"
+    print ""
+  }
+' "$@"
+
+cat << .
+        do Test.end();
+        return;
+    }
+}
+.

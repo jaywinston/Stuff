@@ -1,5 +1,6 @@
 class LibIO {
 
+    static boolean running;
     static boolean err;
     static Array B;  /* boundaries */
     static Array argv;
@@ -23,7 +24,8 @@ class LibIO {
         let que = Collection.new();
         let canvas = TextBox.new(B[0], B[1], B[2], B[3]);
         /* magic number!s */
-        let term = IOBox.new(2, 1, 20, 30, 23, Str.MAXLEN());
+        let term = IOBox.new(2, 1, 20, 30, 32 /* 2**5 */, Str.MAXLEN());
+        let running = true;
         return;
     }
 
@@ -131,6 +133,17 @@ class LibIO {
         do Screen.drawRectangle(249, 244, 511, 248);
         do Screen.drawRectangle(505, 14, 511, 248);
         return;
+    }
+
+
+    function void stop() {
+        let running = false;
+        return;
+    }
+
+
+    function bool running() {
+        return running;
     }
 
 

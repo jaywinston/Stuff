@@ -385,10 +385,10 @@ do Eval.install("MC",CMD,128);  // ##DB##
         let s = "POSY";
         do LibIO.echo(s);
         do s.dispose();
-        let s = "LEFT <integer expession>";
+        let s = "TURNLEFT <integer expession>";
         do LibIO.echo(s);
         do s.dispose();
-        let s = "RIGHT <integer expession>";
+        let s = "TURNRIGHT <integer expession>";
         do LibIO.echo(s);
         do s.dispose();
         let s = "FUNCTION <name> <cmdlin>";
@@ -640,7 +640,7 @@ do Eval.install("MC",CMD,128);  // ##DB##
 
 
     function void doQuit() {
-        do Main.stop();  /* "syscall"! */
+        do LibIO.stop();
         return;
     }
 
