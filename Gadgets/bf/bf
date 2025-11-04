@@ -1,8 +1,14 @@
 #!/usr/bin/python3
 
 import pathlib
+import pprint
 import sys
 import termios
+
+
+#
+# core program
+#
 
 
 b = [0]  # The Buffer
@@ -10,100 +16,6 @@ p = 0    # The Pointer
 s = []   # stack for loop addresses
 i = 0    # src index
 src = ''
-
-r = 0  # exit status
-
-if '-d' in sys.argv:
-    DEBUG = True
-    sys.argv.remove('-d')
-
-
-def main():
-    getsrc()
-    tty_setup()
-    try:
-        run()
-        if s:
-            fail('unmatched [', 2)
-    except (KeyboardInterrupt, DebugExit):
-        print()
-    except RuntimeError as e:
-        print(e, file=sys.stderr)
-    except:
-        print(report(), file=sys.stderr)
-        raise
-    finally:
-        tty_cleanup()
-    exit(r)
-
-
-def getsrc():
-    global src
-    try:
-        src = ''.join(pathlib.Path(f).read_text() for f in sys.argv[1:])
-        if not src:
-            src = sys.stdin.read()
-            sys.stdin = open('/dev/tty')
-    except FileNotFoundError as e:
-        src = ''.join(sys.argv[1:])
-
-
-def tty_setup():
-    if sys.stdin.isatty():
-        global termattrs
-        termattrs = termios.tcgetattr(sys.stdin.fileno())
-        termios.tcsetattr(
-            sys.stdin.fileno(),
-            termios.TCSADRAIN,
-            # raw mode reads without "Enter"
-            termattrs[:3] + [termattrs[3] & ~termios.ICANON] + termattrs[4:])
-
-
-def tty_cleanup():
-    if sys.stdin.isatty():
-        termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, termattrs)
-
-
-def run():
-    while i < len(src):
-        do()
-        advance()
-
-
-def do():
-    TRANSLATIONS.get(src[i], lambda: None)()
-
-
-def advance():
-    global i
-    i += 1
-
-
-class DebugExit(Exception):
-    # idk why empty exception classes are so anti-dogmaed.
-    # they're very expressive when used judiciously.
-    pass
-
-
-def debug_exit():
-    raise DebugExit
-
-
-def report(m=''):
-    lines = src[:i].split('\n')
-    line = len(lines)
-    col = i + 1 if line == 1 else i - len(' '.join(lines[:-1]))  # improve this
-    return f'{m}\nline {line}, column {col}'
-
-
-def fail(m, e):
-    global r
-    r = e
-    raise RuntimeError(report(m))
-
-
-def info(*o, file=sys.stderr):
-    print(*o, end='', file=file, flush=True)
 
 
 def left():
@@ -157,7 +69,6 @@ def repeat():
 
 
 def get():
-    #b[p] = ord(sys.stdin.read(1))  # this can fail, useful err message welcome
     try:
         b[p] = ord(sys.stdin.read(1))
     except ValueError as e:
@@ -182,26 +93,257 @@ TRANSLATIONS = {
     '.': put,
 }
 
+
+#
+# end core (hold on to your hats)
+#
+
+
+r = 0  # exit status
+
+PRETTY = False
+DEBUG = False
+
+
+def usage():
+    print("""\
+SYNOPSIS
+    bf [-d] [-p] file [file..]
+    bf [-d] [-p] source-string
+    bf [-d] [-p]
+    bf -h
+
+DESCRIPTION
+    bf can be invoked with a list of file names where each file
+    contains source text.  The files will be interpreted in the order they
+    are listed on the command line.  If any file cannot be found, then all
+    non-option arguments are interpreted as source text, in the order they
+    are listed on the command line.  If no arguments are provided and the
+    -h option is not listed, then stdin will be read and iterpreted as
+    source text.  The stdin will be reinitialized after source collection
+    and available for use during execution.
+
+OPTIONS
+    -d debug    enable non-standard instructions for introspection,
+                formatting and program control
+                The instructions are:
+                _      print a blank
+                ~      print a newline
+                $      print the source text
+                $#     print the length of the source
+                %      print the source text 10 characters prior and subsequent
+                       to the index
+                @      print the current index in the source
+                ?      print the buffer
+                ?#     print the number of cells in the buffer
+                ^      print the value of the buffer pointer
+                *      print the value of the buffer at the pointer
+                :      print the address stack
+                {      print an arbitrary string
+                       The string is delimited by '}'.  The delimiters are
+                       not printed.  Any character preceded by '\\' is
+                       printed literally.  This facilitates printing '}'.
+                {#     suppress execution
+                       Execution resumes immediately after '}' is encountered
+                !      exit immediately
+                All printing is on the sdterr.
+    -p pretty   decorate the debug output
+    -h help     print this message and exit
+""", end='', flush=True)
+
+# argparse.py?
+for a in filter(lambda a: a.startswith('-'), sys.argv):
+    if 'h' in a:
+        usage()
+        exit()
+    if 'p' in a:
+        PRETTY = True
+    if 'd' in a:
+        DEBUG = True
+
+
+def main():
+    getsrc()
+    tty_setup()
+    try:
+        run()
+        if s:
+            fail('unmatched [', 2)
+    except (KeyboardInterrupt, DebugExit):
+        print()
+    except RuntimeError as e:
+        print(e, file=sys.stderr)
+    except:
+        print(report(), file=sys.stderr)
+        raise
+    finally:
+        tty_cleanup()
+    exit(r)
+
+
+def getsrc():
+    global src
+    try:
+        src = ''.join(pathlib.Path(f).read_text() for f in sys.argv[1:])
+        if not src:
+            src = sys.stdin.read()
+            sys.stdin = open('/dev/tty')
+    except FileNotFoundError as e:
+        src = ''.join(sys.argv[1:])
+
+
+def tty_setup():
+    if sys.stdin.isatty():
+        global termattrs
+        termattrs = termios.tcgetattr(sys.stdin.fileno())
+        termios.tcsetattr(
+            sys.stdin.fileno(),
+            termios.TCSADRAIN,
+            # raw mode reads without "Enter"
+            termattrs[:3] + [termattrs[3] & ~termios.ICANON] + termattrs[4:])
+
+
+def tty_cleanup():
+    if sys.stdin.isatty():
+        termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, termattrs)
+
+
+def run():
+    while i < len(src):
+        do_one()
+        advance()
+
+
+def do_one():
+    TRANSLATIONS.get(src[i], lambda: None)()
+
+
+def advance():
+    global i
+    i += 1
+
+
+def peek():
+    return src[i+1]
+
+
+def report(m=''):
+    lines = src[:i].split('\n')
+    line = len(lines)
+    col = i + 1 if line == 1 else i - len(' '.join(lines[:-1]))  # improve this
+    return f'{m}\nline {line}, column {col}'
+
+
+def fail(m, e):
+    global r
+    r = e
+    raise RuntimeError(report(m))
+
+
+def info(*o, file=sys.stderr):
+    def do_print(*o, file=sys.stderr):
+        print(*o, end='', file=file, flush=True)
+
+    def pretty_info(*o, file=sys.stderr):
+        if len(o) == 0:
+            out = ''
+        elif len(o) == 1:
+            if type(p := o[0]) is str:
+                out = p
+            else:
+                out = pprint.pformat(p) \
+                      .replace("'\\x1b", '\033') \
+                      .replace("\\x1b[0m'", '\033[0m')
+        else:
+            out = pprint.pformat(o).replace('\\033', '\033')  # todo: ' also?
+        do_print(out, file=file)
+
+    def boring_info(*o, file=sys.stderr):
+        do_print(*o, file=file)
+
+    global info  # init self
+    if PRETTY:
+        info = pretty_info
+    else:
+        info = boring_info
+
+    info(*o, file=file)
+
+
+class DebugExit(Exception):
+    # idk why empty exception classes are so anti-dogmaed.
+    # they're very expressive when used judiciously.
+    pass
+
+
+def debug_exit():
+    raise DebugExit
+
+
+def debug_arbitrary_print():  # i just can't help it
+    """print an arbitrary string on the stderr or suppress interpretation"""
+
+    # src[i] is now '{'. print until '}' is seen and return.
+    # the system will advance past the '}' by normal execution.
+    # '\' escapes the next char. there are no esc sequences.
+    # having an esc is to print a literal '}' (and '#', i guess).
+    # just fail off the end on missing '}'.
+    # dont_print is a quick and dirty(?) comment block mechanism.
+
+    advance()
+    # you can print a '#' as the first char by '\'ing it
+    dont_print = src[i] == '#'
+    while True:
+        if src[i] == '}':
+            return
+        if src[i] == '\\':
+            advance()
+        dont_print or info(src[i])
+        advance()
+
+
+def print_buffer():
+    def len_buffer():
+        if peek() == '#':
+            print(len(b))
+            advance()
+            return True
+        return False
+
+    def pretty_buffer():
+        if len_buffer():
+            return
+        tmp = b[p]
+        b[p] = f'\033[7m{str(b[p])}\033[0m'
+        info(b)
+        b[p] = tmp
+
+    def boring_buffer():
+        if len_buffer():
+            return
+        info(b)
+
+    global print_buffer
+    if PRETTY:
+        print_buffer = pretty_buffer
+    else:
+        print_buffer = boring_buffer
+
+    print_buffer()
+
+
 if DEBUG:
-    TRANSLATIONS.update({
-        # my extensions
+    TRANSLATIONS.update({  # non-standard
         '_': lambda: info(' '),
         '~': lambda: info('\n'),
-        '$': lambda: info(src),
+        '$': lambda: info(advance() or len(src) if peek() == '#' else src),
+        '%': lambda: info(src[i-10 : i+10]),  # todo: handle negs
         '@': lambda: info(i),
-        '?': lambda: info(
-            b),
-            # this color-inverts the referenced cell
-            # i find it useful but annoying
-            # str(b[:p])[:-1] +
-            # (', ' if p>0 else '') +
-            # f'\033[7m{str(b[p])}\033[0m' +
-            # (', ' if p<len(b)-1 else '') +
-            # str(b[p+1:])[1:]),
+        '?': print_buffer,
         '^': lambda: info(p),
         '*': lambda: info(b[p]),
-        '#': lambda: info(len(src)),
         ':': lambda: info(s),
+        '{': debug_arbitrary_print,
         '!': debug_exit,
     })
 
