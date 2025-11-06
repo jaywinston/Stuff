@@ -1,9 +1,7 @@
 #!/usr/bin/python3
 
 import pathlib
-import pprint
 import sys
-import termios
 
 
 #
@@ -49,7 +47,18 @@ def decide():
         e = i
         n = 1
         while n:
-            i += 1
+            # todo: advance() seems right but (maybe) overkill. ?
+            #       the only reason i can think of not to is to make a point
+            #       that im not clean coding which is silly.
+            #       it does add overhead though. but not really and premature
+            #       optimizations are bad, says the cool kids. but they're the
+            #       ones not clean coding. though the idea of offshoring the
+            #       step thru src makes me a bit nervous for getting bit by
+            #       unforseen side effect implications. ie if advance() ever
+            #       changes, which is why to use it here in the first place.
+            #       i just dont know.
+            #i += 1
+            advance()
             if i == len(src):
                 i = e
                 fail('unmatched [', 2)
@@ -70,9 +79,10 @@ def repeat():
 
 def get():
     try:
-        b[p] = ord(sys.stdin.read(1))
+        got = sys.stdin.read(1)
+        b[p] = ord(got)
     except ValueError as e:
-        fail(f'while reading input: not in character set: {b[p]}', 5)
+        fail(f'while reading input: not in character set: {got}', 5)
 
 
 def put():
@@ -94,8 +104,23 @@ TRANSLATIONS = {
 }
 
 
+def do_one():
+    TRANSLATIONS.get(src[i], lambda: None)()
+
+
+def advance():
+    global i
+    i += 1
+
+
+def run():
+    while i < len(src):
+        do_one()
+        advance()
+
+
 #
-# end core (hold on to your hats)
+# end core
 #
 
 
@@ -108,7 +133,7 @@ DEBUG = False
 def usage():
     print("""\
 SYNOPSIS
-    bf [-d] [-p] file [file..]
+    bf [-d] [-p] file [file ..]
     bf [-d] [-p] source-string
     bf [-d] [-p]
     bf -h
@@ -139,6 +164,7 @@ OPTIONS
                 ^      print the value of the buffer pointer
                 *      print the value of the buffer at the pointer
                 :      print the address stack
+                :#     print the size of the address stack
                 {      print an arbitrary string
                        The string is delimited by '}'.  The delimiters are
                        not printed.  Any character preceded by '\\' is
@@ -152,12 +178,13 @@ OPTIONS
 """, end='', flush=True)
 
 # argparse.py?
-for a in filter(lambda a: a.startswith('-'), sys.argv):
+for a in (argv := filter(lambda a: a.startswith('-'), sys.argv[1:])):
     if 'h' in a:
         usage()
         exit()
     if 'p' in a:
         PRETTY = True
+        import pprint  # !!!!! EMBEDDED IMPORT!!!!! NOQA NOQA NOQA!
     if 'd' in a:
         DEBUG = True
 
@@ -184,7 +211,7 @@ def main():
 def getsrc():
     global src
     try:
-        src = ''.join(pathlib.Path(f).read_text() for f in sys.argv[1:])
+        src = ''.join(pathlib.Path(f).read_text() for f in argv)
         if not src:
             src = sys.stdin.read()
             sys.stdin = open('/dev/tty')
@@ -194,6 +221,7 @@ def getsrc():
 
 def tty_setup():
     if sys.stdin.isatty():
+        import termios
         global termattrs
         termattrs = termios.tcgetattr(sys.stdin.fileno())
         termios.tcsetattr(
@@ -206,25 +234,6 @@ def tty_setup():
 def tty_cleanup():
     if sys.stdin.isatty():
         termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, termattrs)
-
-
-def run():
-    while i < len(src):
-        do_one()
-        advance()
-
-
-def do_one():
-    TRANSLATIONS.get(src[i], lambda: None)()
-
-
-def advance():
-    global i
-    i += 1
-
-
-def peek():
-    return src[i+1]
 
 
 def report(m=''):
@@ -241,7 +250,7 @@ def fail(m, e):
 
 
 def info(*o, file=sys.stderr):
-    def do_print(*o, file=sys.stderr):
+    def do_print(*o):
         print(*o, end='', file=file, flush=True)
 
     def pretty_info(*o, file=sys.stderr):
@@ -253,13 +262,13 @@ def info(*o, file=sys.stderr):
             else:
                 out = pprint.pformat(p) \
                       .replace("'\\x1b", '\033') \
-                      .replace("\\x1b[0m'", '\033[0m')
+                      .replace("\\x1b[0m'", '\033[0m')  # fix b[p] highlight
         else:
             out = pprint.pformat(o).replace('\\033', '\033')  # todo: ' also?
-        do_print(out, file=file)
+        do_print(out)
 
     def boring_info(*o, file=sys.stderr):
-        do_print(*o, file=file)
+        do_print(*o)
 
     global info  # init self
     if PRETTY:
@@ -302,10 +311,14 @@ def debug_arbitrary_print():  # i just can't help it
         advance()
 
 
-def print_buffer():
+def peek():
+    return src[i+1]
+
+
+def debug_print_buffer():
     def len_buffer():
         if peek() == '#':
-            print(len(b))
+            info(len(b))
             advance()
             return True
         return False
@@ -323,26 +336,30 @@ def print_buffer():
             return
         info(b)
 
-    global print_buffer
+    global debug_print_buffer
     if PRETTY:
-        print_buffer = pretty_buffer
+        debug_print_buffer = pretty_buffer
     else:
-        print_buffer = boring_buffer
+        debug_print_buffer = boring_buffer
 
-    print_buffer()
+    debug_print_buffer()
+
+
+def debug_print_len_or_(o):
+    return lambda: info(advance() or len(o) if peek() == '#' else o)
 
 
 if DEBUG:
-    TRANSLATIONS.update({  # non-standard
+    TRANSLATIONS.update({
         '_': lambda: info(' '),
         '~': lambda: info('\n'),
-        '$': lambda: info(advance() or len(src) if peek() == '#' else src),
-        '%': lambda: info(src[i-10 : i+10]),  # todo: handle negs
+        '$': debug_print_len_or_(src),
+        '%': lambda: info(src[max(0, i-10) : i+10]),
         '@': lambda: info(i),
-        '?': print_buffer,
+        '?': debug_print_buffer,
         '^': lambda: info(p),
         '*': lambda: info(b[p]),
-        ':': lambda: info(s),
+        ':': debug_print_len_or_(s),
         '{': debug_arbitrary_print,
         '!': debug_exit,
     })
