@@ -171,7 +171,7 @@ OPTIONS
 """, end='', flush=True)  # decouple """ from message content for easy editing
 
 # argparse.py?
-for a in (argv := list(filter(lambda a: a.startswith('-'), sys.argv[1:]))):
+for a in (optv := list(filter(lambda a: a.startswith('-'), sys.argv[1:]))):
     if 'h' in a:
         usage()
         exit()
@@ -204,7 +204,8 @@ def main():
 def getsrc():
     global src
     try:
-        src = ''.join(pathlib.Path(f).read_text() for f in argv)
+        src = ''.join(pathlib.Path(f).read_text() for f in sys.argv[1:]
+                      if not f.startswith('-'))
         if not src:
             src = sys.stdin.read()
             sys.stdin = open('/dev/tty')
