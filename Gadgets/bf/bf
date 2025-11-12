@@ -47,17 +47,6 @@ def decide():
         e = i
         n = 1
         while n:
-            # todo: advance() seems right but (maybe) overkill. ?
-            #       the only reason i can think of not to is to make a point
-            #       that im not clean coding which is silly.
-            #       it does add overhead though. but not really and premature
-            #       optimizations are bad, says the cool kids. but they're the
-            #       ones not clean coding. though the idea of offshoring the
-            #       step thru src makes me a bit nervous for getting bit by
-            #       unforseen side effect implications. ie if advance() ever
-            #       changes, which is why to use it here in the first place.
-            #       i just dont know.
-            #i += 1
             advance()
             if i == len(src):
                 i = e
@@ -104,18 +93,22 @@ TRANSLATIONS = {
 }
 
 
-def do_one():
-    TRANSLATIONS.get(src[i], lambda: None)()
+def do_one(instructions):
+    instructions.get(src[i], lambda: None)()
 
 
 def advance():
     global i
     i += 1
+    # this breaks debug_arb_txt and idk who should bow to whom
+    #while i < len(src) and src[i] not in SCAN_CHARS:
+    #    i += 1
+    return True
 
 
 def run():
     while i < len(src):
-        do_one()
+        do_one(TRANSLATIONS)
         advance()
 
 
@@ -155,30 +148,30 @@ OPTIONS
                 _      print a blank
                 ~      print a newline
                 $      print the source text
-                $#     print the length of the source
+                #$     print the length of the source
                 %      print the source text 10 characters prior and subsequent
                        to the index
                 @      print the current index in the source
                 ?      print the buffer
-                ?#     print the number of cells in the buffer
+                #?     print the number of cells in the buffer
                 ^      print the value of the buffer pointer
                 *      print the value of the buffer at the pointer
                 :      print the address stack
-                :#     print the size of the address stack
+                #:     print the size of the address stack
                 {      print an arbitrary string
                        The string is delimited by '}'.  The delimiters are
                        not printed.  Any character preceded by '\\' is
                        printed literally.  This facilitates printing '}'.
-                {#     suppress execution
+                #{     suppress execution
                        Execution resumes immediately after '}' is encountered
                 !      exit immediately
-                All printing is on the sdterr.
+                All printing is to the stderr.
     -p pretty   decorate the debug output
     -h help     print this message and exit
-""", end='', flush=True)
+""", end='', flush=True)  # decouple """ from message content for easy editing
 
 # argparse.py?
-for a in (argv := filter(lambda a: a.startswith('-'), sys.argv[1:])):
+for a in (argv := list(filter(lambda a: a.startswith('-'), sys.argv[1:]))):
     if 'h' in a:
         usage()
         exit()
@@ -233,6 +226,7 @@ def tty_setup():
 
 def tty_cleanup():
     if sys.stdin.isatty():
+        import termios
         termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, termattrs)
 
 
@@ -249,34 +243,30 @@ def fail(m, e):
     raise RuntimeError(report(m))
 
 
-def info(*o, file=sys.stderr):
-    def do_print(*o):
+def info(*o, file=None):
+    def do_print(*o, file=None):
         print(*o, end='', file=file, flush=True)
+        return True
 
     def pretty_info(*o, file=sys.stderr):
         if len(o) == 0:
             out = ''
         elif len(o) == 1:
-            if type(p := o[0]) is str:
-                out = p
+            if type(o0 := o[0]) is str:  # pformat seems to repr str
+                out = o0
             else:
-                out = pprint.pformat(p) \
-                      .replace("'\\x1b", '\033') \
-                      .replace("\\x1b[0m'", '\033[0m')  # fix b[p] highlight
+                out = pprint.pformat(o0)
         else:
-            out = pprint.pformat(o).replace('\\033', '\033')  # todo: ' also?
-        do_print(out)
+            out = pprint.pformat(o)
+        return do_print(out, file=file)
 
     def boring_info(*o, file=sys.stderr):
-        do_print(*o)
+        return do_print(*o, file=file)
 
     global info  # init self
-    if PRETTY:
-        info = pretty_info
-    else:
-        info = boring_info
+    info = pretty_info if PRETTY else boring_info
 
-    info(*o, file=file)
+    return info(*o, file=file)
 
 
 class DebugExit(Exception):
@@ -289,80 +279,75 @@ def debug_exit():
     raise DebugExit
 
 
-def debug_arbitrary_print():  # i just can't help it
+def debug_arbitrary_text(process):  # i just can't help it
     """print an arbitrary string on the stderr or suppress interpretation"""
 
     # src[i] is now '{'. print until '}' is seen and return.
     # the system will advance past the '}' by normal execution.
-    # '\' escapes the next char. there are no esc sequences.
-    # having an esc is to print a literal '}' (and '#', i guess).
+    # '\' escapes the next char. there are no esc sequences. (yet... yet)
+    # having an esc is to print a literal '}'.
     # just fail off the end on missing '}'.
-    # dont_print is a quick and dirty(?) comment block mechanism.
 
-    advance()
-    # you can print a '#' as the first char by '\'ing it
-    dont_print = src[i] == '#'
-    while True:
-        if src[i] == '}':
-            return
-        if src[i] == '\\':
-            advance()
-        dont_print or info(src[i])
-        advance()
+    def doit():
+        advance()  # discard '{'
+        while True:
+            if src[i] == '}':
+                return
+            if src[i] == '\\':
+                advance()
+            process()
+
+    return doit
 
 
-def peek():
-    return src[i+1]
+class PrettyCell(int):
+    def __repr__(self):
+        return '\033[7m%d\033[0m' % self  # {} recurses here
 
 
 def debug_print_buffer():
-    def len_buffer():
-        if peek() == '#':
-            info(len(b))
-            advance()
-            return True
-        return False
-
     def pretty_buffer():
-        if len_buffer():
-            return
-        tmp = b[p]
-        b[p] = f'\033[7m{str(b[p])}\033[0m'
+        b[p] = PrettyCell(b[p])
         info(b)
-        b[p] = tmp
+        b[p] = int(b[p])
 
     def boring_buffer():
-        if len_buffer():
-            return
         info(b)
 
-    global debug_print_buffer
-    if PRETTY:
-        debug_print_buffer = pretty_buffer
-    else:
-        debug_print_buffer = boring_buffer
+    global debug_print_buffer  # init self
+    debug_print_buffer = pretty_buffer if PRETTY else boring_buffer
 
     debug_print_buffer()
 
 
-def debug_print_len_or_(o):
-    return lambda: info(advance() or len(o) if peek() == '#' else o)
+def debug_macro():
+    advance()  # discard '#'
+    do_one(MACROS)
 
 
+MACROS = ()
 if DEBUG:
+    MACROS = {
+        '{': debug_arbitrary_text(advance),
+        '?': lambda: info(len(b)),
+        ':': lambda: info(len(s)),
+        '$': lambda: info(len(src)),
+    }
     TRANSLATIONS.update({
         '_': lambda: info(' '),
         '~': lambda: info('\n'),
-        '$': debug_print_len_or_(src),
+        '$': lambda: info(src),
         '%': lambda: info(src[max(0, i-10) : i+10]),
         '@': lambda: info(i),
         '?': debug_print_buffer,
         '^': lambda: info(p),
         '*': lambda: info(b[p]),
-        ':': debug_print_len_or_(s),
-        '{': debug_arbitrary_print,
+        ':': lambda: info(s),
+        '{': debug_arbitrary_text(lambda: info(src[i]) and advance()),
+        '#': debug_macro,
         '!': debug_exit,
     })
 
+SCAN_CHARS = ''.join((*TRANSLATIONS, *MACROS))
 
 main()
