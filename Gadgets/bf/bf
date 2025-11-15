@@ -101,6 +101,7 @@ def advance():
     global i
     i += 1
     # this breaks debug_arb_txt and idk who should bow to whom
+    # update: do a self init for debug/normal mode
     #while i < len(src) and src[i] not in SCAN_CHARS:
     #    i += 1
     return True
@@ -149,8 +150,8 @@ OPTIONS
                 ~      print a newline
                 $      print the source text
                 #$     print the length of the source
-                %      print the source text 10 characters prior and subsequent
-                       to the index
+                %[n]   print the source text n characters prior and subsequent
+                       to the index. Default n is 10.
                 @      print the current index in the source
                 ?      print the buffer
                 #?     print the number of cells in the buffer
@@ -247,7 +248,6 @@ def fail(m, e):
 def info(*o, file=None):
     def do_print(*o, file=None):
         print(*o, end='', file=file, flush=True)
-        return True
 
     def pretty_info(*o, file=sys.stderr):
         if len(o) == 0:
@@ -259,10 +259,11 @@ def info(*o, file=None):
                 out = pprint.pformat(o0)
         else:
             out = pprint.pformat(o)
-        return do_print(out, file=file)
+        do_print(out, file=file)
+        return True  # see debug translation table
 
     def boring_info(*o, file=sys.stderr):
-        return do_print(*o, file=file)
+        do_print(*o, file=file)
 
     global info  # init self
     info = pretty_info if PRETTY else boring_info
@@ -301,12 +302,11 @@ def debug_arbitrary_text(process):  # i just can't help it
     return doit
 
 
-class PrettyCell(int):
-    def __repr__(self):
-        return '\033[7m%d\033[0m' % self  # {} recurses here
-
-
 def debug_print_buffer():
+    class PrettyCell(int):
+        def __repr__(self):
+            return '\033[7m%d\033[0m' % self  # an f-string would recurse
+
     def pretty_buffer():
         b[p] = PrettyCell(b[p])
         info(b)
@@ -338,7 +338,7 @@ if DEBUG:
         '_': lambda: info(' '),
         '~': lambda: info('\n'),
         '$': lambda: info(src),
-        '%': lambda: info(src[max(0, i-10) : i+10]),
+        '%': lambda: info(src[max(0, i-10) : i+10]),  # todo: n arg, see usage
         '@': lambda: info(i),
         '?': debug_print_buffer,
         '^': lambda: info(p),
